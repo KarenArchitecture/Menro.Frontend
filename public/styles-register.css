@@ -1,0 +1,159 @@
+/* General Body Styling */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  background-color: #121212;
+  color: #eaeaea;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 40px 0;
+  direction: rtl;
+}
+
+.form-container {
+  background-color: #1e1e1e;
+  border-radius: 12px;
+  padding: 40px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  border: 1px solid #2f2f2f;
+}
+
+/* Tab Navigation */
+.tab-navigation {
+  display: flex;
+  border-bottom: 1px solid #333;
+  margin-bottom: 30px;
+}
+
+.tab {
+  padding: 12px 20px;
+  cursor: pointer;
+  color: #888;
+  font-weight: 500;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+  flex: 1;
+  text-align: center;
+}
+
+.tab:hover {
+  color: #ddd;
+}
+
+.tab.active {
+  color: #ffffff;
+  border-bottom: 3px solid #f59e0b;
+}
+
+/* Form Content */
+.profile-form h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.profile-form p {
+  font-size: 14px;
+  color: #aaa;
+  line-height: 1.6;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* Input Fields */
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  font-size: 14px;
+  color: #bbb;
+  margin-bottom: 8px;
+  text-align: right;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 14px;
+  background-color: #252525;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: #eaeaea;
+  font-size: 16px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+}
+
+.input-group small {
+  font-size: 12px;
+  color: #777;
+  display: block;
+  margin-top: 5px;
+  text-align: right;
+}
+
+/* Button Styling */
+button {
+  width: 100%;
+  padding: 15px;
+  margin-top: 15px;
+  background-color: #f59e0b;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+button:hover {
+  background-color: #d97706;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* Form Visibility Control */
+.profile-form {
+  display: none;
+}
+
+.profile-form.active-form {
+  display: block;
+}
+
+/* Message Area Styling */
+.message {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+  min-height: 20px;
+  transition: color 0.3s ease;
+}
+
+.message.success {
+  color: #10b981;
+}
+
+.message.error {
+  color: #ef4444;
+}
+
+.message.info {
+  color: #888;
+}

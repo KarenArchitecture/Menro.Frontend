@@ -2,8 +2,10 @@
 import axios from "axios";
 
 const userAxios = axios.create({
-    baseURL: "http://localhost:5096/api/user", 
-    withCredentials: true, // ✅ to send cookies/token if needed
+  //  baseURL: "http://localhost:5096/api/user",
+  baseURL: "https://localhost:7270/api/public",
+
+  withCredentials: true, // ✅ to send cookies/token if needed
 });
 
 export default userAxios;

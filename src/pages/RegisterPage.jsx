@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import usePageStyles from "../hooks/usePageStyles";
+import authAxios from "../api/authAxios";
 
 export default function RegisterPage() {
   usePageStyles("/styles-register.css");
@@ -34,14 +35,13 @@ export default function RegisterPage() {
   /* register mutation */
   const registerMutation = useMutation({
     mutationFn: async (payload) => {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "ثبت‌نام ناموفق بود");
-      return data;
+      try {
+        const res = await authAxios.post("/register", payload);
+        return res.data;
+      } catch (err) {
+        const message = err.response?.data?.message || "ثبت‌نام ناموفق بود";
+        throw new Error(message);
+      }
     },
     onSuccess: (data) => {
       localStorage.setItem("token", data.token);

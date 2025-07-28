@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { getPopularFoodByRandomCategory } from "../../api/foods"; // Ensure this path is correct
+import { getPopularFoodByRandomCategory, getPopularFoodByRandomCategoryExcluding } from "../../api/foods"; // Ensure this path is correct
 import PopularFoodRow from "../home/PopularFoodRow";
 import LoadingSpinner from "../common/LoadingSpinner";
 
@@ -17,16 +17,30 @@ function PopularFoodLazyList() {
     hasNextPage,
   } = useInfiniteQuery({
     queryKey: ["popularFoodLazyLoad"],
-    queryFn: getPopularFoodByRandomCategory,  // <-- unwrap axios data here
-    getNextPageParam: (_lastPage, allPages) => {
-      const titles = allPages.map((p) => p.categoryTitle);
-      const uniqueTitles = new Set(titles);
+    queryFn: ({ pageParam = [] }) => {
+      // pageParam is an array of already loaded category titles to exclude
+      if (pageParam.length === 0) {
+        // First call: no exclusions
+        return getPopularFoodByRandomCategory();
+      } else {
+        // Subsequent calls: exclude already fetched categories
+        return getPopularFoodByRandomCategoryExcluding(pageParam);
+      }
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      if (!lastPage) return undefined;
 
-      if (uniqueTitles.size < allPages.length) {
-        return undefined; // No more pages
+      const loadedCategories = allPages.map((p) => p.categoryTitle);
+
+      // Check if there are still categories left to fetch by calling backend with exclusion
+      // If lastPage is null or empty, no more categories
+      // Since backend returns null if none left, check that:
+      if (lastPage.categoryTitle === "" || lastPage === null) {
+        return undefined; // no next page
       }
 
-      return allPages.length; // Next page index
+      // If category was returned, pass loaded category titles to exclude next time
+      return loadedCategories;
     },
   });
 
@@ -63,7 +77,7 @@ function PopularFoodLazyList() {
   const uniquePages = [];
   const seen = new Set();
   for (const page of data.pages) {
-    if (!seen.has(page.categoryTitle)) {
+    if (page && !seen.has(page.categoryTitle)) {
       uniquePages.push(page);
       seen.add(page.categoryTitle);
     }

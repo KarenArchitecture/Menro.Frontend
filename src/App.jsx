@@ -5,6 +5,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import RegisterRestaurantPage from "./pages/RegisterRestaurantPage";
 import MobileNav from "./components/common/MobileNav";
+import ProtectedRoute from "./components/common/ProtectedRoute";
 
 export default function App() {
   return (
@@ -16,7 +17,11 @@ export default function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route
           path="/register-restaurant"
-          element={<RegisterRestaurantPage />}
+          element={
+            <ProtectedRoute>
+              <RegisterRestaurantPage />
+            </ProtectedRoute>
+          }
         />
       </Routes>
 

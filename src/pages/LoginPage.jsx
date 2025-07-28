@@ -31,7 +31,7 @@ export default function LoginPage() {
   /* 1) send OTP */
   const sendOtp = useMutation({
     mutationFn: (phoneNumber) =>
-      fetch("/api/auth/send-otp", {
+      fetch("https://localhost:7270/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phoneNumber }),
@@ -46,6 +46,22 @@ export default function LoginPage() {
       showMsg("کد تأیید ارسال شد.", "success");
     },
     onError: (err) => showMsg(err.message),
+
+    /*fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phoneNumber }),
+      }).then(async (res) => {
+        if (!res.ok) {
+          const { message = "خطا در ارسال کد." } = await res.json();
+          throw new Error(message);
+        }
+      }),
+    onSuccess: () => {
+      setOtpSent(true);
+      showMsg("کد تأیید ارسال شد.", "success");
+    },
+    onError: (err) => showMsg(err.message),*/
   });
 
   /* 2) verify OTP & login */

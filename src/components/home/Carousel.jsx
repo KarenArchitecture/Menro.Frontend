@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getFeaturedRestaurants } from "../../api/restaurants";
+import { getFeaturedRestaurants } from "../../api/restaurant";
 import LoadingSpinner from "../common/LoadingSpinner";
 
 function Carousel() {
@@ -69,7 +69,9 @@ function Carousel() {
         {slides.map((_, slideIndex) => (
           <button
             key={slideIndex}
-            className={currentIndex === slideIndex ? "indicator active" : "indicator"}
+            className={
+              currentIndex === slideIndex ? "indicator active" : "indicator"
+            }
             onClick={() => goToSlide(slideIndex)}
             data-index={slideIndex}
             aria-label={`Go to slide ${slideIndex + 1}`}

@@ -5,7 +5,7 @@ import SectionHeader from "../common/SectionHeader";
 import RestaurantCard from "./RestaurantCard";
 import FoodIcon from "../icons/FoodIcon";
 import { useQuery } from "@tanstack/react-query";
-import { getRandomRestaurants } from "../../api/restaurants";
+import { getRandomRestaurants } from "../../api/restaurant";
 import LoadingSpinner from "../common/LoadingSpinner";
 
 function RestaurantList() {

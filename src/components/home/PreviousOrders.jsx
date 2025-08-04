@@ -3,15 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import SectionHeader from "../common/SectionHeader";
 import WideRestaurantCard from "../home/WideRestaurantCard";
 import ReceiptIcon from "../icons/ReceiptIcon";
-import { getUserRecentOrders } from "../../api/restaurants";
+import { getUserRecentOrders } from "../../api/restaurant";
 
 function PreviousOrders() {
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["userRecentOrders"],
     queryFn: getUserRecentOrders,
   });

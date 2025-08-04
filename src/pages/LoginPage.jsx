@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import usePageStyles from "../hooks/usePageStyles";
+import authAxios from "../api/authAxios";
 
 export default function LoginPage() {
   /* loginpage CSS (/public) */
@@ -30,52 +31,33 @@ export default function LoginPage() {
 
   /* 1) send OTP */
   const sendOtp = useMutation({
-    mutationFn: (phoneNumber) =>
-      fetch("https://localhost:7270/api/auth/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phoneNumber }),
-      }).then(async (res) => {
-        if (!res.ok) {
-          const { message = "خطا در ارسال کد." } = await res.json();
-          throw new Error(message);
-        }
-      }),
+    mutationFn: async (phoneNumber) => {
+      try {
+        await authAxios.post("/send-otp", { phoneNumber });
+      } catch (err) {
+        // اگه بک‌اند message برمی‌گردونه
+        const message = err.response?.data?.message || "خطا در ارسال کد.";
+        throw new Error(message);
+      }
+    },
     onSuccess: () => {
       setOtpSent(true);
       showMsg("کد تأیید ارسال شد.", "success");
     },
     onError: (err) => showMsg(err.message),
-
-    /*fetch("/api/auth/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phoneNumber }),
-      }).then(async (res) => {
-        if (!res.ok) {
-          const { message = "خطا در ارسال کد." } = await res.json();
-          throw new Error(message);
-        }
-      }),
-    onSuccess: () => {
-      setOtpSent(true);
-      showMsg("کد تأیید ارسال شد.", "success");
-    },
-    onError: (err) => showMsg(err.message),*/
   });
 
   /* 2) verify OTP & login */
   const verifyOtp = useMutation({
     mutationFn: ({ phoneNumber, code }) =>
-      fetch("/api/auth/login-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phoneNumber, code }),
-      }).then(async (res) => {
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "کد وارد شده صحیح نیست.");
-        return data;
-      }),
+      authAxios
+        .post("/login-otp", { phoneNumber, code })
+        .then((res) => res.data)
+        .catch((err) => {
+          const message =
+            err.response?.data?.message || "کد وارد شده صحیح نیست.";
+          throw new Error(message);
+        }),
     onSuccess: (data) => {
       if (data.needsRegister) {
         const expiresAt = Date.now() + 60_000; // 60 s
@@ -96,15 +78,13 @@ export default function LoginPage() {
   /* 3) login with password */
   const loginWithPassword = useMutation({
     mutationFn: ({ phoneNumber, password }) =>
-      fetch("/api/auth/login-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phoneNumber, password }),
-      }).then(async (res) => {
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "ورود ناموفق بود");
-        return data;
-      }),
+      authAxios
+        .post("/login-password", { phoneNumber, password })
+        .then((res) => res.data)
+        .catch((err) => {
+          const message = err.response?.data?.message || "ورود ناموفق بود";
+          throw new Error(message);
+        }),
     onSuccess: (data) => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));

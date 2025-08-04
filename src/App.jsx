@@ -17,11 +17,7 @@ export default function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route
           path="/register-restaurant"
-          element={
-            <ProtectedRoute>
-              <RegisterRestaurantPage />
-            </ProtectedRoute>
-          }
+          element={<RegisterRestaurantPage />}
         />
       </Routes>
 

@@ -1,6 +1,6 @@
 // src/api/restaurants.js
-import publicAxios from "./publicAxios";
-//mport userAxios from "../api/userAxios";
+//import userAxios from "../api/userAxios";
+import restaurantAxios from "./restaurantAxios";
 import { fakeUser } from "../Constants/fakeAuth"; // 👈 import fake user
 
 // 📍 Base route prefixes
@@ -52,5 +52,27 @@ export const getUserRecentOrders = async () => {
   const response = await publicAxios.get(
     `/restaurant/recent-orders/${fakeUser.id}`
   );
+  return response.data;
+};
+
+// =========================
+// Restaurant Registration
+// =========================
+// get categories
+export const fetchRestaurantCategories = async () => {
+  const response = await restaurantAxios.get("/categories");
+  return response.data;
+};
+
+// restaurant registeration
+export const registerRestaurant = async (payload) => {
+  const token = localStorage.getItem("token");
+
+  const response = await restaurantAxios.post("/register", payload, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
   return response.data;
 };

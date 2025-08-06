@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { getFeaturedRestaurants } from "../../api/restaurants";
 import LoadingSpinner from "../common/LoadingSpinner";
 
 function Carousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const navigate = useNavigate();
 
   // Notice: No more `.then(res => res.data)` because getFeaturedRestaurants returns data directly
   const {
@@ -61,6 +63,7 @@ function Carousel() {
               src={`http://localhost:5096${slide.carouselImageUrl}`}
               alt={slide.name}
               role="listitem"
+              onClick={() => navigate(`/restaurant/${slide.slug}`)}
             />
           ))}
         </div>

@@ -1,92 +1,25 @@
 // src/pages/RestaurantPage.jsx
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react"; 
+import { useParams } from "react-router-dom";       // << added
+import { useQuery } from "@tanstack/react-query"; 
 import usePageStyles from "../hooks/usePageStyles";
 import ShopHeader from "../components/Shop/ShopHeader";
-import ShopBanner from "../components/Shop/ShopBanner";
+import ShopBanner from "../components/shop/ShopBanner";
 import MenuList from "../components/shop/MenuList";
 import ItemDetailModal from "../components/shop/ItemDetailModal";
 import MobileNav from "../components/common/MobileNav";
+import FoodCategoryList, { ALL_CAT_SVG } from "../components/shop/FoodCategoryList";
+import { getRestaurantBannerBySlug } from "../api/restaurants";
+import { getRestaurantMenuBySlug } from "../api/restaurants";
 
-// --- SVG Icon ---
-
-const AllIcon = ({ fill, width = 37, height = 37 }) => (
-  <svg
-    width={width}
-    height={height}
-    viewBox="0 0 37 37"
-    fill={fill}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M9.97159 0.583337H6.56742C2.64367 0.583337 0.583252 2.64375 0.583252 6.54959V9.95375C0.583252 13.8596 2.64367 15.92 6.5495 15.92H9.95367C13.8595 15.92 15.9199 13.8596 15.9199 9.95375V6.54959C15.9378 2.64375 13.8774 0.583337 9.97159 0.583337Z" />
-    <path d="M30.4495 0.583337H27.0454C23.1395 0.583337 21.0791 2.64375 21.0791 6.54959V9.95375C21.0791 13.8596 23.1395 15.92 27.0454 15.92H30.4495C34.3554 15.92 36.4158 13.8596 36.4158 9.95375V6.54959C36.4158 2.64375 34.3554 0.583337 30.4495 0.583337Z" />
-    <path d="M30.4495 21.0615H27.0454C23.1395 21.0615 21.0791 23.122 21.0791 27.0278V30.432C21.0791 34.3378 23.1395 36.3982 27.0454 36.3982H30.4495C34.3554 36.3982 36.4158 34.3378 36.4158 30.432V27.0278C36.4158 23.122 34.3554 21.0615 30.4495 21.0615Z" />
-    <path d="M9.97159 21.0615H6.56742C2.64367 21.0615 0.583252 23.122 0.583252 27.0278V30.432C0.583252 34.3557 2.64367 36.4161 6.5495 36.4161H9.95367C13.8595 36.4161 15.9199 34.3557 15.9199 30.4499V27.0457C15.9378 23.122 13.8774 21.0615 9.97159 21.0615Z" />
-  </svg>
-);
-
-const HotDrinkIcon = ({ fill, width = 43, height = 43 }) => (
-  <svg
-    width={width}
-    height={height}
-    viewBox="0 0 43 43"
-    fill={fill}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M10.75 9.17529C10.0154 9.17529 9.40625 8.56612 9.40625 7.83154V4.69612C9.40625 3.96154 10.0154 3.35237 10.75 3.35237C11.4846 3.35237 12.0938 3.96154 12.0938 4.69612V7.83154C12.0938 8.58404 11.4846 9.17529 10.75 9.17529Z" />
-    <path d="M17.9167 9.17529C17.1822 9.17529 16.573 8.56612 16.573 7.83154V4.69612C16.573 3.96154 17.1822 3.35237 17.9167 3.35237C18.6513 3.35237 19.2605 3.96154 19.2605 4.69612V7.83154C19.2605 8.58404 18.6513 9.17529 17.9167 9.17529Z" />
-    <path d="M25.0833 9.17529C24.3487 9.17529 23.7395 8.56612 23.7395 7.83154V4.69612C23.7395 3.96154 24.3487 3.35237 25.0833 3.35237C25.8178 3.35237 26.427 3.96154 26.427 4.69612V7.83154C26.427 8.58404 25.8178 9.17529 25.0833 9.17529Z" />
-    <path d="M39.8647 23.7426C39.8647 19.0485 36.2276 15.2502 31.6409 14.856C30.3151 12.6881 27.9501 11.2189 25.2267 11.2189H12.0222C7.8655 11.2189 4.47925 14.6052 4.47925 18.7618V19.7114H32.7697V18.7618C32.7697 18.4214 32.7159 18.081 32.6622 17.7585C35.2601 18.5289 37.1772 20.8939 37.1772 23.7426C37.1772 26.5555 35.3138 28.9026 32.7697 29.691V21.503H4.47925V31.8768C4.47925 36.0335 7.8655 39.4197 12.0222 39.4197H25.2267C29.1684 39.4197 32.3755 36.3739 32.698 32.5039C36.783 31.6797 39.8647 28.0606 39.8647 23.7426Z" />
-  </svg>
-);
-
-const ColdDrinkIcon = ({ fill, width = 28, height = 33 }) => (
-  <svg
-    width={width}
-    height={height}
-    viewBox="0 0 28 33"
-    fill={fill}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M27.2 3.36223C26.8329 7.84807 1.16208 7.84502 0.800049 3.36223C1.1113 -1.12361 26.9001 -1.11788 27.2 3.36223ZM18.7884 20.4284C16.3686 20.4165 14.0718 19.4331 12.4802 17.7303C11.0421 16.1664 8.78355 15.4963 6.64483 15.9993L2.5203 16.9424L4.20583 30.2899C4.40056 31.833 5.79876 32.997 7.46198 33H20.5376C22.2007 32.997 23.599 31.833 23.7937 30.2899L25.1728 19.3783C23.0754 19.8797 20.9416 20.2304 18.7882 20.4289L18.7884 20.4284ZM13.9998 9.1107C10.2074 9.1107 4.67859 8.80029 1.2818 7.15277L2.21393 14.5547L6.03191 13.6832C7.53389 13.331 9.11089 13.3758 10.5871 13.8115C12.0651 14.2473 13.3819 15.0591 14.3955 16.1545C15.5192 17.3498 17.1377 18.0378 18.8392 18.0408C20.2501 17.9766 23.9358 17.1498 25.4918 16.8827L26.7304 7.15271C23.3338 8.78827 17.7922 9.1107 13.9998 9.1107Z" />
-  </svg>
-);
-
-const AppetizerIcon = ({ fill, width = 33, height = 33 }) => (
-  <svg
-    width={width}
-    height={height}
-    viewBox="0 0 33 33"
-    fill={fill}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <g clipPath="url(#clip0_5_979)">
-      <path d="M4.49548 16.0957L5.22057 15.3513L6.07618 16.3439C6.35816 16.6581 6.74327 16.8369 7.1606 16.8466H7.19282C7.59727 16.8466 7.97752 16.6855 8.26438 16.3906L9.38262 15.2434C9.67749 14.9404 9.83542 14.5392 9.82734 14.1106C9.81928 13.682 9.64526 13.2872 9.33267 12.9907L8.37072 12.1174L9.09581 11.373C9.89342 10.5544 9.89342 9.22346 9.09581 8.40489L9.01363 8.31949C7.96625 7.24472 6.51768 6.66627 5.03688 6.73231C3.53675 6.79999 2.17356 7.49123 1.20191 8.67882C-0.544777 10.8138 -0.367525 14.0718 1.60474 16.0956C2.40075 16.9141 3.69948 16.9143 4.49548 16.0957Z" />
-      <path d="M6.96095 5.70404C8.4933 5.70404 9.74049 4.42463 9.74049 2.85197C9.73888 1.27932 8.49334 -9.15527e-05 6.96095 -9.15527e-05C5.42855 -9.15527e-05 4.1814 1.27932 4.1814 2.85197C4.1814 4.42463 5.42855 5.70404 6.96095 5.70404Z" />
-      <path d="M30.994 2.98569C30.994 4.56156 29.7501 5.83936 28.2145 5.83936C26.6805 5.83936 25.4365 4.56156 25.4365 2.98569C25.4365 1.41142 26.6805 0.133621 28.2145 0.133621C29.7501 0.133621 30.994 1.41142 30.994 2.98569Z" />
-      <path d="M14.5662 17.3671C16.0985 17.3671 17.3457 16.0877 17.3457 14.515C17.3457 12.9424 16.0986 11.6629 14.5662 11.6629C13.0338 11.6629 11.7866 12.9424 11.7866 14.515C11.7866 16.0877 13.0338 17.3671 14.5662 17.3671Z" />
-      <path d="M17.8678 9.66323C20.4636 9.66323 22.5744 7.49599 22.5744 4.83244C22.5744 2.16732 20.4635 0 17.8678 0C15.2719 0 13.1611 2.16723 13.1611 4.83079C13.1611 7.49591 15.2736 9.66323 17.8678 9.66323ZM17.8678 2.04641C19.3647 2.04641 20.5812 3.29678 20.5812 4.8324C20.5812 6.36801 19.3647 7.61677 17.8678 7.61677C16.3708 7.61677 15.1543 6.36801 15.1543 4.8324C15.1543 3.29517 16.3724 2.04641 17.8678 2.04641Z" />
-      <path d="M17.8678 6.74809C18.8974 6.74809 19.7353 5.88765 19.7353 4.83223C19.7353 3.7752 18.8974 2.91476 17.8678 2.91476C16.8381 2.91476 16.0002 3.7752 16.0002 4.83223C16.0002 5.88765 16.8381 6.74809 17.8678 6.74809Z" />
-      <path d="M21.5128 16.8481L22.0461 18.5481H23.3529L28.7187 13.0392C28.8847 12.87 29.1522 12.87 29.3165 13.0392C29.4825 13.2084 29.4825 13.4839 29.3165 13.6531L24.5484 18.5466H28.5767C29.3389 18.5466 30.006 18.1067 30.2767 17.4251C30.4056 17.0996 30.4298 16.7709 30.3508 16.418C30.3218 16.2891 30.3508 16.1537 30.4314 16.049C30.5119 15.9459 30.6328 15.8846 30.7633 15.8846H31.2096C32.1458 15.8846 32.9482 15.1482 32.9982 14.2427C33.0256 13.7319 32.8355 13.2356 32.4745 12.8811C32.3102 12.72 32.2989 12.4557 32.4487 12.2817C33.0337 11.5937 32.9998 10.5495 32.3714 9.90339C31.743 9.25725 30.7246 9.22342 30.0543 9.82443C29.8835 9.97751 29.6257 9.96462 29.4694 9.79704C29.1246 9.42644 28.6412 9.22985 28.1433 9.25885C27.2619 9.31041 26.5432 10.1338 26.5432 11.0958V11.555C26.5432 11.6871 26.4836 11.8128 26.3837 11.895C26.2822 11.9772 26.1501 12.0078 26.0244 11.9772C25.6812 11.895 25.3605 11.9192 25.0431 12.0529C24.3824 12.33 23.9377 13.0471 23.9377 13.835V14.2282C23.9377 14.3603 23.8781 14.486 23.7782 14.5682C23.6767 14.6504 23.5445 14.681 23.4189 14.6504C23.0144 14.5537 22.6309 14.6068 22.2861 14.7809C21.5852 15.1338 21.2533 16.0215 21.5128 16.8481Z" />
-      <path d="M7.88731 33H25.9569C30.2543 29.9143 32.8597 24.8709 32.9921 19.4147H0.852539C0.984667 24.8709 3.58977 29.9141 7.88731 33Z" />
-    </g>
-    <defs>
-      <clipPath id="clip0_5_979">
-        <rect width="33" height="33" fill="white" />
-      </clipPath>
-    </defs>
-  </svg>
-);
-
-const categories = [
-  { key: "all", name: "همه", Icon: AllIcon },
-  { key: "hot", name: "نوشیدنی گرم", Icon: HotDrinkIcon },
-  { key: "cold", name: "نوشیدنی سرد", Icon: ColdDrinkIcon },
-  { key: "appetizer", name: "پیش‌غذا", Icon: AppetizerIcon },
-];
 
 function RestaurantPage() {
   usePageStyles("/shop.css");
 
+   // Added: read slug from url
+  const { slug } = useParams();
+
+  /* ---------- UI state --------------------------------------------------- */
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedItem, setSelectedItem] = useState(null);
 
@@ -101,57 +34,77 @@ function RestaurantPage() {
   const defaultFill = "#999FA8";
   const activeFill = "#D17842";
 
-  return (
+  /* ---------- Queries ---------------------------------------------------- */
+  const { data: banner, isLoading, isError } = useQuery({
+    queryKey: ["restaurantBanner", slug],
+    queryFn : () => getRestaurantBannerBySlug(slug),
+  });
+
+  const { data: menuData = [], isLoading: menuLoading } = useQuery({
+    queryKey: ["restaurantMenu", slug],
+    queryFn : () => getRestaurantMenuBySlug(slug),
+  });
+
+  const categoriesWithAll = useMemo(() => {
+  // convert every section coming from the API ➜ a clean category object
+  const apiCats = menuData.map(sec => ({
+    id      : String(sec.categoryId), // 👈 always a string, always unique
+    name    : sec.categoryTitle,
+    svgIcon : sec.svgIcon,
+  }));
+
+    /// always prepend the hard-coded “همه”
+  return [
+    { id: "all", name: "همه", svgIcon: ALL_CAT_SVG }, // ✅ always present, with icon
+    ...apiCats,
+  ];
+}, [menuData]);
+    
+  // const categories =
+  // menuData?.map((section) => ({
+  //   id: section.categoryId,
+  //   title: section.categoryTitle,
+  //   icon: section.svgIcon,
+  //   key: section.categoryKey,
+  // })) || [];
+
+  /* ---------- Pick which foods to show ---------------------------------- */
+  // const displayedFoods = useMemo(() => {
+  //   if (activeCategory === "all") {
+  //     return menuData.flatMap(sec => sec.foods);
+  //   }
+  //   const section = menuData.find(sec => String(sec.categoryId) === activeCategory);  // compare strings
+  //   return section ? section.foods : [];
+  // }, [activeCategory, menuData]);
+
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error loading restaurant data</div>;
+
+  
+
+//   
+return (
     <div>
       <ShopHeader />
-      <ShopBanner />
+      <ShopBanner banner={banner} /> 
 
       <div className="res-menu-wrapper">
-        <aside className="category-sidebar-vertical">
-          {categories.map(({ key, name, Icon }) => (
-            <button
-              key={key}
-              className={`sidebar-btn ${
-                activeCategory === key ? "active" : ""
-              }`}
-              onClick={() => setActiveCategory(key)}
-            >
-              <Icon fill={activeCategory === key ? activeFill : defaultFill} />
-              <span className="sidebar-catagory-title">{name}</span>
-            </button>
-          ))}
-        </aside>
-
-        <nav className="category-wrap">
-          <div className="category-bar">
-            {categories.map(({ key, name, Icon }) => (
-              <button
-                key={key}
-                className={`category-btn ${
-                  activeCategory === key ? "active" : ""
-                }`}
-                onClick={() => setActiveCategory(key)}
-              >
-                {/* For mobile, we need to use smaller icon dimensions */}
-                <Icon
-                  fill={activeCategory === key ? activeFill : defaultFill}
-                  width={17}
-                  height={17}
-                />
-                <span>{name}</span>
-              </button>
-            ))}
-          </div>
-        </nav>
+        {!menuLoading && (
+          <FoodCategoryList
+            categories={categoriesWithAll}
+            activeCategory={activeCategory}
+            setActiveCategory={setActiveCategory}
+          />
+        )}
 
         <MenuList
           activeCategory={activeCategory}
-          onSelectItem={handleSelectItem}
+          onSelectItem={setSelectedItem}
         />
       </div>
 
       {selectedItem && (
-        <ItemDetailModal item={selectedItem} onClose={handleCloseModal} />
+        <ItemDetailModal item={selectedItem} onClose={() => setSelectedItem(null)} />
       )}
 
       <MobileNav />

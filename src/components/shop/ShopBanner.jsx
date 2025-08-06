@@ -1,58 +1,81 @@
-// src/components/shop/ShopBanner.jsx
 import React from "react";
+import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { getRestaurantBannerBySlug } from "../../api/restaurants";
 
-// This component represents the main hero banner on the restaurant page.
-// It includes the mobile navigation, restaurant title, and search/music buttons.
-function ShopBanner() {
+// function ShopBanner() {
+//   const { slug } = useParams();
+
+//   const {
+//     data: banner,
+//     isLoading,
+//     isError,
+//   } = useQuery({
+//   queryKey: ["restaurantBanner", slug],
+//   queryFn: () => getRestaurantBannerBySlug(slug),
+//   enabled: !!slug,
+//   })
+
+//   if (isLoading) return <div className="text-center py-6">در حال بارگذاری...</div>;
+//   if (isError || !banner) return <div className="text-center text-red-500 py-6">خطا در بارگذاری اطلاعات رستوران</div>;
+
+//   return (
+//     <section
+//       className="banner"
+//       style={{
+//         backgroundImage: `url(${banner.bannerImageUrl})`,
+//         backgroundSize: "cover",
+//         backgroundPosition: "center",
+//       }}
+  function ShopBanner({ banner }) {     // banner now arrives as a prop
+  if (!banner) {
+    return (
+      <div className="text-center py-6 text-red-500">
+        خطا در بارگذاری اطلاعات رستوران
+      </div>
+    );
+  }
+
   return (
-    <section className="banner">
+    <section
+      className="banner"
+      style={{
+        backgroundImage   : `url(${banner.bannerImageUrl})`,
+        backgroundSize    : "cover",
+        backgroundPosition: "center",
+      }}
+    >
       <nav className="navbar">
         <div className="circle-button">
           <svg
-            width="29"
-            height="29"
-            viewBox="0 0 29 29"
-            fill="none"
             xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-6 h-6 rtl:rotate-180"
           >
-            <rect
-              x="1"
-              y="1"
-              width="26.9811"
-              height="26.9811"
-              rx="13.4906"
-              fill="#222B3A"
-              stroke="white"
-              strokeWidth="2"
-            />
             <path
-              d="M12.1448 7.30739C12.0065 7.25805 11.8598 7.23651 11.7132 7.24401C11.4187 7.26118 11.143 7.39431 10.9465 7.61426C10.7483 7.83284 10.6448 8.12107 10.6587 8.41582C10.6725 8.71056 10.8027 8.98779 11.0206 9.18678L17.4914 15.0543L11.0206 20.9153C10.8027 21.1142 10.6725 21.3915 10.6587 21.6862C10.6448 21.981 10.7483 22.2692 10.9465 22.4878C11.1443 22.7069 11.4209 22.8386 11.7157 22.8541C12.0104 22.8697 12.2993 22.7677 12.519 22.5705L19.9046 15.8776C20.02 15.773 20.1123 15.6455 20.1754 15.5031C20.2385 15.3607 20.2711 15.2067 20.2711 15.051C20.2711 14.8953 20.2385 14.7413 20.1754 14.5989C20.1123 14.4566 20.02 14.329 19.9046 14.2245L12.519 7.53149C12.4102 7.43288 12.283 7.35672 12.1448 7.30739Z"
-              fill="white"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15.75 19.5L8.25 12l7.5-7.5"
             />
           </svg>
         </div>
         <div className="cart-wrapper">
           <div className="cart-icon-circle">
             <svg
-              width="29"
-              height="29"
-              viewBox="0 0 29 29"
-              fill="none"
               xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-6 h-6"
             >
-              <rect
-                x="1"
-                y="1"
-                width="26.9811"
-                height="26.9811"
-                rx="13.4906"
-                fill="#222B3A"
-                stroke="white"
-                strokeWidth="2"
-              />
               <path
-                d="M20.1383 12.3466C19.6637 11.8225 18.9483 11.5179 17.9567 11.4116V10.8733C17.9567 9.90289 17.5458 8.96789 16.8233 8.31622C16.0937 7.65039 15.1446 7.33872 14.16 7.4308C12.4671 7.59372 11.0433 9.22997 11.0433 11.0008V11.4116C10.0517 11.5179 9.33625 11.8225 8.86166 12.3466C8.17458 13.1116 8.19583 14.1316 8.27375 14.84L8.76958 18.7854C8.91833 20.1666 9.47791 21.5833 12.5237 21.5833H16.4762C19.5221 21.5833 20.0817 20.1666 20.2304 18.7925L20.7262 14.8329C20.8042 14.1316 20.8183 13.1116 20.1383 12.3466ZM14.2592 8.41539C14.9675 8.35164 15.6404 8.57122 16.1646 9.0458C16.6817 9.5133 16.9721 10.1791 16.9721 10.8733V11.3691H12.0279V11.0008C12.0279 9.73997 13.0692 8.52872 14.2592 8.41539ZM11.9642 15.3146H11.9571C11.5675 15.3146 11.2487 14.9958 11.2487 14.6062C11.2487 14.2166 11.5675 13.8979 11.9571 13.8979C12.3537 13.8979 12.6725 14.2166 12.6725 14.6062C12.6725 14.9958 12.3537 15.3146 11.9642 15.3146ZM16.9225 15.3146H16.9154C16.5258 15.3146 16.2071 14.9958 16.2071 14.6062C16.2071 14.2166 16.5258 13.8979 16.9154 13.8979C17.3121 13.8979 17.6308 14.2166 17.6308 14.6062C17.6308 14.9958 17.3121 15.3146 16.9225 15.3146Z"
-                fill="white"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3.75 3.75 0 007.5 0m-7.5 0h7.5m-7.5 0L5.25 6.75m0 0h14.036c.977 0 1.636.958 1.348 1.9l-1.41 4.7a1.5 1.5 0 01-1.432 1.05H5.902a1.5 1.5 0 01-1.432-1.05l-1.41-4.7a1.357 1.357 0 011.348-1.9z"
               />
             </svg>
           </div>
@@ -64,8 +87,8 @@ function ShopBanner() {
 
       <div className="banner-content">
         <div className="restaurant-title">
-          <h1 className="restaurant-name">منرو</h1>
-          <p className="restaurant-description">کافه رستوران</p>
+          <h1 className="restaurant-name">{banner.name}</h1>
+          <p className="restaurant-description">{banner.categoryName}</p>
         </div>
         <div className="search-and-music">
           <div className="search-container">
@@ -76,18 +99,17 @@ function ShopBanner() {
             />
             <button className="search-button" aria-label="Search">
               <svg
-                className="search-icon"
-                viewBox="0 0 20 20"
-                fill="none"
                 xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-5 h-5"
               >
                 <path
-                  d="M9.58333 17.5C13.9556 17.5 17.5 13.9556 17.5 9.58335C17.5 5.2111 13.9556 1.66669 9.58333 1.66669C5.21108 1.66669 1.66667 5.2111 1.66667 9.58335C1.66667 13.9556 5.21108 17.5 9.58333 17.5Z"
-                  fill="#52555A"
-                />
-                <path
-                  d="M17.75 18.3333C17.6 18.3333 17.45 18.275 17.3417 18.1667L15.7917 16.6167C15.5667 16.3917 15.5667 16.025 15.7917 15.7917C16.0167 15.5667 16.3833 15.5667 16.6167 15.7917L18.1667 17.3417C18.3917 17.5667 18.3917 17.9333 18.1667 18.1667C18.05 18.275 17.9 18.3333 17.75 18.3333Z"
-                  fill="#52555A"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 21l-4.35-4.35M11.25 18a6.75 6.75 0 100-13.5 6.75 6.75 0 000 13.5z"
                 />
               </svg>
             </button>
@@ -95,14 +117,22 @@ function ShopBanner() {
           <button className="music-request">
             <span>درخواست موسیقی</span>
             <svg
-              className="music-icon"
-              viewBox="0 0 24 24"
-              fill="none"
               xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-5 h-5"
             >
               <path
-                d="M20 6.86094V17.0317C20 18.8138 18.5512 20.2629 16.7694 20.2629C14.9966 20.2629 13.5388 18.8138 13.5388 17.0317C13.5388 15.2585 14.9966 13.8094 16.7694 13.8094C17.5253 13.8094 18.2002 14.0704 18.7492 14.5025V9.1471L10.4612 11.5053V18.7688C10.4612 20.5509 9.00336 22 7.23058 22C5.44881 22 4 20.5509 4 18.7688C4 16.9957 5.44881 15.5466 7.23058 15.5466C7.9775 15.5466 8.65241 15.8076 9.20134 16.2306V8.27404C9.20134 6.95095 10.0022 5.92488 11.2711 5.58285L16.4724 4.16076C17.5253 3.87274 18.4162 3.97174 19.0461 4.45778C19.685 4.93481 20 5.74487 20 6.86094Z"
-                fill="white"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 9l10.5-2.25v11.25"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 9v10.125a3.375 3.375 0 11-2.25-3.194"
               />
             </svg>
           </button>

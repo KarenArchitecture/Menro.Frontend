@@ -12,7 +12,7 @@ html,
 body {
     width: 100%;
     overflow-x: hidden;
-    background-color: #0C0F14;
+    background-color: #0c0f14;
     color: #ffffff;
     direction: rtl;
     margin: 0;
@@ -42,7 +42,7 @@ ul {
     display: flex;
     align-items: center;
     z-index: 9999;
-    background: #13171E;
+    background: #13171e;
 }
 
 .mobile-nav-list {
@@ -63,11 +63,11 @@ ul {
     display: none;
     font-size: 1.5rem;
     font-weight: 600;
-    color: #D17842;
+    color: #d17842;
 }
 
 .nav-item.active .icon {
-    fill: #D17842;
+    fill: #d17842;
 }
 
 .nav-item.active .text {
@@ -82,7 +82,7 @@ ul {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #EF5254;
+    background: #ef5254;
     color: white;
     font-size: 1.5rem;
     width: 1.5rem;
@@ -184,7 +184,7 @@ ul {
 }
 
 .search-bar input::placeholder {
-    color: #52555A;
+    color: #52555a;
     font-size: 1rem;
     font-weight: 500;
 }
@@ -275,7 +275,7 @@ ul {
 
 @media (min-width: 425px) {
     :root {
-        font-size: 12px;
+        /* font-size: 12px; */
     }
 
     .container {
@@ -285,13 +285,13 @@ ul {
 
 @media (min-width: 768px) {
     :root {
-        font-size: 14px;
+        /* font-size: 14px; */
     }
 }
 
 @media (min-width: 1024px) {
     :root {
-        font-size: 12px;
+        /* font-size: 12px; */
     }
 
     /* mobile navigation */

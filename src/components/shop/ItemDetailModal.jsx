@@ -50,18 +50,18 @@ function ItemDetailModal({ item, onClose }) {
         <div className="modal-content">
           <div className="modal-hero">
             <img
-              src={item.imageUrl}
+              src={`http://localhost:5096${item.imageUrl}`}
               alt={item.name}
               className="modal-hero-img"
             />
             <div className="modal-info-panel">
               <div className="modal-info-top">
                 <p className="modal-category">
-                  <i className="fas fa-mug-hot"></i> نوشیدنی گرم
+                  <i className="fas fa-layer-group"></i>{" "}{item.categoryTitle ?? "—"}
                 </p>
                 <div>
                   <h2 className="modal-title">{item.name}</h2>
-                  <p className="modal-subtitle">{item.description}</p>
+                  <p className="modal-subtitle">{item.ingredients}</p>
                 </div>
               </div>
               <div className="modal-icons">
@@ -77,8 +77,8 @@ function ItemDetailModal({ item, onClose }) {
                 </div>
                 <div className="modal-rating">
                   <i className="fas fa-star"></i>
-                  <span>4.5</span>
-                  <span className="modal-reviews">(6,879)</span>
+                  <span>{item.rating.toFixed(1)}</span>
+                  <span className="modal-reviews">({item.voters.toLocaleString("fa-IR")})</span>
                 </div>
               </div>
             </div>

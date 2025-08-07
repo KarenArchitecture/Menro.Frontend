@@ -1,44 +1,40 @@
+// src/hooks/usePageStyles.js
 import { useEffect, useState } from "react";
 
-// This hook dynamically fetches a stylesheet from a URL and injects it into the page.
-// It is the key to loading page-specific CSS without conflicts.
-const usePageStyles = (stylesheetUrl) => {
-  const [cssContent, setCssContent] = useState("");
+/**
+ * Dynamically fetches a CSS file, injects it into <head>,
+ * and tells the caller when it's ready.
+ *
+ * @param {string} stylesheetUrl absolute or public-folder URL
+ * @return {boolean} ready  – true once styles are in the DOM
+ */
+export default function usePageStyles(stylesheetUrl) {
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Fetch the content of the CSS file as plain text
+    let mounted = true;
+
     fetch(stylesheetUrl)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.text();
+      .then((res) => {
+        if (!res.ok) throw new Error("CSS fetch failed");
+        return res.text();
       })
-      .then((text) => {
-        setCssContent(text);
+      .then((css) => {
+        if (!mounted) return;
+        const styleEl = document.createElement("style");
+        styleEl.id = "page-specific-style";
+        styleEl.textContent = css;
+        document.head.appendChild(styleEl);
+        setReady(true); // ← signal up
       })
-      .catch((error) => {
-        console.error("Error fetching the stylesheet:", error);
-      });
+      .catch((err) => console.error("usePageStyles:", err));
+
+    return () => {
+      mounted = false;
+      const styleEl = document.getElementById("page-specific-style");
+      if (styleEl) document.head.removeChild(styleEl);
+    };
   }, [stylesheetUrl]);
 
-  useEffect(() => {
-    // This effect runs only when the cssContent has been successfully fetched
-    if (!cssContent) return;
-
-    const styleElement = document.createElement("style");
-    styleElement.id = "page-specific-style";
-    styleElement.innerHTML = cssContent;
-    document.head.appendChild(styleElement);
-
-    // This cleanup function runs when the component unmounts, removing the styles
-    return () => {
-      const styleTag = document.getElementById("page-specific-style");
-      if (styleTag) {
-        document.head.removeChild(styleTag);
-      }
-    };
-  }, [cssContent]);
-};
-
-export default usePageStyles;
+  return ready;
+}

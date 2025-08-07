@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function SearchBar() {
+function SearchBar({ placeholder = "نام یا لینک موسیقی را وارد کنید..." }) {
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleSearch = (event) => {
@@ -12,11 +12,12 @@ function SearchBar() {
     <form className="search-bar" onSubmit={handleSearch}>
       <input
         type="text"
-        placeholder="نام یا لینک موسیقی را وارد کنید..."
+        placeholder={placeholder}
         value={searchTerm}
         onChange={(event) => setSearchTerm(event.target.value)}
       />
-      <button className="icon-button" type="submit">
+      <button className="icon-button" type="submit" aria-label="search">
+        {/* your svg */}
         <svg
           width="20"
           height="20"

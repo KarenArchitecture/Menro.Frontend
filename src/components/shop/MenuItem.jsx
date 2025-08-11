@@ -3,14 +3,14 @@ import React from "react";
 
 // 1. The component now accepts 'onSelectItem' as a prop
 function MenuItem({ item, onSelectItem }) {
-  const { name, description, price, imageUrl } = item;
+  const { name, ingredients, price, imageUrl } = item;
 
   return (
     <div className="item">
-      <img src={imageUrl} alt={name} className="item-image" />
+      <img src={`http://localhost:5096${imageUrl}`} alt={name} className="item-image" />
       <div className="item-info">
         <h2 className="item-name">{name}</h2>
-        <p className="item-description">{description}</p>
+        <p className="item-description">{ingredients}</p>
       </div>
       <div className="add-to-cart">
         <button className="add-btn" onClick={() => onSelectItem(item)}>

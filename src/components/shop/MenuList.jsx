@@ -1,229 +1,49 @@
 // src/components/shop/MenuList.jsx
 import React from "react";
 import MenuItem from "./MenuItem";
+import { useQuery } from "@tanstack/react-query";
+import { getRestaurantMenuBySlug } from "../../api/restaurants"; // ✅ adjust if needed
+import { useParams } from "react-router-dom"; // to get slug from URL
 
-// Data remains the same
-const menuData = {
-  hot: [
-    {
-      id: "h1",
-      name: "موکا",
-      description: "قهوه ۱٪، شیر ۹۹٪",
-      price: "20,000",
-      imageUrl: "/images/mocha.jpg",
-    },
-    {
-      id: "h2",
-      name: "لته",
-      description: "قهوه اسپرسو و شیر",
-      price: "22,000",
-      imageUrl: "/images/mocha.jpg",
-    },
-    {
-      id: "h3",
-      name: "کاپوچینو",
-      description: "اسپرسو، شیر و فوم شیر",
-      price: "25,000",
-      imageUrl: "/images/mocha.jpg",
-    },
-    {
-      id: "h4",
-      name: "قهوه دمی",
-      description: "قهوه خالص و آب",
-      price: "18,000",
-      imageUrl: "/images/mocha.jpg",
-    },
-  ],
-  cold: [
-    {
-      id: "c1",
-      name: "آیس کافی",
-      description: "قهوه سرد و شیر",
-      price: "28,000",
-      imageUrl: "/images/mocha.jpg",
-    },
-    {
-      id: "c2",
-      name: "شیک شکلات",
-      description: "بستنی شکلاتی و شیر",
-      price: "35,000",
-      imageUrl: "/images/mocha.jpg",
-    },
-    {
-      id: "c3",
-      name: "موهیتو",
-      description: "نعنا، لیمو و سودا",
-      price: "30,000",
-      imageUrl: "/images/mocha.jpg",
-    },
-  ],
-  appetizer: [
-    {
-      id: "a1",
-      name: "سیب زمینی سرخ کرده",
-      description: "با سس مخصوص",
-      price: "40,000",
-      imageUrl: "/images/mocha.jpg",
-    },
-    {
-      id: "a2",
-      name: "سالاد سزار",
-      description: "کاهو، مرغ گریل و سس سزار",
-      price: "55,000",
-      imageUrl: "/images/mocha.jpg",
-    },
-  ],
-};
 
 function MenuList({ activeCategory, onSelectItem }) {
+  const { slug } = useParams(); // assumes your route includes :slug
+  const { data: menuData = [], isLoading, isError } = useQuery({
+    queryKey: ["restaurantMenu", slug],
+    queryFn: () => getRestaurantMenuBySlug(slug),
+  });
+
   // 1. Determine which scroll class to use based on the active category.
   const scrollClass =
     activeCategory === "all" ? "horizontal-scroll" : "vertical-scroll";
 
+  if (isLoading) return <p>در حال بارگذاری…</p>;
+  if (isError) return <p>خطا در بارگیری منو</p>;
+  if (!menuData?.length) return <p>موردی یافت نشد</p>;
+
   return (
     <div className="res-menu">
-      {/* Warm Drinks Section */}
-      {(activeCategory === "all" || activeCategory === "hot") && (
-        <section className="warm_drinks" data-category-section="hot">
-          <div className="menu_nav">
-            <p>
-              <svg
-                className="category-icon"
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M5 4.2676C4.65833 4.2676 4.375 3.98427 4.375 3.6426V2.18427C4.375 1.8426 4.65833 1.55927 5 1.55927C5.34167 1.55927 5.625 1.8426 5.625 2.18427V3.6426C5.625 3.9926 5.34167 4.2676 5 4.2676Z"
-                  fill="white"
-                />
-                <path
-                  d="M8.33333 4.2676C7.99166 4.2676 7.70833 3.98427 7.70833 3.6426V2.18427C7.70833 1.8426 7.99166 1.55927 8.33333 1.55927C8.67499 1.55927 8.95833 1.8426 8.95833 2.18427V3.6426C8.95833 3.9926 8.67499 4.2676 8.33333 4.2676Z"
-                  fill="white"
-                />
-                <path
-                  d="M11.6667 4.2676C11.325 4.2676 11.0417 3.98427 11.0417 3.6426V2.18427C11.0417 1.8426 11.325 1.55927 11.6667 1.55927C12.0083 1.55927 12.2917 1.8426 12.2917 2.18427V3.6426C12.2917 3.9926 12.0083 4.2676 11.6667 4.2676Z"
-                  fill="white"
-                />
-                <path
-                  d="M18.5417 11.0431C18.5417 8.85973 16.85 7.09308 14.7167 6.90975C14.1 5.90141 13 5.21808 11.7333 5.21808H5.59166C3.65833 5.21808 2.08333 6.79308 2.08333 8.7264V9.16806H15.2417V8.7264C15.2417 8.56806 15.2167 8.40973 15.1917 8.25975C16.4 8.61806 17.2917 9.71806 17.2917 11.0431C17.2917 12.3514 16.425 13.4431 15.2417 13.8097V10.0014H2.08333V14.8264C2.08333 16.7597 3.65833 18.3347 5.59166 18.3347H11.7333C13.5667 18.3347 15.0583 16.9181 15.2083 15.1181C17.1083 14.7347 18.5417 13.0514 18.5417 11.0431Z"
-                  fill="white"
-                />
-              </svg>
-              نوشیدنی گرم
-            </p>
-          </div>
-          {/* 2. Apply the dynamic scrollClass here */}
-          <div className={`food_items ${scrollClass}`}>
-            {menuData.hot.map((item) => (
-              <MenuItem key={item.id} item={item} onSelectItem={onSelectItem} />
-            ))}
-          </div>
-        </section>
-      )}
+          {menuData.map((section) => {
+      if (activeCategory !== "all" && String(section.categoryId) !== activeCategory)
+        return null;
 
-      {/* Cold Drinks Section */}
-      {(activeCategory === "all" || activeCategory === "cold") && (
-        <section className="cold_drinks" data-category-section="cold">
+      return (
+        <section key={String(section.categoryId)} data-category-section={String(section.categoryId)}>
           <div className="menu_nav">
-            <p>
-              <svg
-                className="category-icon"
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M5 4.26754C4.65833 4.26754 4.375 3.9842 4.375 3.64254V2.1842C4.375 1.84254 4.65833 1.5592 5 1.5592C5.34167 1.5592 5.625 1.84254 5.625 2.1842V3.64254C5.625 3.99254 5.34167 4.26754 5 4.26754Z"
-                  fill="white"
-                />
-                <path
-                  d="M8.33333 4.26754C7.99166 4.26754 7.70833 3.9842 7.70833 3.64254V2.1842C7.70833 1.84254 7.99166 1.5592 8.33333 1.5592C8.67499 1.5592 8.95833 1.84254 8.95833 2.1842V3.64254C8.95833 3.99254 8.67499 4.26754 8.33333 4.26754Z"
-                  fill="white"
-                />
-                <path
-                  d="M11.6667 4.26754C11.325 4.26754 11.0417 3.9842 11.0417 3.64254V2.1842C11.0417 1.84254 11.325 1.5592 11.6667 1.5592C12.0083 1.5592 12.2917 1.84254 12.2917 2.1842V3.64254C12.2917 3.99254 12.0083 4.26754 11.6667 4.26754Z"
-                  fill="white"
-                />
-                <path
-                  d="M17 2.83395C16.8053 5.28077 3.19199 5.2791 3 2.83395C3.16506 0.387123 16.841 0.390248 17 2.83395ZM12.5393 12.1428C11.2561 12.1363 10.038 11.5999 9.19403 10.6711C8.43139 9.81802 7.23367 9.45254 6.09951 9.72687L3.91226 10.2413L4.8061 17.5218C4.90936 18.3635 5.65083 18.9984 6.53284 19H13.4669C14.3488 18.9984 15.0903 18.3635 15.1936 17.5218L15.9249 11.57C14.8127 11.8435 13.6812 12.0345 12.5393 12.1428ZM9.99989 5.96947C7.98877 5.96947 5.0568 5.80016 3.25548 4.90151L3.74978 8.93892L5.77447 8.46355C6.57098 8.27145 7.40726 8.29587 8.19011 8.53356C8.97392 8.77124 9.67222 9.21405 10.2097 9.81152C10.8056 10.4635 11.6639 10.8388 12.5662 10.8404C13.3144 10.8054 15.2689 10.3545 16.0941 10.2088L16.7509 4.90148C14.9497 5.7936 12.011 5.96947 9.99989 5.96947Z"
-                  fill="white"
-                />
-              </svg>
-              نوشیدنی سرد
-            </p>
+            <p>{section.categoryTitle}</p>
           </div>
           <div className={`food_items ${scrollClass}`}>
-            {menuData.cold.map((item) => (
-              <MenuItem key={item.id} item={item} onSelectItem={onSelectItem} />
+            {section.foods.map((item) => (
+              <MenuItem key={item.id} item={{ ...item, categoryTitle: section.categoryTitle }} onSelectItem={onSelectItem} />
             ))}
           </div>
         </section>
-      )}
+      );
+    })}
 
-      {/* Appetizer Section */}
-      {(activeCategory === "all" || activeCategory === "appetizer") && (
-        <section className="appetizer" data-category-section="appetizer">
-          <div className="menu_nav">
-            <p>
-              <svg
-                className="category-icon"
-                viewBox="0 0 18 18"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g clipPath="url(#clip0_7_1397)">
-                  <path
-                    d="M2.45204 8.77954L2.84754 8.37348L3.31424 8.91488C3.46804 9.08626 3.67811 9.18382 3.90574 9.18911H3.92332C4.14392 9.18911 4.35133 9.10122 4.5078 8.94037L5.11775 8.3146C5.27859 8.14936 5.36474 7.93052 5.36033 7.69673C5.35593 7.46293 5.26101 7.2476 5.0905 7.0859L4.5658 6.60953L4.96131 6.20347C5.39637 5.75698 5.39637 5.03102 4.96131 4.58453L4.91649 4.53795C4.34519 3.95171 3.55506 3.63619 2.74735 3.67221C1.92909 3.70913 1.18554 4.08617 0.655547 4.73394C-0.297192 5.8985 -0.20051 7.67559 0.875274 8.77944C1.30946 9.22593 2.01785 9.22603 2.45204 8.77954Z"
-                    fill="white"
-                  />
-                  <path
-                    d="M3.79688 3.11134C4.63271 3.11134 5.313 2.41349 5.313 1.55567C5.31212 0.69786 4.63273 0 3.79688 0C2.96103 0 2.28076 0.69786 2.28076 1.55567C2.28076 2.41349 2.96103 3.11134 3.79688 3.11134Z"
-                    fill="white"
-                  />
-                  <path
-                    d="M16.9058 1.62855C16.9058 2.48812 16.2273 3.1851 15.3897 3.1851C14.553 3.1851 13.8745 2.48812 13.8745 1.62855C13.8745 0.769859 14.553 0.072876 15.3897 0.072876C16.2273 0.072876 16.9058 0.769859 16.9058 1.62855Z"
-                    fill="white"
-                  />
-                  <path
-                    d="M7.94519 9.47292C8.78102 9.47292 9.46131 8.77506 9.46131 7.91724C9.46131 7.05943 8.78105 6.36157 7.94519 6.36157C7.10934 6.36157 6.42908 7.05943 6.42908 7.91724C6.42908 8.77506 7.10934 9.47292 7.94519 9.47292Z"
-                    fill="white"
-                  />
-                  <path
-                    d="M9.7461 5.27085C11.162 5.27085 12.3133 4.08872 12.3133 2.63588C12.3133 1.18217 11.162 0 9.7461 0C8.33017 0 7.17885 1.18213 7.17885 2.63498C7.17885 4.08868 8.3311 5.27085 9.7461 5.27085ZM9.7461 1.11623C10.5626 1.11623 11.2262 1.79824 11.2262 2.63585C11.2262 3.47346 10.5626 4.1546 9.7461 4.1546C8.9296 4.1546 8.26603 3.47346 8.26603 2.63585C8.26603 1.79737 8.93047 1.11623 9.7461 1.11623Z"
-                    fill="white"
-                  />
-                  <path
-                    d="M9.74611 3.68075C10.3077 3.68075 10.7647 3.21142 10.7647 2.63573C10.7647 2.05917 10.3077 1.58984 9.74611 1.58984C9.18448 1.58984 8.72746 2.05917 8.72746 2.63573C8.72746 3.21142 9.18448 3.68075 9.74611 3.68075Z"
-                    fill="white"
-                  />
-                  <path
-                    d="M11.7342 9.18985L12.0251 10.1171H12.7379L15.6647 7.11223C15.7552 7.01994 15.9011 7.01994 15.9908 7.11223C16.0813 7.20451 16.0813 7.3548 15.9908 7.44709L13.39 10.1163H15.5873C16.003 10.1163 16.3669 9.87633 16.5145 9.50454C16.5848 9.327 16.598 9.14771 16.555 8.95522C16.5391 8.88491 16.555 8.81108 16.5989 8.75395C16.6428 8.6977 16.7088 8.6643 16.78 8.6643H17.0234C17.534 8.6643 17.9717 8.26263 17.999 7.76869C18.0139 7.49007 17.9102 7.21938 17.7133 7.02601C17.6237 6.93812 17.6175 6.79399 17.6993 6.69907C18.0183 6.32377 17.9999 5.75424 17.6571 5.4018C17.3143 5.04936 16.7588 5.03091 16.3932 5.35874C16.3001 5.44223 16.1594 5.4352 16.0742 5.3438C15.8861 5.14165 15.6224 5.03442 15.3508 5.05024C14.8701 5.07836 14.4781 5.52749 14.4781 6.05219V6.30268C14.4781 6.37475 14.4456 6.4433 14.3911 6.48813C14.3357 6.53295 14.2636 6.54965 14.1951 6.53295C14.0079 6.48813 13.833 6.50131 13.6598 6.57426C13.2995 6.72543 13.0569 7.11656 13.0569 7.54633V7.76078C13.0569 7.83285 13.0244 7.90141 12.9699 7.94623C12.9145 7.99106 12.8424 8.00776 12.7739 7.99106C12.5533 7.93832 12.3441 7.96733 12.156 8.06225C11.7737 8.25473 11.5927 8.73898 11.7342 9.18985Z"
-                    fill="white"
-                  />
-                  <path
-                    d="M4.30222 18H14.1583C16.5024 16.3169 17.9235 13.5659 17.9957 10.5898H0.465073C0.537142 13.5659 1.95811 16.3168 4.30222 18Z"
-                    fill="white"
-                  />
-                </g>
-                <defs>
-                  <clipPath id="clip0_7_1397">
-                    <rect width="18" height="18" fill="white" />
-                  </clipPath>
-                </defs>
-              </svg>
-              پیش غذا
-            </p>
-          </div>
-          <div className={`food_items ${scrollClass}`}>
-            {menuData.appetizer.map((item) => (
-              <MenuItem key={item.id} item={item} onSelectItem={onSelectItem} />
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   );
 }
+
 
 export default MenuList;

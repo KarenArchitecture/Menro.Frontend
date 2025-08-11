@@ -18,6 +18,7 @@ export default function AuthActions() {
       <Link to="/login">ورود</Link>
       <Link to="/register">ثبت‌ نام</Link>
       <Link to="/register-restaurant">ثبت رستوران</Link>
+      <Link to="/admin">پنل ادمین</Link>
       <button onClick={handleLogout}>خروج</button>
     </div>
   );

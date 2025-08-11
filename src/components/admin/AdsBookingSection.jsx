@@ -1,0 +1,203 @@
+// src/components/admin/AdsBookingSection.jsx
+import React, { useMemo, useState } from "react";
+
+export default function AdsBookingSection() {
+  const [adType, setAdType] = useState("slider"); // 'slider' | 'banner'
+  const [bookingMethod, setBookingMethod] = useState("by_day"); // 'by_day' | 'by_click'
+  const [days, setDays] = useState(7);
+  const [clicks, setClicks] = useState(10000);
+  const [link, setLink] = useState("");
+
+  const totalCost = useMemo(() => {
+    // Same formula as your vanilla JS:
+    // base = 150,000 for slider; 100,000 for banner
+    // by_day => base * days
+    // by_click => base + clicks * 10
+    let base = adType === "slider" ? 150_000 : 100_000;
+    return bookingMethod === "by_day" ? base * days : base + clicks * 10;
+  }, [adType, bookingMethod, days, clicks]);
+
+  return (
+    <div className="booking-layout">
+      {/* Left: config */}
+      <div className="booking-config">
+        {/* Step 1: type */}
+        <div className="config-step">
+          <h4>۱. نوع تبلیغ را انتخاب کنید</h4>
+          <div className="choice-grid">
+            <label>
+              <input
+                type="radio"
+                name="ad_type"
+                value="slider"
+                checked={adType === "slider"}
+                onChange={() => setAdType("slider")}
+              />
+              <div className="choice-card">
+                <i className="fas fa-images"></i>
+                <span>اسلایدر صفحه اصلی</span>
+              </div>
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="ad_type"
+                value="banner"
+                checked={adType === "banner"}
+                onChange={() => setAdType("banner")}
+              />
+              <div className="choice-card">
+                <i className="fas fa-ad"></i>
+                <span>بنر تمام صفحه</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        {/* Step 2: method */}
+        <div className="config-step">
+          <h4>۲. روش پرداخت را انتخاب کنید</h4>
+          <div className="choice-grid">
+            <label>
+              <input
+                type="radio"
+                name="booking_method"
+                value="by_day"
+                checked={bookingMethod === "by_day"}
+                onChange={() => setBookingMethod("by_day")}
+              />
+              <div className="choice-card">
+                <i className="fas fa-calendar-alt"></i>
+                <span>بر حسب روز</span>
+              </div>
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="booking_method"
+                value="by_click"
+                checked={bookingMethod === "by_click"}
+                onChange={() => setBookingMethod("by_click")}
+              />
+              <div className="choice-card">
+                <i className="fas fa-mouse-pointer"></i>
+                <span>بر حسب کلیک</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        {/* Step 3: sliders */}
+        <div className="config-step">
+          {bookingMethod === "by_day" ? (
+            <div id="days-slider-group">
+              <h4>۳. مدت زمان نمایش (روز)</h4>
+              <div className="range-slider-group">
+                <input
+                  type="range"
+                  id="days-slider"
+                  min="1"
+                  max="30"
+                  value={days}
+                  onChange={(e) => setDays(Number(e.target.value))}
+                />
+                <output id="days-output">{days}</output>
+              </div>
+            </div>
+          ) : (
+            <div id="clicks-slider-group">
+              <h4>۳. تعداد کلیک مورد نظر</h4>
+              <div className="range-slider-group">
+                <input
+                  type="range"
+                  id="clicks-slider"
+                  min="1000"
+                  max="50000"
+                  step="1000"
+                  value={clicks}
+                  onChange={(e) => setClicks(Number(e.target.value))}
+                />
+                <output id="clicks-output">{clicks}</output>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Step 4: link */}
+        <div className="config-step">
+          <h4>۴. لینک مرتبط را مشخص کنید</h4>
+          <div className="input-group">
+            <input
+              type="text"
+              id="ad-link"
+              placeholder="https://example.com"
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Right: preview + summary */}
+      <div className="booking-summary">
+        <div className="panel">
+          <h3>پیش‌نمایش زنده</h3>
+          <div
+            id="ad-preview"
+            className={`ad-preview ${
+              adType === "slider" ? "slider-preview" : "banner-preview"
+            }`}
+          >
+            <span>تصویر تبلیغ شما در اینجا نمایش داده می‌شود</span>
+          </div>
+        </div>
+
+        <div className="panel">
+          <h3>خلاصه هزینه</h3>
+          <div className="cost-summary-details">
+            <div className="detail-item">
+              <span>نوع تبلیغ:</span>
+              <strong id="summary-ad-type">
+                {adType === "slider" ? "اسلایدر" : "بنر"}
+              </strong>
+            </div>
+            <div className="detail-item">
+              <span>روش پرداخت:</span>
+              <strong id="summary-booking-method">
+                {bookingMethod === "by_day" ? "بر حسب روز" : "بر حسب کلیک"}
+              </strong>
+            </div>
+
+            {bookingMethod === "by_day" ? (
+              <div className="detail-item" id="summary-duration-row">
+                <span>مدت زمان:</span>
+                <strong id="summary-duration">{days} روز</strong>
+              </div>
+            ) : (
+              <div className="detail-item" id="summary-clicks-row">
+                <span>تعداد کلیک:</span>
+                <strong id="summary-clicks">{clicks} کلیک</strong>
+              </div>
+            )}
+          </div>
+
+          <hr className="form-divider" />
+
+          <div className="total-cost">
+            <span>هزینه تخمینی:</span>
+            <strong id="summary-total-cost">
+              {totalCost.toLocaleString("fa-IR")} تومان
+            </strong>
+          </div>
+
+          <button
+            className="btn btn-primary full-width"
+            style={{ marginTop: 20 }}
+          >
+            ثبت و پرداخت
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

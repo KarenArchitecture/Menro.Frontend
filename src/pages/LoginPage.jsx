@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import usePageStyles from "../hooks/usePageStyles";
+import authAxios from "../api/authAxios";
 
 export default function LoginPage() {
   /* loginpage CSS (/public) */
@@ -23,26 +24,59 @@ export default function LoginPage() {
   const showMsg = (text, type = "error") => setMsg({ text, type });
   const clearMsg = () => setMsg({ text: "", type: "" });
 
+  //otp timer
+  const [resendTimer, setResendTimer] = useState(0);
+
   /* clear message when user switches tab */
   useEffect(() => clearMsg(), [tab]);
+  // otp use effects
+  useEffect(() => {
+    if (resendTimer <= 0) return;
+
+    const timer = setInterval(() => {
+      setResendTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [resendTimer > 0]);
+  useEffect(() => {
+    const expiry = localStorage.getItem("otpTimerExpiry");
+    if (expiry) {
+      const timeLeft = Math.floor((+expiry - Date.now()) / 1000);
+      if (timeLeft > 0) {
+        setOtpSent(true);
+        setResendTimer(timeLeft);
+      } else {
+        localStorage.removeItem("otpTimerExpiry");
+        setOtpSent(false);
+      }
+    }
+  }, []);
 
   /* mutations (TanStack Query)*/
 
   /* 1) send OTP */
   const sendOtp = useMutation({
-    mutationFn: (phoneNumber) =>
-      fetch("/api/auth/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phoneNumber }),
-      }).then(async (res) => {
-        if (!res.ok) {
-          const { message = "خطا در ارسال کد." } = await res.json();
-          throw new Error(message);
-        }
-      }),
+    mutationFn: async (phoneNumber) => {
+      try {
+        await authAxios.post("/send-otp", { phoneNumber });
+      } catch (err) {
+        // اگه بک‌اند message برمی‌گردونه
+        const message = err.response?.data?.message || "خطا در ارسال کد.";
+        throw new Error(message);
+      }
+    },
     onSuccess: () => {
       setOtpSent(true);
+      setResendTimer(5);
+      const expiry = Date.now() + 5 * 1000;
+      localStorage.setItem("otpTimerExpiry", expiry.toString());
       showMsg("کد تأیید ارسال شد.", "success");
     },
     onError: (err) => showMsg(err.message),
@@ -51,15 +85,14 @@ export default function LoginPage() {
   /* 2) verify OTP & login */
   const verifyOtp = useMutation({
     mutationFn: ({ phoneNumber, code }) =>
-      fetch("/api/auth/login-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phoneNumber, code }),
-      }).then(async (res) => {
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "کد وارد شده صحیح نیست.");
-        return data;
-      }),
+      authAxios
+        .post("/login-otp", { phoneNumber, code })
+        .then((res) => res.data)
+        .catch((err) => {
+          const message =
+            err.response?.data?.message || "کد وارد شده صحیح نیست.";
+          throw new Error(message);
+        }),
     onSuccess: (data) => {
       if (data.needsRegister) {
         const expiresAt = Date.now() + 60_000; // 60 s
@@ -80,15 +113,13 @@ export default function LoginPage() {
   /* 3) login with password */
   const loginWithPassword = useMutation({
     mutationFn: ({ phoneNumber, password }) =>
-      fetch("/api/auth/login-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phoneNumber, password }),
-      }).then(async (res) => {
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "ورود ناموفق بود");
-        return data;
-      }),
+      authAxios
+        .post("/login-password", { phoneNumber, password })
+        .then((res) => res.data)
+        .catch((err) => {
+          const message = err.response?.data?.message || "ورود ناموفق بود";
+          throw new Error(message);
+        }),
     onSuccess: (data) => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
@@ -109,6 +140,10 @@ export default function LoginPage() {
     }
 
     if (!otpSent) {
+      if (resendTimer > 0) {
+        showMsg("لطفاً چند لحظه صبر کنید تا ارسال مجدد مجاز شود.");
+        return;
+      }
       sendOtp.mutate(phone);
     } else {
       if (code.length !== 4) {
@@ -117,6 +152,14 @@ export default function LoginPage() {
       }
       verifyOtp.mutate({ phoneNumber: phone, code });
     }
+  };
+  const handleResendCode = () => {
+    if (resendTimer > 0) return;
+    if (!/^\d{11}$/.test(phone)) {
+      showMsg("شماره موبایل معتبر نیست.");
+      return;
+    }
+    sendOtp.mutate(phone);
   };
 
   const handlePasswordSubmit = (e) => {
@@ -185,7 +228,11 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={sendOtp.isPending || verifyOtp.isPending}
+              disabled={
+                sendOtp.isPending ||
+                verifyOtp.isPending ||
+                (!otpSent && resendTimer > 0)
+              }
             >
               {sendOtp.isPending || verifyOtp.isPending
                 ? "در حال ارسال…"
@@ -193,6 +240,21 @@ export default function LoginPage() {
                 ? "تایید کد"
                 : "ادامه"}
             </button>
+
+            {otpSent && (
+              <button
+                type="button"
+                onClick={handleResendCode}
+                disabled={resendTimer > 0}
+                className={`resend-btn ${
+                  resendTimer > 0 ? "disabled" : "active"
+                }`}
+              >
+                {resendTimer > 0
+                  ? `ارسال مجدد کد تا ${resendTimer} ثانیه دیگر`
+                  : "ارسال مجدد کد"}
+              </button>
+            )}
           </form>
         )}
 

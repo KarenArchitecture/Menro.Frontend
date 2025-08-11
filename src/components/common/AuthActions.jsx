@@ -1,4 +1,4 @@
-// components/home/AuthActions.jsx
+//components / home / AuthActions.jsx;
 import { Link, useNavigate } from "react-router-dom";
 
 export default function AuthActions() {
@@ -12,10 +12,13 @@ export default function AuthActions() {
   };
 
   return (
-    <div style={{ display: "flex", gap: "1rem", margin: "2rem 0" }}>
+    <div
+      style={{ display: "flex", gap: "1rem", margin: "2rem 0", fontSize: 48 }}
+    >
       <Link to="/login">ورود</Link>
       <Link to="/register">ثبت‌ نام</Link>
       <Link to="/register-restaurant">ثبت رستوران</Link>
+      <Link to="/admin">پنل ادمین</Link>
       <button onClick={handleLogout}>خروج</button>
     </div>
   );

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { getFeaturedRestaurants } from "../../api/restaurants";
 import LoadingSpinner from "../common/LoadingSpinner";
 
@@ -7,7 +8,6 @@ function Carousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const navigate = useNavigate();
 
-  // Notice: No more `.then(res => res.data)` because getFeaturedRestaurants returns data directly
   const {
     data: slides,
     isLoading,
@@ -15,7 +15,7 @@ function Carousel() {
     error,
   } = useQuery({
     queryKey: ["featuredRestaurants"],
-    queryFn: getFeaturedRestaurants,
+    queryFn: getFeaturedRestaurants, // returns data directly
   });
 
   useEffect(() => {
@@ -40,9 +40,7 @@ function Carousel() {
       </section>
     );
 
-  const goToSlide = (slideIndex) => {
-    setCurrentIndex(slideIndex);
-  };
+  const goToSlide = (slideIndex) => setCurrentIndex(slideIndex);
 
   return (
     <section
@@ -50,24 +48,51 @@ function Carousel() {
       aria-live="polite"
       aria-label="Carousel navigation"
     >
-      <div className="carousel-container">
+      <div className="carousel-container" style={{ overflow: "hidden" }}>
         <div
           className="carousel-slider"
           role="list"
-          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+          style={{
+            display: "flex",
+            transition: "transform 0.5s ease",
+            transform: `translateX(${currentIndex * 100}%)`,
+          }}
         >
           {slides.map((slide) => (
-            <img
-              key={slide.id}
-              src={`http://localhost:5096${slide.carouselImageUrl}`}
-              alt={slide.name}
-              role="listitem"
-              onClick={() => navigate(`/restaurant/${slide.slug}`)}
-            />
+            <div
+              className="carousel-slide"
+              key={`slide-${slide.id}`} // key on wrapper for React reconciliation
+              style={{ flex: "0 0 100%" }} // exactly one viewport wide
+            >
+              <img
+                key={slide.id} // kept as you requested
+                src={`http://localhost:5096${slide.carouselImageUrl}`} // kept
+                alt={slide.name} // kept
+                role="listitem" // kept
+                onClick={() => navigate(`/restaurant/${slide.slug}`)} // kept
+                style={{
+                  display: "block",
+                  width: "100%",
+                  height: "380px",
+                  objectFit: "cover",
+                  cursor: "pointer",
+                }}
+              />
+            </div>
           ))}
         </div>
       </div>
-      <div className="indicators-container" role="navigation">
+
+      <div
+        className="indicators-container"
+        role="navigation"
+        aria-label="Slides"
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: 8,
+        }}
+      >
         {slides.map((_, slideIndex) => (
           <button
             key={slideIndex}
@@ -77,6 +102,7 @@ function Carousel() {
             onClick={() => goToSlide(slideIndex)}
             data-index={slideIndex}
             aria-label={`Go to slide ${slideIndex + 1}`}
+            aria-current={currentIndex === slideIndex ? "true" : undefined}
           />
         ))}
       </div>

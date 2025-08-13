@@ -66,7 +66,7 @@ import publicAxios from "./publicAxios";
 import { fakeUser } from "../Constants/fakeAuth";
 //import userAxios from "../api/userAxios";
 import restaurantAxios from "./restaurantAxios";
-import { fakeUser } from "../Constants/fakeAuth"; // 👈 import fake user
+// import { fakeUser } from "../Constants/fakeAuth"; // 👈 import fake user
 
 const RESTAURANT_URL = "/restaurant"; // all routes below share this prefix
 
@@ -93,15 +93,15 @@ export const getUserRecentOrders = () =>
   publicAxios
     .get(`${RESTAURANT_URL}/recent-orders/${fakeUser.id}`)
     .then((r) => r.data);
-export const getAdBanner = async () => {
-  const response = await publicAxios.get(`${PUBLIC_URL}/ad-banner`);
-  return response.data;
-};
+// export const getAdBanner = async () => {
+//   const response = await publicAxios.get(`${PUBLIC_URL}/ad-banner`);
+//   return response.data;
+// };
 
-export const getRestaurantBannerBySlug = async (slug) => {
-  const response = await publicAxios.get(`${PUBLIC_URL}/banner/${slug}`);
-  return response.data;
-};
+// export const getRestaurantBannerBySlug = async (slug) => {
+//   const response = await publicAxios.get(`${PUBLIC_URL}/banner/${slug}`);
+//   return response.data;
+// };
 
 // ========================
 // 🍔 Public Food APIs
@@ -119,12 +119,12 @@ export const getPopularFoodByRandomCategory = async () => {
 // =========================
 
 // ✅ FAKE recent orders (bypass auth)
-export const getUserRecentOrders = async () => {
-  const response = await publicAxios.get(
-    `/restaurant/recent-orders/${fakeUser.id}`
-  );
-  return response.data;
-};
+// export const getUserRecentOrders = async () => {
+//   const response = await publicAxios.get(
+//     `/restaurant/recent-orders/${fakeUser.id}`
+//   );
+//   return response.data;
+// };
 
 // =========================
 // Restaurant Registration

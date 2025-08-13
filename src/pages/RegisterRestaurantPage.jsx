@@ -4,7 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   fetchRestaurantCategories,
   registerRestaurant,
-} from "../api/restaurant";
+} from "../api/restaurants";
 import usePageStyles from "../hooks/usePageStyles";
 
 //  HH:MM  ➔  HH:MM:SS

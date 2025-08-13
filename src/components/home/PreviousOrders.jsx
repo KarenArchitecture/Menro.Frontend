@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import SectionHeader from "../common/SectionHeader";
 import WideRestaurantCard from "../home/WideRestaurantCard";
 import ReceiptIcon from "../icons/ReceiptIcon";
-import { getUserRecentOrders } from "../../api/restaurant";
+import { getUserRecentOrders } from "../../api/restaurants";
 
 function PreviousOrders() {
   const { data, isLoading, isError, error } = useQuery({

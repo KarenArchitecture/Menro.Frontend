@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAdBanner } from "../../api/restaurant";
+import { getAdBanner } from "../../api/restaurants";
 
 export default function AdBanner() {
   const {

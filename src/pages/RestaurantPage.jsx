@@ -1,22 +1,38 @@
 // src/pages/RestaurantPage.jsx
-import React, { useState, useMemo } from "react"; 
-import { useParams } from "react-router-dom";       // << added
-import { useQuery } from "@tanstack/react-query"; 
+import React, { useState, useMemo } from "react";
+import { useParams } from "react-router-dom"; // << added
+import { useQuery } from "@tanstack/react-query";
 import usePageStyles from "../hooks/usePageStyles";
-import ShopHeader from "../components/Shop/ShopHeader";
+import AppHeader from "../components/common/AppHeader";
 import ShopBanner from "../components/shop/ShopBanner";
 import MenuList from "../components/shop/MenuList";
 import ItemDetailModal from "../components/shop/ItemDetailModal";
 import MobileNav from "../components/common/MobileNav";
-import FoodCategoryList, { ALL_CAT_SVG } from "../components/shop/FoodCategoryList";
+import FoodCategoryList, {
+  ALL_CAT_SVG,
+} from "../components/shop/FoodCategoryList";
 import { getRestaurantBannerBySlug } from "../api/restaurants";
 import { getRestaurantMenuBySlug } from "../api/restaurants";
+import SearchIcon from "../components/icons/SearchIcon";
+import CartIcon from "../components/icons/CartIcon";
+import ProfileIcon from "../components/icons/ProfileIcon";
 
+const leftIcons = [
+  { key: "profile", icon: <ProfileIcon /> },
+  { key: "cart", icon: <CartIcon />, badge: 1 },
+  { key: "search", icon: <SearchIcon /> },
+];
+const rightLinks = [
+  { label: "منرو", href: "#", active: true },
+  { label: "خانه", href: "#" },
+  { label: "نقشه", href: "#" },
+  { label: "مقالات", href: "#" },
+];
 
 function RestaurantPage() {
   usePageStyles("/shop.css");
 
-   // Added: read slug from url
+  // Added: read slug from url
   const { slug } = useParams();
 
   /* ---------- UI state --------------------------------------------------- */
@@ -35,31 +51,35 @@ function RestaurantPage() {
   const activeFill = "#D17842";
 
   /* ---------- Queries ---------------------------------------------------- */
-  const { data: banner, isLoading, isError } = useQuery({
+  const {
+    data: banner,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["restaurantBanner", slug],
-    queryFn : () => getRestaurantBannerBySlug(slug),
+    queryFn: () => getRestaurantBannerBySlug(slug),
   });
 
   const { data: menuData = [], isLoading: menuLoading } = useQuery({
     queryKey: ["restaurantMenu", slug],
-    queryFn : () => getRestaurantMenuBySlug(slug),
+    queryFn: () => getRestaurantMenuBySlug(slug),
   });
 
   const categoriesWithAll = useMemo(() => {
-  // convert every section coming from the API ➜ a clean category object
-  const apiCats = menuData.map(sec => ({
-    id      : String(sec.categoryId), // 👈 always a string, always unique
-    name    : sec.categoryTitle,
-    svgIcon : sec.svgIcon,
-  }));
+    // convert every section coming from the API ➜ a clean category object
+    const apiCats = menuData.map((sec) => ({
+      id: String(sec.categoryId), // 👈 always a string, always unique
+      name: sec.categoryTitle,
+      svgIcon: sec.svgIcon,
+    }));
 
     /// always prepend the hard-coded “همه”
-  return [
-    { id: "all", name: "همه", svgIcon: ALL_CAT_SVG }, // ✅ always present, with icon
-    ...apiCats,
-  ];
-}, [menuData]);
-    
+    return [
+      { id: "all", name: "همه", svgIcon: ALL_CAT_SVG }, // ✅ always present, with icon
+      ...apiCats,
+    ];
+  }, [menuData]);
+
   // const categories =
   // menuData?.map((section) => ({
   //   id: section.categoryId,
@@ -80,13 +100,17 @@ function RestaurantPage() {
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error loading restaurant data</div>;
 
-  
-
-//   
-return (
+  //
+  return (
     <div>
-      <ShopHeader />
-      <ShopBanner banner={banner} /> 
+      <AppHeader
+        rightLinks={rightLinks}
+        leftIcons={leftIcons}
+        position="fixed"
+        top={12}
+        maxWidth={1140}
+      />
+      <ShopBanner banner={banner} />
 
       <div className="res-menu-wrapper">
         {!menuLoading && (
@@ -104,7 +128,10 @@ return (
       </div>
 
       {selectedItem && (
-        <ItemDetailModal item={selectedItem} onClose={() => setSelectedItem(null)} />
+        <ItemDetailModal
+          item={selectedItem}
+          onClose={() => setSelectedItem(null)}
+        />
       )}
 
       <MobileNav />

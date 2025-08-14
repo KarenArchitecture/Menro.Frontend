@@ -9,7 +9,12 @@ import ProfileIcon from "../icons/ProfileIcon";
 const navItemsData = [
   { name: "Home", text: "خانه", icon: <HomeIcon /> },
   { name: "Location", text: "نقشه", icon: <LocationIcon /> },
-  { name: "Cart", text: "سبد خرید", icon: <CartIcon />, badge: 1 },
+  {
+    name: "Cart",
+    text: "سبد خرید",
+    icon: <CartIcon color="#4e5053" />,
+    badge: 1,
+  },
   { name: "Profile", text: "پروفایل", icon: <ProfileIcon /> },
 ];
 

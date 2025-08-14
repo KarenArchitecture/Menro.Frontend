@@ -3,6 +3,7 @@ import HomePage from "./pages/HomePage";
 import RestaurantPage from "./pages/RestaurantPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import ForgotPassword from "./pages/ForgotPassword";
 import RegisterRestaurantPage from "./pages/RegisterRestaurantPage";
 import MobileNav from "./components/common/MobileNav";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/restaurant/:slug" element={<RestaurantPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route
           path="/register-restaurant"
           element={<RegisterRestaurantPage />}

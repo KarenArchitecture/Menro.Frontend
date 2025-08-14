@@ -287,6 +287,16 @@ export default function LoginPage() {
             <button type="submit" disabled={loginWithPassword.isPending}>
               {loginWithPassword.isPending ? "در حال ارسال…" : "ورود"}
             </button>
+            {/* Forgot password link */}
+            <div className="forgot-password-link">
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
+                className="link-btn"
+              >
+                رمز عبور را فراموش کرده‌اید؟
+              </button>
+            </div>
           </form>
         )}
 

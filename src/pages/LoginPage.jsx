@@ -86,7 +86,7 @@ export default function LoginPage() {
   const verifyOtp = useMutation({
     mutationFn: ({ phoneNumber, code }) =>
       authAxios
-        .post("/login-otp", { phoneNumber, code })
+        .post("/verify-otp", { phoneNumber, code })
         .then((res) => res.data)
         .catch((err) => {
           const message =

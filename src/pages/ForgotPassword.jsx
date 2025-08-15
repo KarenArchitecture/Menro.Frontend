@@ -45,65 +45,52 @@ export default function ForgotPassword() {
   const [code, setCode] = useState("");
   const [pass, setPass] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [msg, setMsg] = useState(""); // For error/success messages
 
   /* 1) send OTP */
   const sendOtp = useMutation({
     mutationFn: async (phoneNumber) => {
-      try {
-        await authAxios.post("/send-otp", { phoneNumber });
-      } catch (err) {
-        const message = err.response?.data?.message || "خطا در ارسال کد.";
-        throw new Error(message);
-      }
+      await authAxios.post("/send-otp", { phoneNumber });
     },
     onSuccess: () => {
-      alert("کد تأیید ارسال شد.");
+      setMsg("کد تأیید ارسال شد.");
       setStep(2);
     },
-    onError: (err) => alert(err.message),
+    onError: (err) => setMsg(err.response?.data?.message || "خطا در ارسال کد."),
   });
 
   /* 2) verify OTP */
   const verifyOtp = useMutation({
     mutationFn: async ({ phoneNumber, code }) => {
-      try {
-        await authAxios.post("/verify-otp", { phoneNumber, code });
-      } catch (err) {
-        const message = err.response?.data?.message || "کد وارد شده صحیح نیست.";
-        throw new Error(message);
-      }
+      await authAxios.post("/verify-otp", { phoneNumber, code });
     },
     onSuccess: () => {
-      alert("کد تأیید شد.");
+      setMsg("کد تأیید شد.");
       setStep(3);
     },
-    onError: (err) => alert(err.message),
+    onError: (err) =>
+      setMsg(err.response?.data?.message || "کد وارد شده صحیح نیست."),
   });
 
   /* 3) reset password */
   const resetPassword = useMutation({
     mutationFn: async ({ phoneNumber, newPassword, newPasswordConfirm }) => {
-      try {
-        await authAxios.post("/reset-password", {
-          phoneNumber,
-          newPassword,
-          newPasswordConfirm,
-        });
-      } catch (err) {
-        const message =
-          err.response?.data?.message || "تغییر رمز عبور ناموفق بود.";
-        throw new Error(message);
-      }
+      await authAxios.post("/reset-password", {
+        phoneNumber,
+        newPassword,
+        newPasswordConfirm,
+      });
     },
     onSuccess: () => {
-      alert("رمز عبور با موفقیت تغییر کرد.");
+      setMsg("رمز عبور با موفقیت تغییر کرد.");
       setStep(1);
       setPhone("");
       setCode("");
       setPass("");
       setConfirm("");
     },
-    onError: (err) => alert(err.message),
+    onError: (err) =>
+      setMsg(err.response?.data?.message || "تغییر رمز عبور ناموفق بود."),
   });
 
   return (
@@ -136,9 +123,10 @@ export default function ForgotPassword() {
             onSubmit={(e) => {
               e.preventDefault();
               if (phone.length !== 11) {
-                alert("شماره تلفن باید ۱۱ رقم باشد.");
+                setMsg("شماره تلفن باید ۱۱ رقم باشد.");
                 return;
               }
+              setMsg("");
               sendOtp.mutate(phone);
             }}
           >
@@ -153,6 +141,7 @@ export default function ForgotPassword() {
             <button className="btn btn-primary mt-16" type="submit">
               ارسال کد
             </button>
+            {msg && <p className="form-message">{msg}</p>}
           </form>
         )}
 
@@ -163,9 +152,10 @@ export default function ForgotPassword() {
             onSubmit={(e) => {
               e.preventDefault();
               if (code.length !== 4) {
-                alert("کد باید ۴ رقم باشد.");
+                setMsg("کد باید ۴ رقم باشد.");
                 return;
               }
+              setMsg("");
               verifyOtp.mutate({ phoneNumber: phone, code });
             }}
           >
@@ -188,6 +178,7 @@ export default function ForgotPassword() {
                 تایید کد
               </button>
             </div>
+            {msg && <p className="form-message">{msg}</p>}
           </form>
         )}
 
@@ -198,13 +189,14 @@ export default function ForgotPassword() {
             onSubmit={(e) => {
               e.preventDefault();
               if (pass.length < 6) {
-                alert("رمز باید حداقل ۶ کاراکتر باشد.");
+                setMsg("رمز باید حداقل ۶ کاراکتر باشد.");
                 return;
               }
               if (pass !== confirm) {
-                alert("رمزها یکسان نیستند.");
+                setMsg("رمزها یکسان نیستند.");
                 return;
               }
+              setMsg("");
               resetPassword.mutate({
                 phoneNumber: phone,
                 newPassword: pass,
@@ -235,6 +227,7 @@ export default function ForgotPassword() {
             <button className="btn btn-primary mt-16" type="submit">
               ثبت رمز جدید
             </button>
+            {msg && <p className="form-message">{msg}</p>}
           </form>
         )}
       </div>

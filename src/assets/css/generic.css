@@ -354,3 +354,76 @@ ul {
     padding: 2rem 2.4rem;
   }
 }
+
+/* Container: mobile-first */
+.auth-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* two per row on mobile */
+  gap: 10px;
+  padding: 12px 16px;
+  margin: 8px 0 16px;
+  direction: rtl;
+}
+
+/* Buttons */
+.auth-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px; /* touch-friendly */
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.08s ease, background-color 0.15s ease,
+    border-color 0.15s ease, color 0.15s ease;
+  user-select: none;
+}
+
+/* Variants (match your palette) */
+.auth-btn--primary {
+  background: #f89c0e;
+  color: #12161c;
+}
+.auth-btn--outline {
+  background: #1a1f25;
+  color: #d0d6e1;
+  border-color: #2f363f;
+}
+.auth-btn--ghost {
+  background: transparent;
+  color: #9aa3af;
+  border-color: #2f363f;
+}
+.auth-btn--danger {
+  background: #dc3545;
+  color: #fff;
+}
+
+/* Interactions */
+.auth-btn:hover {
+  transform: translateY(-1px);
+}
+.auth-btn:active {
+  transform: translateY(0);
+}
+.auth-btn:focus-visible {
+  outline: 2px solid #f89c0e;
+  outline-offset: 2px;
+}
+
+/* Wider screens: line them up nicely */
+@media (min-width: 768px) {
+  .auth-actions {
+    grid-template-columns: repeat(5, max-content);
+    justify-content: start;
+    gap: 12px;
+  }
+  .auth-btn {
+    min-width: 120px;
+  }
+}

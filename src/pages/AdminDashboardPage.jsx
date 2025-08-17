@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import usePageStyles from "../hooks/usePageStyles";
-
+import adminAxios from "../api/adminDashboardAxios";
+import restaurantAxios from "../api/restaurantAxios";
 import AdminHeader from "../components/admin/AdminHeader";
 import AdminSidebar from "../components/admin/AdminSidebar";
 import Panel from "../components/admin/Panel";
@@ -14,15 +15,21 @@ import FinancialSection from "../components/admin/FinancialSection";
 import AdsBookingSection from "../components/admin/AdsBookingSection";
 import ProfileSection from "../components/admin/ProfileSection";
 
-const last7DaysFA = () => {
-  const lbl = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    lbl.push(d.toLocaleDateString("fa-IR", { month: "short", day: "numeric" }));
-  }
-  return lbl;
-};
+// لیست ماه‌ها برای برچسب فارسی
+const monthFa = [
+  "ژانویه",
+  "فوریه",
+  "مارس",
+  "آوریل",
+  "مه",
+  "ژوئن",
+  "ژوئیه",
+  "اوت",
+  "سپتامبر",
+  "اکتبر",
+  "نوامبر",
+  "دسامبر",
+];
 
 /* component */
 export default function AdminDashboardPage() {
@@ -31,6 +38,12 @@ export default function AdminDashboardPage() {
 
   const [activeTab, setActiveTab] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // داده‌های نمودار فروش
+  const [labels, setLabels] = useState([]);
+  const [data, setData] = useState([]);
+
+  const restaurantId = null; // برای ادمین null بگذار؛ برای صاحب رستوران مقدار بده
 
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
   const toggleSidebar = useCallback(() => setSidebarOpen((v) => !v), []);
@@ -54,6 +67,36 @@ export default function AdminDashboardPage() {
 
   const viewClass = (tab) =>
     `content-view ${activeTab === tab ? "active" : ""}`;
+
+  // گرفتن آیدی رستوران اگه کاربر صاحب رستوران بود، اگه null برگشت یعنی ادمین سایت وارد شده
+  useEffect(() => {
+    const fetchRestaurantId = async () => {
+      const res = await restaurantAxios.get("/restaurant-id");
+      setRestaurantId(res.data.restaurantId);
+    };
+    fetchRestaurantId();
+  }, []);
+  // لود داده‌های نمودار از API
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const url =
+          restaurantId != null
+            ? `/monthly-sales?restaurantId=${restaurantId}`
+            : `/monthly-sales`;
+
+        const { data: json } = await adminAxios.get(url);
+        // داده‌ای که API برمی‌گردونه مثل: [{month:1,totalSales:12345}, ...]
+
+        setLabels(json.map((x) => monthFa[x.month - 1]));
+        setData(json.map((x) => Number(x.totalSales)));
+      } catch (err) {
+        console.error("خطا در دریافت داده‌های فروش", err);
+      }
+    };
+
+    load();
+  }, [restaurantId]);
 
   if (!cssReady) return null;
 
@@ -109,9 +152,9 @@ export default function AdminDashboardPage() {
             <Panel title="نمودار فروش ماهانه" className="chart-panel">
               <div className="chart-container">
                 <LineChart
-                  labels={last7DaysFA()}
-                  datasetLabel="تعداد فروش"
-                  data={[12, 19, 28, 35, 22, 38, 45]}
+                  labels={labels}
+                  datasetLabel="فروش (تومان)"
+                  data={data}
                   colorConfig={{
                     borderColor: "#F59E0B",
                     gradientStart: "rgba(245,158,11,0.4)",
@@ -163,7 +206,7 @@ export default function AdminDashboardPage() {
           <h2 className="content-title">ویرایش پروفایل کاربری</h2>
           <ProfileSection />
         </section>
-        {/* fallback / WIP */} {/* اگه صفحه ای در حال ساخت بود*/}
+        {/* fallback / WIP */}
         <section id="fallback-view" className={viewClass("fallback")}>
           <h2 className="content-title">صفحه در حال ساخت</h2>
         </section>

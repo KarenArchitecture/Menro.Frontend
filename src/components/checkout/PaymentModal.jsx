@@ -2,7 +2,7 @@ import React from "react";
 
 const formatIR = (n) => Number(n || 0).toLocaleString("fa-IR");
 
-export default function PaymentModal({ open, onClose, total }) {
+export default function PaymentModal({ open, onClose, total = 0 }) {
   return (
     <>
       <div
@@ -15,20 +15,25 @@ export default function PaymentModal({ open, onClose, total }) {
         aria-modal="true"
       >
         <div className="modal-content">
+          {/* Header row inside sheet */}
           <div className="checkout-modal-pay">
-            <button className="checkout-modal-pay-btn" type="button">
+            <button className="checkout-modal-pay-btn" type="button" disabled>
               روش‌های پرداخت
             </button>
 
-            <div className="checkout-modal-price">
-              <span className="label">قیمت</span>
-              <div className="checkout-modal-total">
-                <strong>{formatIR(total)}</strong>
-                <span>تومان</span>
+            {/* Price block (label above number) */}
+            <div className="checkout-modal-total" aria-live="polite">
+              <span className="checkout-total-label">قیمت</span>
+              <div className="checkout-modal-total-line">
+                <strong className="checkout-total-amount">
+                  {formatIR(total)}
+                </strong>
+                <span className="checkout-total-currency">تومان</span>
               </div>
             </div>
           </div>
 
+          {/* Gateways */}
           <div className="payment-options">
             {[1, 2, 3].map((i) => (
               <button className="payment-card" key={i} type="button">

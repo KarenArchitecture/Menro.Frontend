@@ -71,7 +71,7 @@ export default function AdminDashboardPage() {
   // گرفتن آیدی رستوران اگه کاربر صاحب رستوران بود، اگه null برگشت یعنی ادمین سایت وارد شده
   useEffect(() => {
     const fetchRestaurantId = async () => {
-      const res = await restaurantAxios.get("/restaurant-id");
+      const res = await adminAxios.get("/restaurant-id");
       setRestaurantId(res.data.restaurantId);
     };
     fetchRestaurantId();

@@ -29,7 +29,8 @@ function WideRestaurantCard({ order }) {
         />
         {Number(discount) > 0 && (
           <div className="discount-bubble">
-            تا <span className="discount_num">{discount}%</span> درصد تخفیف ثبت سفارش در منرو
+            تا <span className="discount_num">{discount}%</span> درصد تخفیف ثبت
+            سفارش در منرو
           </div>
         )}
       </div>
@@ -39,8 +40,8 @@ function WideRestaurantCard({ order }) {
           <span>{hours}</span>
         </div>
         <div className="logo-container">
-          <img
-            src={absImg(logoUrl)}
+          <imgs
+            src={`${logoUrl}`} // src={absImg(logoUrl)}
             alt={`لوگو رستوران ${name}`}
             className="restaurant-badge"
             loading="lazy"

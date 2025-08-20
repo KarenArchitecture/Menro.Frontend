@@ -204,6 +204,8 @@
 }
 
 .restaurant-badge {
+  width: 6rem;
+  height: 6rem;
   border-radius: 50%;
   object-fit: cover;
   border: 0.3rem solid rgb(0, 0, 0);

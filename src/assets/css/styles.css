@@ -5,15 +5,50 @@
 }
 
 .header {
-  margin: 1.4rem;
-  text-align: center;
-  background-color: #0c0f14;
+  padding: 12px 16px;
+}
+.header__bar {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 12px;
+}
+.header__search {
+  flex: 1;
+}
+
+/* button */
+.header__hamburger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.header__hamburger img {
+  width: 37px;
+  height: 38px;
+  display: block;
 }
 
 .content {
   margin-bottom: 10rem;
 }
 
+.icon-button img {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.search-bar input::placeholder {
+  color: #a5adc0;
+}
 /* ===== Main Content Area ===== */
 
 /* ====== Carousel ======= */

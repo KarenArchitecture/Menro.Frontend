@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import usePageStyles from "../hooks/usePageStyles";
 import adminAxios from "../api/adminDashboardAxios";
-import restaurantAxios from "../api/restaurantAxios";
 import AdminHeader from "../components/admin/AdminHeader";
 import AdminSidebar from "../components/admin/AdminSidebar";
 import Panel from "../components/admin/Panel";
@@ -31,24 +30,31 @@ const monthFa = [
   "دسامبر",
 ];
 
-/* component */
 export default function AdminDashboardPage() {
-  /* wait until CSS is fetched */
+  // اطلاعات ادمین (نام کامل ادمین به همراه نام رستوران)
+  const [adminDetails, setAdminDetails] = useState({
+    UserFullName: "",
+    RestaurantName: "",
+  });
+
   const cssReady = usePageStyles("/admin-dashboard.css");
 
   const [activeTab, setActiveTab] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const [restaurantId, setRestaurantId] = useState(null);
+
+  // داده‌های StatCard
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [newOrders, setNewOrders] = useState(0);
+
   // داده‌های نمودار فروش
   const [labels, setLabels] = useState([]);
   const [data, setData] = useState([]);
 
-  const restaurantId = null; // برای ادمین null بگذار؛ برای صاحب رستوران مقدار بده
-
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
   const toggleSidebar = useCallback(() => setSidebarOpen((v) => !v), []);
 
-  /* select tab , collapse sidebar on mobile */
   const handleSelectTab = useCallback(
     (tab) => {
       setActiveTab(tab);
@@ -57,7 +63,6 @@ export default function AdminDashboardPage() {
     [closeSidebar]
   );
 
-  /* esc-key close sidebar */
   useEffect(() => {
     if (!sidebarOpen) return;
     const handler = (e) => e.key === "Escape" && closeSidebar();
@@ -68,17 +73,64 @@ export default function AdminDashboardPage() {
   const viewClass = (tab) =>
     `content-view ${activeTab === tab ? "active" : ""}`;
 
-  // گرفتن آیدی رستوران اگه کاربر صاحب رستوران بود، اگه null برگشت یعنی ادمین سایت وارد شده
+  // --- گرفتن آیدی رستوران ---
   useEffect(() => {
     const fetchRestaurantId = async () => {
-      const res = await adminAxios.get("/restaurant-id");
-      setRestaurantId(res.data.restaurantId);
+      try {
+        const res = await adminAxios.get("/restaurant-id");
+        setRestaurantId(res.data.restaurantId);
+      } catch (err) {
+        console.error("خطا در دریافت آیدی رستوران", err);
+      }
     };
     fetchRestaurantId();
   }, []);
-  // لود داده‌های نمودار از API
+  // --- گرفتن دیتای ادمین ---
   useEffect(() => {
-    const load = async () => {
+    const fetchAdminDetails = async () => {
+      try {
+        const { data } = await adminAxios.get("/admin-details");
+        setAdminDetails(data);
+      } catch (err) {
+        console.error("خطا در دریافت جزئیات ادمین", err);
+      }
+    };
+
+    fetchAdminDetails();
+  }, []);
+
+  // --- لود TotalRevenue و NewOrders ---
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const revenueUrl =
+          restaurantId != null
+            ? `/total-revenue?restaurantId=${restaurantId}`
+            : `/total-revenue`;
+
+        const ordersUrl =
+          restaurantId != null
+            ? `/new-orders?restaurantId=${restaurantId}`
+            : `/new-orders`;
+
+        const [revRes, orderRes] = await Promise.all([
+          adminAxios.get(revenueUrl),
+          adminAxios.get(ordersUrl),
+        ]);
+
+        setTotalRevenue(revRes.data);
+        setNewOrders(orderRes.data);
+      } catch (err) {
+        console.error("خطا در دریافت آمار", err);
+      }
+    };
+
+    loadStats();
+  }, [restaurantId]);
+
+  // --- لود داده‌های نمودار ---
+  useEffect(() => {
+    const loadChart = async () => {
       try {
         const url =
           restaurantId != null
@@ -86,7 +138,6 @@ export default function AdminDashboardPage() {
             : `/monthly-sales`;
 
         const { data: json } = await adminAxios.get(url);
-        // داده‌ای که API برمی‌گردونه مثل: [{month:1,totalSales:12345}, ...]
 
         setLabels(json.map((x) => monthFa[x.month - 1]));
         setData(json.map((x) => Number(x.totalSales)));
@@ -95,7 +146,7 @@ export default function AdminDashboardPage() {
       }
     };
 
-    load();
+    loadChart();
   }, [restaurantId]);
 
   if (!cssReady) return null;
@@ -106,7 +157,6 @@ export default function AdminDashboardPage() {
         <div className="sidebar-backdrop" onClick={closeSidebar} />
       )}
 
-      {/* sidebar */}
       <AdminSidebar
         isOpen={sidebarOpen}
         onClose={closeSidebar}
@@ -114,9 +164,12 @@ export default function AdminDashboardPage() {
         onSelect={handleSelectTab}
       />
 
-      {/* main area */}
       <main className="main-content">
-        <AdminHeader userName="کاربر ادمین" onHamburger={toggleSidebar} />
+        <AdminHeader
+          userName={adminDetails.UserFullName}
+          restaurantName={adminDetails.RestaurantName}
+          onHamburger={toggleSidebar}
+        />
         {/* DASHBOARD */}
         <section id="dashboard-view" className={viewClass("dashboard")}>
           <h2 className="content-title">نمای کلی</h2>
@@ -126,13 +179,13 @@ export default function AdminDashboardPage() {
               iconClass="fas fa-dollar-sign"
               color="#f59e0b"
               title="درآمد کل"
-              value="۱۲,۵۰۰,۰۰۰ تومان"
+              value={totalRevenue.toLocaleString("fa-IR") + " تومان"}
             />
             <StatCard
               iconClass="fas fa-receipt"
               color="#10b981"
               title="سفارشات جدید"
-              value="۳۵۲"
+              value={newOrders.toLocaleString("fa-IR")}
             />
             <StatCard
               iconClass="fas fa-users"
@@ -172,41 +225,35 @@ export default function AdminDashboardPage() {
             </Panel>
           </div>
         </section>
-        {/* PRODUCTS */}
+
+        {/* دیگر تب‌ها */}
         <section id="products-view" className={viewClass("products")}>
           <ProductsSection />
         </section>
-        {/* CATEGORIES */}
         <section id="categories-view" className={viewClass("categories")}>
           <h2 className="content-title">مدیریت دسته‌بندی‌ها</h2>
           <CategoriesSection />
         </section>
-        {/* THEME */}
         <section id="theme-view" className={viewClass("theme")}>
           <h2 className="content-title">مدیریت قالب رستوران</h2>
           <ThemeSection />
         </section>
-        {/* MUSIC */}
         <section id="music-view" className={viewClass("music")}>
           <h2 className="content-title">مدیریت موزیک پلیر</h2>
           <MusicSection />
         </section>
-        {/* FINANCIAL */}
         <section id="financial-view" className={viewClass("financial")}>
           <h2 className="content-title">اطلاعات مالی</h2>
           <FinancialSection />
         </section>
-        {/* ADS */}
         <section id="ads-view" className={viewClass("ads")}>
           <h2 className="content-title">رزرو تبلیغ</h2>
           <AdsBookingSection />
         </section>
-        {/* PROFILE */}
         <section id="profile-view" className={viewClass("profile")}>
           <h2 className="content-title">ویرایش پروفایل کاربری</h2>
           <ProfileSection />
         </section>
-        {/* fallback / WIP */}
         <section id="fallback-view" className={viewClass("fallback")}>
           <h2 className="content-title">صفحه در حال ساخت</h2>
         </section>

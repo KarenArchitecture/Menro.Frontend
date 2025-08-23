@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import SearchBar from "../common/SearchBar";
 
-export default function AdminHeader({ userName = "کاربر ادمین", onHamburger }) {
+export default function AdminHeader({ userName, restaurantName, onHamburger }) {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const inputRef = useRef(null);
 
@@ -39,12 +39,15 @@ export default function AdminHeader({ userName = "کاربر ادمین", onHamb
         <SearchBar placeholder="جستجو..." />
       </div>
 
-      {/* User info (greeting + avatar) */}
+      {/* User info (greeting + restaurant + avatar) */}
       <div className="user-info">
-        <span>خوش آمدید، {userName}</span>
+        <div className="user-greeting">
+          <span>خوش آمدید، {userName}</span>
+          <span className="restaurant-name">{restaurantName}</span>
+        </div>
         <img
           src="https://via.placeholder.com/40"
-          alt=""
+          alt="آواتار کاربر"
           className="user-avatar"
         />
         {/* Mobile search icon (shows only on phones) */}

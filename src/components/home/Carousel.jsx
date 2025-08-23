@@ -104,6 +104,8 @@ function Carousel() {
             aria-current={currentIndex === slideIndex ? "true" : undefined}
           />
         ))}
+        <img src="/images/curve.png" className="left-curve"></img>
+        <img src="/images/curve.png" className="top-curve"></img>
       </div>
     </section>
   );

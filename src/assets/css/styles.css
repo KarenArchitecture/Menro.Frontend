@@ -1,7 +1,15 @@
+.card {
+  --card-bg: #0c0f14;
+}
+
 :root {
-  --section-gap-sm: 1.2rem; /* padding under carousels */
-  --section-gap: 3.2rem; /* default gap to next title */
-  --section-gap-lg: 4rem; /* larger screens */
+  --section-gap-sm: 1.2rem;
+  --section-gap: 3.2rem;
+  --section-gap-lg: 4rem;
+  --badge-size: 52px;
+  --halo-pad: 10px;
+  --halo-gap: 4px;
+  --halo-shadow: 0 6px 12px rgba(0, 0, 0, 0.45);
 }
 
 .header {
@@ -62,10 +70,14 @@
 
 /* Card */
 .carousel-container {
+  /* use vars so the cutouts always match */
+  --card-bg: #0f0f0f;
+  --dock-bg: #0c0f14;
+
   position: relative;
   overflow: hidden;
   border-radius: 15px;
-  background: #0f0f0f;
+  background: var(--card-bg);
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
   aspect-ratio: 21 / 9;
   margin: 0 auto;
@@ -80,12 +92,12 @@
 @media (min-width: 640px) {
   .carousel-container {
     aspect-ratio: 20 / 8;
-  } /* ~2.5:1 */
+  }
 }
 @media (min-width: 1024px) {
   .carousel-container {
     aspect-ratio: 24 / 8;
-  } /* ~3:1 */
+  }
 }
 
 /* Slides */
@@ -102,7 +114,6 @@
   min-width: 100%;
   height: 100%;
 }
-
 .carousel-slide img {
   display: block;
   width: 100%;
@@ -111,7 +122,6 @@
 }
 
 /* ===== Indicators dock  ===== */
-
 .indicators-container {
   position: absolute;
   right: 14px;
@@ -122,47 +132,9 @@
   padding: 6px 12px;
   background: #0c0f14;
   border: none;
-  border-radius: 10px;
+  border-radius: 9999px;
   z-index: 3;
   isolation: isolate;
-}
-
-.indicators-container::before,
-.indicators-container::after {
-  content: "";
-  position: absolute;
-  pointer-events: none;
-  background: #0c0f14;
-  z-index: -1;
-  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35));
-}
-
-.indicators-container::before {
-  width: 180px;
-  height: 90px;
-  bottom: -14px; /* share baseline with the pill */
-  left: -120px; /* sticks out left of the pill */
-  clip-path: path(
-    "M 40 90
-     L 180 90
-     C 150 70, 118 58, 90 45
-     C 62 58, 50 72, 40 90
-     Z"
-  );
-}
-/*  UP‑facing triangle  */
-.indicators-container::after {
-  width: 180px;
-  height: 90px;
-  bottom: -14px;
-  right: 36px;
-  clip-path: path(
-    "M 0 90
-     L 180 90
-     C 140 70, 120 50, 90 0
-     C 60 50, 40 70, 0 90
-     Z"
-  );
 }
 
 /* dots */
@@ -185,6 +157,26 @@
   background: linear-gradient(90deg, #d17842 0%, #ffc797 100%);
 }
 
+.left-curve {
+  position: absolute;
+  z-index: 10;
+  width: 6rem;
+  height: 6rem;
+  color: #0c0f14;
+  right: -19px;
+  top: -29px;
+}
+
+.top-curve {
+  position: absolute;
+  z-index: 10;
+  width: 6rem;
+  height: 5rem;
+  color: #0c0f14;
+  right: 85px;
+  top: -3px;
+}
+
 @media (min-width: 640px) {
   .indicators-container {
     right: 18px;
@@ -192,10 +184,16 @@
     padding: 7px 12px;
   }
   .indicators-container::before {
-    width: 42px;
-    height: 42px;
-    top: -20px;
-    left: -20px;
+    width: 64px;
+    height: 64px;
+    top: -34px;
+    right: -24px;
+  }
+  .indicators-container::after {
+    width: 46px;
+    height: 46px;
+    bottom: -22px;
+    left: -22px;
   }
 }
 
@@ -218,6 +216,17 @@
 .res-title {
   display: flex;
   gap: 0.5rem;
+}
+
+.res-more-box {
+  background: #1e232a;
+  width: 76px;
+  height: 22px;
+  padding: 0.2rem;
+  border-radius: 6.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .res-more-link {
@@ -257,52 +266,68 @@
 
 .cards-container + .res-title-box,
 .wide-carousel-cards + .res-title-box {
-  margin-top: 1.2rem; /* extra breathing room above the next title */
+  margin-top: 1.2rem;
 }
 
 .card {
   position: relative;
   background-color: #0c0f14;
   border-radius: 1.6rem;
-  overflow: visible;
   color: #fff;
+  width: 162.5px;
+  flex: 0 0 162.5px;
 }
 
 .card-img-container {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  width: 162.5px;
+  height: 242px;
   position: relative;
   margin-bottom: 0.5rem;
+
+  display: block;
 }
 
 .card-img {
-  height: auto;
-  border-radius: 10%;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  max-width: 100%;
-  max-height: 100%;
-  height: auto;
+  display: block;
+  position: relative;
+  z-index: 1;
+  border-radius: 15px;
 }
 
 .logo-container {
   position: absolute;
-  bottom: 100%;
-  right: 0.5rem;
-  transform: translateY(calc(50% - 1rem));
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  left: 80%;
+  bottom: 0;
+  transform: translate(-50%, 50%);
+  width: var(--badge-size);
+  height: var(--badge-size);
+  z-index: 3;
+}
+
+.logo-container::before {
+  content: "";
+  position: absolute;
+  top: calc(2% - var(--halo-gap));
+  left: -3px;
+  width: 59px;
+  height: 33px;
+  background: var(--card-bg);
+  border-top-left-radius: 50% 100%;
+  border-top-right-radius: 50% 100%;
+  z-index: 2;
+  box-shadow: var(--halo-shadow);
 }
 
 .restaurant-badge {
-  width: 6rem;
-  height: 6rem;
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  border: 0.3rem solid rgb(0, 0, 0);
 }
 
 .discount-bubble {
@@ -326,7 +351,7 @@
 }
 
 .card-body {
-  width: 42vw;
+  width: 100%;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -346,7 +371,7 @@
 .time-badge span {
   text-align: center;
   padding: 0.2rem 0.4rem;
-  border-radius: 0.3rem;
+  border-radius: 6px;
   font-size: 1rem;
   background-color: #2b3038;
   color: #fff;
@@ -356,7 +381,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.3rem;
+  margin-top: 0.3rem;
 }
 
 .restaurant-name {
@@ -383,6 +408,13 @@
   color: #aeaeae;
 }
 
+.restaurant-description {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6rem;
+}
+
 .restaurant-description p {
   font-size: 1rem;
   font-weight: 500;
@@ -390,14 +422,79 @@
 
 /* Single banner */
 .single-banner {
-  width: 100vw;
-  margin-bottom: 2rem;
+  width: 340px;
+  height: 145px;
+  margin: 2rem auto;
+  display: block;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.banner-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .single-banner-img {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* black overlay */
+.banner-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.55) 0%,
+    rgba(0, 0, 0, 0.35) 40%,
+    rgba(0, 0, 0, 0.15) 70%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+/* text on top */
+.banner-text {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 16px;
+  color: #fff;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.banner-title {
+  margin: 0;
+  font-weight: 900;
+  line-height: 1.1;
+  font-size: 18px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.banner-sub {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.3;
+  font-size: 12px;
+  opacity: 0.95;
+}
+
+.banner-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
 }
 
 /* previous orders */
@@ -476,22 +573,25 @@
 }
 
 .food-card {
-  width: 40vw;
+  width: 147px;
+  height: 287px;
+  flex: 0 0 260px;
   padding: 1.2rem 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 0 0 auto;
   background-color: #1e2329;
   border-radius: 2.3rem;
+  gap: 0.6rem;
   overflow: hidden;
-  gap: 0.5rem;
 }
 
 .food-card-image {
-  width: 100%;
-  aspect-ratio: 1/1;
-  border-radius: 1rem;
+  position: relative;
+  width: 117px;
+  height: 117px;
+  aspect-ratio: 1 / 1;
+  border-radius: 1.2rem;
   overflow: hidden;
   flex-shrink: 0;
   margin-bottom: 0.5rem;
@@ -512,10 +612,15 @@
 }
 
 .food-title {
-  margin-bottom: 0.5rem;
-  font-size: 1.3rem;
-  font-weight: 600;
-  text-align: right;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-align: center;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .food-subtitle {
@@ -531,30 +636,70 @@
   justify-content: space-between;
   width: 100%;
   gap: 1rem;
+  flex-direction: column;
+  margin-top: 1rem;
 }
 
 .food-price-row p {
-  font-size: 1.1rem;
+  font-size: 13px;
   font-weight: 600;
 }
 
 .food-price {
+  margin: 0;
   color: #d17842;
-  font-size: 1.2rem;
-  font-weight: 600;
+}
+.food-price span {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
 }
 
 .add-btn {
   background-color: #d17842;
   color: #fff;
-  margin-bottom: 0.8rem;
   border: none;
-  border-radius: 0.5rem;
-  width: 2.8rem;
-  height: 2.8rem;
-  font-size: 1.2rem;
-  font-weight: 600;
+  border-radius: 10px;
+  width: 117px;
+  max-width: 160px;
+  height: 28px;
+  font-size: 2rem;
+  font-weight: 800;
   cursor: pointer;
+  margin-bottom: 0;
+}
+.qty-controls {
+  display: flex;
+  flex-direction: row-reverse; /* RTL: + on right, – on left */
+  align-items: center;
+  gap: 8px;
+}
+
+.qty-btn {
+  background-color: #d17842;
+  color: #fff;
+  border: none;
+  width: 35px;
+  height: 28px;
+  border-radius: 10px;
+  font-size: 1.5rem;
+  font-weight: 800;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.qty-display {
+  min-width: 35px;
+  height: 28px;
+  padding: 0 10px;
+  background: #fff;
+  color: #0c0f14;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
 }
 
 .food-card-footer {
@@ -575,7 +720,7 @@
   display: block;
 }
 
-.rating-wrapper {
+.wrapper {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -590,6 +735,35 @@
 }
 
 /* Rating row (star icon + numeric rating + (count)) */
+.rating-chip {
+  position: absolute;
+  left: 3.5rem;
+  bottom: 0;
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.25rem 0.45rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  z-index: 1;
+  flex-direction: row-reverse;
+}
+
+.rating-chip svg {
+  width: 14px;
+  height: 14px;
+  color: #d17842;
+  margin-bottom: 5px;
+}
+.rating-chip .score {
+  font-weight: 700;
+}
+.rating-chip .voters {
+  opacity: 0.85;
+  font-size: 0.8rem;
+}
+
 .rating {
   display: flex;
   align-items: center;

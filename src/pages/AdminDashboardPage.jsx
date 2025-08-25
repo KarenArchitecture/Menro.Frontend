@@ -33,8 +33,8 @@ const monthFa = [
 export default function AdminDashboardPage() {
   // اطلاعات ادمین (نام کامل ادمین به همراه نام رستوران)
   const [adminDetails, setAdminDetails] = useState({
-    UserFullName: "",
-    RestaurantName: "",
+    userFullName: "",
+    restaurantName: "",
   });
 
   const cssReady = usePageStyles("/admin-dashboard.css");
@@ -166,8 +166,8 @@ export default function AdminDashboardPage() {
 
       <main className="main-content">
         <AdminHeader
-          userName={adminDetails.UserFullName}
-          restaurantName={adminDetails.RestaurantName}
+          userFullName={adminDetails.userFullName}
+          restaurantName={adminDetails.restaurantName}
           onHamburger={toggleSidebar}
         />
         {/* DASHBOARD */}

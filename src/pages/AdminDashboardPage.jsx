@@ -73,7 +73,12 @@ export default function AdminDashboardPage() {
 
       {/* main area */}
       <main className="main-content">
-        <AdminHeader userName="کاربر ادمین" onHamburger={toggleSidebar} />
+        <AdminHeader
+          userName={me?.name}
+          avatarUrl={me?.avatarUrl}
+          isLoading={isLoadingFromQuery}
+          onHamburger={toggleSidebar}
+        />
         {/* DASHBOARD */}
         <section id="dashboard-view" className={viewClass("dashboard")}>
           <h2 className="content-title">نمای کلی</h2>

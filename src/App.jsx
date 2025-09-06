@@ -6,11 +6,9 @@ import RegisterPage from "./pages/RegisterPage";
 import ForgotPassword from "./pages/ForgotPassword";
 import RegisterRestaurantPage from "./pages/RegisterRestaurantPage";
 import CheckoutPage from "./pages/CheckoutPage";
-import AdminDashboardPage from "./pages/AdminDashboardPage";
-import LandingPage from "./pages/LandingPage";
-
-import ProtectedRoute from "./components/common/ProtectedRoute";
 import MobileNav from "./components/common/MobileNav";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
+import ProtectedRoute from "./components/common/ProtectedRoute";
 
 export default function App() {
   const { pathname } = useLocation();
@@ -23,8 +21,7 @@ export default function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/home" element={<HomePage />} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/restaurant/:slug" element={<RestaurantPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />

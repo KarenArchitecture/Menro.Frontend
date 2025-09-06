@@ -44,7 +44,9 @@ function RestaurantCard({ restaurant }) {
           <h3 className="restaurant-name">{name}</h3>
           <div className="rating">
             <StarIcon />
-            <span className="rate">{typeof rating === "number" ? rating.toFixed(1) : rating}</span>
+            <span className="rate">
+              {typeof rating === "number" ? rating.toFixed(1) : rating}
+            </span>
             <span className="rate-voters-num">({ratingCount})</span>
           </div>
         </div>

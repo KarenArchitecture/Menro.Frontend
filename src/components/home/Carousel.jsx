@@ -65,11 +65,10 @@ function Carousel() {
               style={{ flex: "0 0 100%" }} // exactly one viewport wide
             >
               <img
-                key={slide.id} // kept as you requested
-                src={`http://localhost:5096${slide.carouselImageUrl}`} // kept
-                alt={slide.name} // kept
-                role="listitem" // kept
-                onClick={() => navigate(`/restaurant/${slide.slug}`)} // kept
+                key={slide.id}
+                src={`http://localhost:5096${slide.carouselImageUrl}`}
+                alt={slide.name}
+                onClick={() => navigate(`/restaurant/${slide.slug}`)}
                 style={{
                   display: "block",
                   width: "100%",

@@ -5,13 +5,19 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPassword from "./pages/ForgotPassword";
 import RegisterRestaurantPage from "./pages/RegisterRestaurantPage";
+import CheckoutPage from "./pages/CheckoutPage";
 import MobileNav from "./components/common/MobileNav";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 
 export default function App() {
   const { pathname } = useLocation();
-  const isAdmin = pathname.startsWith("/admin");
+  const NAV_HIDE_PREFIXES = ["/admin", "/checkout"];
+
+  const hideMobileNav = NAV_HIDE_PREFIXES.some((prefix) =>
+    pathname.startsWith(prefix)
+  );
+
   return (
     <>
       <Routes>
@@ -24,9 +30,10 @@ export default function App() {
           path="/register-restaurant"
           element={<RegisterRestaurantPage />}
         />
+        <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/admin" element={<AdminDashboardPage />} />
       </Routes>
-      {!isAdmin && <MobileNav />}
+      {!hideMobileNav && <MobileNav />}
     </>
   );
 }

@@ -5,6 +5,7 @@ import AppHeader from "../components/common/AppHeader";
 import ProfileIcon from "../components/icons/ProfileIcon";
 import CartIcon from "../components/icons/CartIcon";
 import SearchIcon from "../components/icons/SearchIcon";
+import WhyMenroSection from "../components/landing/WhyMenroSection";
 
 export default function LandingPage() {
   const leftIcons = [
@@ -30,6 +31,7 @@ export default function LandingPage() {
         maxWidth={1140}
       />
       <Hero />
+      <WhyMenroSection />
     </div>
   );
 }

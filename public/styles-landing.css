@@ -1,17 +1,15 @@
-/* ریشه رنگ‌ها مطابق برند */
+/***************************************
+ * ۱) توکن‌ها و پایه
+ **************************************/
 :root {
   --bg: #0f0f10;
-  --text: #fff;
+  --bg-hero: #0b0f13;
+  --text: #ffffff;
   --muted: #cfcfcf;
   --accent: #ff9d10; /* نارنجی منرو */
-}
-
-* {
-  box-sizing: border-box;
-  font-family: "Vazirmatn", sans-serif;
-  margin: 0;
-  padding: 0;
-  transition: 0.3s ease;
+  --card-bg: rgba(18, 22, 28, 0.72);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --glass-blur: 6px;
 }
 
 *,
@@ -24,15 +22,17 @@ html,
 body {
   font-size: 62.5%;
   width: 100%;
+  height: 100%;
   overflow-x: hidden;
   background-color: #0c0f14;
-  color: #ffffff;
+  color: var(--text);
   direction: rtl;
   margin: 0;
   padding: 0;
+  font-family: "Vazirmatn", sans-serif;
 }
 
-/* هدر بالای همه باشد */
+/* هدر همیشه بالاتر */
 .app-header-fixed {
   position: fixed;
   top: 12px;
@@ -41,20 +41,22 @@ body {
   z-index: 50;
 }
 
-/* تمام قد */
+/***************************************
+ * ۲) هیرو (تمام‌قد + تصویر پس‌زمینه)
+ **************************************/
 .hero {
   position: relative;
   width: 100%;
   min-height: 100vh;
   background-image: url("/images/landing-hero.png");
   background-size: cover;
-  /* فوکوس را از مرکز ببریم سمت راست/بالا تا سوژه نزدیک لبه‌ها شود */
-  background-position: 90% center; /* به جای center,center → 70% وسط */
+  /* فوکوس تصویر کمی به راست تا سوژه به لبه نزدیک‌تر شود */
+  background-position: 90% center;
   background-repeat: no-repeat;
   isolation: isolate;
 }
 
-/* اوورلی تیره موجود */
+/* اوورلی تیره */
 .hero::before {
   content: "";
   position: absolute;
@@ -69,7 +71,7 @@ body {
   pointer-events: none;
 }
 
-/* هاله‌ی قهوه‌ای از پایین (مثل طرح) */
+/* هاله قهوه‌ای پایین (مثل طرح) */
 .hero::after {
   content: "";
   position: absolute;
@@ -88,112 +90,542 @@ body {
   pointer-events: none;
 }
 
+/* لایه محتوا روی هیرو */
 .hero__overlay {
   position: relative;
   z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* وسط عمودی */
-  justify-content: flex-end; /* وسط افقی */
   min-height: 100vh;
-  padding: 0 16px;
-  text-align: center; /* متن و سرچ وسط */
-}
 
-.hero__content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 2rem;
-  margin-bottom: 2rem;
-  width: 100%;
-  max-width: 720px; /* کمی باریک‌تر برای تمرکز */
+  justify-content: flex-end;
+
+  padding: 0 16px;
+  text-align: center;
 }
-/* عنوان */
+
+.hero__content {
+  width: 100%;
+  max-width: 720px;
+  margin-bottom: 2rem;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* عنوان هیرو */
 .hero__title {
   color: var(--text);
   font-weight: 900;
-  font-size: clamp(28px, 4.2vw, 56px); /* دسکتاپ‌اول ولی ریسپانسیو */
+  font-size: clamp(2.8rem, 4.2vw, 5.6rem);
   line-height: 1.2;
   text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
-  margin: 0 0 16px;
+  margin: 0 0 1.6rem;
 }
 .hero__title span {
   color: var(--accent);
 }
 
+/* نوار جستجو (نسخه کوچک و یک‌دست) */
 .hero .search-bar-container {
-  width: min(300px, 30vw); /* طول کمتر */
+  width: min(30vw, 30rem);
   margin: 12px auto 0;
 }
 
 .hero .search-bar {
-  width: 25rem;
-  height: 4rem; /* کوتاه‌تر */
+  width: 100%;
+  height: 4rem;
   padding: 0 0.9rem;
-  border-radius: 22px; /* گردی بیشتر */
-  background: rgba(15, 15, 16, 0.75); /* یک‌دست؛ نه مشکی/سرمه‌ای جدا */
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 22px;
+
+  background: rgba(15, 15, 16, 0.75);
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05),
     0 10px 24px rgba(0, 0, 0, 0.25);
-  gap: 0.6rem;
 }
 
 .hero .search-bar input {
-  background: transparent !important; /* رنگ وسط با دور یکسان */
+  flex: 1 1 auto;
+  height: 100%;
+  background: transparent !important;
   color: #eaeaea;
   border: none;
   outline: none;
-  font-size: 0.95rem;
+  font-size: 1.4rem;
 }
-
 .hero .search-bar input::placeholder {
   color: #a9a9a9;
   font-weight: 500;
 }
-
 .hero .icon-button {
-  background: transparent; /* دکمه آیکن هم شفاف */
-  border: none;
+  background: transparent;
+  border: 0;
   color: #dcdcdc;
   display: grid;
   place-items: center;
 }
 
-/* حالت فوکِس قشنگ با نارنجی برند */
 .hero .search-bar:focus-within {
   border-color: rgba(255, 157, 16, 0.6);
   box-shadow: 0 0 0 3px rgba(255, 157, 16, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 10px 24px rgba(0, 0, 0, 0.25);
 }
 
-/* hint اسکرول */
+/* راهنمای اسکرول */
 .hero__hint {
   display: flex;
   flex-direction: row-reverse;
+  gap: 0.5rem;
   margin-top: 18px;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 1.4rem;
   text-align: center;
-  gap: 0.5rem;
+  align-items: center;
 }
 
-/* فاصله از هدر ثابت (اگر هدر روی محتوا می‌افته) */
+/* فاصله از هدر ثابت در دسکتاپ */
 @media (min-width: 1024px) {
   .hero__content {
-    margin-top: 72px;
-  } /* بسته به ارتفاع AppHeader */
+    margin-top: 7.2rem;
+  }
 }
 
-/* موبایل بهینه‌سازی */
+/* موبایل */
 @media (max-width: 768px) {
   .hero__title {
-    font-size: clamp(24px, 6vw, 34px);
+    font-size: clamp(2.4rem, 6vw, 3.4rem);
   }
   .hero__content {
-    margin-top: 64px;
+    margin-top: 6.4rem;
   }
+}
+
+/***************************************
+ * ۳) بخش «چرا منرو؟» (استیج چسبان + پارالاکس)
+ **************************************/
+.why-wrap {
+  position: relative;
+  background: #0c0f14;
+}
+.why-spacer {
+  height: 80vh;
+} /* فضای اسکرول قبل و بعد */
+
+.why-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 100%;
+  background: #0c0f14;
+  overflow: visible;
+  isolation: isolate;
+}
+
+/* هدر بخش (کمی پایین‌تر از وسط) */
+.why-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  right: 40%;
+  transform: translateX(50%);
+  top: 30vh;
+  text-align: right;
+}
+.why-title {
+  margin: 0;
+  color: var(--text);
+  font-weight: 900;
+  font-size: clamp(3.6rem, 6.4vw, 11.2rem);
+  line-height: 1;
+}
+
+.why-sub {
+  margin-top: 12px;
+  color: #c4cbd3;
+  font-size: clamp(1.6rem, 2.6vw, 4rem);
+}
+
+/* مکان تقریبی کارت‌ها مطابق طرح (قابل تنظیم) */
+.card {
+  position: absolute;
+}
+
+/* Top Row */
+.card-top-middle {
+  right: 45%;
+  top: 8vh;
+  transform: translateX(50%);
+}
+.card-top-right {
+  right: 8%;
+  top: 12vh;
+}
+
+/* Mid Row */
+.card-mid-left {
+  right: 60%;
+  top: 25vh;
+}
+
+/* Middle Row */
+.card-middle-left {
+  right: 55%;
+  top: 40vh;
+}
+.card-middle-right {
+  right: 20%;
+  top: 45vh;
+}
+
+/* Bottom Row */
+.card-bottom-left {
+  right: 50%;
+  top: 60vh;
+}
+.card-bottom-middle {
+  right: 35%;
+  top: 65vh;
+}
+.card-bottom-left-large {
+  right: 15%;
+  top: 70vh;
+}
+.card-bottom-right {
+  right: 5%;
+  top: 75vh;
+}
+
+@media (max-width: 1200px) {
+  .card-top-middle {
+    right: 40%;
+  }
+  .card-top-right {
+    right: 6%;
+  }
+  .card-mid-left {
+    right: 55%;
+  }
+  .card-middle-left {
+    right: 50%;
+  }
+  .card-middle-right {
+    right: 15%;
+  }
+  .card-bottom-left {
+    right: 45%;
+  }
+  .card-bottom-middle {
+    right: 30%;
+  }
+  .card-bottom-left-large {
+    right: 10%;
+  }
+  .card-bottom-right {
+    right: 2%;
+  }
+}
+
+@media (max-width: 900px) {
+  .why-head {
+    top: 20vh;
+  }
+  .card {
+    transform: scale(0.85);
+    transform-origin: center;
+  }
+
+  .reason-card {
+    width: 240px;
+    height: 180px;
+  }
+
+  .cost-chart-card {
+    width: 180px;
+    height: 100px;
+  }
+}
+
+/* ===========================
+   SalesBoost Card (Static)
+   =========================== */
+
+.sales-card {
+  width: 300px;
+  height: 300px;
+  border-radius: 22px;
+  position: absolute;
+  background: rgba(18, 22, 28, 0.75);
+  backdrop-filter: blur(6px);
+  border-image: linear-gradient(180deg, #0c0f14, #999fa8) 1;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+}
+
+.sales-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    rgba(255, 255, 255, 0.03) 1px,
+    transparent 1px
+  );
+  background-size: 3px 3px;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.sales-card__inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  z-index: 1;
+}
+
+.sales-card__ring {
+  position: relative;
+  width: 170px;
+  height: 170px;
+  display: grid;
+  place-items: center;
+}
+
+/* SVG */
+.ring-svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.ring-bg {
+  stroke: rgba(0, 0, 0, 0.72);
+}
+.ring-arc {
+  stroke: rgba(250, 252, 255, 0.95);
+}
+.sales-card__center {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  place-items: center;
+  transform: translateY(-4px);
+}
+
+.sales-card__icon {
+  width: 48px;
+  height: 48px;
+}
+
+.sales-card__icon--placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: #ff6a3a;
+  opacity: 0.85;
+}
+
+.sales-card__value {
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  margin-top: 4px;
+}
+
+.sales-card__caption {
+  color: #cbd3dd;
+  font-size: 10px;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+/* ===========================
+   Private Panel Card
+   =========================== */
+.private-panel-card {
+  width: 80px;
+  height: 120px;
+  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3);
+}
+
+.private-panel-icon {
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.private-panel-text {
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* ===========================
+   Financial Management Card
+   =========================== */
+.financial-card {
+  width: 100px;
+  height: 100px;
+  background: rgba(18, 22, 28, 0.75);
+  backdrop-filter: blur(6px);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.financial-icon {
+  color: #cbd3dd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.financial-text {
+  color: #cbd3dd;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* ===========================
+   Menro Brand Card
+   =========================== */
+.menro-brand-card {
+  width: 120px;
+  height: 60px;
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  box-shadow: 0 8px 32px rgba(30, 64, 175, 0.3);
+}
+
+.menro-text {
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* ===========================
+   Cost Chart Card
+   =========================== */
+.cost-chart-card {
+  width: 200px;
+  height: 120px;
+  background: rgba(18, 22, 28, 0.75);
+  backdrop-filter: blur(6px);
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cost-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.cost-icon {
+  color: #ff683c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cost-chart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cost-percentage {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ff683c;
+  text-align: center;
+}
+
+.cost-label {
+  color: #cbd3dd;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* ===========================
+   Reason Cards
+   =========================== */
+.reason-card {
+  width: 280px;
+  height: 200px;
+  background: rgba(18, 22, 28, 0.75);
+  backdrop-filter: blur(6px);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reason-icon {
+  color: #cbd3dd;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 8px;
+}
+
+.reason-title {
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reason-text {
+  color: #cbd3dd;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0;
+  flex: 1;
 }

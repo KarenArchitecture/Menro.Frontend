@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import SearchBar from "../common/SearchBar";
 
 export default function AdminHeader({
-  userFullName, // (string)
+  userName, // (string)
   avatarUrl, // (string - absolute or /relative)
   isLoading = false, // show placeholders while fetching (دلخواه)
   onHamburger,
@@ -11,7 +11,7 @@ export default function AdminHeader({
   const inputRef = useRef(null);
 
   // Fallbacks
-  const displayName = userFullName;
+  const displayName = userName || "کاربر ادمین";
   const displayAvatar = avatarUrl || "/images/avatar-placeholder.png";
 
   // Focus the input; ESC to close
@@ -54,14 +54,14 @@ export default function AdminHeader({
         </span>
 
         {/* avatar */}
-        {/* <img
+        <img
           src={displayAvatar}
           alt={`تصویر ${displayName}`}
           className="user-avatar"
           onError={(e) => {
             e.currentTarget.src = "/images/avatar-placeholder.png";
           }}
-        /> */}
+        />
 
         {/* Mobile search icon (only on phones) */}
         <button

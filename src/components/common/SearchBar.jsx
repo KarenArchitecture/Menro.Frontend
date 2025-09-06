@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+import "../../assets/css/search-bar-styles.css";
 function SearchBar({
   placeholder = "جستجو رستوران، نوشیدنی، غذا ...",
   className = "",

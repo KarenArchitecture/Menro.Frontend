@@ -1,0 +1,199 @@
+/* ریشه رنگ‌ها مطابق برند */
+:root {
+  --bg: #0f0f10;
+  --text: #fff;
+  --muted: #cfcfcf;
+  --accent: #ff9d10; /* نارنجی منرو */
+}
+
+* {
+  box-sizing: border-box;
+  font-family: "Vazirmatn", sans-serif;
+  margin: 0;
+  padding: 0;
+  transition: 0.3s ease;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  font-size: 62.5%;
+  width: 100%;
+  overflow-x: hidden;
+  background-color: #0c0f14;
+  color: #ffffff;
+  direction: rtl;
+  margin: 0;
+  padding: 0;
+}
+
+/* هدر بالای همه باشد */
+.app-header-fixed {
+  position: fixed;
+  top: 12px;
+  left: 0;
+  right: 0;
+  z-index: 50;
+}
+
+/* تمام قد */
+.hero {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background-image: url("/images/landing-hero.png");
+  background-size: cover;
+  /* فوکوس را از مرکز ببریم سمت راست/بالا تا سوژه نزدیک لبه‌ها شود */
+  background-position: 90% center; /* به جای center,center → 70% وسط */
+  background-repeat: no-repeat;
+  isolation: isolate;
+}
+
+/* اوورلی تیره موجود */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.45) 0%,
+    rgba(0, 0, 0, 0.25) 35%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* هاله‌ی قهوه‌ای از پایین (مثل طرح) */
+.hero::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 26vh;
+  background: linear-gradient(
+    180deg,
+    rgba(94, 58, 28, 0) 0%,
+    rgba(94, 58, 28, 0.12) 35%,
+    rgba(94, 58, 28, 0.28) 70%,
+    rgba(94, 58, 28, 0.4) 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+.hero__overlay {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* وسط عمودی */
+  justify-content: flex-end; /* وسط افقی */
+  min-height: 100vh;
+  padding: 0 16px;
+  text-align: center; /* متن و سرچ وسط */
+}
+
+.hero__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  width: 100%;
+  max-width: 720px; /* کمی باریک‌تر برای تمرکز */
+}
+/* عنوان */
+.hero__title {
+  color: var(--text);
+  font-weight: 900;
+  font-size: clamp(28px, 4.2vw, 56px); /* دسکتاپ‌اول ولی ریسپانسیو */
+  line-height: 1.2;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+  margin: 0 0 16px;
+}
+.hero__title span {
+  color: var(--accent);
+}
+
+.hero .search-bar-container {
+  width: min(300px, 30vw); /* طول کمتر */
+  margin: 12px auto 0;
+}
+
+.hero .search-bar {
+  width: 25rem;
+  height: 4rem; /* کوتاه‌تر */
+  padding: 0 0.9rem;
+  border-radius: 22px; /* گردی بیشتر */
+  background: rgba(15, 15, 16, 0.75); /* یک‌دست؛ نه مشکی/سرمه‌ای جدا */
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 10px 24px rgba(0, 0, 0, 0.25);
+  gap: 0.6rem;
+}
+
+.hero .search-bar input {
+  background: transparent !important; /* رنگ وسط با دور یکسان */
+  color: #eaeaea;
+  border: none;
+  outline: none;
+  font-size: 0.95rem;
+}
+
+.hero .search-bar input::placeholder {
+  color: #a9a9a9;
+  font-weight: 500;
+}
+
+.hero .icon-button {
+  background: transparent; /* دکمه آیکن هم شفاف */
+  border: none;
+  color: #dcdcdc;
+  display: grid;
+  place-items: center;
+}
+
+/* حالت فوکِس قشنگ با نارنجی برند */
+.hero .search-bar:focus-within {
+  border-color: rgba(255, 157, 16, 0.6);
+  box-shadow: 0 0 0 3px rgba(255, 157, 16, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 10px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* hint اسکرول */
+.hero__hint {
+  display: flex;
+  flex-direction: row-reverse;
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+  gap: 0.5rem;
+}
+
+/* فاصله از هدر ثابت (اگر هدر روی محتوا می‌افته) */
+@media (min-width: 1024px) {
+  .hero__content {
+    margin-top: 72px;
+  } /* بسته به ارتفاع AppHeader */
+}
+
+/* موبایل بهینه‌سازی */
+@media (max-width: 768px) {
+  .hero__title {
+    font-size: clamp(24px, 6vw, 34px);
+  }
+  .hero__content {
+    margin-top: 64px;
+  }
+}

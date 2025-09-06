@@ -1,3 +1,6 @@
+import SearchBar from "../common/SearchBar";
+import MouseIcon from "../icons/MouseIcon";
+
 export default function Hero() {
   return (
     <section className="hero">
@@ -7,16 +10,14 @@ export default function Hero() {
             <span>منرو</span> بهترین همیار رستورانِ تو
           </h1>
 
+          {/* سرچ‌بار آمادهٔ خودمون */}
           <div className="hero__search">
-            {/* آیکن سمت راست + اینپوت سرچ (فعلاً بدون لاجیک) */}
-            <input
-              type="text"
-              placeholder="جستجوی رستوران، نوشیدنی، غذا ..."
-              aria-label="جستجو"
-            />
+            <SearchBar placeholder="جستجوی رستوران، نوشیدنی، غذا ..." />
           </div>
-
-          <p className="hero__hint">اسکرول کنید ↓</p>
+          <div className="hero__hint">
+            <MouseIcon />
+            <p>اسکرول کنید</p>
+          </div>
         </div>
       </div>
     </section>

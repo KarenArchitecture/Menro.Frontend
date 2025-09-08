@@ -5,10 +5,13 @@ import { useQuery } from "@tanstack/react-query";
 import { getRestaurantMenuBySlug } from "../../api/restaurants"; // ✅ adjust if needed
 import { useParams } from "react-router-dom"; // to get slug from URL
 
-
 function MenuList({ activeCategory, onSelectItem }) {
   const { slug } = useParams(); // assumes your route includes :slug
-  const { data: menuData = [], isLoading, isError } = useQuery({
+  const {
+    data: menuData = [],
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["restaurantMenu", slug],
     queryFn: () => getRestaurantMenuBySlug(slug),
   });
@@ -23,27 +26,35 @@ function MenuList({ activeCategory, onSelectItem }) {
 
   return (
     <div className="res-menu">
-          {menuData.map((section) => {
-      if (activeCategory !== "all" && String(section.categoryId) !== activeCategory)
-        return null;
+      {menuData.map((section) => {
+        if (
+          activeCategory !== "all" &&
+          String(section.categoryId) !== activeCategory
+        )
+          return null;
 
-      return (
-        <section key={String(section.categoryId)} data-category-section={String(section.categoryId)}>
-          <div className="menu_nav">
-            <p>{section.categoryTitle}</p>
-          </div>
-          <div className={`food_items ${scrollClass}`}>
-            {section.foods.map((item) => (
-              <MenuItem key={item.id} item={{ ...item, categoryTitle: section.categoryTitle }} onSelectItem={onSelectItem} />
-            ))}
-          </div>
-        </section>
-      );
-    })}
-
+        return (
+          <section
+            key={String(section.categoryId)}
+            data-category-section={String(section.categoryId)}
+          >
+            <div className="menu_nav">
+              <p>{section.categoryTitle}</p>
+            </div>
+            <div className={`food_items ${scrollClass}`}>
+              {section.foods.map((item) => (
+                <MenuItem
+                  key={item.id}
+                  item={{ ...item, categoryTitle: section.categoryTitle }}
+                  onSelectItem={onSelectItem}
+                />
+              ))}
+            </div>
+          </section>
+        );
+      })}
     </div>
   );
 }
-
 
 export default MenuList;

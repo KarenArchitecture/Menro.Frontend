@@ -1,0 +1,109 @@
+@media (min-width: 768px) {
+  .app-header {
+    position: sticky;
+    top: 16px;
+    left: 0;
+    right: 0;
+    z-index: 60;
+    padding: 0 32px;
+    pointer-events: none;
+    display: block;
+  }
+
+  .app-header__pill {
+    margin: 0 auto;
+    width: min(60vw, 1100px);
+    overflow: hidden;
+    padding: 22px 28px;
+    min-height: 58px;
+    border-radius: 1.5rem;
+    background: rgba(17, 20, 26, 0.62);
+    backdrop-filter: blur(18px) saturate(135%);
+    -webkit-backdrop-filter: blur(18px) saturate(135%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    pointer-events: auto;
+  }
+
+  .app-header__nav {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    column-gap: 28rem;
+    direction: rtl;
+  }
+
+  .app-header__right,
+  .app-header__left {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .app-header__right {
+    gap: 3rem;
+    padding-right: 3rem;
+  }
+
+  .app-header__link {
+    color: #d0d4db;
+    font-weight: 700;
+    font-size: 1.8rem;
+    text-decoration: none;
+  }
+  .app-header__link.is-active {
+    color: #d17842;
+  }
+
+  .icon-btn {
+    width: 3rem;
+    height: 3rem;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .icon-wrap {
+    position: relative;
+  }
+  .icon-wrap .badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: #e53935;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  }
+
+  .icon-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .icon-btn > svg {
+    width: 22px;
+    height: 22px;
+  }
+  @media (max-width: 1024px) {
+    .app-header__pill {
+      width: min(94vw, 1100px);
+    }
+    .app-header__nav {
+      column-gap: 48px;
+    }
+  }
+}

@@ -2,10 +2,17 @@
 import axios from "axios";
 
 const userAxios = axios.create({
-  //  baseURL: "http://localhost:5096/api/user",
-  baseURL: "https://localhost:7270/api/public",
+  baseURL: "https://localhost:7270/api/user",
+  withCredentials: true, // ok to keep; JWT is in header anyway
+});
 
-  withCredentials: true, // ✅ to send cookies/token if needed
+userAxios.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 export default userAxios;
+

@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import {
+  fetchRestaurantCategories,
+  registerRestaurant,
+} from "../api/restaurants";
 import usePageStyles from "../hooks/usePageStyles";
 
 //  HH:MM  ➔  HH:MM:SS
@@ -35,18 +39,13 @@ export default function RegisterRestaurantPage() {
   /* fetch restaurant categories */
   const categoriesQuery = useQuery({
     queryKey: ["restaurantCategories"],
-    queryFn: async () => {
-      const res = await fetch("/api/restaurants/categories");
-      if (!res.ok) throw new Error("خطا در دریافت دسته‌بندی‌ها");
-      return res.json();
-    },
+    queryFn: fetchRestaurantCategories,
     staleTime: 5 * 60 * 1_000,
   });
 
   /* submit mutation */
   const registerMutation = useMutation({
     mutationFn: async () => {
-      // time validation
       if (!isTimeValid(form.restaurantOpenTime, form.restaurantCloseTime)) {
         throw new Error("ساعت پایان باید بعد از ساعت شروع باشد");
       }
@@ -58,19 +57,7 @@ export default function RegisterRestaurantPage() {
         restaurantCategoryId: Number(form.restaurantCategoryId),
       };
 
-      const token = localStorage.getItem("token");
-      const res = await fetch("/api/restaurants/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.text();
-      if (!res.ok) throw new Error("ثبت رستوران با مشکل مواجه شد");
-      return data;
+      return await registerRestaurant(payload);
     },
     onSuccess: () => {
       setMsg({ text: "رستوران با موفقیت ثبت شد", type: "success" });

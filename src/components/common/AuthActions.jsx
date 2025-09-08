@@ -3,20 +3,30 @@ import { Link, useNavigate } from "react-router-dom";
 
 export default function AuthActions() {
   const navigate = useNavigate();
-
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     localStorage.removeItem("userPhone");
-    navigate("/"); // back to home
+    navigate("/");
   };
 
   return (
-    <div style={{ display: "flex", gap: "1rem", margin: "2rem 0" }}>
-      <Link to="/login">ورود</Link>
-      <Link to="/register">ثبت‌ نام</Link>
-      <Link to="/register-restaurant">ثبت رستوران</Link>
-      <button onClick={handleLogout}>خروج</button>
-    </div>
+    <nav className="auth-actions" aria-label="Auth actions">
+      <Link className="auth-btn auth-btn--primary" to="/login">
+        ورود
+      </Link>
+      <Link className="auth-btn auth-btn--outline" to="/register">
+        ثبت‌ نام
+      </Link>
+      <Link className="auth-btn auth-btn--outline" to="/register-restaurant">
+        ثبت رستوران
+      </Link>
+      <Link className="auth-btn auth-btn--ghost" to="/admin">
+        پنل ادمین
+      </Link>
+      <button className="auth-btn auth-btn--danger" onClick={handleLogout}>
+        خروج
+      </button>
+    </nav>
   );
 }

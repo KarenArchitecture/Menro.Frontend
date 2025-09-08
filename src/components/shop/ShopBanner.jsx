@@ -27,7 +27,8 @@ import { getRestaurantBannerBySlug } from "../../api/restaurants";
 //         backgroundSize: "cover",
 //         backgroundPosition: "center",
 //       }}
-  function ShopBanner({ banner }) {     // banner now arrives as a prop
+function ShopBanner({ banner }) {
+  // banner now arrives as a prop
   if (!banner) {
     return (
       <div className="text-center py-6 text-red-500">
@@ -40,8 +41,8 @@ import { getRestaurantBannerBySlug } from "../../api/restaurants";
     <section
       className="banner"
       style={{
-        backgroundImage   : `url(${banner.bannerImageUrl})`,
-        backgroundSize    : "cover",
+        backgroundImage: `url(${banner.bannerImageUrl})`,
+        backgroundSize: "cover",
         backgroundPosition: "center",
       }}
     >

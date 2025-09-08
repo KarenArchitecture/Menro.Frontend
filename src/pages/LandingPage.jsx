@@ -5,6 +5,8 @@ import AppHeader from "../components/common/AppHeader";
 import ProfileIcon from "../components/icons/ProfileIcon";
 import CartIcon from "../components/icons/CartIcon";
 import SearchIcon from "../components/icons/SearchIcon";
+
+import StatsSection from "../components/landing/StatsSection";
 import WhyMenroSection from "../components/landing/WhyMenroSection";
 
 export default function LandingPage() {
@@ -32,6 +34,7 @@ export default function LandingPage() {
       />
       <Hero />
       <WhyMenroSection />
+      <StatsSection />
     </div>
   );
 }

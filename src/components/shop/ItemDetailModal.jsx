@@ -1,51 +1,37 @@
-// src/components/shop/ItemDetailModal.jsx
 import React, { useState, useEffect } from "react";
 
-// This is the complete and final modal component.
-// It now handles its own animation to ensure it's always smooth.
 function ItemDetailModal({ item, onClose }) {
-  // Internal state to control the 'active' class for the CSS transition.
   const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
-    // When the 'item' prop is provided, we trigger the slide-in animation.
-    // The timeout ensures that the component is mounted in the DOM before the
-    // 'active' class is added, which allows the CSS transition to play.
     if (item) {
       const timer = setTimeout(() => {
         setIsActive(true);
-      }, 10); // A tiny delay is all that's needed.
+      }, 10);
       return () => clearTimeout(timer);
     }
   }, [item]);
 
-  // This function handles closing the modal.
   const handleClose = () => {
-    // 1. Remove the 'active' class to trigger the slide-out animation.
     setIsActive(false);
 
-    // 2. Wait for the animation to finish (350ms, matching your CSS)
-    //    before calling the parent's onClose function to remove the component.
     const timer = setTimeout(() => {
       onClose();
     }, 350);
     return () => clearTimeout(timer);
   };
 
-  // If there's no item, we render nothing.
   if (!item) {
     return null;
   }
 
   return (
     <>
-      {/* The backdrop fades in and out with the modal */}
       <div
         className={`modal-backdrop ${isActive ? "active" : ""}`}
         onClick={handleClose}
       ></div>
 
-      {/* The modal slides up and down based on the 'active' class */}
       <div className={`bottom-modal ${isActive ? "active" : ""}`}>
         <div className="modal-content">
           <div className="modal-hero">
@@ -57,7 +43,8 @@ function ItemDetailModal({ item, onClose }) {
             <div className="modal-info-panel">
               <div className="modal-info-top">
                 <p className="modal-category">
-                  <i className="fas fa-layer-group"></i>{" "}{item.categoryTitle ?? "—"}
+                  <i className="fas fa-layer-group"></i>{" "}
+                  {item.categoryTitle ?? "—"}
                 </p>
                 <div>
                   <h2 className="modal-title">{item.name}</h2>
@@ -78,7 +65,9 @@ function ItemDetailModal({ item, onClose }) {
                 <div className="modal-rating">
                   <i className="fas fa-star"></i>
                   <span>{item.rating.toFixed(1)}</span>
-                  <span className="modal-reviews">({item.voters.toLocaleString("fa-IR")})</span>
+                  <span className="modal-reviews">
+                    ({item.voters.toLocaleString("fa-IR")})
+                  </span>
                 </div>
               </div>
             </div>

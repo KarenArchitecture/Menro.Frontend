@@ -1,8 +1,10 @@
-import React from "react";
 import SearchBar from "../common/SearchBar";
-import CartIcon from "../icons/CartIcon";
+import MapIcon from "../icons/MapIcon";
 import BackIcon from "../icons/BackIcon";
-
+import StarIcon from "../icons/StarIcon";
+import ShoppingBagIcon from "../icons/ShoppingBagIcon";
+import MusicIcon from "../icons/MusicIcon";
+import CircleIcon from "../icons/CircleIcon";
 function ShopBanner({ banner }) {
   if (!banner) {
     return (
@@ -20,46 +22,53 @@ function ShopBanner({ banner }) {
       }}
     >
       <nav className="navbar">
-        <button className="icon-btn icon-btn--ring" aria-label="Back">
-          <BackIcon className="back-icon" />
-        </button>
-
-        <button className="icon-btn icon-btn--ring" aria-label="Cart">
-          <CartIcon />
-        </button>
-      </nav>
-      <div className="banner-content">
-        <div className="restaurant-title">
-          <h1 className="restaurant-name">{banner.name}</h1>
-          <p className="restaurant-description">{banner.categoryName}</p>
+        <div className="nav-right">
+          <div className="shop-icon-wrapper">
+            <button className="icon-btn" aria-label="Back">
+              <BackIcon />
+            </button>
+          </div>
+          <div className="shop-icon-wrapper">
+            <button className="icon-btn " aria-label="Map">
+              <MapIcon />
+            </button>
+          </div>
         </div>
 
-        <div className="search-and-music">
-          <SearchBar
-            className="search-bar--hero"
-            placeholder="سفارش خود را پیدا کنید..."
-          />
-          <button className="music-request">
+        <div className="nav-mid">
+          <div className="restaurant-title">
+            <h1 className="restaurant-name">{banner.name}</h1>
+          </div>
+          <div className="rating">
+            <StarIcon />
+            <span className="rate">4</span>
+            <span className="rate-voters-num">(250)</span>
+          </div>
+        </div>
+
+        <div className="nav-left">
+          <div className="shop-icon-wrapper">
+            <button className="icon-btn " aria-label="Cart">
+              <ShoppingBagIcon />
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <div className="banner-content">
+        <SearchBar
+          className="search-bar--hero"
+          placeholder="سفارش خود را پیدا کنید..."
+        />
+
+        <div className="reorder-and-music">
+          <button className="reorder-and-music-btn">
+            <span>همون همیشگی</span>
+            <CircleIcon />
+          </button>
+          <button className="reorder-and-music-btn">
             <span>درخواست موسیقی</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="music-icon"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9 9l10.5-2.25v11.25"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9 9v10.125a3.375 3.375 0 11-2.25-3.194"
-              />
-            </svg>
+            <MusicIcon />
           </button>
         </div>
       </div>

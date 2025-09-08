@@ -1,9 +1,8 @@
-// src/components/shop/MenuList.jsx
 import React from "react";
 import MenuItem from "./MenuItem";
 import { useQuery } from "@tanstack/react-query";
-import { getRestaurantMenuBySlug } from "../../api/restaurants"; // ✅ adjust if needed
-import { useParams } from "react-router-dom"; // to get slug from URL
+import { getRestaurantMenuBySlug } from "../../api/restaurants";
+import { useParams } from "react-router-dom";
 
 function MenuList({ activeCategory, onSelectItem }) {
   const { slug } = useParams(); // assumes your route includes :slug

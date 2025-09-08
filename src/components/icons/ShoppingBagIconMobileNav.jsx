@@ -1,4 +1,4 @@
-export default function ShoppingBagMobileNav() {
+export default function ShoppingBag() {
   return (
     <svg
       width="24"

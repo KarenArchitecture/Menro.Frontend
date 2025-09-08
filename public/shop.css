@@ -68,119 +68,113 @@ body {
   z-index: 1;
 }
 
-/* top icons row */
 .navbar {
-  position: absolute;
-  inset-inline: 12px;
-  top: 10px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+}
+
+.nav-right {
+  display: flex;
+  justify-self: flex-start;
+  gap: 1rem;
+  align-items: center;
+}
+
+.nav-mid {
+  display: flex;
+  justify-self: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.restaurant-title {
+  font-size: 25px;
+  font-weight: 800;
+}
+
+.rate {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.rate-voters-num {
+  font-size: 8px;
+  font-weight: 400;
+}
+
+.nav-left {
+  display: flex;
+  justify-self: flex-end;
+  align-items: center;
+}
+
+.rating svg {
+  margin-bottom: 4px;
+  width: 10.5px;
+  height: 10.5px;
 }
 
 .circle-button,
-.cart-icon-circle {
-  width: 40px;
-  height: 40px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px;
-  width: auto;
-  height: auto;
+.cart-icon-circle,
+.icon-btn,
+button.circle-button,
+button.cart-icon-circle,
+button.icon-btn {
+  -webkit-appearance: none;
+  appearance: none;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  border-radius: 999px;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.circle-button .icon,
-.cart-icon-circle .icon {
-  width: 100%;
-  height: 100%;
+.shop-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background-color: #0c0f14;
+  border-radius: 10px;
 }
 
-.icon-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
+.icon-btn:focus {
+  outline: none;
+}
+.icon-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 2px;
+  border-radius: 15px;
 }
 
-.icon-btn--ring {
-  background: rgba(0, 0, 0, 0.45);
-  border: 3px solid #fff;
-  border-radius: 50%;
-  color: #fff;
+.icon-btn::-moz-focus-inner {
+  border: 0;
+  padding: 0;
 }
 
-.icon-btn > svg {
-  width: 22px;
-  height: 22px;
-}
-
-.icon {
-  width: 40px;
-  height: 40px;
-  display: block;
-  pointer-events: none;
-}
-
-.cart-wrapper {
-  position: relative;
-}
-.cart-badge {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
-  border-radius: 999px;
-  background: #e53935;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 800;
-  display: grid;
-  place-items: center;
-}
-
-.back-icon {
-  transform: scaleX(-1);
-}
-/* title + row content */
 .banner-content {
   direction: rtl;
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* right aligned like the shot */
+  align-items: flex-start;
   justify-content: flex-end;
   gap: 12px;
   height: 100%;
-  padding-top: 7rem;
+  padding-top: 1rem;
 }
 
 .restaurant-name {
   margin: 0;
   font-weight: 800;
   line-height: 1.1;
-  font-size: clamp(22px, 7vw, 34px);
+  font-size: 25px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
   text-align: right;
 }
 
-.restaurant-description {
-  margin: 2px 0 6px;
-  font-weight: 600;
-  font-size: clamp(14px, 4.5vw, 18px);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  text-align: right;
-  color: #e7edf6;
-}
-
 /* music + search row (like screenshot) */
-.search-and-music {
+.reorder-and-music {
   width: 100%;
   display: flex;
   align-items: center;
@@ -188,28 +182,32 @@ body {
 }
 
 /* gradient music button (left) */
-.music-request {
-  width: 50%;
+.reorder-and-music-btn {
+  width: 165px;
   flex: 0 0 46%;
-  height: 52px;
+  height: 42px;
   border: 0;
-  border-radius: 16px;
+  border-radius: 10px;
   padding: 0 14px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  flex-direction: row-reverse;
+  justify-content: center;
+  gap: 5px;
   white-space: nowrap;
-  font-weight: 800;
-  background: linear-gradient(90deg, #c06733, #b95945);
+  font-size: 9px;
+  font-weight: 700;
+  background: linear-gradient(180deg, #262b33, #161b20);
   color: #fff;
 }
-.music-request span {
-  font-size: 1rem;
+.reorder-and-music-btn span {
+  font-size: 9px;
+  font-weight: 700;
 }
-.music-icon {
-  width: 20px;
-  height: 20px;
+
+.reorder-and-music-btn svg {
+  width: 13px;
+  height: 10px;
 }
 
 /* search (right) – generic styles for your <SearchBar /> wrapper */
@@ -1311,4 +1309,48 @@ body {
   .size-options {
     gap: 1.5rem;
   }
+}
+
+/* Rating row (star icon + numeric rating + (count)) */
+.rating-chip {
+  position: absolute;
+  left: 3.5rem;
+  bottom: 0;
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.25rem 0.45rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  z-index: 1;
+  flex-direction: row-reverse;
+}
+
+.rating-chip svg {
+  width: 14px;
+  height: 14px;
+  color: #d17842;
+  margin-bottom: 5px;
+}
+.rating-chip .score {
+  font-weight: 700;
+}
+.rating-chip .voters {
+  opacity: 0.85;
+  font-size: 0.8rem;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: #bbb;
+}
+
+.star-icon {
+  width: 14px;
+  height: 14px;
 }

@@ -663,10 +663,11 @@
   width: 117px;
   max-width: 160px;
   height: 28px;
-  font-size: 2rem;
+  font-size: 1rem;
   font-weight: 800;
   cursor: pointer;
   margin-bottom: 0;
+  text-align: center;
 }
 .qty-controls {
   display: flex;

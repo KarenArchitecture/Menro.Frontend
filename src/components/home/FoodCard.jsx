@@ -1,7 +1,25 @@
-import React, { useState } from "react";
+// src/components/FoodCard.jsx
+import React from "react";
 import StarIcon from "../icons/StarIcon";
 
-function FoodCard({ item, onAddToCart, onQuantityChange }) {
+/**
+ * FoodCard
+ * - Preserves existing classNames to avoid CSS impact
+ * - Replaces cart (+) UI with a footer CTA that links to the restaurant
+ * - Builds a dynamic href with sensible placeholders so backend can wire it up later
+ * - Optional LinkComponent prop for React Router / Next.js integration
+ */
+export default function FoodCard({
+  item,
+  /** Optional custom link component (e.g., React Router's Link or Next.js Link). */
+  LinkComponent,
+  /** Unused now, kept for backward compatibility. */
+  onAddToCart,
+  /** Unused now, kept for backward compatibility. */
+  onQuantityChange,
+  /** Optional click handler when CTA is used (analytics, etc.). */
+  onRestaurantClick,
+}) {
   const {
     imageUrl,
     name,
@@ -11,8 +29,12 @@ function FoodCard({ item, onAddToCart, onQuantityChange }) {
     restaurantCategory,
     rating,
     voters,
-  } = item;
+    restaurantId,
+    restaurantSlug,
+    restaurantPath, // preferred if backend provides a ready-to-use path
+  } = item || {};
 
+  // Why: robust image fallback to keep cards stable even when API returns relative paths
   const imgSrc = imageUrl?.startsWith?.("http")
     ? imageUrl
     : imageUrl
@@ -20,23 +42,29 @@ function FoodCard({ item, onAddToCart, onQuantityChange }) {
     : "/images/food-placeholder.jpg";
 
   const safeRating = typeof rating === "number" ? rating : Number(rating) || 0;
+  const displayRestaurantName = (
+    restaurantName ||
+    item?.restaurant?.name ||
+    "نام رستوران"
+  ).trim();
 
-  // 🔸 local quantity state (UI only; parent can optionally listen)
-  const [qty, setQty] = useState(0);
-
-  const inc = () => {
-    const next = qty + 1;
-    setQty(next);
-    onAddToCart?.(name); // keep your existing callback
-    onQuantityChange?.(item, next); // optional external listener
+  // Helper to build the restaurant URL with graceful fallbacks.
+  const buildRestaurantHref = () => {
+    if (restaurantPath) return restaurantPath; // e.g. "/restaurants/meno-roy"
+    if (restaurantSlug)
+      return `/restaurants/${encodeURIComponent(restaurantSlug)}`;
+    if (restaurantId !== undefined && restaurantId !== null)
+      return `/restaurants/${encodeURIComponent(String(restaurantId))}`;
+    if (displayRestaurantName && displayRestaurantName !== "نام رستوران")
+      return `/restaurants/search?name=${encodeURIComponent(
+        displayRestaurantName
+      )}`;
+    return "/restaurants"; // ultimate fallback
   };
 
-  const dec = () => {
-    if (qty === 0) return;
-    const next = qty - 1;
-    setQty(next);
-    onQuantityChange?.(item, next);
-  };
+  const href = buildRestaurantHref();
+  const CTA = LinkComponent || "a"; // allows <Link to> or <a href>
+  const linkProps = LinkComponent ? { to: href } : { href };
 
   return (
     <>
@@ -66,56 +94,32 @@ function FoodCard({ item, onAddToCart, onQuantityChange }) {
           <h3 className="food-title" title={name}>
             {name}
           </h3>
+          {/* Keep ingredients optional; uncomment if needed */}
           {/* {ingredients ? <p className="food-ingredients">{ingredients}</p> : null} */}
         </div>
 
-        {/* Price + Controls */}
+        {/* Price row with restaurant CTA inside the button area */}
         <div className="food-price-row">
           <p className="food-price">
             {(price ?? 0).toLocaleString("fa-IR")} <span>تومان</span>
           </p>
 
-          {/* If qty is 0 → single + button; else → 3-part control */}
-          {qty === 0 ? (
-            <button
-              className="add-btn"
-              onClick={inc}
-              aria-label={`افزودن ${name} به سبد`}
-            >
-              +
-            </button>
-          ) : (
-            <div className="qty-controls" role="group" aria-label="تعداد">
-              <button
-                type="button"
-                className="qty-btn qty-btn--minus"
-                onClick={dec}
-                aria-label="کم کردن"
-              >
-                –
-              </button>
-              <div className="qty-display" aria-live="polite">
-                {qty}
-              </div>
-              <button
-                type="button"
-                className="qty-btn qty-btn--plus"
-                onClick={inc}
-                aria-label="افزودن"
-              >
-                +
-              </button>
-            </div>
-          )}
+          {/* Button now navigates to the restaurant (no CSS class changes) */}
+          <CTA
+            {...linkProps}
+            className="add-btn"
+            data-restaurant-id={restaurantId ?? undefined}
+            aria-label={`مشاهده ${displayRestaurantName}`}
+            onClick={(e) => {
+              onRestaurantClick?.(item, href, e);
+            }}
+            title={`مشاهده ${displayRestaurantName}`}
+          >
+            {`رستوران ${displayRestaurantName} `}
+            <span aria-hidden>‹</span>
+          </CTA>
         </div>
-      </div>
-
-      {/* Footer */}
-      <div className="food-card-footer">
-        <span className="food-restaurant-name">{restaurantName}</span>
       </div>
     </>
   );
 }
-
-export default FoodCard;

@@ -1,12 +1,20 @@
-// src/components/admin/AdminHeader.jsx
 import React, { useEffect, useRef, useState } from "react";
 import SearchBar from "../common/SearchBar";
 
-export default function AdminHeader({ userName = "کاربر ادمین", onHamburger }) {
+export default function AdminHeader({
+  userFullName, // (string)
+  avatarUrl, // (string - absolute or /relative)
+  isLoading = false, // show placeholders while fetching (دلخواه)
+  onHamburger,
+}) {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const inputRef = useRef(null);
 
-  // Focus the input when the overlay opens; ESC to close
+  // Fallbacks
+  const displayName = userFullName;
+  const displayAvatar = avatarUrl || "/images/avatar-placeholder.png";
+
+  // Focus the input; ESC to close
   useEffect(() => {
     if (mobileSearchOpen && inputRef.current) {
       inputRef.current.focus();
@@ -25,7 +33,6 @@ export default function AdminHeader({ userName = "کاربر ادمین", onHamb
 
   return (
     <header className="main-header">
-      {/* Right side (RTL): hamburger */}
       <button
         className="admin-hamburger"
         onClick={onHamburger}
@@ -41,13 +48,22 @@ export default function AdminHeader({ userName = "کاربر ادمین", onHamb
 
       {/* User info (greeting + avatar) */}
       <div className="user-info">
-        <span>خوش آمدید، {userName}</span>
-        <img
-          src="https://via.placeholder.com/40"
-          alt=""
+        {/* name: shows placeholder when loading */}
+        <span title={displayName}>
+          {isLoading ? "در حال بارگذاری..." : <>خوش آمدید، {displayName}</>}
+        </span>
+
+        {/* avatar */}
+        {/* <img
+          src={displayAvatar}
+          alt={`تصویر ${displayName}`}
           className="user-avatar"
-        />
-        {/* Mobile search icon (shows only on phones) */}
+          onError={(e) => {
+            e.currentTarget.src = "/images/avatar-placeholder.png";
+          }}
+        /> */}
+
+        {/* Mobile search icon (only on phones) */}
         <button
           className="admin-search-icon"
           aria-label="جستجو"

@@ -14,6 +14,7 @@ import MusicSection from "../components/admin/MusicSection";
 import FinancialSection from "../components/admin/FinancialSection";
 import AdsBookingSection from "../components/admin/AdsBookingSection";
 import ProfileSection from "../components/admin/ProfileSection";
+import OrdersSection from "../components/admin/OrdersSection";
 
 // لیست ماه‌ها برای برچسب فارسی
 const monthFa = [
@@ -195,6 +196,12 @@ export default function AdminDashboardPage() {
         <section id="music-view" className={viewClass("music")}>
           <h2 className="content-title">مدیریت موزیک پلیر</h2>
           <MusicSection />
+        </section>
+
+        {/* ORDERS */}
+        <section id="orders-view" className={viewClass("orders")}>
+          <h2 className="content-title">مدیریت سفارش‌ها</h2>
+          <OrdersSection />
         </section>
 
         {/* FINANCIAL */}

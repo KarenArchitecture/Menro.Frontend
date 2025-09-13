@@ -2,22 +2,12 @@
 import React from "react";
 import StarIcon from "../icons/StarIcon";
 
-/**
- * FoodCard
- * - Preserves existing classNames to avoid CSS impact
- * - Replaces cart (+) UI with a footer CTA that links to the restaurant
- * - Builds a dynamic href with sensible placeholders so backend can wire it up later
- * - Optional LinkComponent prop for React Router / Next.js integration
- */
 export default function FoodCard({
   item,
-  /** Optional custom link component (e.g., React Router's Link or Next.js Link). */
+
   LinkComponent,
-  /** Unused now, kept for backward compatibility. */
   onAddToCart,
-  /** Unused now, kept for backward compatibility. */
   onQuantityChange,
-  /** Optional click handler when CTA is used (analytics, etc.). */
   onRestaurantClick,
 }) {
   const {
@@ -31,10 +21,9 @@ export default function FoodCard({
     voters,
     restaurantId,
     restaurantSlug,
-    restaurantPath, // preferred if backend provides a ready-to-use path
+    restaurantPath,
   } = item || {};
 
-  // Why: robust image fallback to keep cards stable even when API returns relative paths
   const imgSrc = imageUrl?.startsWith?.("http")
     ? imageUrl
     : imageUrl
@@ -48,9 +37,8 @@ export default function FoodCard({
     "نام رستوران"
   ).trim();
 
-  // Helper to build the restaurant URL with graceful fallbacks.
   const buildRestaurantHref = () => {
-    if (restaurantPath) return restaurantPath; // e.g. "/restaurants/meno-roy"
+    if (restaurantPath) return restaurantPath;
     if (restaurantSlug)
       return `/restaurants/${encodeURIComponent(restaurantSlug)}`;
     if (restaurantId !== undefined && restaurantId !== null)
@@ -59,17 +47,16 @@ export default function FoodCard({
       return `/restaurants/search?name=${encodeURIComponent(
         displayRestaurantName
       )}`;
-    return "/restaurants"; // ultimate fallback
+    return "/restaurants";
   };
 
   const href = buildRestaurantHref();
-  const CTA = LinkComponent || "a"; // allows <Link to> or <a href>
+  const CTA = LinkComponent || "a";
   const linkProps = LinkComponent ? { to: href } : { href };
 
   return (
     <>
       <div className="food-card">
-        {/* Image + rating chip overlay */}
         <div className="food-card-image">
           <img
             src={imgSrc}
@@ -104,7 +91,6 @@ export default function FoodCard({
             {(price ?? 0).toLocaleString("fa-IR")} <span>تومان</span>
           </p>
 
-          {/* Button now navigates to the restaurant (no CSS class changes) */}
           <CTA
             {...linkProps}
             className="add-btn"

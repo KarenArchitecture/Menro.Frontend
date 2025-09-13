@@ -76,6 +76,7 @@ body {
   background-color: var(--bg-dark);
   color: var(--text-primary);
   margin: 0;
+  padding: 0;
 }
 
 .dashboard-container {
@@ -105,6 +106,7 @@ ul {
 }
 
 .sidebar-header {
+  height: 75px;
   padding: 25px;
   border-bottom: 1px solid var(--border-color);
   text-align: center;
@@ -153,6 +155,7 @@ ul {
 }
 
 .nav-item a {
+  width: 100%;
   display: flex;
   align-items: center;
   padding: 12px 25px;
@@ -450,9 +453,6 @@ table td {
   color: var(--status-danger);
 }
 
-.input-group {
-  margin-bottom: 20px;
-}
 .input-group label {
   display: block;
   margin-bottom: 8px;
@@ -470,6 +470,14 @@ table td {
   color: var(--text-primary);
   box-sizing: border-box;
 }
+
+.input-alert {
+  color: red;
+  margin: 10px;
+  font-size: 12px;
+  display: block;
+}
+
 .theme-form {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -752,10 +760,6 @@ select {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 25px;
-}
-
-.form-column .input-group {
-  margin-bottom: 20px;
 }
 
 textarea {

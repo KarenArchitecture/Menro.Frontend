@@ -43,7 +43,8 @@ export default function AdminDashboardPage() {
   const [labels, setLabels] = useState([]);
   const [data, setData] = useState([]);
 
-  const restaurantId = null; // برای ادمین null بگذار؛ برای صاحب رستوران مقدار بده
+  // FIX: this must be state because we call setRestaurantId below
+  const [restaurantId, setRestaurantId] = useState(null);
 
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
   const toggleSidebar = useCallback(() => setSidebarOpen((v) => !v), []);
@@ -68,14 +69,20 @@ export default function AdminDashboardPage() {
   const viewClass = (tab) =>
     `content-view ${activeTab === tab ? "active" : ""}`;
 
-  // گرفتن آیدی رستوران اگه کاربر صاحب رستوران بود، اگه null برگشت یعنی ادمین سایت وارد شده
+  // گرفتن آیدی رستوران (اگر کاربر صاحب رستوران بود)
   useEffect(() => {
     const fetchRestaurantId = async () => {
-      const res = await adminAxios.get("/restaurant-id");
-      setRestaurantId(res.data.restaurantId);
+      try {
+        const res = await adminAxios.get("/restaurant-id");
+        setRestaurantId(res.data.restaurantId ?? null);
+      } catch (err) {
+        console.error("خطا در دریافت آیدی رستوران", err);
+        setRestaurantId(null);
+      }
     };
     fetchRestaurantId();
   }, []);
+
   // لود داده‌های نمودار از API
   useEffect(() => {
     const load = async () => {
@@ -86,7 +93,7 @@ export default function AdminDashboardPage() {
             : `/monthly-sales`;
 
         const { data: json } = await adminAxios.get(url);
-        // داده‌ای که API برمی‌گردونه مثل: [{month:1,totalSales:12345}, ...]
+        // [{month:1,totalSales:12345}, ...]
 
         setLabels(json.map((x) => monthFa[x.month - 1]));
         setData(json.map((x) => Number(x.totalSales)));
@@ -117,11 +124,17 @@ export default function AdminDashboardPage() {
       {/* main area */}
       <main className="main-content">
         <AdminHeader userName="کاربر ادمین" onHamburger={toggleSidebar} />
+
         {/* DASHBOARD */}
         <section id="dashboard-view" className={viewClass("dashboard")}>
           <h2 className="content-title">نمای کلی</h2>
 
-          <div className="stats-grid">
+          {/* Stats: removed "کاربران فعال" & "گزارش‌های خطا".
+              Force a neat 2-column grid so spacing looks intentional. */}
+          <div
+            className="stats-grid"
+            style={{ gridTemplateColumns: "repeat(2, minmax(0, 1fr))" }}
+          >
             <StatCard
               iconClass="fas fa-dollar-sign"
               color="#f59e0b"
@@ -133,18 +146,6 @@ export default function AdminDashboardPage() {
               color="#10b981"
               title="سفارشات جدید"
               value="۳۵۲"
-            />
-            <StatCard
-              iconClass="fas fa-users"
-              color="#3b82f6"
-              title="کاربران فعال"
-              value="۱,۴۲۰"
-            />
-            <StatCard
-              iconClass="fas fa-exclamation-triangle"
-              color="#ef4444"
-              title="گزارش‌های خطا"
-              value="۳"
             />
           </div>
 
@@ -172,40 +173,48 @@ export default function AdminDashboardPage() {
             </Panel>
           </div>
         </section>
+
         {/* PRODUCTS */}
         <section id="products-view" className={viewClass("products")}>
           <ProductsSection />
         </section>
+
         {/* CATEGORIES */}
         <section id="categories-view" className={viewClass("categories")}>
           <h2 className="content-title">مدیریت دسته‌بندی‌ها</h2>
           <CategoriesSection />
         </section>
+
         {/* THEME */}
         <section id="theme-view" className={viewClass("theme")}>
           <h2 className="content-title">مدیریت قالب رستوران</h2>
           <ThemeSection />
         </section>
+
         {/* MUSIC */}
         <section id="music-view" className={viewClass("music")}>
           <h2 className="content-title">مدیریت موزیک پلیر</h2>
           <MusicSection />
         </section>
+
         {/* FINANCIAL */}
         <section id="financial-view" className={viewClass("financial")}>
           <h2 className="content-title">اطلاعات مالی</h2>
           <FinancialSection />
         </section>
+
         {/* ADS */}
         <section id="ads-view" className={viewClass("ads")}>
           <h2 className="content-title">رزرو تبلیغ</h2>
           <AdsBookingSection />
         </section>
+
         {/* PROFILE */}
         <section id="profile-view" className={viewClass("profile")}>
           <h2 className="content-title">ویرایش پروفایل کاربری</h2>
           <ProfileSection />
         </section>
+
         {/* fallback / WIP */}
         <section id="fallback-view" className={viewClass("fallback")}>
           <h2 className="content-title">صفحه در حال ساخت</h2>

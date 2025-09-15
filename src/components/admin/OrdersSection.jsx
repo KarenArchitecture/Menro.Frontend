@@ -187,7 +187,7 @@ export default function OrdersSection() {
               }`}
               onClick={() => setShowHistory(false)}
             >
-              سفارش‌های در انتظار ({counts.pending})
+              سفارش‌های فعال ({counts.pending})
             </button>
             <button
               className={`btn ${showHistory ? "btn-primary" : "btn-secondary"}`}

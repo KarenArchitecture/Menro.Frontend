@@ -46,7 +46,6 @@ body {
   overflow: hidden;
   color: #fff;
   padding: 16px 16px 20px;
-  min-height: 260px;
 }
 
 .banner::before {
@@ -89,8 +88,8 @@ body {
 }
 
 .restaurant-title {
-  font-size: 25px;
   font-weight: 800;
+  padding-top: 5px;
 }
 
 .rate {
@@ -168,7 +167,7 @@ button.icon-btn {
   margin: 0;
   font-weight: 800;
   line-height: 1.1;
-  font-size: 25px;
+  font-size: 10px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
   text-align: right;
 }
@@ -178,7 +177,8 @@ button.icon-btn {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  gap: 25px;
 }
 
 /* gradient music button (left) */
@@ -213,8 +213,8 @@ button.icon-btn {
 /* search (right) – generic styles for your <SearchBar /> wrapper */
 .search-bar--hero {
   flex: 1 1 54%;
-  height: 52px;
-  border-radius: 16px;
+  height: 42px;
+  border-radius: 10px;
   background: rgba(19, 23, 30, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
@@ -222,6 +222,7 @@ button.icon-btn {
   padding-inline: 12px;
   gap: 10px;
   overflow: hidden;
+  width: 340px;
 }
 .search-bar--hero input {
   background: transparent;

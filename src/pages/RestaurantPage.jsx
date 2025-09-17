@@ -1,6 +1,5 @@
-// src/pages/RestaurantPage.jsx
 import React, { useState, useMemo } from "react";
-import { useParams } from "react-router-dom"; // << added
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import usePageStyles from "../hooks/usePageStyles";
 import AppHeader from "../components/common/AppHeader";
@@ -11,50 +10,59 @@ import MobileNav from "../components/common/MobileNav";
 import FoodCategoryList, {
   ALL_CAT_SVG,
 } from "../components/shop/FoodCategoryList";
-import { getRestaurantBannerBySlug } from "../api/restaurants";
-import { getRestaurantMenuBySlug } from "../api/restaurants";
+import {
+  getRestaurantBannerBySlug,
+  getRestaurantMenuBySlug,
+} from "../api/restaurants";
 import SearchIcon from "../components/icons/SearchIcon";
 import CartIcon from "../components/icons/CartIcon";
 import ProfileIcon from "../components/icons/ProfileIcon";
+import CheckoutBar from "../components/shop/CheckoutBar";
 
-const leftIcons = [
-  { key: "profile", icon: <ProfileIcon /> },
-  { key: "cart", icon: <CartIcon />, badge: 1 },
-  { key: "search", icon: <SearchIcon /> },
-];
-const rightLinks = [
-  { label: "منرو", href: "#", active: true },
-  { label: "خانه", href: "#" },
-  { label: "نقشه", href: "#" },
-  { label: "مقالات", href: "#" },
-];
+/* NEW: shared cart context */
+import { CartProvider, useCart } from "../components/shop/CartContext";
 
-function RestaurantPage() {
-  usePageStyles("/shop.css");
-
-  // Added: read slug from url
+/* -------- Inner content that consumes the cart -------- */
+function RestaurantContent() {
+  const navigate = useNavigate();
   const { slug } = useParams();
 
-  /* ---------- UI state --------------------------------------------------- */
+  /* ---------- UI state ---------- */
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const handleSelectItem = (item) => {
-    setSelectedItem(item);
-  };
+  const handleSelectItem = (item) => setSelectedItem(item);
+  const handleCloseModal = () => setSelectedItem(null);
 
-  const handleCloseModal = () => {
-    setSelectedItem(null);
-  };
+  /* ---------- Cart from context (replaces local stub) ---------- */
+  const cart = useCart();
 
-  const defaultFill = "#999FA8";
-  const activeFill = "#D17842";
+  /* ---------- Header icons (badge reflects cart) ---------- */
+  const leftIcons = useMemo(
+    () => [
+      { key: "profile", icon: <ProfileIcon /> },
+      {
+        key: "cart",
+        icon: <CartIcon />,
+        badge: cart.count > 0 ? cart.count : undefined,
+      },
+      { key: "search", icon: <SearchIcon /> },
+    ],
+    [cart.count]
+  );
 
-  /* ---------- Queries ---------------------------------------------------- */
+  const rightLinks = [
+    { label: "منرو", href: "#", active: true },
+    { label: "خانه", href: "#" },
+    { label: "نقشه", href: "#" },
+    { label: "مقالات", href: "#" },
+  ];
+
+  /* ---------- Data queries ---------- */
   const {
     data: banner,
-    isLoading,
-    isError,
+    isLoading: bannerLoading,
+    isError: bannerError,
   } = useQuery({
     queryKey: ["restaurantBanner", slug],
     queryFn: () => getRestaurantBannerBySlug(slug),
@@ -65,42 +73,19 @@ function RestaurantPage() {
     queryFn: () => getRestaurantMenuBySlug(slug),
   });
 
+  /* ---------- Categories (prepend “همه”) ---------- */
   const categoriesWithAll = useMemo(() => {
-    // convert every section coming from the API ➜ a clean category object
     const apiCats = menuData.map((sec) => ({
-      id: String(sec.categoryId), // 👈 always a string, always unique
+      id: String(sec.categoryId),
       name: sec.categoryTitle,
       svgIcon: sec.svgIcon,
     }));
-
-    /// always prepend the hard-coded “همه”
-    return [
-      { id: "all", name: "همه", svgIcon: ALL_CAT_SVG }, // ✅ always present, with icon
-      ...apiCats,
-    ];
+    return [{ id: "all", name: "همه", svgIcon: ALL_CAT_SVG }, ...apiCats];
   }, [menuData]);
 
-  // const categories =
-  // menuData?.map((section) => ({
-  //   id: section.categoryId,
-  //   title: section.categoryTitle,
-  //   icon: section.svgIcon,
-  //   key: section.categoryKey,
-  // })) || [];
+  if (bannerLoading) return <div>Loading...</div>;
+  if (bannerError) return <div>Error loading restaurant data</div>;
 
-  /* ---------- Pick which foods to show ---------------------------------- */
-  // const displayedFoods = useMemo(() => {
-  //   if (activeCategory === "all") {
-  //     return menuData.flatMap(sec => sec.foods);
-  //   }
-  //   const section = menuData.find(sec => String(sec.categoryId) === activeCategory);  // compare strings
-  //   return section ? section.foods : [];
-  // }, [activeCategory, menuData]);
-
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error loading restaurant data</div>;
-
-  //
   return (
     <div>
       <AppHeader
@@ -110,6 +95,7 @@ function RestaurantPage() {
         top={12}
         maxWidth={1140}
       />
+
       <ShopBanner banner={banner} />
 
       <div className="res-menu-wrapper">
@@ -123,19 +109,33 @@ function RestaurantPage() {
 
         <MenuList
           activeCategory={activeCategory}
-          onSelectItem={setSelectedItem}
+          onSelectItem={handleSelectItem}
         />
       </div>
 
       {selectedItem && (
-        <ItemDetailModal
-          item={selectedItem}
-          onClose={() => setSelectedItem(null)}
-        />
+        <ItemDetailModal item={selectedItem} onClose={handleCloseModal} />
       )}
 
       <MobileNav />
+
+      {/* Shows only when there is something in cart */}
+      <CheckoutBar
+        count={cart.count}
+        total={cart.total}
+        onCheckout={() => navigate("/checkout")}
+      />
     </div>
+  );
+}
+
+/* -------- Outer page: keep CSS hook + provide the cart -------- */
+function RestaurantPage() {
+  usePageStyles("/shop.css");
+  return (
+    <CartProvider>
+      <RestaurantContent />
+    </CartProvider>
   );
 }
 

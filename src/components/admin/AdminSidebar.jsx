@@ -12,6 +12,7 @@ const NAV = [
   { key: "music", label: "مدیریت موسیقی", icon: "fas fa-music" },
 
   { isDivider: true, label: "کسب و کار" },
+  { key: "orders", label: "مدیریت سفارش‌ها", icon: "fas fa-receipt" },
   { key: "financial", label: "مالی", icon: "fas fa-file-invoice-dollar" },
   { key: "ads", label: "رزرو تبلیغات", icon: "fas fa-bullhorn" },
 

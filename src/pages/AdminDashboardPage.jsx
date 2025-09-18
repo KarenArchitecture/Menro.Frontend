@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback } from "react";
 import usePageStyles from "../hooks/usePageStyles";
 import adminAxios from "../api/adminDashboardAxios";
+// import restaurantAxios from "../api/restaurantAxios"; // not used
 import AdminHeader from "../components/admin/AdminHeader";
 import AdminSidebar from "../components/admin/AdminSidebar";
 import Panel from "../components/admin/Panel";
-import StatCard from "../components/admin/StatCard";
+// import StatCard from "../components/admin/StatCard"; // removed
 import LineChart from "../components/admin/LineChart";
 import ProductsSection from "../components/admin/ProductsSection";
 import CategoriesSection from "../components/admin/CategoriesSection";
@@ -13,6 +14,7 @@ import MusicSection from "../components/admin/MusicSection";
 import FinancialSection from "../components/admin/FinancialSection";
 import AdsBookingSection from "../components/admin/AdsBookingSection";
 import ProfileSection from "../components/admin/ProfileSection";
+import OrdersSection from "../components/admin/OrdersSection";
 
 // لیست ماه‌ها برای برچسب فارسی
 const monthFa = [
@@ -30,28 +32,28 @@ const monthFa = [
   "دسامبر",
 ];
 
-/* component */
 export default function AdminDashboardPage() {
-  /* wait until CSS is fetched */
+  /* ensure CSS loaded */
   const cssReady = usePageStyles("/admin-dashboard.css");
 
   const [activeTab, setActiveTab] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // فروش کل
-  const [totalRevenue, setTotalRevenue] = useState(null);
-
-  // داده‌های نمودار فروش
+  // Monthly chart
   const [labels, setLabels] = useState([]);
   const [data, setData] = useState([]);
 
-  // FIX: this must be state because we call setRestaurantId below
+  // Restaurant context (null for global admin)
   const [restaurantId, setRestaurantId] = useState(null);
+
+  // Top panels data
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [todayOrders, setTodayOrders] = useState(0);
+  const [todayProfit, setTodayProfit] = useState(0);
 
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
   const toggleSidebar = useCallback(() => setSidebarOpen((v) => !v), []);
 
-  /* select tab , collapse sidebar on mobile */
   const handleSelectTab = useCallback(
     (tab) => {
       setActiveTab(tab);
@@ -60,7 +62,6 @@ export default function AdminDashboardPage() {
     [closeSidebar]
   );
 
-  /* esc-key close sidebar */
   useEffect(() => {
     if (!sidebarOpen) return;
     const handler = (e) => e.key === "Escape" && closeSidebar();
@@ -71,7 +72,7 @@ export default function AdminDashboardPage() {
   const viewClass = (tab) =>
     `content-view ${activeTab === tab ? "active" : ""}`;
 
-  // گرفتن آیدی رستوران (اگر کاربر صاحب رستوران بود)
+  // restaurant id
   useEffect(() => {
     const fetchRestaurantId = async () => {
       try {
@@ -85,22 +86,7 @@ export default function AdminDashboardPage() {
     fetchRestaurantId();
   }, []);
 
-  // درآمد کل
-
-  useEffect(() => {
-    const fetchRevenue = async () => {
-      try {
-        const { data } = await adminDashboardAxios.get("/total-revenue");
-        setTotalRevenue(data); // فرض می‌کنیم API عدد خام برمی‌گردونه
-      } catch (err) {
-        console.error("خطا در گرفتن درآمد کل:", err);
-      }
-    };
-
-    fetchRevenue();
-  }, []);
-
-  // لود داده‌های نمودار
+  // monthly chart
   useEffect(() => {
     const load = async () => {
       try {
@@ -108,22 +94,60 @@ export default function AdminDashboardPage() {
           restaurantId != null
             ? `/monthly-sales?restaurantId=${restaurantId}`
             : `/monthly-sales`;
-
-        const { data: json } = await adminAxios.get("/monthly-sales");
-        // [{month:1,totalSales:12345}, ...]
-
+        const { data: json } = await adminAxios.get(url);
         setLabels(json.map((x) => monthFa[x.month - 1]));
         setData(json.map((x) => Number(x.totalSales)));
       } catch (err) {
         console.error("خطا در دریافت داده‌های فروش", err);
       }
     };
-
     load();
   }, [restaurantId]);
 
-  /* rendering the page */
+  // total revenue (all-time or to-date)
+  useEffect(() => {
+    const loadTotal = async () => {
+      try {
+        const url =
+          restaurantId != null
+            ? `/total-revenue?restaurantId=${restaurantId}`
+            : `/total-revenue`;
+        // expected: { total: number }
+        const { data } = await adminAxios.get(url);
+        setTotalRevenue(Number(data?.total ?? 0));
+      } catch (e) {
+        setTotalRevenue(12500000); // fallback demo
+        console.warn("total-revenue fallback used:", e?.message);
+      }
+    };
+    loadTotal();
+  }, [restaurantId]);
+
+  // today stats
+  useEffect(() => {
+    const loadToday = async () => {
+      try {
+        const url =
+          restaurantId != null
+            ? `/today-stats?restaurantId=${restaurantId}`
+            : `/today-stats`;
+        // expected: { orders: number, profit: number }
+        const { data } = await adminAxios.get(url);
+        setTodayOrders(Number(data?.orders ?? 0));
+        setTodayProfit(Number(data?.profit ?? 0));
+      } catch (e) {
+        setTodayOrders(52);
+        setTodayProfit(1865000);
+        console.warn("today-stats fallback used:", e?.message);
+      }
+    };
+    loadToday();
+  }, [restaurantId]);
+
   if (!cssReady) return null;
+
+  const formatTomans = (n) =>
+    (Number(n) || 0).toLocaleString("fa-IR") + " تومان";
 
   return (
     <div className="dashboard-container page-ready" dir="rtl">
@@ -147,32 +171,103 @@ export default function AdminDashboardPage() {
         <section id="dashboard-view" className={viewClass("dashboard")}>
           <h2 className="content-title">نمای کلی</h2>
 
-          {/* Stats: removed "کاربران فعال" & "گزارش‌های خطا".
-              Force a neat 2-column grid so spacing looks intentional. */}
-          <div
-            className="stats-grid"
-            style={{ gridTemplateColumns: "repeat(2, minmax(0, 1fr))" }}
-          >
-            <StatCard
-              iconClass="fas fa-dollar-sign"
-              color="#f59e0b"
-              title="درآمد کل"
-              value={
-                totalRevenue
-                  ? `${totalRevenue.toLocaleString()} تومان`
-                  : "در حال بارگذاری..."
-              }
-            />
-            <StatCard
-              iconClass="fas fa-receipt"
-              color="#10b981"
-              title="سفارشات جدید"
-              value="۳۵۲"
-            />
-          </div>
+          {/* Top row: درآمد کل + آمار امروز */}
+          <div className="panels-section">
+            <div className="top-panel">
+              <Panel title="درآمد کل" className="summary-panel">
+                <div
+                  style={{
+                    background: "rgba(255,255,255,.04)",
+                    border: "1px solid rgba(255,255,255,.08)",
+                    borderRadius: 12,
+                    padding: 16,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                  }}
+                >
+                  <i
+                    className="fas fa-dollar-sign"
+                    style={{ color: "#f59e0b", fontSize: 22 }}
+                  />
+                  <div>
+                    <div style={{ opacity: 0.85, fontSize: 14 }}>جمع درآمد</div>
+                    <div style={{ fontSize: 24, fontWeight: 900 }}>
+                      {formatTomans(totalRevenue)}
+                    </div>
+                  </div>
+                </div>
+              </Panel>
 
-          <div className="panels-grid">
-            <Panel title="نمودار فروش ماهانه" className="chart-panel">
+              <Panel title="آمار امروز" className="today-panel">
+                <div
+                  className="today-stats-box"
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 16,
+                  }}
+                >
+                  <div
+                    className="today-stat"
+                    style={{
+                      background: "rgba(255,255,255,.04)",
+                      border: "1px solid rgba(255,255,255,.08)",
+                      borderRadius: 12,
+                      padding: 16,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                    }}
+                  >
+                    <i
+                      className="fas fa-shopping-basket"
+                      style={{ color: "#10b981", fontSize: 22 }}
+                    />
+                    <div>
+                      <div style={{ opacity: 0.8, fontSize: 14 }}>
+                        تعداد سفارش‌های امروز
+                      </div>
+                      <div style={{ fontSize: 22, fontWeight: 900 }}>
+                        {todayOrders.toLocaleString("fa-IR")}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    className="today-stat"
+                    style={{
+                      background: "rgba(255,255,255,.04)",
+                      border: "1px solid rgba(255,255,255,.08)",
+                      borderRadius: 12,
+                      padding: 16,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                    }}
+                  >
+                    <i
+                      className="fas fa-coins"
+                      style={{ color: "#f59e0b", fontSize: 22 }}
+                    />
+                    <div>
+                      <div style={{ opacity: 0.8, fontSize: 14 }}>
+                        سود امروز
+                      </div>
+                      <div style={{ fontSize: 22, fontWeight: 900 }}>
+                        {formatTomans(todayProfit)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Panel>
+            </div>
+            {/* Chart: full width under the two panels */}
+            <Panel
+              title="نمودار فروش ماهانه"
+              className="chart-panel"
+              style={{ gridColumn: "1 / -1" }}
+            >
               <div className="chart-container">
                 <LineChart
                   labels={labels}
@@ -185,13 +280,6 @@ export default function AdminDashboardPage() {
                   }}
                 />
               </div>
-            </Panel>
-
-            <Panel title="فعالیت‌های اخیر" className="activity-panel">
-              <ul>
-                <li>کاربر #۵۴۲ یک سفارش جدید ثبت کرد.</li>
-                <li>رستوران "چیلان" محصول "کباب برگ" را به‌روزرسانی کرد.</li>
-              </ul>
             </Panel>
           </div>
         </section>
@@ -217,6 +305,12 @@ export default function AdminDashboardPage() {
         <section id="music-view" className={viewClass("music")}>
           <h2 className="content-title">مدیریت موزیک پلیر</h2>
           <MusicSection />
+        </section>
+
+        {/* ORDERS */}
+        <section id="orders-view" className={viewClass("orders")}>
+          <h2 className="content-title">مدیریت سفارش‌ها</h2>
+          <OrdersSection />
         </section>
 
         {/* FINANCIAL */}

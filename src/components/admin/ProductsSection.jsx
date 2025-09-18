@@ -1,34 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ProductModal from "./ProductModal";
-
-const SAMPLE_ROWS = [
-  {
-    name: "کباب کوبیده",
-    category: "کباب‌ها",
-    price: "۱۵۰,۰۰۰ تومان",
-    active: true,
-  },
-  {
-    name: "پیتزا پپرونی",
-    category: "فست فود",
-    price: "۲۲۰,۰۰۰ تومان",
-    active: true,
-  },
-];
+import adminfoodAxios from "../../api/adminFoodAxios";
 
 export default function ProductsSection() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
   const [mode, setMode] = useState("create"); // 'create' | 'edit'
+
+  // گرفتن لیست غذاها
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        console.log("calling read-all"); // مطمئن شو useEffect اجرا می‌شه
+        const { data } = await adminfoodAxios.get("/read-all");
+        setProducts(data);
+      } catch (err) {
+        console.error("خطا در گرفتن لیست محصولات:", err);
+      } finally {
+        setLoading(false); // حتماً اینو اضافه کن
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const openCreate = () => {
     setMode("create");
     setModalOpen(true);
   };
 
-  const openEdit = () => {
+  const openEdit = (product) => {
     setMode("edit");
     setModalOpen(true);
+    // اینجا می‌تونی product رو به ProductModal پاس بدی
   };
+
+  if (loading) return <p>در حال بارگذاری...</p>;
 
   return (
     <>
@@ -53,25 +61,29 @@ export default function ProductsSection() {
               </tr>
             </thead>
             <tbody>
-              {SAMPLE_ROWS.map((row, i) => (
-                <tr key={`${row.name}-${i}`}>
+              {products.map((row, i) => (
+                <tr key={row.id || i}>
                   <td>{row.name}</td>
-                  <td>{row.category}</td>
-                  <td>{row.price}</td>
+                  <td>{row.foodCategoryName}</td>
+                  <td>
+                    {row.price > 0
+                      ? `${row.price.toLocaleString()} تومان`
+                      : "-"}
+                  </td>
                   <td>
                     <span
                       className={`status-chip ${
-                        row.active ? "active" : "danger"
+                        row.isAvailable ? "active" : "danger"
                       }`}
                     >
-                      {row.active ? "فعال" : "غیرفعال"}
+                      {row.isAvailable ? "فعال" : "غیرفعال"}
                     </span>
                   </td>
                   <td>
                     <button
                       className="btn btn-icon"
                       title="ویرایش"
-                      onClick={openEdit}
+                      onClick={() => openEdit(row)}
                     >
                       <i className="fas fa-edit" />
                     </button>
@@ -87,10 +99,10 @@ export default function ProductsSection() {
 
         {/* CARDS (phones) */}
         <div className="cards-list products-cards">
-          {SAMPLE_ROWS.map((row, i) => (
+          {products.map((row, i) => (
             <article
               className="data-card"
-              key={`${row.name}-card-${i}`}
+              key={`card-${row.id || i}`}
               aria-label="محصول"
             >
               <div className="row">
@@ -99,18 +111,22 @@ export default function ProductsSection() {
               </div>
               <div className="row">
                 <span className="label">دسته‌بندی</span>
-                <span className="value">{row.category}</span>
+                <span className="value">{row.foodCategoryName}</span>
               </div>
               <div className="row">
                 <span className="label">قیمت پایه</span>
-                <span className="value">{row.price}</span>
+                <span className="value">
+                  {row.price > 0 ? `${row.price.toLocaleString()} تومان` : "-"}
+                </span>
               </div>
               <div className="row" style={{ alignItems: "center" }}>
                 <span className="label">وضعیت</span>
                 <span
-                  className={`status-chip ${row.active ? "active" : "danger"}`}
+                  className={`status-chip ${
+                    row.isAvailable ? "active" : "danger"
+                  }`}
                 >
-                  {row.active ? "فعال" : "غیرفعال"}
+                  {row.isAvailable ? "فعال" : "غیرفعال"}
                 </span>
               </div>
               <div
@@ -122,7 +138,7 @@ export default function ProductsSection() {
                   <button
                     className="btn btn-icon"
                     title="ویرایش"
-                    onClick={openEdit}
+                    onClick={() => openEdit(row)}
                   >
                     <i className="fas fa-edit" />
                   </button>

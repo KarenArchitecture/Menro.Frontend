@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import usePageStyles from "../hooks/usePageStyles";
 import adminAxios from "../api/adminDashboardAxios";
-import restaurantAxios from "../api/restaurantAxios";
 import AdminHeader from "../components/admin/AdminHeader";
 import AdminSidebar from "../components/admin/AdminSidebar";
 import Panel from "../components/admin/Panel";
@@ -38,6 +37,9 @@ export default function AdminDashboardPage() {
 
   const [activeTab, setActiveTab] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // فروش کل
+  const [totalRevenue, setTotalRevenue] = useState(null);
 
   // داده‌های نمودار فروش
   const [labels, setLabels] = useState([]);
@@ -83,7 +85,22 @@ export default function AdminDashboardPage() {
     fetchRestaurantId();
   }, []);
 
-  // لود داده‌های نمودار از API
+  // درآمد کل
+
+  useEffect(() => {
+    const fetchRevenue = async () => {
+      try {
+        const { data } = await adminDashboardAxios.get("/total-revenue");
+        setTotalRevenue(data); // فرض می‌کنیم API عدد خام برمی‌گردونه
+      } catch (err) {
+        console.error("خطا در گرفتن درآمد کل:", err);
+      }
+    };
+
+    fetchRevenue();
+  }, []);
+
+  // لود داده‌های نمودار
   useEffect(() => {
     const load = async () => {
       try {
@@ -92,7 +109,7 @@ export default function AdminDashboardPage() {
             ? `/monthly-sales?restaurantId=${restaurantId}`
             : `/monthly-sales`;
 
-        const { data: json } = await adminAxios.get(url);
+        const { data: json } = await adminAxios.get("/monthly-sales");
         // [{month:1,totalSales:12345}, ...]
 
         setLabels(json.map((x) => monthFa[x.month - 1]));
@@ -105,6 +122,7 @@ export default function AdminDashboardPage() {
     load();
   }, [restaurantId]);
 
+  /* rendering the page */
   if (!cssReady) return null;
 
   return (
@@ -139,7 +157,11 @@ export default function AdminDashboardPage() {
               iconClass="fas fa-dollar-sign"
               color="#f59e0b"
               title="درآمد کل"
-              value="۱۲,۵۰۰,۰۰۰ تومان"
+              value={
+                totalRevenue
+                  ? `${totalRevenue.toLocaleString()} تومان`
+                  : "در حال بارگذاری..."
+              }
             />
             <StatCard
               iconClass="fas fa-receipt"

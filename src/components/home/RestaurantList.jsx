@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getRandomRestaurants } from "../../api/restaurants";
 import LoadingSpinner from "../common/LoadingSpinner";
 import StarIcon2 from "../icons/StarIcon2";
+import publicAxios from "../../api/publicAxios";
 
 function RestaurantList() {
   const {
@@ -25,16 +26,17 @@ function RestaurantList() {
 
   const base = import.meta.env.BASE_URL;
 
-  const cardImages = [
-    `${base}images/res-card-1.png`,
-    `${base}images/res-card-2.png`,
-    `${base}images/res-card-3.png`,
-  ];
-
-  const logos = [
-    `${base}images/logo-green.png`,
-    `${base}images/logo-orange.png`,
-  ];
+  const apiOrigin = new URL(publicAxios.defaults.baseURL).origin;
+  const appOrigin = window.location.origin;
+  const toAssetUrl = (url, fallback) => {
+    const candidate = url || fallback;
+    if (!candidate) return undefined;
+    if (candidate.startsWith("http://") || candidate.startsWith("https://")) return candidate;
+    const withSlash = candidate.startsWith("/") ? candidate : `/${candidate}`;
+    if (withSlash.startsWith("/img/"))     return `${apiOrigin}${withSlash}`;   // from backend wwwroot/img
+    if (withSlash.startsWith("/images/"))  return `${appOrigin}${withSlash}`;   // from frontend public/images
+    return `${appOrigin}${withSlash}`;                                           // default to frontend
+  };
 
   return (
     <section className="restaurants">
@@ -51,8 +53,9 @@ function RestaurantList() {
               rating: Number(r.rating) || 0,
               ratingCount: r.voters || 0,
 
-              imageUrl: cardImages[idx % cardImages.length],
-              logoUrl: logos[idx % logos.length],
+              imageUrl: toAssetUrl(r.bannerImageUrl, "/images/res-card-1.png"),
+              logoUrl: toAssetUrl(r.logoImageUrl, "/images/logo-green.png"),
+              isOpen: !!r.isOpen, 
             }}
           />
         ))}

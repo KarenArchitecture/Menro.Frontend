@@ -6,20 +6,29 @@ function RestaurantCard({ restaurant }) {
   if (!restaurant) return null;
 
   const {
-    imageUrl = "/img/default-restaurant.png", // default fallback
+    imageUrl = "/images/res-card-1.png", // default fallback
     discount = 0,
     hours = "نامشخص",
-    logoUrl = "/img/default-logo.png",
+    logoUrl = "/images/logo-green.png",
     name = "رستوران",
     rating = "N/A",
     ratingCount = 0,
     type = "نوع نامشخص",
+    isOpen = false, 
   } = restaurant;
 
   return (
     <div className="card">
       <div className="card-img-container">
-        <img src={imageUrl} alt={`عکس رستوران ${name}`} className="card-img" />
+        <img
+          src={imageUrl}
+          alt={`عکس رستوران ${name}`}
+          className="card-img"
+          onError={(e) => {
+          e.currentTarget.onerror = null;
+          e.currentTarget.src = "/images/res-card-1.png";
+        }}
+        />
 
         {discount > 0 && (
           <div className="discount-bubble">
@@ -32,12 +41,19 @@ function RestaurantCard({ restaurant }) {
             src={logoUrl}
             alt={`لوگو رستوران ${name}`}
             className="restaurant-badge"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "/images/logo-green.png";
+            }}
           />
         </div>
       </div>
 
       <div className="card-body">
         <div className="time-badge">
+          <span style={{ marginInlineEnd: 6, fontWeight: 600, color: isOpen ? "#16a34a" : "#dc2626" }}>
+            {isOpen ? "باز است" : "بسته است"}
+          </span>
           <span>{hours}</span>
         </div>
 

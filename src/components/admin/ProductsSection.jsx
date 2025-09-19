@@ -12,13 +12,13 @@ export default function ProductsSection() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        console.log("calling read-all"); // مطمئن شو useEffect اجرا می‌شه
+        console.log("calling read-all");
         const { data } = await adminfoodAxios.get("/read-all");
         setProducts(data);
       } catch (err) {
         console.error("خطا در گرفتن لیست محصولات:", err);
       } finally {
-        setLoading(false); // حتماً اینو اضافه کن
+        setLoading(false);
       }
     };
 

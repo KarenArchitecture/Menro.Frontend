@@ -1,11 +1,11 @@
 import axios from "axios";
 
-const adminfoodAxios = axios.create({
+const adminFoodAxios = axios.create({
   baseURL: "https://localhost:7270/api/adminpanel/food",
   withCredentials: true,
 });
 
-adminfoodAxios.interceptors.request.use((config) => {
+adminFoodAxios.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -13,4 +13,4 @@ adminfoodAxios.interceptors.request.use((config) => {
   return config;
 });
 
-export default adminfoodAxios;
+export default adminFoodAxios;

@@ -54,14 +54,14 @@ export default function AdminHeader({
         </span>
 
         {/* avatar */}
-        <img
+        {/* <img
           src={displayAvatar}
           alt={`تصویر ${displayName}`}
           className="user-avatar"
           onError={(e) => {
             e.currentTarget.src = "/images/avatar-placeholder.png";
           }}
-        />
+        /> */}
 
         {/* Mobile search icon (only on phones) */}
         <button

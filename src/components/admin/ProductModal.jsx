@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import adminFoodAxios from "../../api/adminFoodAxios";
 
 function uid() {
   if (typeof crypto !== "undefined" && crypto.randomUUID)
@@ -8,6 +9,31 @@ function uid() {
 
 export default function ProductModal({ isOpen, mode = "create", onClose }) {
   const title = mode === "edit" ? "ویرایش محصول" : "افزودن محصول جدید";
+
+  // دسته‌بندی‌ها
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return; // موقتاً اینو کامنت کن ببین کال میشه یا نه
+
+    const fetchCategories = async () => {
+      setLoadingCategories(true); // ✅ قبل از درخواست
+
+      try {
+        const { data } = await adminFoodAxios.get("/categories");
+        console.log("categories fetched:", data);
+        setCategories(data || []);
+      } catch (err) {
+        console.error("خطا در گرفتن دسته‌بندی‌ها", err);
+        setCategories([]);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, [isOpen]);
 
   //  simple vs variants
   const [hasVariants, setHasVariants] = useState(false);
@@ -98,8 +124,7 @@ export default function ProductModal({ isOpen, mode = "create", onClose }) {
     );
   };
 
-  // ---- submit/validation ----
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
 
     if (hasVariants) {
@@ -141,30 +166,30 @@ export default function ProductModal({ isOpen, mode = "create", onClose }) {
 
     const payload = {
       name: document.getElementById("product-name")?.value || "",
-      description: document.getElementById("product-description")?.value || "",
-      category: document.getElementById("product-category")?.value || "",
-      combinations: Array.from(
-        document.getElementById("product-combinations")?.selectedOptions || []
-      ).map((o) => o.value),
-      hasVariants,
-      basePrice: basePriceValue,
+      ingredients: document.getElementById("product-description")?.value || "",
+      foodCategoryId: Number(
+        document.getElementById("product-category")?.value || "0"
+      ),
+      price: basePriceValue,
+      imageUrl: "", // اینو بعداً باید با آپلود فایل پر کنی
       variants: hasVariants
         ? variants.map((v) => ({
             name: v.name.trim(),
             price: Number(String(v.price).replace(/[^\d]/g, "")),
-            isDefault: v.isDefault,
-            addons: v.addons.map((a) => ({
-              name: a.name.trim(),
-              price: Number(String(a.price).replace(/[^\d]/g, "")),
-            })),
+            // توی بک‌اند فعلاً Addons نداری، اگه خواستی اضافه کنی باید DTO هم اصلاح بشه
           }))
         : [],
     };
 
-    // TODO: send payload to API
-    // console.log("SUBMIT PAYLOAD:", payload);
-
-    // onClose?.(); // uncomment to close after submit
+    try {
+      const { data } = await adminFoodAxios.post("/add", payload);
+      console.log("محصول ذخیره شد:", data);
+      alert("محصول با موفقیت ذخیره شد");
+      onClose?.();
+    } catch (err) {
+      console.error("خطا در ذخیره محصول:", err);
+      alert("ذخیره محصول ناموفق بود");
+    }
   };
 
   return (
@@ -199,11 +224,28 @@ export default function ProductModal({ isOpen, mode = "create", onClose }) {
                 <textarea id="product-description" rows={4} />
               </div>
 
-              <div className="input-group">
+              {/* categories */}
+              {/* <div className="input-group">
                 <label htmlFor="product-category">دسته‌بندی</label>
                 <select id="product-category" required>
                   <option value="kabab">کباب‌ها</option>
                   <option value="fastfood">فست فود</option>
+                </select>
+              </div> */}
+              <div className="input-group">
+                <label htmlFor="product-category">دسته‌بندی</label>
+                <select id="product-category" required>
+                  {loadingCategories ? (
+                    <option>در حال بارگذاری...</option>
+                  ) : categories.length > 0 ? (
+                    categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))
+                  ) : (
+                    <option disabled>دسته‌ای یافت نشد</option>
+                  )}
                 </select>
               </div>
 

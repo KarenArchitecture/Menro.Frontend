@@ -114,10 +114,7 @@
 // src/components/home/PopularFoodAndAdBannerLazyList.jsx
 import React, { useEffect, useRef } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import {
-  getPopularFoodByRandomCategory,
-  getPopularFoodByRandomCategoryExcluding,
-} from "../../api/foods";
+import { getPopularFoodByRandomCategory, getPopularFoodByRandomCategoryExcluding } from "../../api/foods";
 import PopularFoodRow from "./PopularFoodRow";
 import AdBanner from "./AdBanner";
 import LoadingSpinner from "../common/LoadingSpinner";

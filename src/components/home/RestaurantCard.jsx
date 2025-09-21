@@ -50,12 +50,12 @@ function RestaurantCard({ restaurant }) {
       </div>
 
       <div className="card-body">
-        <div className="time-badge">
-          <span style={{ marginInlineEnd: 6, fontWeight: 600, color: isOpen ? "#16a34a" : "#dc2626" }}>
+        <span className="time-badge">
+          <span className="time-badge__time">{hours}</span>
+          <span className={`time-badge__status ${isOpen ? "open" : "closed"}`}>
             {isOpen ? "باز است" : "بسته است"}
           </span>
-          <span>{hours}</span>
-        </div>
+        </span>
 
         <div className="restaurant-header">
           <h3 className="restaurant-name">{name}</h3>

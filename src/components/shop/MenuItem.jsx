@@ -1,7 +1,7 @@
 import React from "react";
 import { useCart } from "./CartContext";
 
-export default function MenuItem({ item }) {
+export default function MenuItem({ item, onOpen }) {
   const { name, price, imageUrl, rating = 4.5, reviewsCount = 0 } = item || {};
   const cart = useCart();
 
@@ -10,12 +10,23 @@ export default function MenuItem({ item }) {
 
   const formatTomans = (n) => (Number(n) || 0).toLocaleString("fa-IR");
 
-  const addFirst = () => cart.setQty(key, item, 1);
-  const inc = () => cart.setQty(key, item, Math.min(99, qty + 1));
-  const dec = () => cart.setQty(key, item, Math.max(0, qty - 1));
+  const addFirst = (e) => {
+    e.stopPropagation();
+    cart.setQty(key, item, 1);
+  };
+  const inc = (e) => {
+    e.stopPropagation();
+    cart.setQty(key, item, Math.min(99, qty + 1));
+  };
+  const dec = (e) => {
+    e.stopPropagation();
+    cart.setQty(key, item, Math.max(0, qty - 1));
+  };
+
+  const openModal = () => onOpen?.(item);
 
   return (
-    <article className="menu-card" dir="rtl">
+    <article className="menu-card" dir="rtl" onClick={openModal}>
       <div className="menu-card__media">
         <img
           src={`http://localhost:5096${imageUrl}`}
@@ -43,7 +54,7 @@ export default function MenuItem({ item }) {
           <span className="menu-card__currency">تومان</span>
         </div>
 
-        <div className="menu-card__footer">
+        <div className="menu-card__footer" onClick={(e) => e.stopPropagation()}>
           {qty <= 0 ? (
             <button
               type="button"

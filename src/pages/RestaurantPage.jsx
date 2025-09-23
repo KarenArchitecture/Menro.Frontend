@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import usePageStyles from "../hooks/usePageStyles";
@@ -19,10 +19,10 @@ import CartIcon from "../components/icons/CartIcon";
 import ProfileIcon from "../components/icons/ProfileIcon";
 import CheckoutBar from "../components/shop/CheckoutBar";
 
-/* NEW: shared cart context */
+//  shared cart context */
 import { CartProvider, useCart } from "../components/shop/CartContext";
 
-/* -------- Inner content that consumes the cart -------- */
+/* -------- content  -------- */
 function RestaurantContent() {
   const navigate = useNavigate();
   const { slug } = useParams();
@@ -34,10 +34,13 @@ function RestaurantContent() {
   const handleSelectItem = (item) => setSelectedItem(item);
   const handleCloseModal = () => setSelectedItem(null);
 
-  /* ---------- Cart from context (replaces local stub) ---------- */
+  /* ---------- Cart from context  ---------- */
   const cart = useCart();
 
-  /* ---------- Header icons (badge reflects cart) ---------- */
+  useEffect(() => {
+    document.body.classList.toggle("has-checkout", cart.count > 0);
+  }, [cart.count]);
+  /* ---------- Header icons ---------- */
   const leftIcons = useMemo(
     () => [
       { key: "profile", icon: <ProfileIcon /> },
@@ -73,7 +76,7 @@ function RestaurantContent() {
     queryFn: () => getRestaurantMenuBySlug(slug),
   });
 
-  /* ---------- Categories (prepend “همه”) ---------- */
+  /* ---------- Categories  ---------- */
   const categoriesWithAll = useMemo(() => {
     const apiCats = menuData.map((sec) => ({
       id: String(sec.categoryId),
@@ -110,6 +113,8 @@ function RestaurantContent() {
         <MenuList
           activeCategory={activeCategory}
           onSelectItem={handleSelectItem}
+          categories={categoriesWithAll} // <-- add
+          setActiveCategory={setActiveCategory} // <-- add
         />
       </div>
 

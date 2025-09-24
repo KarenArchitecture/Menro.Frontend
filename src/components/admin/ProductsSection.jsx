@@ -1,39 +1,58 @@
 import React, { useState, useEffect } from "react";
 import ProductModal from "./ProductModal";
-import adminfoodAxios from "../../api/adminFoodAxios";
+import adminFoodAxios from "../../api/adminFoodAxios";
 
 export default function ProductsSection() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [mode, setMode] = useState("create"); // 'create' | 'edit'
 
-  // گرفتن لیست غذاها
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        console.log("calling read-all");
-        const { data } = await adminfoodAxios.get("/read-all");
-        setProducts(data);
-      } catch (err) {
-        console.error("خطا در گرفتن لیست محصولات:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const [selectedProductId, setSelectedProductId] = useState(null);
 
+  // گرفتن لیست غذاها
+  const fetchProducts = async () => {
+    try {
+      const { data } = await adminFoodAxios.get("/read-all");
+      setProducts(data);
+    } catch (err) {
+      console.error("خطا در گرفتن لیست محصولات:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchProducts();
   }, []);
 
   const openCreate = () => {
     setMode("create");
-    setModalOpen(true);
+    setIsModalOpen(true);
   };
 
   const openEdit = (product) => {
     setMode("edit");
-    setModalOpen(true);
-    // اینجا می‌تونی product رو به ProductModal پاس بدی
+    setSelectedProductId(product.id);
+    setIsModalOpen(true);
+    // می‌تونی product رو هم به ProductModal پاس بدی
+  };
+
+  // 🔴 متد حذف محصول
+  const handleDelete = async (foodId) => {
+    console.log("Food ID to delete:", foodId); // 👈 اینجا ببین چه مقداری میاد
+
+    if (!window.confirm("آیا مطمئن هستید که می‌خواهید این غذا را حذف کنید؟")) {
+      return;
+    }
+
+    try {
+      await adminFoodAxios.delete(`/${foodId}`);
+      alert("محصول با موفقیت حذف شد");
+      fetchProducts();
+    } catch (err) {
+      console.error("خطا در حذف محصول:", err);
+    }
   };
 
   if (loading) return <p>در حال بارگذاری...</p>;
@@ -87,7 +106,11 @@ export default function ProductsSection() {
                     >
                       <i className="fas fa-edit" />
                     </button>
-                    <button className="btn btn-icon btn-danger" title="حذف">
+                    <button
+                      className="btn btn-icon btn-danger"
+                      title="حذف"
+                      onClick={() => handleDelete(row.id)}
+                    >
                       <i className="fas fa-trash" />
                     </button>
                   </td>
@@ -142,7 +165,11 @@ export default function ProductsSection() {
                   >
                     <i className="fas fa-edit" />
                   </button>
-                  <button className="btn btn-icon btn-danger" title="حذف">
+                  <button
+                    className="btn btn-icon btn-danger"
+                    title="حذف"
+                    onClick={() => handleDelete(row.id)}
+                  >
                     <i className="fas fa-trash" />
                   </button>
                 </div>
@@ -155,7 +182,9 @@ export default function ProductsSection() {
       <ProductModal
         isOpen={isModalOpen}
         mode={mode}
-        onClose={() => setModalOpen(false)}
+        productId={selectedProductId}
+        onClose={() => setIsModalOpen(false)}
+        onSaved={fetchProducts} // وقتی غذا ذخیره شد، لیست رفرش بشه
       />
     </>
   );

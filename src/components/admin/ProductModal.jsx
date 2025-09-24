@@ -7,8 +7,20 @@ function uid() {
   return "id-" + Math.random().toString(36).slice(2, 10);
 }
 
-export default function ProductModal({ isOpen, mode = "create", onClose }) {
+export default function ProductModal({
+  isOpen,
+  mode = "create",
+  productId,
+  onClose,
+  onSaved,
+}) {
   const title = mode === "edit" ? "ویرایش محصول" : "افزودن محصول جدید";
+
+  // برای ریست کردن فرم بعد بسته شدن
+  const [name, setName] = useState("");
+  const [ingredients, setIngredients] = useState("");
+  const [foodCategoryId, setFoodCategoryId] = useState(0);
+  const [price, setPrice] = useState("");
 
   // دسته‌بندی‌ها
   const [categories, setCategories] = useState([]);
@@ -34,6 +46,51 @@ export default function ProductModal({ isOpen, mode = "create", onClose }) {
 
     fetchCategories();
   }, [isOpen]);
+
+  // food details
+  useEffect(() => {
+    if (isOpen && mode === "edit" && productId) {
+      const fetchProduct = async () => {
+        try {
+          const { data } = await adminFoodAxios.get(`/${productId}`);
+          console.log("product fetched:", data);
+
+          // پر کردن فیلدهای ساده
+          document.getElementById("product-name").value = data.name || "";
+          document.getElementById("product-description").value =
+            data.ingredients || "";
+          document.getElementById("product-category").value =
+            data.foodCategoryId;
+
+          if (data.hasVariants && data.variants) {
+            setHasVariants(true);
+            setVariants(
+              data.variants.map((v) => ({
+                id: uid(),
+                name: v.name,
+                price: v.price.toString(),
+                isDefault: false,
+                addons: v.addons
+                  ? v.addons.map((a) => ({
+                      id: uid(),
+                      name: a.name,
+                      price: a.extraPrice.toString(),
+                    }))
+                  : [],
+              }))
+            );
+          } else {
+            setHasVariants(false);
+            document.getElementById("product-price").value = data.price || "";
+          }
+        } catch (err) {
+          console.error("خطا در گرفتن اطلاعات محصول:", err);
+        }
+      };
+
+      fetchProduct();
+    }
+  }, [isOpen, mode, productId]);
 
   //  simple vs variants
   const [hasVariants, setHasVariants] = useState(false);
@@ -124,6 +181,7 @@ export default function ProductModal({ isOpen, mode = "create", onClose }) {
     );
   };
 
+  // submit
   const onSubmit = async (e) => {
     e.preventDefault();
 
@@ -170,26 +228,57 @@ export default function ProductModal({ isOpen, mode = "create", onClose }) {
       foodCategoryId: Number(
         document.getElementById("product-category")?.value || "0"
       ),
-      price: basePriceValue,
-      imageUrl: "", // اینو بعداً باید با آپلود فایل پر کنی
+      price: basePriceValue ?? 0,
+      imageUrl: "",
+      hasVariants: hasVariants,
       variants: hasVariants
         ? variants.map((v) => ({
             name: v.name.trim(),
             price: Number(String(v.price).replace(/[^\d]/g, "")),
-            // توی بک‌اند فعلاً Addons نداری، اگه خواستی اضافه کنی باید DTO هم اصلاح بشه
+            addons: v.addons.map((a) => ({
+              name: a.name.trim(),
+              extraPrice: Number(String(a.price).replace(/[^\d]/g, "")),
+            })),
           }))
         : [],
     };
+    // console.log("payload:", JSON.stringify(payload, null, 2));
 
     try {
-      const { data } = await adminFoodAxios.post("/add", payload);
-      console.log("محصول ذخیره شد:", data);
+      if (mode === "create") {
+        await adminFoodAxios.post("/add", payload);
+      } else if (mode === "edit" && productId) {
+        await adminFoodAxios.put(`/${productId}`, payload);
+      }
+
       alert("محصول با موفقیت ذخیره شد");
-      onClose?.();
+
+      onSaved?.(); // لیست غذاها رو رفرش کن
+      resetForm(); // فرم ریست بشه
+      onClose?.(); // مودال بسته بشه
     } catch (err) {
       console.error("خطا در ذخیره محصول:", err);
       alert("ذخیره محصول ناموفق بود");
     }
+  };
+  // reset form after closing it
+  const resetForm = () => {
+    setName("");
+    setIngredients("");
+    setFoodCategoryId(0);
+    setPrice("");
+    setHasVariants(false);
+    setVariants([
+      { id: uid(), name: "", price: "", isDefault: true, addons: [] },
+    ]);
+
+    // پاک کردن ورودی‌های HTML معمولی (در صورتی که با state کنترل نمی‌کنی)
+    const nameEl = document.getElementById("product-name");
+    if (nameEl) nameEl.value = "";
+    const descEl = document.getElementById("product-description");
+    if (descEl) descEl.value = "";
+    const priceEl = document.getElementById("product-price");
+    if (priceEl) priceEl.value = "";
   };
 
   return (
@@ -486,7 +575,15 @@ export default function ProductModal({ isOpen, mode = "create", onClose }) {
           <button type="submit" form="product-form" className="btn btn-primary">
             ذخیره محصول
           </button>
-          <button type="button" className="btn btn-secondary" onClick={onClose}>
+
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => {
+              resetForm();
+              onClose?.();
+            }}
+          >
             انصراف
           </button>
         </div>

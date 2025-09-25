@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { getFeaturedRestaurants } from "../../api/restaurants";
 import LoadingSpinner from "../common/LoadingSpinner";
+import publicAxios from "../../api/publicAxios";
+import StateMessage from "../common/StateMessage";
 
 function Carousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -18,6 +20,18 @@ function Carousel() {
     queryFn: getFeaturedRestaurants, // returns data directly
   });
 
+  const apiOrigin = new URL(publicAxios.defaults.baseURL).origin;
+  const appOrigin = window.location.origin;
+  const toAssetUrl = (url) => {
+    if (!url) return `${appOrigin}/images/res-slider.jpg`;
+    if (url.startsWith("http://") || url.startsWith("https://")) return url;
+    const withSlash = url.startsWith("/") ? url : `/${url}`;
+    if (withSlash.startsWith("/img/"))    return `${apiOrigin}${withSlash}`;   // backend wwwroot/img
+    if (withSlash.startsWith("/images/")) return `${appOrigin}${withSlash}`;   // frontend public/images
+    return `${appOrigin}${withSlash}`;
+  };
+
+
   useEffect(() => {
     if (!slides || slides.length === 0) return;
 
@@ -28,7 +42,7 @@ function Carousel() {
     };
 
     const slideInterval = setInterval(goToNext, 3000);
-    return () => clearInterval(slideInterval);
+    return () => clearInterval(slideInterval);z
   }, [currentIndex, slides]);
 
   if (isLoading) return <LoadingSpinner />;
@@ -36,7 +50,7 @@ function Carousel() {
   if (isError)
     return (
       <section className="carousel">
-        <p>Error: {error.message}</p>
+        <div className="state state--error">خطا در دریافت اسلایدها</div>
       </section>
     );
 
@@ -56,6 +70,7 @@ function Carousel() {
             display: "flex",
             transition: "transform 0.5s ease",
             transform: `translateX(${currentIndex * 100}%)`,
+            // transform: `translateX(-${currentIndex * 100}%)`, // move left as index grows
           }}
         >
           {slides.map((slide) => (
@@ -66,9 +81,14 @@ function Carousel() {
             >
               <img
                 key={slide.id}
-                src={`http://localhost:5096${slide.carouselImageUrl}`}
+                // src={`http://localhost:5096${slide.carouselImageUrl}`}
+                src={toAssetUrl(slide.carouselImageUrl)}
                 alt={slide.name}
                 onClick={() => navigate(`/restaurant/${slide.slug}`)}
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "/images/res-slider.jpg"; // fallback you have in public/images
+                }}
                 style={{
                   display: "block",
                   width: "100%",

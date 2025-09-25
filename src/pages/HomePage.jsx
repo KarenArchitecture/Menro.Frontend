@@ -1,40 +1,55 @@
+// // import Header from "../components/common/Header";
+// import React, { useEffect } from "react";
+// import Header from "../components/common/Header";
+// import Carousel from "../components/home/Carousel";
+// import RestaurantList from "../components/home/RestaurantList";
+// import PreviousOrders from "../components/home/PreviousOrders";
+// import PopularFoodAndAdBannerLazyList from "../components/home/PopularFoodAndAdBannerLazyList";
+// import AuthActions from "../components/common/AuthActions";
+
+// export default function HomePage() {
+//   useEffect(() => {
+//     // reset per-page banner memory so each visit can show fresh random ads
+//     window.__menroAdExcludes = [];
+//   }, []);
+//   return (
+//     <>
+//       <Header />
+//       <main className="content">
+//         <AuthActions />
+//         <Carousel />
+//         <RestaurantList />
+//         <PreviousOrders />
+//         <PopularFoodAndAdBannerLazyList />  {/* ← contains both popular sections + ad banners */}
+//       </main>
+//     </>
+//   );
+// }
+
+
+// src/pages/HomePage.jsx
+import React, { useEffect } from "react";
 import Header from "../components/common/Header";
 import Carousel from "../components/home/Carousel";
 import RestaurantList from "../components/home/RestaurantList";
-import AdBanner from "../components/home/AdBanner";
 import PreviousOrders from "../components/home/PreviousOrders";
-import PopularFoodLazyList from "../components/home/PopularFoodLazyList";
-import AuthActions from "../components/common/AuthActions";
+import PopularFoodAndAdBannerLazyList from "../components/home/PopularFoodAndAdBannerLazyList";
 
 export default function HomePage() {
+  useEffect(() => {
+    window.__menroAdExcludes = [];
+  }, []);
+
   return (
     <>
       <Header />
       <main className="content">
-        <AuthActions />
         <Carousel />
         <RestaurantList />
-        <AdBanner
-          imageSrc="/images/ad-banner-1.png"
-          title="Restaurant Number 1"
-          subtitle="ماکتیل‌هامون رو از دست ندید!"
-          href="/restaurant/restaurant-1"
-          overlay={0.5}
-          height={260}
-          objectPosition="center"
-        />
         <PreviousOrders />
-        <AdBanner
-          imageSrc="/images/ad-banner-2.png"
-          title="Restaurant Number 1"
-          subtitle="ساندویچ‌هامون خوبه کار به عکس نداشته باشید!"
-          href="/restaurant/restaurant-1"
-          overlay={0.5}
-          height={260}
-          objectPosition="center"
-        />
-        <PopularFoodLazyList />
+        <PopularFoodAndAdBannerLazyList />
       </main>
     </>
   );
 }
+

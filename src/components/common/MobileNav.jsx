@@ -2,17 +2,17 @@ import React, { useState } from "react";
 import NavItem from "./NavItem";
 
 import HomeIcon from "../icons/HomeIcon";
-import LocationIcon from "../icons/LocationIcon";
-import CartIcon from "../icons/CartIcon";
+import MapIconMobileNav from "../icons/MapIconMobileNav";
+import ShoppingBagIconMobileNav from "../icons/ShoppingBagIconMobileNav";
 import ProfileIcon from "../icons/ProfileIcon";
 
 const navItemsData = [
   { name: "Home", text: "خانه", icon: <HomeIcon /> },
-  { name: "Location", text: "نقشه", icon: <LocationIcon /> },
+  { name: "Location", text: "نقشه", icon: <MapIconMobileNav /> },
   {
     name: "Cart",
     text: "سبد خرید",
-    icon: <CartIcon color="#4e5053" />,
+    icon: <ShoppingBagIconMobileNav />,
     badge: 1,
   },
   { name: "Profile", text: "پروفایل", icon: <ProfileIcon /> },

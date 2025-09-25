@@ -1,75 +1,49 @@
 // src/api/restaurants.js
 import publicAxios from "./publicAxios";
-import userAxios from "./userAxios";
 import restaurantAxios from "./restaurantAxios";
 
-const RESTAURANT_URL = "/restaurant"; // all routes below share this prefix
+const RESTAURANT_URL = "/restaurant";
 
 /* ───────────────  🍽 public restaurant data ─────────────── */
-
+// Public restaurant data
 export const getFeaturedRestaurants = () =>
-  publicAxios.get(`${RESTAURANT_URL}/featured`).then((r) => r.data);
+  publicAxios.get(`${RESTAURANT_URL}/featured`).then(r => r.data);
+
 export const getRandomRestaurants = () =>
-  publicAxios.get(`${RESTAURANT_URL}/random`).then((r) => r.data);
+  publicAxios.get(`${RESTAURANT_URL}/random`).then(r => r.data);
+
+// Ad banners
 export const getAdBanner = () =>
-  publicAxios.get(`${RESTAURANT_URL}/ad-banner`).then((r) => r.data);
-export const getRestaurantBannerBySlug = (slug) =>
-  publicAxios.get(`${RESTAURANT_URL}/${slug}/banner`).then((r) => r.data);
-export const getRestaurantMenuBySlug = (slug) =>
-  publicAxios.get(`${RESTAURANT_URL}/${slug}/menu`).then((r) => r.data);
-export const getFoodCategoriesByRestaurantSlug = (slug) =>
+  publicAxios.get(`${RESTAURANT_URL}/ad-banner`).then(r => r.data);
+
+export const getRandomAdBanner = (excludeIds = []) =>
   publicAxios
-    .get(`${RESTAURANT_URL}/${slug}/foodcategories`)
-    .then((r) => r.data);
+    .get(`${RESTAURANT_URL}/ad-banner/random`, { params: { exclude: excludeIds.length ? excludeIds.join(",") : undefined },})
+    .then(r => r.data);
 
-/* ───────────────  👤 user-specific  ─────────────── */
-export const getUserRecentOrders = (count = 8) =>
-  userAxios.get(`/restaurant/recent-orders?count=${count}`).then(r => r.data);
-// export const getAdBanner = async () => {
-//   const response = await publicAxios.get(`${PUBLIC_URL}/ad-banner`);
-//   return response.data;
-// };
+export const postAdImpression = (bannerId) =>
+  publicAxios.post(`${RESTAURANT_URL}/ad-banner/${bannerId}/impression`);
 
-// export const getRestaurantBannerBySlug = async (slug) => {
-//   const response = await publicAxios.get(`${PUBLIC_URL}/banner/${slug}`);
-//   return response.data;
-// };
+// Shop page
+export const getRestaurantBannerBySlug = (slug) =>
+  publicAxios.get(`${RESTAURANT_URL}/${slug}/banner`).then(r => r.data);
 
-// ========================
-// 🍔 Public Food APIs
-// ========================
+export const getRestaurantMenuBySlug = (slug) =>
+  publicAxios.get(`${RESTAURANT_URL}/${slug}/menu`).then(r => r.data);
 
-export const getPopularFoodByRandomCategory = async () => {
-  const response = await publicAxios.get(
-    `${FOOD_URL}/popular-by-category-random`
-  );
-  return response.data;
-};
+// Owner/admin utilities (keep as-is)
+export const getFoodCategoriesByRestaurantSlug = (slug) =>
+  publicAxios.get(`${RESTAURANT_URL}/${slug}/foodcategories`).then(r => r.data);
 
-// =========================
-// 👤 User-specific APIs
-// =========================
-
-// ✅ FAKE recent orders (bypass auth)
-// export const getUserRecentOrders = async () => {
-//   const response = await publicAxios.get(
-//     `/restaurant/recent-orders/${fakeUser.id}`
-//   );
-//   return response.data;
-// };
-
-// =========================
-// Restaurant Registration
-// =========================
-// get categories
 export const fetchRestaurantCategories = async () => {
   const response = await restaurantAxios.get("/categories");
   return response.data;
 };
 
-// restaurant registeration
+// =========================
+// Restaurant Registration
+// =========================
 export const registerRestaurant = async (payload) => {
-  // const token = localStorage.getItem("token");
   const token = localStorage.getItem("token");
   const response = await restaurantAxios.post("/register", payload, {
     headers: { Authorization: `Bearer ${token}` },

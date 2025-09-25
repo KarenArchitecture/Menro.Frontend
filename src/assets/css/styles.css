@@ -80,9 +80,9 @@
     background: var(--card-bg);
     box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
     aspect-ratio: 21 / 9;
-    margin: 0 auto;
+    /* margin: 0 auto;
     width: 340px;
-    height: 151px;
+    height: 151px; */
 }
 
 .carousel-container::after {
@@ -159,21 +159,21 @@
 
 .left-curve {
     position: absolute;
-    z-index: 10;
+    /* z-index: 10; */
     width: 6rem;
     height: 6rem;
     color: #0c0f14;
-    right: -19px;
-    top: -29px;
+    right: -28px;
+    top: -28px;
 }
 
 .top-curve {
     position: absolute;
-    z-index: 10;
+    /* z-index: 10; */
     width: 6rem;
     height: 5rem;
     color: #0c0f14;
-    right: 85px;
+    right: 69px;
     top: -3px;
 }
 
@@ -366,32 +366,40 @@
 
 /* single orange pill */
 .time-badge {
-  display: flex;
-  align-self: end !important;
-  justify-content: space-between;                /* little space between time and status */
-  background-color: #2b3038;
-  color: #fff;              /* default text color (time stays white) */
-  padding: 4px;
-  border-radius: 10px;
-  font-weight: 600;
-  width: calc(100% - 55px);
+    display: flex;
+    align-self: end !important;
+    justify-content: space-between; /* little space between time and status */
+    background-color: #2b3038;
+    color: #fff; /* default text color (time stays white) */
+    padding: 4px;
+    border-radius: 10px;
+    font-weight: 600;
+    width: calc(100% - 55px);
 }
 
 /* time is always white (inherits from .time-badge) */
-.time-badge__time { color: #fff; }
+.time-badge__time {
+    color: #fff;
+}
 
 /* status color toggles */
-.time-badge__status.open   { color: #16a34a; } /* green */
-.time-badge__status.closed { color: #dc2626; } /* red */
+.time-badge__status.open {
+    color: #16a34a;
+} /* green */
+.time-badge__status.closed {
+    color: #dc2626;
+} /* red */
 
-:root { --badge-overlay: 35px; }
+:root {
+    --badge-overlay: 35px;
+}
 .time-badge span {
     text-align: center;
     border-radius: 6px;
-    font-size: 1rem;
+    font-size: 0.9rem;
     color: #fff;
     max-width: calc(100% - var(--badge-overlay));
-    align-self: flex-start;   /* keeps it left-aligned in your column flow */
+    align-self: flex-start; /* keeps it left-aligned in your column flow */
 }
 
 .restaurant-header {
@@ -412,16 +420,15 @@
     align-items: center;
     gap: 0.3rem;
     color: #bbb;
-    margin-top: 0.6rem;
 }
 
 .rate {
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 600;
 }
 
 .rate-voters-num {
-    font-size: 0.6rem;
+    font-size: 0.9rem;
     color: #aeaeae;
 }
 
@@ -602,12 +609,12 @@
 }
 
 /* quick skeleton for food-card */
-.food-card.skeleton {
-    min-width: 220px;
+.food-card {
+    width: 45%;
     height: 240px;
     border-radius: 16px;
     background: #e5e7eb;
-    animation: pulse 1.4s ease-in-out infinite;
+    /* animation: pulse 1.4s ease-in-out infinite; */
 }
 @keyframes pulse {
     0% {
@@ -643,8 +650,8 @@
 
 .food-card {
     width: 147px;
-    height: 287px;
-    flex: 0 0 260px;
+    height: 250px;
+    flex: 0 0 45%;
     padding: 1.2rem 1rem;
     display: flex;
     flex-direction: column;

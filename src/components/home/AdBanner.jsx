@@ -3,6 +3,8 @@ import React, { useEffect, useMemo, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import publicAxios from "../../api/publicAxios";
 import { getRandomAdBanner, postAdImpression } from "../../api/restaurants";
+import StateMessage from "../common/StateMessage";
+import { Link } from "react-router-dom";
 
 // page-scope memory so multiple AdBanner instances don't repeat
 if (!window.__menroAdExcludes) window.__menroAdExcludes = [];
@@ -80,10 +82,10 @@ export default function AdBanner({
 
   // Loading / error for dynamic mode
   if (!isStatic && isLoading) {
-    return <p className="text-gray-500 text-center">در حال بارگذاری بنر...</p>;
+  return <div className="state state--loading">در حال بارگذاری بنر…</div>;
   }
   if (!isStatic && isError) {
-    return <p className="text-red-500 text-center">خطا در دریافت بنر: {error?.message}</p>;
+    return <div className="state state--error">خطا در دریافت بنر</div>;
   }
   if (!isStatic && !ad) {
     // API may return 204 (no eligible banners)
@@ -111,14 +113,10 @@ export default function AdBanner({
 
   // If nothing to show at all (very unlikely), bail out gracefully
   if (!finalImg && !finalTitle && !finalSubtitle) {
-    return (
-      <p className="text-yellow-500 text-center">
-        اطلاعات بنر ناقص است یا یافت نشد
-      </p>
-    );
+    return <StateMessage kind="empty">اطلاعات بنر ناقص است یا یافت نشد.</StateMessage>;
   }
 
-  const Wrapper = finalHref ? "a" : "div";
+  const Wrapper = finalHref ? Link : "div";
 
   // Inline CSS variables for easy theming from props
   const styleVars = {
@@ -157,12 +155,12 @@ export default function AdBanner({
       style={styleVars}
     >
       {finalHref ? (
-        <Wrapper href={finalHref} className="banner-link">
-          {ImgWrapper}
-        </Wrapper>
-      ) : (
-        ImgWrapper
-      )}
+  <Wrapper to={finalHref} className="banner-link">
+      {ImgWrapper}
+    </Wrapper>
+  ) : (
+    ImgWrapper
+  )}
     </section>
   );
 }

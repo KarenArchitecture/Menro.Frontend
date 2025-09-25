@@ -10,8 +10,8 @@ function BackIcon({ size = 22, color = "currentColor", ...props }) {
       <path
         d="M1.391 13.3063L3.58349 11.3048C5.57706 9.48491 6.57385 8.57496 6.57385 7.40733C6.57385 6.2397 5.57706 5.32975 3.58349 3.50986L1.391 1.50838"
         stroke="#FAFAF4"
-        stroke-width="1.5"
-        stroke-linecap="round"
+        strokeWidth="1.5"
+        strokeLinecap="round"
       />
     </svg>
   );

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { getFeaturedRestaurants } from "../../api/restaurants";
 import LoadingSpinner from "../common/LoadingSpinner";
 import publicAxios from "../../api/publicAxios";
+import StateMessage from "../common/StateMessage";
 
 function Carousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -41,7 +42,7 @@ function Carousel() {
     };
 
     const slideInterval = setInterval(goToNext, 3000);
-    return () => clearInterval(slideInterval);
+    return () => clearInterval(slideInterval);z
   }, [currentIndex, slides]);
 
   if (isLoading) return <LoadingSpinner />;
@@ -49,7 +50,7 @@ function Carousel() {
   if (isError)
     return (
       <section className="carousel">
-        <p>Error: {error.message}</p>
+        <div className="state state--error">خطا در دریافت اسلایدها</div>
       </section>
     );
 

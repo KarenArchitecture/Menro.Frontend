@@ -126,6 +126,7 @@
 import React from "react";
 import StarIcon from "../icons/StarIcon";
 import publicAxios from "../../api/publicAxios";
+import { Link } from "react-router-dom";
 
 export default function FoodCard({
   item,
@@ -171,8 +172,8 @@ export default function FoodCard({
   };
 
   const href = buildRestaurantHref();
-  const CTA = LinkComponent || (href ? "a" : "button");
-  const linkProps = LinkComponent ? { to: href } : href ? { href } : { type: "button", disabled: true };
+  const CTA = LinkComponent || (href ? Link : "button");
+  const linkProps = href ? { to: href } : { type: "button", disabled: true };
 
   return (
     <div className="food-card">
@@ -207,7 +208,11 @@ export default function FoodCard({
           title={`مشاهده ${displayRestaurantName}`}
         >
           {`${displayRestaurantName}`}
-          <span aria-hidden>‹</span>
+          <span aria-hidden>
+            <svg width="5" height="8" viewBox="0 0 5 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3.50806 1L2.44708 1.90634C1.48236 2.73046 1 3.14252 1 3.67126C1 4.20001 1.48236 4.61207 2.44708 5.43618L3.50806 6.34253" stroke="#FAFAF4" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </span>
         </CTA>
       </div>
     </div>

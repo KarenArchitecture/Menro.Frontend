@@ -55,7 +55,7 @@ export default function StatsSection() {
       const plusEnd = el.dataset.plusEnd === "1";
       const target = parseToNumber(targetText);
 
-      const duration = 5500; // ms
+      const duration = 10000; // ms
       const delay = i * 80; // small stagger
       const startAt = performance.now() + delay;
 

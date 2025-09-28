@@ -1148,15 +1148,29 @@ body {
 
 /* ---- Content ---- */
 .faq__content {
-  display: none;
+  /* always flex to avoid reflow on close */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* keep RTL right edge */
+  gap: 1rem;
+
   padding: 0 0 1.8rem 0;
-  margin-inline-start: 28px; /* align bubbles under question text */
+  margin-inline-start: 28px;
+
+  height: 0; /* collapsed baseline */
+  opacity: 0; /* faded baseline */
+  overflow: hidden;
+  clip-path: inset(0 0 100% 0); /* hidden baseline for “curl” */
+  will-change: height, opacity, clip-path, transform;
+  pointer-events: none; /* non-interactive while closed */
+  transform-origin: top right;
 }
 .faq__content.is-open {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 1rem;
+  pointer-events: auto;
 }
 
 /* Glass bubbles for answer paragraphs */
@@ -1179,6 +1193,7 @@ body {
   border-top-left-radius: 15px;
   border-top-right-radius: 15px;
   border-bottom-right-radius: 15px;
+  transform-origin: top right;
 }
 
 .faq__question {
@@ -1232,23 +1247,33 @@ body {
 
 /* ----- Marquee ----- */
 .blogs__marquee {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   height: 140px;
-  overflow: hidden;
+  overflow: hidden; /* hard crop at edges */
   pointer-events: none;
   z-index: 0;
 }
+
+.blogs__marquee-track {
+  display: inline-flex;
+  padding-inline: 4vw;
+  gap: 0;
+  will-change: transform;
+}
+
 .blogs__marquee-row {
   white-space: nowrap;
   font-weight: 700;
   font-size: 90px;
   letter-spacing: -0.02em;
   color: var(--text);
-  transform: translateX(-8%);
-  padding-inline: 4vw;
+  padding-inline: 0;
+  flex: 0 0 auto;
 }
+
 .blogs__marquee-accent {
   color: #ff683c;
 }
@@ -1257,8 +1282,7 @@ body {
 .blogs__viewport {
   position: relative;
   z-index: 1;
-  width: min(1200px, 92vw); /* ensure a finite viewport width */
-  margin: 0 auto;
+  margin: 0 10rem;
   padding-top: 3rem;
 }
 
@@ -1365,6 +1389,7 @@ body {
   justify-content: space-between; /* cleaner than space-around */
   flex-direction: row-reverse; /* RTL */
   margin-top: 1.6rem;
+  margin: 4rem;
 }
 .blogs__all {
   width: 398px;

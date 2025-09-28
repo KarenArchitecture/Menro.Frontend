@@ -20,28 +20,26 @@ export default function InstallPhonesBanner({
     if (mql.matches) return;
 
     const ctx = gsap.context(() => {
-      // Early start so it always triggers when section enters viewport
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: "top bottom", // animation starts as soon as section enters
-          end: "center center", // animation completes when section hits viewport center
-          scrub: 1.5, // higher value = smoother catch-up
+          start: "top bottom",
+          end: "center center",
+          scrub: 1.5,
           invalidateOnRefresh: true,
-          // markers: true,
         },
         defaults: { ease: "power3.out" },
       });
 
-      // Fade-in from ABOVE, drop into your CSS end-state (rotation/position kept)
+      // Fade-in from ABOVE
 
       tl.fromTo(
         backRef.current,
-        { autoAlpha: 0, y: -500, immediateRender: false }, // start well above
-        { autoAlpha: 1, x: -185, y: -179, duration: 3 } // end higher than CSS
+        { autoAlpha: 0, y: -500, immediateRender: false },
+        { autoAlpha: 1, x: -185, y: -179, duration: 3 }
       ).fromTo(
         frontRef.current,
-        { autoAlpha: 0, y: -450, immediateRender: false },
+        { autoAlpha: 0, y: -500, immediateRender: false },
         { autoAlpha: 1, x: 59, y: -295, duration: 3 },
         "-=0.35"
       );

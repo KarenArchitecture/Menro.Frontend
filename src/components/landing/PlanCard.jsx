@@ -1,14 +1,12 @@
-// start code
+// PlanCard.jsx
 import React from "react";
 import GreenCheckIcon from "../icons/GreenCheckIcon";
+
 /**
  * Presentational card for a single plan.
  * Expects: { title, description, bgSrc, features?, badge?, ctaLabel?, ctaHref? }
  */
-export default function PlanCard({
-  plan,
-  checkIconSrc = "../icons/GreenCheckIcon.jsx",
-}) {
+export default function PlanCard({ plan }) {
   const {
     title,
     description,
@@ -22,7 +20,14 @@ export default function PlanCard({
   return (
     <div className="plan-card">
       {/* Background image per plan */}
-      <img className="plan-card__bg" src={bgSrc} alt="" decoding="async" />
+      <img
+        className="plan-card__bg"
+        src={bgSrc}
+        alt=""
+        decoding="async"
+        loading="lazy"
+        aria-hidden="true"
+      />
 
       <div className="plan-card__content">
         {/* Info (RTL on the right) */}

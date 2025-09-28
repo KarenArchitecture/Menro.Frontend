@@ -10,7 +10,7 @@ const DEFAULT_FAQ = [
     id: "q1",
     question: "سوال اول با متن طولانی؟",
     answer: [
-      "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.",
+      "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، و با استفاده از طراحان گرافیک است، چاپگرها و متون بلکه روزنامه لورم ایپسوم متن ساختگی لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، و با استفاده از طراحان گرافیک است، چاپگرها و متون بلکه روزنامه لورم ایپسوم متن ساختگی",
       "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، بلکه روزنامه و مجله در ستون و سطر آنچنان که لازم است.",
     ],
   },
@@ -63,7 +63,6 @@ export default function FAQSection({
               >
                 {/* Icon (CSS will render + / − via ::before/::after) */}
                 <span className="faq__icon" aria-hidden="true" />
-                {/* Question text */}
                 <span className="faq__question">{it.question}</span>
               </button>
 
@@ -75,7 +74,7 @@ export default function FAQSection({
               >
                 {it.answer.map((para, idx) => (
                   <div key={idx} className="faq__bubble">
-                    {para}
+                    <p className="faq__answer">{para}</p>
                   </div>
                 ))}
               </div>

@@ -522,6 +522,7 @@ body {
   }
 }
 
+/* Install phone section */
 .install-banner {
   position: relative;
   background: #0b0f13;
@@ -636,7 +637,27 @@ body {
     filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.4));
   }
 }
-/* start code */
+.install-banner__phone {
+  transform-origin: 50% 80%;
+  contain: layout paint;
+}
+@media (prefers-reduced-motion: reduce) {
+  .install-banner__phone {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ////////////////////// */
+/* ////////////////////// */
+/* //////PLAN CARDS/////// */
+
+/* Base sizes (match the front card) */
+:root {
+  --plan-card-w: 1422px;
+  --plan-card-h: 530px;
+}
+
 /* Container */
 .plans {
   width: 100%;
@@ -675,42 +696,63 @@ body {
   opacity: 1;
 }
 
-/* Decorative stack */
+/* ===== Deck-style stacked cards (three full back cards) ===== */
 .plans__stack {
-  width: min(1100px, 92vw);
-  margin: 0 auto;
+  width: var(--plan-card-w); /* same width as .plan-card */
+  margin: -22px auto 0; /* pull under the front card a touch more */
   position: relative;
-  height: 24px;
-}
-.plans__stack-card {
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 100%;
-  border-radius: 18px;
-  border: 1px solid var(--card-border);
-  background: rgba(255, 255, 255, 0.02);
-}
-.plans__stack-card--1 {
-  translate: 0 12px;
-  opacity: 0.5;
-}
-.plans__stack-card--2 {
-  translate: 0 24px;
-  opacity: 0.3;
+  height: 80px; /* enough window to show all three peeks */
+  pointer-events: none; /* decorative only */
+  z-index: 1;
+  /* overflow visible so side edges of smaller cards can show */
 }
 
-/* Card */
+.plans__stack-card {
+  position: absolute;
+  inset: auto 0 0 0; /* anchor to bottom */
+  width: var(--plan-card-w);
+  height: var(--plan-card-h); /* full card height */
+  border-radius: 18px;
+  border: 1px solid var(--card-border);
+  background-color: #0c0f14; /* base like the main card */
+  background-image: url("/images/phone-background.png"); /* same blue look */
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+  transform-origin: center bottom; /* scale from bottom so bottoms align */
+  will-change: transform;
+  pointer-events: none;
+}
+
+/* Clear, centered deck: each one lower + smaller than the previous */
+.plans__stack-card--1 {
+  transform: translateY(59px) scale(0.9);
+  opacity: 1;
+}
+.plans__stack-card--2 {
+  transform: translateY(33px) scale(0.92);
+  opacity: 1;
+}
+.plans__stack-card--3 {
+  transform: translateY(-7px) translateX(-2px) scale(0.955);
+  opacity: 1;
+}
+
+/* Front (active) card */
 .plan-card {
-  width: 1422px;
-  height: 530px;
+  width: var(--plan-card-w);
+  height: var(--plan-card-h);
   margin: 0 auto;
   position: relative;
+  z-index: 3; /* sits above the stacked cards */
   border-radius: 18px;
   overflow: hidden;
   border: 1px solid var(--card-border);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
   background: #0c0f14;
 }
+
+/* Background image inside the front card */
 .plan-card__bg {
   position: absolute;
   inset: 0;
@@ -720,7 +762,10 @@ body {
   pointer-events: none;
   z-index: 0;
   opacity: 0.95;
+  will-change: transform, opacity;
 }
+
+/* Content layout */
 .plan-card__content {
   display: flex;
   align-items: center;
@@ -730,6 +775,7 @@ body {
   gap: 2rem;
   padding: 3.2rem 2.4rem;
 }
+
 /* Info (right) */
 .plan-card__info {
   display: flex;
@@ -753,12 +799,11 @@ body {
   font-size: 1.6rem;
 }
 
+/* CTA */
 .plan-card__actions {
   color: #f3f6fc;
-  box-shadow: 0 0 20px 0 #f3f6fc66;
   margin-top: 130px;
 }
-
 .plan-card__actions .btn.btn-light {
   font-size: 25px;
   font-weight: 700;
@@ -795,41 +840,125 @@ body {
   object-fit: contain;
   translate: 0 2px;
 }
+.plan-card__feature-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  transform: translateY(2px);
+}
 
-/* Responsive */
+/* --- Mobile fixes --- */
 @media (max-width: 980px) {
   .plans__tabs {
-    grid-auto-flow: row;
+    height: auto;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    padding: 1rem;
   }
+
   .plan-card__content {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 1.6rem;
   }
-  .plan-card__info {
-    justify-items: start;
+
+  .plan-card__actions {
+    margin-top: 24px; /* avoid 130px on small screens */
+  }
+
+  .plan-card__actions .btn.btn-light {
+    width: 100%;
+    height: 64px;
+    font-size: 20px;
+    border-radius: 12px;
   }
 }
 
-/* start code */
+/* ===== Deck container for real cards ===== */
+.plans__deck {
+  width: var(--plan-card-w);
+  height: var(--plan-card-h);
+  margin: 0 auto;
+  position: relative;
+  transform-style: preserve-3d;
+  perspective: 1000px; /* future-proof for hover tilt if you add it */
+}
+
+/* Each card sits in the same spot; GSAP sets scale/y/zIndex */
+.plans__deck-card {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+/* Make PlanCard fill the deck slot */
+.plans__deck-card .plan-card {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+/* Default: non-active cards' content hidden (GSAP also controls this) */
+.plans__deck-card .plan-card__content {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+}
+.plans__deck-card.is-active .plan-card__content {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.plans.is-animating .plans__tabs .plans__tab {
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+/* Make transforms feel like they're pulled from the bottom edge */
+.plans__deck {
+  perspective: 1000px;
+}
+.plans__deck-card {
+  transform-origin: center bottom;
+}
+
+/* Prevent accidental double-clicks during animation (optional) */
+.plans.is-animating .plans__tabs .plans__tab {
+  pointer-events: none;
+  opacity: 0.85;
+}
+
 /***************************************
  * Burger Panel (static, 3D-ready)
  **************************************/
 .burger-panel {
   position: relative;
   background: #0b0f13;
-  padding: 6rem 2rem 8rem;
+  min-height: 100vh; /* not 240vh when using pin */
+  padding: 0 8rem;
+  overflow: hidden; /* masks anything behind while pinned */
 }
 
 .burger-panel__scene {
+  position: relative; /* <- no sticky here */
+  height: clamp(520px, 60vh, 680px);
   width: min(1200px, 92vw);
   margin: 0 auto;
-  position: relative;
-  height: clamp(520px, 60vh, 680px);
   display: grid;
   place-items: center;
-  perspective: 1200px; /* 3D stage */
+  perspective: 1200px;
   transform-style: preserve-3d;
-  isolation: isolate;
+}
+
+.burger-panel__stack {
+  position: absolute;
+  left: 50%;
+  top: 8%;
+  z-index: 2;
+  pointer-events: none;
+  transform: none; /* GSAP controls transforms */
 }
 
 /* ---- Panel plane ---- */
@@ -843,17 +972,13 @@ body {
 
 .burger-panel__panel {
   position: relative;
-  width: min(860px, 94vw);
-  height: clamp(460px, 52vw, 560px);
-  border-radius: 24px;
+  border-radius: 30px;
   overflow: hidden;
-  border: 1px solid var(--card-border);
-  background: linear-gradient(
-    180deg,
-    rgba(102, 85, 160, 0.16),
-    rgba(20, 18, 30, 0.42)
-  );
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  width: 1171px;
+  height: 610px;
+  background: linear-gradient(90deg, #111327 0%, #1e1d3d 50%, #111327 100%);
+  background: linear-gradient(90deg, #111327 0%, #1e1d3d 50%, #111327 100%);
+  box-shadow: 0px 0px 100px 14px #0c0f14;
 }
 
 /* Optional mesh overlay */
@@ -893,15 +1018,14 @@ body {
   place-items: center;
   padding: 2rem;
   text-align: center;
+  top: -97%;
 }
 
 .burger-panel__title {
   margin: 0;
-  color: var(--text);
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  font-size: clamp(2.4rem, 4vw, 4.6rem);
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  font-size: 100px;
+  font-weight: 800;
+  color: #fff;
 }
 
 .burger-panel__subtitle {
@@ -911,15 +1035,14 @@ body {
 }
 
 /* ---- Burger image above panel ---- */
+
 .burger-panel__burger {
-  position: absolute;
-  z-index: 2;
-  width: clamp(280px, 34vw, 420px);
+  position: relative;
+  left: auto;
+  top: auto;
+  width: 612px;
   height: auto;
-  left: 50%;
-  translate: -50% -18%; /* sits above panel edge */
-  filter: drop-shadow(0 24px 60px rgba(0, 0, 0, 0.55));
-  pointer-events: none;
+  z-index: 10;
 }
 
 /* Responsive tweaks */
@@ -946,7 +1069,11 @@ body {
 .faq {
   width: 100%;
   padding: 6rem 2rem;
-  background: #0b0f13; /* page bg */
+  background: radial-gradient(
+    50% 50% at 50% 50%,
+    rgba(47, 43, 163, 0.2) 0%,
+    rgba(53, 25, 100, 0) 100%
+  );
 }
 
 .faq__list {
@@ -965,10 +1092,11 @@ body {
 /* ---- Trigger row ---- */
 .faq__trigger {
   width: 100%;
-  display: grid;
-  grid-template-columns: 28px 1fr; /* icon | question (RTL-aware) */
+  /* display: grid
+; */
+  /* grid-template-columns: 28px 1fr; */
   align-items: center;
-  gap: 1rem;
+  /* gap: 1rem; */
   padding: 1.8rem 0;
   background: transparent;
   border: 0;
@@ -978,6 +1106,10 @@ body {
   font-weight: 900;
   font-size: clamp(1.9rem, 2.6vw, 2.6rem);
   letter-spacing: -0.01em;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: space-between;
 }
 .faq__trigger:hover {
   color: var(--accent);
@@ -1021,15 +1153,21 @@ body {
   margin-inline-start: 28px; /* align bubbles under question text */
 }
 .faq__content.is-open {
-  display: grid;
-  gap: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1rem;
 }
 
 /* Glass bubbles for answer paragraphs */
 .faq__bubble {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--card-border);
-  border-radius: 12px;
+  background: linear-gradient(246.95deg, #1c2128 0.52%, #111b2f 98.07%);
+  border: 1px solid;
+  border-image-source: linear-gradient(
+    245.61deg,
+    #0c0f14 1.66%,
+    #999fa8 99.05%
+  );
   padding: 1.4rem 1.6rem;
   color: var(--muted);
   font-size: 1.5rem;
@@ -1037,8 +1175,22 @@ body {
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25) inset;
+  max-width: 70rem;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+  border-bottom-right-radius: 15px;
 }
 
+.faq__question {
+  font-size: 30px;
+  font-weight: 600;
+}
+
+.faq__answer {
+  font-size: 20px;
+  font-weight: 500;
+  color: #999fa8;
+}
 /* ---- Utilities ---- */
 .sr-only {
   position: absolute !important;
@@ -1067,81 +1219,83 @@ body {
     margin-inline-start: 24px;
   }
 }
-
 /***************************************
- * Blogs Section — scroll-snap carousel
+ * Blogs Section — horizontal filmstrip
  **************************************/
 .blogs {
   position: relative;
   background: #0b0f13;
   padding: 6rem 0 8rem;
-  overflow: hidden;
+  margin: 10rem 0;
+  overflow: hidden; /* ok: only hides outer overflow, rail still scrolls */
 }
 
-/* ----- Marquee (decorative, oversized words) ----- */
+/* ----- Marquee ----- */
 .blogs__marquee {
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 140px; /* height of the banner */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 140px;
   overflow: hidden;
   pointer-events: none;
   z-index: 0;
 }
 .blogs__marquee-row {
   white-space: nowrap;
-  font-weight: 900;
-  font-size: clamp(4.2rem, 9vw, 9rem);
+  font-weight: 700;
+  font-size: 90px;
   letter-spacing: -0.02em;
-  opacity: 0.08;
   color: var(--text);
-  transform: translateX(-8%); /* slight offset, no animation yet */
+  transform: translateX(-8%);
   padding-inline: 4vw;
 }
+.blogs__marquee-accent {
+  color: #ff683c;
+}
 
-/* ----- Viewport (container) ----- */
+/* ----- Viewport (inline container width helps scroll calc) ----- */
 .blogs__viewport {
   position: relative;
   z-index: 1;
-  width: min(1200px, 92vw);
+  width: min(1200px, 92vw); /* ensure a finite viewport width */
   margin: 0 auto;
-  padding-top: 3rem; /* create space under marquee */
+  padding-top: 3rem;
 }
 
-/* ----- Rail (horizontal scroll) ----- */
+/* ----- Rail (flex + snap) ----- */
 .blogs__rail {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 360px; /* card width (desktop) */
-  gap: 24px;
+  display: flex;
+  flex-direction: row-reverse; /* RTL: first item on the right */
+  align-items: center;
+  gap: 3rem;
+
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 1rem 6px; /* small vertical padding to avoid clip */
   scroll-snap-type: x mandatory;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge legacy */
-  -webkit-overflow-scrolling: touch; /* iOS smooth scroll */
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+
+  padding-inline: 12px; /* breathing room at edges */
+  scrollbar-width: none;
 }
 .blogs__rail::-webkit-scrollbar {
   display: none;
 }
 
-/* Make first and last cards breathe from edges */
-.blogs__rail::before,
-.blogs__rail::after {
-  content: "";
-  width: 12px;
-}
-
 /* ----- Card ----- */
 .blogs__card {
+  flex: 0 0 auto; /* don't shrink; keep natural block width */
+  width: 450px; /* if you want natural image width, remove this */
+  height: 600px;
   list-style: none;
   scroll-snap-align: start;
 }
+
 .blogs__card-link {
   position: relative;
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 5; /* similar ratio to mock */
+  height: 100%;
   border-radius: 18px;
   overflow: hidden;
   background: #141821;
@@ -1149,15 +1303,16 @@ body {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.blogs__card-link:focus-visible {
-  outline: 2px solid rgba(255, 157, 16, 0.6);
-  outline-offset: 3px;
-}
 .blogs__card-link:hover {
   transform: translateY(-2px);
   box-shadow: 0 26px 56px rgba(0, 0, 0, 0.45);
 }
+.blogs__card-link:focus-visible {
+  outline: 2px solid rgba(255, 157, 16, 0.6);
+  outline-offset: 3px;
+}
 
+/* Image fills card (change strategy below if you want natural-width images) */
 .blogs__card-img {
   position: absolute;
   inset: 0;
@@ -1166,7 +1321,7 @@ body {
   object-fit: cover;
 }
 
-/* dark overlay to make text readable */
+/* Overlay + meta */
 .blogs__card-overlay {
   position: absolute;
   inset: 0;
@@ -1177,16 +1332,16 @@ body {
     rgba(0, 0, 0, 0) 64%
   );
 }
-
-/* bottom-right meta */
 .blogs__card-meta {
   position: absolute;
   inset: auto 14px 14px 14px;
-  display: grid;
-  gap: 6px;
-  justify-items: end; /* RTL text on the right */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
   text-align: right;
   color: #f1f3f5;
+  padding-right: 1rem;
 }
 .blogs__card-title {
   margin: 0;
@@ -1202,30 +1357,22 @@ body {
   opacity: 0.9;
   font-size: 1.3rem;
 }
-.blogs__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 157, 16, 0.18);
-}
 
-/* ----- Controls (bottom area) ----- */
+/* Controls */
 .blogs__controls {
-  margin-top: 1.6rem;
-  display: grid;
-  grid-template-columns: 1fr auto; /* left: view all | right: arrows */
+  display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between; /* cleaner than space-around */
+  flex-direction: row-reverse; /* RTL */
+  margin-top: 1.6rem;
 }
-
-/* "View all" button – reuse your btn styles if present */
 .blogs__all {
-  justify-self: start;
+  width: 398px;
+  height: 97px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 1.1rem 1.6rem;
+  justify-content: center;
+  gap: 1rem;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.04);
   color: var(--text);
@@ -1234,22 +1381,27 @@ body {
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
 }
+.blogs__all-link {
+  font-size: 30px;
+  font-weight: 600;
+  color: #fff;
+}
 
-/* Arrow buttons */
 .blogs__nav {
-  justify-self: end;
   display: grid;
   grid-auto-flow: column;
   gap: 10px;
 }
 .blogs__arrow {
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
-  border: 1px solid var(--card-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 93px;
+  height: 93px;
+  border-radius: 20px;
+  border: 1px solid #394350;
   background: rgba(255, 255, 255, 0.04);
   cursor: pointer;
-  position: relative;
   transition: background 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
 }
 .blogs__arrow:hover {
@@ -1257,66 +1409,38 @@ body {
   transform: translateY(-1px);
 }
 .blogs__arrow:disabled {
-  opacity: 0.4;
   cursor: not-allowed;
   transform: none;
 }
 
-/* Draw chevron with CSS (› for next) */
-.blogs__arrow::before,
-.blogs__arrow::after {
-  content: "";
-  position: absolute;
-  inset: 50% auto auto 50%;
-  width: 10px;
-  height: 2px;
-  background: #e7e7e7;
-  translate: -50% -50%;
-  border-radius: 2px;
-}
-.blogs__arrow::before {
-  transform: rotate(45deg) translateX(-2px);
-}
-.blogs__arrow::after {
-  transform: rotate(-45deg) translateX(-2px);
-}
-
-/* Prev arrow (‹) by flipping horizontally */
-.blogs__arrow--prev {
-  transform: scaleX(-1);
-}
-.blogs__arrow--prev:hover {
-  transform: scaleX(-1) translateY(-1px);
-}
-
 /* ----- Responsive ----- */
 @media (max-width: 1100px) {
-  .blogs__rail {
-    grid-auto-columns: 320px;
-  }
+  /* nothing grid-specific here anymore */
 }
 @media (max-width: 880px) {
-  .blogs__rail {
-    grid-auto-columns: 300px;
-    gap: 20px;
-  }
   .blogs__controls {
-    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .blogs__all {
+    width: auto;
+    height: auto;
+    padding: 1.1rem 1.6rem;
   }
 }
 @media (max-width: 640px) {
-  .blogs__rail {
-    grid-auto-columns: 88vw;
-    gap: 16px;
-  }
-  .blogs__card-link {
-    border-radius: 16px;
-  }
   .blogs__marquee {
     height: 100px;
   }
   .blogs__marquee-row {
     font-size: clamp(3.2rem, 12vw, 6rem);
+  }
+
+  .blogs__card {
+    width: 80vw;
+    height: 60vw;
+  } /* mobile-friendly sizing */
+  .blogs__card-link {
+    border-radius: 16px;
   }
 }
 

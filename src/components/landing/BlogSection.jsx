@@ -1,42 +1,67 @@
 // components/landing/BlogsSection.jsx
-import React, { useRef, useState, useMemo } from "react";
+import React, { useRef, useState, useMemo, useEffect } from "react";
 
+import ClockIcon from "../icons/ClockIcon";
+import ArrowUpIcon from "../icons/ArrowUpIcon";
+import NextIcon from "../icons/NextIcon";
+import PrevIcon from "../icons/PrevIcon";
 /** Demo data (swap with API later) */
 const DEFAULT_POSTS = [
   {
     id: "p1",
     title: "عنوان مقاله",
     href: "#",
-    coverSrc: "/images/blogs/post-1.jpg",
+    coverSrc: "/images/blog-(1).png",
     readingMins: 30,
   },
   {
     id: "p2",
     title: "عنوان مقاله",
     href: "#",
-    coverSrc: "/images/blogs/post-2.jpg",
+    coverSrc: "/images/blog-(2).png",
     readingMins: 30,
   },
   {
     id: "p3",
     title: "عنوان مقاله",
     href: "#",
-    coverSrc: "/images/blogs/post-3.jpg",
+    coverSrc: "/images/blog-(3).png",
     readingMins: 30,
   },
   {
     id: "p4",
     title: "عنوان مقاله",
     href: "#",
-    coverSrc: "/images/blogs/post-4.jpg",
+    coverSrc: "/images/blog-(4).png",
     readingMins: 12,
   },
   {
     id: "p5",
     title: "عنوان مقاله",
     href: "#",
-    coverSrc: "/images/blogs/post-5.jpg",
-    readingMins: 18,
+    coverSrc: "/images/blog-(1).png",
+    readingMins: 30,
+  },
+  {
+    id: "p6",
+    title: "عنوان مقاله",
+    href: "#",
+    coverSrc: "/images/blog-(2).png",
+    readingMins: 30,
+  },
+  {
+    id: "p7",
+    title: "عنوان مقاله",
+    href: "#",
+    coverSrc: "/images/blog-(3).png",
+    readingMins: 30,
+  },
+  {
+    id: "p8",
+    title: "عنوان مقاله",
+    href: "#",
+    coverSrc: "/images/blog-(4).png",
+    readingMins: 12,
   },
 ];
 
@@ -63,7 +88,7 @@ function BlogCard({ post }) {
         <div className="blogs__card-meta">
           <h3 className="blogs__card-title">{title}</h3>
           <div className="blogs__card-info">
-            <span className="blogs__dot" aria-hidden="true" />
+            <ClockIcon />
             <span className="blogs__mins">{readingMins} دقیقه</span>
           </div>
         </div>
@@ -72,11 +97,33 @@ function BlogCard({ post }) {
   );
 }
 
+/** Utility: wrap the last occurrence of a token with a span */
+function HighlightedChunk({
+  text,
+  token,
+  accentClass = "blogs__marquee-accent",
+}) {
+  const idx = text.lastIndexOf(token);
+  if (idx === -1) return <span className="blogs__marquee-chunk">{text}</span>;
+
+  const before = text.slice(0, idx).trimEnd();
+  const after = text.slice(idx + token.length);
+
+  return (
+    <span className="blogs__marquee-chunk">
+      {before && <>{before} </>}
+      <span className={accentClass}>{token}</span>
+      {after && <> {after}</>}
+    </span>
+  );
+}
+
 /** Main Blogs section with scroll-snap rail and controls */
 export default function BlogSection({
   posts = DEFAULT_POSTS,
   allHref = "#",
-  sectionTitle = "بلاگ‌های منرو",
+  sectionTitle = "بلاگ‌ها منرو",
+  highlightWord = "منرو", // word to colorize inside the marquee
 }) {
   const railRef = useRef(null);
   const [canPrev, setCanPrev] = useState(false);
@@ -92,16 +139,24 @@ export default function BlogSection({
     setCanNext(scrollLeft + clientWidth < scrollWidth - 1);
   };
 
-  const onPrev = () => {
-    railRef.current?.scrollBy({ left: -cardWidth - 24, behavior: "smooth" });
-  };
-  const onNext = () => {
+  const onPrev = () =>
+    railRef.current?.scrollBy({ left: -(cardWidth + 24), behavior: "smooth" });
+  const onNext = () =>
     railRef.current?.scrollBy({ left: cardWidth + 24, behavior: "smooth" });
-  };
 
-  const marqueeText = useMemo(
-    () => Array.from({ length: 8 }, () => sectionTitle).join("  "),
-    [sectionTitle]
+  useEffect(() => {
+    updateButtons();
+    const el = railRef.current;
+    if (!el) return;
+    const onResize = () => updateButtons();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // Build one marquee chunk with <span> wrapping the accent word
+  const marqueeChunk = useMemo(
+    () => <HighlightedChunk text={sectionTitle} token={highlightWord} />,
+    [sectionTitle, highlightWord]
   );
 
   return (
@@ -112,7 +167,14 @@ export default function BlogSection({
 
       {/* Top oversized marquee (decorative) */}
       <div className="blogs__marquee" aria-hidden="true">
-        <div className="blogs__marquee-row">{marqueeText}</div>
+        <div className="blogs__marquee-row">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <React.Fragment key={i}>
+              {marqueeChunk}
+              <span aria-hidden="true">&nbsp;&nbsp;</span>
+            </React.Fragment>
+          ))}
+        </div>
       </div>
 
       {/* Rail + controls */}
@@ -130,9 +192,12 @@ export default function BlogSection({
 
         {/* Bottom controls */}
         <div className="blogs__controls">
-          <a className="blogs__all btn btn-ghost" href={allHref}>
-            مشاهده همه مقالات
-          </a>
+          <button className="blogs__all btn btn-ghost">
+            <ArrowUpIcon />
+            <a className="blogs__all-link" l href={allHref}>
+              مشاهده همه مقالات
+            </a>
+          </button>
 
           <div className="blogs__nav">
             <button
@@ -142,7 +207,7 @@ export default function BlogSection({
               aria-label="اسلاید بعدی"
               disabled={!canNext}
             >
-              {/* › icon drawn with CSS; keep empty */}
+              <NextIcon />
             </button>
             <button
               type="button"
@@ -150,7 +215,9 @@ export default function BlogSection({
               onClick={onPrev}
               aria-label="اسلاید قبلی"
               disabled={!canPrev}
-            />
+            >
+              <PrevIcon />
+            </button>
           </div>
         </div>
       </div>

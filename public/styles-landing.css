@@ -936,22 +936,24 @@ body {
 .burger-panel {
   position: relative;
   background: #0b0f13;
-  min-height: 100vh; /* not 240vh when using pin */
-  padding: 0 8rem;
-  overflow: hidden; /* masks anything behind while pinned */
+  min-height: 250vh;
+  /* padding: 0 8rem;  <-- remove */
+  overflow: hidden;
 }
 
 .burger-panel__scene {
-  position: relative; /* <- no sticky here */
-  height: clamp(520px, 60vh, 680px);
-  width: min(1200px, 92vw);
-  margin: 0 auto;
+  position: relative;
+  width: 100%; /* instead of min(1200px, 92vw) */
+  max-width: none;
+  margin: 0; /* remove auto-centering on the fixed element */
+  padding: 0 8rem; /* <-- moved here */
   display: grid;
   place-items: center;
+  height: clamp(520px, 60vh, 680px);
   perspective: 1200px;
   transform-style: preserve-3d;
+  box-sizing: border-box; /* ensures padding doesn't change geometry */
 }
-
 .burger-panel__stack {
   position: absolute;
   left: 50%;
@@ -1061,6 +1063,13 @@ body {
   .burger-panel__title {
     font-size: clamp(2.2rem, 5vw, 3.6rem);
   }
+}
+
+.burger-panel__panelwrap,
+.burger-panel__stack,
+.burger-panel__burger,
+.burger-panel__content {
+  will-change: transform, top;
 }
 
 /***************************************

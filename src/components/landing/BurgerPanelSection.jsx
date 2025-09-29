@@ -1,7 +1,7 @@
 import React, { useRef, useLayoutEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { tr } from "framer-motion/client";
+
 gsap.registerPlugin(ScrollTrigger);
 
 export default function BurgerPanelSection({
@@ -18,42 +18,41 @@ export default function BurgerPanelSection({
   const stackRef = useRef(null); // burger + halo
 
   useLayoutEffect(() => {
-    const nextEl =
-      document.querySelector("#next-section") ||
-      sectionRef.current?.nextElementSibling ||
-      null;
-
     const ctx = gsap.context(() => {
-      // 1) initial states before paint (prevents flicker)
       gsap.set(panelWrapRef.current, {
         rotateX: 30,
         transformOrigin: "50% 100%",
       });
       gsap.set(contentRef.current, { top: "-97%" });
-      gsap.set(stackRef.current, { xPercent: -50, yPercent: -18 });
+      gsap.set(stackRef.current, { xPercent: -50, yPercent: -18, y: 0 });
 
-      // 2) one timeline, one ScrollTrigger (pin the section)
       const tl = gsap.timeline({
         defaults: { ease: "none" },
         scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top top",
-          // align release with the next section if present; else use distance
-          endTrigger: nextEl || undefined,
-          end: nextEl ? "top top" : "+=160%",
-          pin: true,
-          pinSpacing: true,
-          scrub: 0.35,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-          // pinType:"transform", // uncomment on iOS/nested fixed if you see jitter
-          // markers:true,
+          trigger: sceneRef.current,
+          pin: sceneRef.current,
+          pinType: "fixed",
+          pinSpacing: false, // try false
+          start: "center center",
+          end: () =>
+            "+=" +
+            Math.round(
+              (sceneRef.current?.offsetHeight || window.innerHeight) * 2.4
+            ),
+          scrub: true,
+          anticipatePin: 0, // try 0
+          invalidateOnRefresh: true, // always recalc
+          // markers: true,
         },
       });
 
-      tl.to(stackRef.current, { y: () => -1.4 * window.innerHeight }, 0)
-        .to(panelWrapRef.current, { rotateX: 0 }, 0)
-        .to(contentRef.current, { top: "0%" }, 0.05);
+      tl.to(
+        stackRef.current,
+        { y: () => -1.6 * window.innerHeight, force3D: true },
+        0
+      )
+        .to(panelWrapRef.current, { rotateX: 0, force3D: true }, 0)
+        .to(contentRef.current, { top: "0%" }, 0.18); // reveal finishes well before unpin
     }, sectionRef);
 
     return () => ctx.revert();
@@ -86,7 +85,6 @@ export default function BurgerPanelSection({
               top: "8%",
               zIndex: 2,
               pointerEvents: "none",
-              transform: "none",
             }}
           >
             {haloSrc ? (

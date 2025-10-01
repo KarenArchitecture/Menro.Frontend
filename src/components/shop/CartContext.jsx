@@ -1,3 +1,4 @@
+//calculations
 import React, { createContext, useContext, useMemo, useReducer } from "react";
 
 const CartContext = createContext(null);

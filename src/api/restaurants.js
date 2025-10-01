@@ -5,7 +5,7 @@ import restaurantAxios from "./restaurantAxios";
 const RESTAURANT_URL = "/restaurant";
 
 /* ───────────────  🍽 public restaurant data ─────────────── */
-// Public restaurant data
+/* ───────────────  🍽 Home Page ─────────────── */
 export const getFeaturedRestaurants = () =>
   publicAxios.get(`${RESTAURANT_URL}/featured`).then(r => r.data);
 
@@ -24,7 +24,7 @@ export const getRandomAdBanner = (excludeIds = []) =>
 export const postAdImpression = (bannerId) =>
   publicAxios.post(`${RESTAURANT_URL}/ad-banner/${bannerId}/impression`);
 
-// Shop page
+/* ───────────────  🍽 Shop Page ─────────────── */
 export const getRestaurantBannerBySlug = (slug) =>
   publicAxios.get(`${RESTAURANT_URL}/${slug}/banner`).then(r => r.data);
 
@@ -50,3 +50,4 @@ export const registerRestaurant = async (payload) => {
   });
   return response.data;
 };
+

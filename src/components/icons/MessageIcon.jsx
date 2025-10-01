@@ -10,31 +10,31 @@ export default function MessageIcon() {
       <path
         d="M5.66659 12.6666H5.33325C2.66659 12.6666 1.33325 11.9999 1.33325 8.66659V5.33325C1.33325 2.66659 2.66659 1.33325 5.33325 1.33325H10.6666C13.3333 1.33325 14.6666 2.66659 14.6666 5.33325V8.66659C14.6666 11.3333 13.3333 12.6666 10.6666 12.6666H10.3333C10.1266 12.6666 9.92658 12.7666 9.79992 12.9333L8.79992 14.2666C8.35992 14.8533 7.63992 14.8533 7.19992 14.2666L6.19992 12.9333C6.09325 12.7866 5.84659 12.6666 5.66659 12.6666Z"
         stroke="#FAFAF4"
-        stroke-width="1.5"
-        stroke-miterlimit="10"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeEidth="1.5"
+        strokeMiterlimit="10"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
       <path
         d="M10.6644 7.33333H10.6704"
         stroke="#FAFAF4"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
       <path
         d="M7.99691 7.33333H8.0029"
         stroke="#FAFAF4"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
       <path
         d="M5.32967 7.33333H5.33566"
         stroke="#FAFAF4"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );

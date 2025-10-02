@@ -1,6 +1,7 @@
 import React, { useRef, useLayoutEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { div } from "framer-motion/client";
 gsap.registerPlugin(ScrollTrigger);
 
 export default function InstallPhonesBanner({

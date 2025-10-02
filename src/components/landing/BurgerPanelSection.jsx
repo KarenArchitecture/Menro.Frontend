@@ -17,47 +17,6 @@ export default function BurgerPanelSection({
   const contentRef = useRef(null); // title slides down
   const stackRef = useRef(null); // burger + halo
 
-  useLayoutEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.set(panelWrapRef.current, {
-        rotateX: 30,
-        transformOrigin: "50% 100%",
-      });
-      gsap.set(contentRef.current, { top: "-97%" });
-      gsap.set(stackRef.current, { xPercent: -50, yPercent: -18, y: 0 });
-
-      const tl = gsap.timeline({
-        defaults: { ease: "none" },
-        scrollTrigger: {
-          trigger: sceneRef.current,
-          pin: sceneRef.current,
-          pinType: "fixed",
-          pinSpacing: false, // try false
-          start: "center center",
-          end: () =>
-            "+=" +
-            Math.round(
-              (sceneRef.current?.offsetHeight || window.innerHeight) * 2.4
-            ),
-          scrub: true,
-          anticipatePin: 0, // try 0
-          invalidateOnRefresh: true, // always recalc
-          // markers: true,
-        },
-      });
-
-      tl.to(
-        stackRef.current,
-        { y: () => -1.6 * window.innerHeight, force3D: true },
-        0
-      )
-        .to(panelWrapRef.current, { rotateX: 0, force3D: true }, 0)
-        .to(contentRef.current, { top: "0%" }, 0.18); // reveal finishes well before unpin
-    }, sectionRef);
-
-    return () => ctx.revert();
-  }, []);
-
   return (
     <section
       ref={sectionRef}

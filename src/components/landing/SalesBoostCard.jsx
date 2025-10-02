@@ -1,5 +1,5 @@
 import React from "react";
-
+import LandingChartIcon from "../icons/LandingChartIcon";
 export default function SalesBoostCard({
   value = 200,
   subtitle = "افزایش فروش",
@@ -8,17 +8,15 @@ export default function SalesBoostCard({
   return (
     <div className={`why-card sales-boost ${className}`}>
       <div className="sales-boost__ring">
-        {/* placeholder ring; we'll animate the stroke later */}
-        <svg className="ring-svg" viewBox="0 0 100 100" aria-hidden>
-          <circle className="ring-bg" cx="50" cy="50" r="42" />
-          <circle className="ring-fg" cx="50" cy="50" r="42" />
-        </svg>
+        {/* progress arc (masked to the same thickness as the border ring) */}
+        <div className="ring-progress" aria-hidden></div>
+
+        {/* content sits inside the ring */}
         <div className="sales-boost__content">
-          <div className="icon" aria-hidden>
-            📊
-          </div>
-          <div className="value">+{value}%</div>
-          <div className="subtitle">{subtitle}</div>
+          {/* simple orange chart icon */}
+          <LandingChartIcon />
+          <div className="sales-boost__value">+{value}%</div>
+          <div className="sales-boost__subtitle">{subtitle}</div>
         </div>
       </div>
     </div>

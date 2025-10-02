@@ -222,11 +222,17 @@ body {
   position: relative;
   background: #0b0e12;
   color: #ffffff;
-  min-height: 120vh;
+  min-height: 1801px;
   display: grid;
   place-items: center;
   padding: 8rem 2rem 10rem;
-  overflow: hidden;
+  /* overflow: hidden; */
+}
+
+.why-static__stage {
+  position: relative;
+  height: 100%;
+  min-height: 90vh;
 }
 
 .why-static__inner {
@@ -237,6 +243,7 @@ body {
 }
 
 .why-static__titles {
+  margin-top: 20rem;
   position: absolute;
   inset-inline: 0;
   top: 0;
@@ -246,21 +253,22 @@ body {
 
 .why-static__title {
   margin: 0;
-  font-weight: 900;
-  font-size: clamp(4rem, 7vw, 10.4rem);
+  font-size: 170px;
+  font-weight: 800;
 }
 
 .why-static__subtitle {
   margin: 0.8rem 0 0;
-  color: rgba(255, 255, 255, 0.65);
-  font-size: clamp(1.6rem, 2.2vw, 3.2rem);
+  color: #999fa8;
+  font-size: 100px;
+  font-weight: 400;
 }
 
 /* Card base */
 .why-card {
   position: absolute;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 3px solid #f3f6fc80;
   border-radius: 16px;
   box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(6px);
@@ -379,43 +387,304 @@ body {
 
 /* Placement approximations to match the mock */
 .pos-a {
-  top: 260px;
-  right: 72px;
+  top: 29rem;
+  right: 13rem;
 }
 .pos-b {
-  top: 300px;
-  right: 220px;
-  width: 360px;
+  left: 23rem;
+  bottom: 30rem;
+  height: 311px;
+  width: 363px;
+  background: linear-gradient(246.95deg, #1c2128 0.52%, #111b2f 98.07%);
 }
 .pos-c {
-  top: 170px;
-  left: 160px;
-  width: 360px;
+  bottom: 70rem;
+  right: 62rem;
+  height: 311px;
+  width: 363px;
+  background: linear-gradient(246.95deg, #1c2128 0.52%, #241a19 98.07%);
 }
 .pos-d {
-  top: 460px;
-  left: 420px;
-  width: 340px;
+  top: 80rem;
+  left: 43rem;
+  height: 311px;
+  width: 363px;
+  background: linear-gradient(246.95deg, #1c2128 0.52%, #201924 98.07%);
 }
 .pos-e {
-  top: 90px;
-  left: 80px;
+  top: 119rem;
+  right: 13rem;
   width: 220px;
+  height: 311px;
+  width: 363px;
+  background: linear-gradient(246.95deg, #1c2128 0.52%, #192422 98.07%);
 }
 .pos-f {
-  top: 520px;
-  right: 140px;
-  width: 180px;
+  top: 55rem;
+  right: 40rem;
+  width: 170px;
+  height: 170px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(246.95deg, #311833 0.52%, #311833 98.07%);
+}
+
+.pos-i {
+  left: 80rem;
+  top: 92rem;
+  width: 170px;
+  height: 170px;
+  background: linear-gradient(246.95deg, #111b2f 0.52%, #111b2f 98.07%);
+}
+#why-menro
+  > div.why-card.icon-card.why-card.why-card--panel.pos-i
+  > div
+  > div.icon-card__title {
+  color: #ff683c;
+  font-size: 40px;
+  font-weight: 800;
+}
+#why-menro > div.why-card.icon-card.why-card.why-card--small.pos-f > div {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+}
+#why-menro
+  > div.why-card.icon-card.why-card.why-card--small.pos-f
+  > div
+  > div.icon-card__title {
+  font-size: 15px;
+  font-weight: 600;
 }
 .pos-g {
-  top: 120px;
-  right: 430px;
-  width: 160px;
+  bottom: 50rem;
+  right: 26rem;
+  width: 170px;
+  height: 170px;
+  background: linear-gradient(246.95deg, #192422 0.52%, #192422 98.07%);
   text-align: center;
 }
+#why-menro
+  > div.why-card.icon-card.why-card.why-card--panel.pos-g
+  > div
+  > div.icon-card__title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
 .pos-h {
   top: 640px;
   left: 300px;
+}
+
+@media (max-width: 768px) {
+  .why-static {
+    padding: 6rem 1.6rem 6rem;
+    min-height: auto;
+  }
+  .why-static__inner,
+  .why-static__stage {
+    min-height: auto;
+  }
+  .why-card {
+    position: static;
+    width: 100%;
+    margin: 10px 0;
+  }
+}
+
+/*  info cards (general)  */
+.info-card__header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.info-icon {
+  width: 46px;
+  height: 46px;
+}
+
+.info-title {
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.info-desc {
+  font-size: 20px;
+  font-weight: 500;
+  color: #999fa8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+/* --- Sales Boost Card --- */
+.sales-boost {
+  width: 300px;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(246.95deg, #1c2128 0.52%, #111b2f 98.07%);
+}
+
+.sales-boost__ring {
+  border: 4px solid #f3f6fc;
+  border-radius: 100%;
+  width: 170px;
+  height: 170px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+/* white arc drawn on top, masked to the ring thickness */
+.ring-progress {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  transform: rotate(-90deg); /* start arc at 12 o’clock */
+  background: conic-gradient(
+    #f4f6f9 calc(var(--progress) * 1turn),
+    transparent 0
+  );
+  /* mask so the arc has the same thickness as the border ring */
+  -webkit-mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - var(--ring-thickness) - 0.5px),
+    #000 calc(100% - var(--ring-thickness))
+  );
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - var(--ring-thickness) - 0.5px),
+    #000 calc(100% - var(--ring-thickness))
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* centered content inside the ring */
+.sales-boost__content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.sales-boost__icon {
+  width: 48px;
+  height: 48px;
+  margin-right: 1.5rem;
+  color: #ff6d1a; /* Menro orange */
+}
+
+.sales-boost__value {
+  font-size: 30px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  margin: 0 0 -5px 6px;
+}
+
+.sales-boost__subtitle {
+  font-size: 10px;
+  font-weight: 600;
+
+  color: #999fa8;
+}
+
+/* responsive */
+@media (max-width: 640px) {
+  .sales-boost {
+    width: 100%;
+    height: auto;
+    padding: 16px 0;
+  }
+  .sales-boost__ring {
+    --ring-size: 200px;
+  }
+}
+/* ---- Cost Reduction (static) ---- */
+.cost-reduction {
+  width: 300px;
+  height: 300px;
+  padding: 18px;
+  left: 16rem;
+  top: 115rem;
+  position: absolute;
+  overflow: hidden;
+  background: linear-gradient(246.95deg, #1c2128 0.52%, #201924 98.07%);
+}
+
+/* top-left dark square with your orange icon */
+.cost-reduction__icon {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 70px;
+  height: 70px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.28);
+  display: grid;
+  place-items: center;
+  color: #ff6d1a; /* Menro orange */
+}
+
+/* chart canvas bounds (leaves room for KPI/badge) */
+.cost-reduction .chart {
+  position: absolute;
+  inset: 28px 10px 52px 10px;
+}
+
+/* curved line */
+.cost-reduction .chart-path {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.75);
+  stroke-width: 6px;
+  stroke-linecap: round;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
+}
+
+/* orange dot with halo */
+.cost-reduction .chart-dot {
+  position: absolute;
+  top: 42px;
+  right: 84px;
+}
+
+/* KPI bottom-left */
+.cost-reduction .kpi {
+  position: absolute;
+  left: 16px;
+  bottom: 14px;
+  font-weight: 700;
+  font-size: 30px;
+  color: #ffffff;
+}
+
+/* pill badge bottom-right */
+.cost-reduction .badge {
+  width: 215px;
+  height: 51px;
+  position: absolute;
+  right: -71px;
+  bottom: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #0b0e12;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 20px;
+  font-weight: 700;
 }
 
 /***************************************
@@ -424,7 +693,7 @@ body {
 .stats-section {
   width: 100%;
   min-height: 100vh;
-  background-color: #0f0f10;
+  background-color: #0c0f14;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -521,8 +790,12 @@ body {
     gap: 1rem;
   }
 }
+.why-card {
+  will-change: transform, opacity;
+}
 
 /* Install phone section */
+
 .install-banner {
   position: relative;
   background: #0b0f13;
@@ -936,24 +1209,22 @@ body {
 .burger-panel {
   position: relative;
   background: #0b0f13;
-  min-height: 250vh;
-  /* padding: 0 8rem;  <-- remove */
-  overflow: hidden;
+  min-height: 240vh;
+  overflow: visible;
+  /* padding: 0 8rem;  remove if you had it here */
 }
 
 .burger-panel__scene {
-  position: relative;
-  width: 100%; /* instead of min(1200px, 92vw) */
-  max-width: none;
-  margin: 0; /* remove auto-centering on the fixed element */
-  padding: 0 8rem; /* <-- moved here */
+  width: 100%;
+  padding: 0 8rem; /* keep this here, not on .burger-panel */
+  box-sizing: border-box;
+  height: clamp(520px, 60vh, 680px);
   display: grid;
   place-items: center;
-  height: clamp(520px, 60vh, 680px);
   perspective: 1200px;
   transform-style: preserve-3d;
-  box-sizing: border-box; /* ensures padding doesn't change geometry */
 }
+
 .burger-panel__stack {
   position: absolute;
   left: 50%;
@@ -1020,7 +1291,6 @@ body {
   place-items: center;
   padding: 2rem;
   text-align: center;
-  top: -97%;
 }
 
 .burger-panel__title {

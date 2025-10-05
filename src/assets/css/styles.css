@@ -158,22 +158,24 @@
 }
 
 .left-curve {
+    pointer-events: none;
     position: absolute;
-    /* z-index: 10; */
+    z-index: 10;
     width: 6rem;
     height: 6rem;
     color: #0c0f14;
-    right: -28px;
-    top: -28px;
+    right: -19px;
+    top: -29px;
 }
 
 .top-curve {
+    pointer-events: none;
     position: absolute;
-    /* z-index: 10; */
+    z-index: 10;
     width: 6rem;
     height: 5rem;
     color: #0c0f14;
-    right: 69px;
+    right: 85px;
     top: -3px;
 }
 

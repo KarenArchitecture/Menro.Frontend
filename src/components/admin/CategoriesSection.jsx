@@ -2,7 +2,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import IconPicker from "./IconPicker";
 
-// ✅ Import your actual JSX icons (replace paths/names with real ones)
 import KebabIcon from "../icons/AdminIcons/KababIcon.jsx";
 import SaladIcon from "../icons/AdminIcons/SaladIcon.jsx";
 import IranianFoodIcon from "../icons/AdminIcons/IranianFoodIcon.jsx";
@@ -23,7 +22,7 @@ import PizzaFullIcon from "../icons/AdminIcons/PizzaFullIcon.jsx";
 import IceCreamIcon from "../icons/AdminIcons/IceCreamIcon.jsx";
 import MainCourseIcon from "../icons/AdminIcons/MainCourseIcon.jsx";
 import RicePotIcon from "../icons/AdminIcons/RicePotIcon.jsx";
-import PopsickleIcon from "../icons/AdminIcons/PopsickleIcon.jsx"; /* (file name uses 'Popsickle') */
+import PopsickleIcon from "../icons/AdminIcons/PopsickleIcon.jsx";
 import IceIcon from "../icons/AdminIcons/IceIcon.jsx";
 import MeatIcon from "../icons/AdminIcons/MeatIcon.jsx";
 import IceCreamIcon2 from "../icons/AdminIcons/IceCreamIcon2.jsx";
@@ -55,7 +54,11 @@ import SaladIcon3 from "../icons/AdminIcons/SaladIcon3.jsx";
 import RiceIcon2 from "../icons/AdminIcons/RiceIcon2.jsx";
 import PancakeIcon from "../icons/AdminIcons/PancakeIcon.jsx";
 
-// A simple generic/fallback icon (optional: replace with your own)
+// Friendly note to backend:
+// The server should store only `iconKey` (string), not SVGs.
+// Category DTO we expect from API:
+// { id: string, name: string, slug: string, iconKey: string, source: 'predefined'|'custom', locked: boolean, createdAt: number }
+
 function GenericCategoryIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
@@ -65,11 +68,8 @@ function GenericCategoryIcon() {
   );
 }
 
-/** -------------- Helpers -------------- */
 function normalizePersian(s = "") {
-  return s
-    .replace(/[ي]/g, "ی") // Arabic Yeh -> Persian Yeh
-    .replace(/[ك]/g, "ک"); // Arabic Kaf -> Persian Kaf
+  return s.replace(/[ي]/g, "ی").replace(/[ك]/g, "ک");
 }
 function slugify(name = "") {
   const s = normalizePersian(name).trim().replace(/\s+/g, " ");
@@ -82,8 +82,8 @@ function uid() {
   return Math.random().toString(36).slice(2, 10);
 }
 
-/** -------------- Predefined -------------- */
-/** Your legacy PREDEFINED labels (fixed, non-editable) */
+// Backend: these are the fixed, read-only suggestions. They come with a fixed icon.
+// Please reject PATCH/PUT on any item with locked=true on the server too.
 const PREDEFINED = [
   "کباب",
   "سالاد",
@@ -94,8 +94,6 @@ const PREDEFINED = [
   "پیش غذا",
   "کیک",
 ];
-
-/** Map predefined label -> fixed iconKey + Icon component */
 const PREDEFINED_ICON_BY_NAME = {
   کباب: { key: "kebab", Icon: KebabIcon },
   سالاد: { key: "salad", Icon: SaladIcon },
@@ -107,9 +105,7 @@ const PREDEFINED_ICON_BY_NAME = {
   کیک: { key: "cake", Icon: CakeIcon },
 };
 
-/** Icon library offered to users for custom categories.
- *  Add/remove items freely; only the key + component matter.
- */
+// Backend: this list is purely UI. We only send the `iconKey` to you.
 const ICON_LIBRARY = [
   { key: "kebab", label: "کباب", Icon: KebabIcon },
   { key: "salad", label: "سالاد", Icon: SaladIcon },
@@ -131,7 +127,7 @@ const ICON_LIBRARY = [
   { key: "ice-cream", label: "بستنی", Icon: IceCreamIcon },
   { key: "main-course", label: "غذای اصلی", Icon: MainCourseIcon },
   { key: "rice-pot", label: "برنج", Icon: RicePotIcon },
-  { key: "popsickle", label: "آبنبات چوبی", Icon: PopsickleIcon }, // file name spelling kept
+  { key: "popsickle", label: "آبنبات چوبی", Icon: PopsickleIcon },
   { key: "ice", label: "یخ", Icon: IceIcon },
   { key: "meat", label: "گوشت", Icon: MeatIcon },
   { key: "ice-cream-2", label: "بستنی", Icon: IceCreamIcon2 },
@@ -164,26 +160,14 @@ const ICON_LIBRARY = [
   { key: "pancake", label: "پنکیک", Icon: PancakeIcon },
 ];
 
-/** lookup by key */
 const ICON_BY_KEY = ICON_LIBRARY.reduce((acc, i) => {
   acc[i.key] = i.Icon;
   return acc;
 }, {});
 
-/** -------------- Component -------------- */
 export default function CategoriesSection() {
-  // ---------- Add-new inputs ----------
-  const [nameInput, setNameInput] = useState("");
-  const [selectedIconKey, setSelectedIconKey] = useState(null);
-  const [iconPickerOpen, setIconPickerOpen] = useState(false);
-
-  // ---------- Edit modal ----------
-  const [editingId, setEditingId] = useState(null);
-  const [editName, setEditName] = useState("");
-  const [editIconKey, setEditIconKey] = useState(null);
-  const [editPickerOpen, setEditPickerOpen] = useState(false);
-
-  // ---------- Initial list (migrating old strings to customs) ----------
+  // Backend: on mount, call GET /categories and set the result here.
+  // For now we use localStorage as a temporary cache.
   const [categories, setCategories] = useState(() => {
     try {
       const saved = localStorage.getItem("admin.categories");
@@ -192,21 +176,30 @@ export default function CategoriesSection() {
       return [];
     }
   });
-
-  // persist on change (optional — remove if you don’t want it)
   useEffect(() => {
     try {
       localStorage.setItem("admin.categories", JSON.stringify(categories));
     } catch {}
+    // Backend: remove this effect once real API is wired.
   }, [categories]);
 
-  // ---------- Normalized slugs for duplicate detection ----------
+  // UI state for "add" form
+  const [nameInput, setNameInput] = useState("");
+  const [selectedIconKey, setSelectedIconKey] = useState(null);
+  const [iconPickerOpen, setIconPickerOpen] = useState(false);
+  const [errors, setErrors] = useState({ name: "", icon: "", duplicate: "" });
+
+  // UI state for "edit" modal
+  const [editingId, setEditingId] = useState(null);
+  const [editName, setEditName] = useState("");
+  const [editIconKey, setEditIconKey] = useState(null);
+  const [editPickerOpen, setEditPickerOpen] = useState(false);
+
   const existingSlugs = useMemo(
     () => categories.map((c) => c.slug),
     [categories]
   );
 
-  // ---------- Utilities ----------
   function iconForKey(key) {
     const Icon = ICON_BY_KEY[key] || GenericCategoryIcon;
     return <Icon />;
@@ -217,22 +210,34 @@ export default function CategoriesSection() {
     return <Icon />;
   }
 
+  // Backend: convert this to POST /categories
+  // Body we will send: { name, iconKey, source: 'custom' }
+  // Server should return the created object (with id, slug, locked=false, createdAt).
   function addCustomCategory() {
     const rawName = nameInput.trim();
     const cleaned = rawName.replace(/\s+/g, " ");
     const slug = slugify(cleaned);
 
-    if (!cleaned) return;
-    if (!selectedIconKey) {
-      alert("لطفاً یک آیکن انتخاب کنید.");
-      return;
+    let next = { name: "", icon: "", duplicate: "" };
+    let hasErr = false;
+
+    if (!cleaned) {
+      next.name = "نام دسته‌بندی را وارد کنید.";
+      hasErr = true;
     }
-    if (existingSlugs.includes(slug)) {
-      setNameInput("");
-      setSelectedIconKey(null);
-      return;
+    if (!selectedIconKey) {
+      next.icon = "لطفاً یک آیکن برای این دسته‌بندی انتخاب کنید.";
+      hasErr = true;
+    }
+    if (!hasErr && existingSlugs.includes(slug)) {
+      next.duplicate = "این نام قبلاً اضافه شده است.";
+      hasErr = true;
     }
 
+    setErrors(next);
+    if (hasErr) return;
+
+    // Replace this push with response from API
     setCategories((prev) => [
       ...prev,
       {
@@ -245,14 +250,18 @@ export default function CategoriesSection() {
         createdAt: Date.now(),
       },
     ]);
+
     setNameInput("");
     setSelectedIconKey(null);
+    setErrors({ name: "", icon: "", duplicate: "" });
   }
 
+  // Backend: convert this to POST /categories for a predefined item
+  // Body: { name: label, iconKey: fixed.key, source: 'predefined' }
+  // Server should persist it as locked=true.
   function addPredefined(label) {
     const slug = slugify(label);
     if (existingSlugs.includes(slug)) return;
-
     const fixed = PREDEFINED_ICON_BY_NAME[label];
     setCategories((prev) => [
       ...prev,
@@ -268,12 +277,15 @@ export default function CategoriesSection() {
     ]);
   }
 
+  // Backend: convert this to DELETE /categories/:id
   function removeCategory(id) {
     setCategories((prev) => prev.filter((c) => c.id !== id));
   }
 
+  // Backend: convert this to PATCH /categories/:id
+  // Allowed only for custom (locked=false). Body may include { name, iconKey }.
   function beginEdit(cat) {
-    if (cat.locked) return; // hard guard
+    if (cat.locked) return;
     setEditingId(cat.id);
     setEditName(cat.name);
     setEditIconKey(cat.iconKey);
@@ -281,10 +293,8 @@ export default function CategoriesSection() {
   function saveEdit() {
     const newName = editName.trim().replace(/\s+/g, " ");
     const newSlug = slugify(newName);
-
     if (!newName) return;
     if (categories.some((c) => c.id !== editingId && c.slug === newSlug)) {
-      alert("این نام با دسته‌بندی دیگری تداخل دارد.");
       return;
     }
     setCategories((prev) =>
@@ -307,7 +317,6 @@ export default function CategoriesSection() {
 
   return (
     <div className="panels-grid-single-column" id="categories-view">
-      {/* Add new category */}
       <div className="panel">
         <h3>افزودن دسته‌بندی جدید</h3>
         <p className="panel-subtitle">
@@ -321,7 +330,12 @@ export default function CategoriesSection() {
             id="custom-category-name"
             placeholder="نام دسته‌بندی سفارشی خود را وارد کنید..."
             value={nameInput}
-            onChange={(e) => setNameInput(e.target.value)}
+            onChange={(e) => {
+              setNameInput(e.target.value);
+              if (errors.name || errors.duplicate) {
+                setErrors((prev) => ({ ...prev, name: "", duplicate: "" }));
+              }
+            }}
             onKeyDown={(e) => e.key === "Enter" && addCustomCategory()}
           />
 
@@ -346,6 +360,16 @@ export default function CategoriesSection() {
           </button>
         </div>
 
+        {(errors.name || errors.icon || errors.duplicate) && (
+          <div className="form-errors">
+            {errors.name && <div className="form-error">{errors.name}</div>}
+            {errors.icon && <div className="form-error">{errors.icon}</div>}
+            {errors.duplicate && (
+              <div className="form-error">{errors.duplicate}</div>
+            )}
+          </div>
+        )}
+
         <hr className="form-divider" />
 
         <label>پیشنهادهای آماده برای افزودن:</label>
@@ -366,7 +390,6 @@ export default function CategoriesSection() {
         </div>
       </div>
 
-      {/* Current categories */}
       <div className="panel">
         <h3>دسته‌بندی‌های فعلی رستوران</h3>
         <div className="category-list">
@@ -416,7 +439,6 @@ export default function CategoriesSection() {
         </div>
       </div>
 
-      {/* Pickers / Modals */}
       <IconPicker
         open={iconPickerOpen}
         onClose={() => setIconPickerOpen(false)}
@@ -424,11 +446,11 @@ export default function CategoriesSection() {
         value={selectedIconKey}
         onSelect={(key) => {
           setSelectedIconKey(key);
+          setErrors((prev) => ({ ...prev, icon: "" }));
           setIconPickerOpen(false);
         }}
       />
 
-      {/* Edit modal (rename + change icon) */}
       {editingId && (
         <div className="modal-backdrop" role="dialog" aria-modal="true">
           <div className="modal">

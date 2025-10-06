@@ -1143,7 +1143,16 @@ textarea {
   padding-right: 1rem;
 }
 
-/* Music Management Page Styles */
+#categories-view .form-errors {
+  margin-top: 6px;
+  display: grid;
+  gap: 4px;
+}
+#categories-view .form-error {
+  color: #ff4d4f;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
 
 .music-layout {
   display: grid;

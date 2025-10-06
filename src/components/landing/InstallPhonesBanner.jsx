@@ -1,7 +1,6 @@
 import React, { useRef, useLayoutEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { div } from "framer-motion/client";
 gsap.registerPlugin(ScrollTrigger);
 
 export default function InstallPhonesBanner({
@@ -21,31 +20,41 @@ export default function InstallPhonesBanner({
     if (mql.matches) return;
 
     const ctx = gsap.context(() => {
+      // Keep phones hidden/off-screen until we play the animation
+      gsap.set([backRef.current, frontRef.current], {
+        autoAlpha: 0,
+        y: -500,
+      });
+
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: "top bottom",
-          end: "center center",
-          scrub: 1.5,
-          invalidateOnRefresh: true,
+          start: "top 60%", // fire when section top hits 80% viewport
+          toggleActions: "play none none none", // one-shot
+          once: true, // don’t re-trigger on scroll back
+          // markers: true,                 // <- uncomment to debug
         },
-        defaults: { ease: "power3.out" },
+        defaults: { ease: "power3.inout" },
       });
 
-      // Fade-in from ABOVE
-
-      tl.fromTo(
-        backRef.current,
-        { autoAlpha: 0, y: -500, immediateRender: false },
-        { autoAlpha: 1, x: -185, y: -179, duration: 3 }
-      ).fromTo(
+      // Fade/slide to final positions
+      tl.to(backRef.current, {
+        autoAlpha: 1,
+        x: -185,
+        y: -179,
+        duration: 1.2, // edit to change speed
+      }).to(
         frontRef.current,
-        { autoAlpha: 0, y: -500, immediateRender: false },
-        { autoAlpha: 1, x: 59, y: -295, duration: 3 },
-        "-=0.35"
+        {
+          autoAlpha: 1,
+          x: 59,
+          y: -295,
+          duration: 1.2, // edit to change speed
+        },
+        "-=0.25"
       );
 
-      // Ensure ScrollTrigger sizes are right after images load
+      // Refresh after images load to ensure correct trigger position
       const imgs = sectionRef.current.querySelectorAll("img");
       const onLoad = () => ScrollTrigger.refresh();
       imgs.forEach((img) => {

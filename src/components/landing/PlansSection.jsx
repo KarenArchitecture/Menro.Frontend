@@ -25,6 +25,21 @@ export default function PlansSection({ plans = plansData, initialActiveId }) {
 
   const cardRefs = useRef([]); // holds .plans__deck-card nodes
 
+  // ======== SPEED CONTROLS (edit these) ========
+  // Increase SPEED for slower motion; decrease for faster.
+  const SPEED = 0.5; // very slow. Try 1.0 (normal), 0.7 (faster), 3.0 (super slow)
+  const D = {
+    layout: 1 * SPEED,
+    drop: 1 * SPEED,
+    reflow: 1 * SPEED,
+    rise: 1 * SPEED,
+    settle: 1 * SPEED,
+    fadeOut: 1 * SPEED,
+    contentIn: 1 * SPEED,
+  };
+  const LINEAR = "none"; // constant velocity (no ease curve)
+  // =============================================
+
   // Visual states per rank (front -> deepest)
   const STATES = useMemo(
     () => [
@@ -40,8 +55,8 @@ export default function PlansSection({ plans = plansData, initialActiveId }) {
     const reduce = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
-    const dur = animate && !reduce ? 0.55 : 0;
-    const ease = "power3.out";
+    const dur = animate && !reduce ? D.layout : 0;
+    const ease = LINEAR;
 
     cardRefs.current.forEach((wrapEl, i) => {
       if (!wrapEl) return;
@@ -73,8 +88,8 @@ export default function PlansSection({ plans = plansData, initialActiveId }) {
           gsap.to(contentEl, {
             autoAlpha: 1,
             y: 0,
-            duration: dur ? 0.35 : 0,
-            ease: "power2.out",
+            duration: dur ? D.contentIn : 0,
+            ease: LINEAR,
             delay: dur ? 0.1 : 0,
             overwrite: true,
             onStart: () => gsap.set(contentEl, { pointerEvents: "auto" }),
@@ -83,8 +98,8 @@ export default function PlansSection({ plans = plansData, initialActiveId }) {
           gsap.to(contentEl, {
             autoAlpha: 0,
             y: 8,
-            duration: dur ? 0.3 : 0,
-            ease: "power2.out",
+            duration: dur ? D.fadeOut : 0,
+            ease: LINEAR,
             overwrite: true,
             onStart: () => gsap.set(contentEl, { pointerEvents: "none" }),
           });
@@ -117,7 +132,7 @@ export default function PlansSection({ plans = plansData, initialActiveId }) {
     setIsAnimating(true);
 
     const tl = gsap.timeline({
-      defaults: { ease: "power3.out" },
+      defaults: { ease: LINEAR }, // constant speed
       onComplete: () => {
         setActiveId(plans[targetIndex].id);
         layoutTo(targetIndex, false); // lock exact final transforms
@@ -129,20 +144,19 @@ export default function PlansSection({ plans = plansData, initialActiveId }) {
     const currentActiveEl = cardRefs.current[activeIndex];
     if (!selectedEl) return;
 
-    // Fade out the current active card's content quickly
+    // Fade out the current active card's content
     const currentContent = currentActiveEl?.querySelector(
       ".plan-card__content"
     );
     if (currentContent) {
       tl.to(
         currentContent,
-        { autoAlpha: 0, y: 8, duration: 0.18, ease: "power2.inOut" },
+        { autoAlpha: 0, y: 8, duration: D.fadeOut, ease: LINEAR },
         0
       );
     }
 
-    // ---- Phase A: selected drops DOWN behind the deck (still behind).
-    // Use a relative drop so it always goes further than the deepest card.
+    // ---- Phase A: selected drops DOWN behind the deck
     const DROP = 140; // px
     const selectedStartRank = getRank(targetIndex, activeIndex, plans.length);
     const selectedStartScale = STATES[selectedStartRank].scale;
@@ -151,9 +165,9 @@ export default function PlansSection({ plans = plansData, initialActiveId }) {
       {
         y: `+=${DROP}`,
         scale: Math.max(0.88, selectedStartScale - 0.04),
-        zIndex: Math.min(5, STATES[selectedStartRank].z), // ensure it's behind during the drop
-        duration: 0.26,
-        ease: "power2.in",
+        zIndex: Math.min(5, STATES[selectedStartRank].z),
+        duration: D.drop,
+        ease: LINEAR,
       },
       0
     );
@@ -161,7 +175,7 @@ export default function PlansSection({ plans = plansData, initialActiveId }) {
     // ---- Phase B: while it's down, move EVERY card to its new ranks
     cardRefs.current.forEach((wrapEl, i) => {
       if (!wrapEl || i === targetIndex) return;
-      const rank = getRank(i, targetIndex, plans.length); // ranks after selection
+      const rank = getRank(i, targetIndex, plans.length);
       const st = STATES[rank];
 
       tl.to(
@@ -170,18 +184,18 @@ export default function PlansSection({ plans = plansData, initialActiveId }) {
           y: st.y,
           scale: st.scale,
           zIndex: st.z,
-          duration: 0.48,
-          ease: "power3.out",
+          duration: D.reflow,
+          ease: LINEAR,
           overwrite: true,
         },
-        0.12 // begins just after the drop starts
+        0.12 * SPEED // keep timing relationship, scaled
       );
 
       const cardEl = wrapEl.querySelector(".plan-card");
       if (cardEl) {
         tl.to(
           cardEl,
-          { boxShadow: st.shadow, duration: 0.48, ease: "power3.out" },
+          { boxShadow: st.shadow, duration: D.reflow, ease: LINEAR },
           "<"
         );
       }
@@ -191,16 +205,15 @@ export default function PlansSection({ plans = plansData, initialActiveId }) {
     const front = STATES[0];
     const selectedContent = selectedEl.querySelector(".plan-card__content");
 
-    // bring forward (z-index high), overshoot a hair, then settle
-    tl.set(selectedEl, { zIndex: 100 }, 0.34);
+    tl.set(selectedEl, { zIndex: 100 }, 0.34 * SPEED);
     tl.to(
       selectedEl,
-      { y: front.y - 10, scale: 1.02, duration: 0.36, ease: "power3.out" },
-      0.34
+      { y: front.y - 10, scale: 1.02, duration: D.rise, ease: LINEAR },
+      0.34 * SPEED
     );
     tl.to(
       selectedEl,
-      { y: front.y, scale: 1, duration: 0.2, ease: "power2.out" },
+      { y: front.y, scale: 1, duration: D.settle, ease: LINEAR },
       ">-0.02"
     );
 
@@ -208,8 +221,8 @@ export default function PlansSection({ plans = plansData, initialActiveId }) {
       tl.fromTo(
         selectedContent,
         { autoAlpha: 0, y: 10 },
-        { autoAlpha: 1, y: 0, duration: 0.3, ease: "power2.out" },
-        "-=0.18"
+        { autoAlpha: 1, y: 0, duration: D.contentIn, ease: LINEAR },
+        "-=0.18 * SPEED"
       );
     }
   };

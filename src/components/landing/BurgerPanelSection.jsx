@@ -23,60 +23,56 @@ export default function BurgerPanelSection({
       className="burger-panel"
       aria-labelledby="burger-panel-title"
     >
-      <div ref={sceneRef} className="burger-panel__scene">
-        <div ref={panelWrapRef} className="burger-panel__panelwrap">
-          <div className="burger-panel__panel">
-            {meshSrc && (
-              <div
-                className="burger-panel__mesh"
-                style={{ backgroundImage: `url(${meshSrc})` }}
-                aria-hidden="true"
-              />
-            )}
-          </div>
-
+      <div className="burger-panel__panel">
+        {meshSrc && (
           <div
-            ref={stackRef}
-            className="burger-panel__stack"
-            style={{
-              position: "absolute",
-              left: "50%",
-              top: "8%",
-              zIndex: 2,
-              pointerEvents: "none",
-            }}
-          >
-            {haloSrc ? (
-              <img
-                src={haloSrc}
-                alt=""
-                aria-hidden="true"
-                className="burger-panel__spotlight"
-              />
-            ) : (
-              <div className="burger-panel__spotlight" aria-hidden="true" />
-            )}
+            className="burger-panel__mesh"
+            style={{ backgroundImage: `url(${meshSrc})` }}
+            aria-hidden="true"
+          />
+        )}
+      </div>
 
-            <img
-              className="burger-panel__burger"
-              src={burgerSrc}
-              alt={burgerAlt}
-              decoding="async"
-              style={{
-                position: "relative",
-                left: "auto",
-                top: "auto",
-                translate: "0 0",
-              }}
-            />
-          </div>
+      <div
+        ref={stackRef}
+        className="burger-panel__stack"
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "8%",
+          zIndex: 2,
+          pointerEvents: "none",
+        }}
+      >
+        {haloSrc ? (
+          <img
+            src={haloSrc}
+            alt=""
+            aria-hidden="true"
+            className="burger-panel__spotlight"
+          />
+        ) : (
+          <div className="burger-panel__spotlight" aria-hidden="true" />
+        )}
 
-          <div ref={contentRef} className="burger-panel__content">
-            <h2 id="burger-panel-title" className="burger-panel__title">
-              {title}
-            </h2>
-          </div>
-        </div>
+        <img
+          className="burger-panel__burger"
+          src={burgerSrc}
+          alt={burgerAlt}
+          decoding="async"
+          style={{
+            position: "relative",
+            left: "auto",
+            top: "auto",
+            translate: "0 0",
+          }}
+        />
+      </div>
+
+      <div ref={contentRef} className="burger-panel__content">
+        <h2 id="burger-panel-title" className="burger-panel__title">
+          {title}
+        </h2>
       </div>
     </section>
   );

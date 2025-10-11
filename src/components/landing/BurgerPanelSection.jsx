@@ -1,78 +1,111 @@
-import React, { useRef, useLayoutEffect } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
+// components/landing/BurgerPanelSection.jsx
+import React, { useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useMotionTemplate,
+  useMotionValueEvent,
+} from "motion/react";
 
 export default function BurgerPanelSection({
   title = "با منرو تو چشم باش",
   burgerSrc = "/images/burger-landing.png",
-  burgerAlt = "برگر سه بعدی منرو",
+  burgerAlt = "برگر سه‌بعدی منرو",
+  meshSrc = "",
   haloSrc = "/images/burger-blur.png",
-  meshSrc,
 }) {
   const sectionRef = useRef(null);
-  const sceneRef = useRef(null); // pin THIS at center
-  const panelWrapRef = useRef(null); // tilts → flat
-  const contentRef = useRef(null); // title slides down
-  const stackRef = useRef(null); // burger + halo
+  const sceneRef = useRef(null);
+  const burgerRef = useRef(null);
+
+  // ------ Burger animation (unchanged) ------
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start 90%", "end 10%"],
+  });
+  const opacity = useTransform(
+    scrollYProgress,
+    [0.0, 0.06, 0.85, 0.95],
+    [0, 1, 1, 0]
+  );
+  const y = useTransform(scrollYProgress, [0.06, 0.55], ["0vh", "-120vh"]);
+
+  // ------ Panel: portal + fixed to viewport ------
+  const { scrollYProgress: sectionProg } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end end"], // 0 at section top, 1 at section bottom
+  });
+
+  // de-tilt across the section
+  const rotateX = useTransform(sectionProg, [0, 1], ["26deg", "0deg"]);
+  const transform = useMotionTemplate`translate(-50%, -50%) rotateX(${rotateX})`;
+
+  // toggle portal when inside section (attach to viewport)
+  const [active, setActive] = useState(false);
+  useMotionValueEvent(sectionProg, "change", (v) => {
+    const on = v > 0 && v < 1;
+    setActive((prev) => (prev !== on ? on : prev));
+  });
+
+  // The fixed panel element we portal to <body>
+  const PanelOverlay = (
+    <motion.div
+      className="bp__panel"
+      style={{
+        position: "fixed",
+        left: "50%",
+        top: "50%",
+        transform,
+        transformOrigin: "50% 100%",
+        willChange: "transform",
+        zIndex: 10,
+        pointerEvents: "none",
+      }}
+    >
+      {meshSrc && (
+        <div
+          className="bp__mesh"
+          style={{ backgroundImage: `url(${meshSrc})` }}
+          aria-hidden="true"
+        />
+      )}
+      <h2 className="bp__title">{title}</h2>
+    </motion.div>
+  );
 
   return (
-    <section
-      ref={sectionRef}
-      className="burger-panel"
-      aria-labelledby="burger-panel-title"
-    >
-      <div className="burger-panel__panel">
-        {meshSrc && (
-          <div
-            className="burger-panel__mesh"
-            style={{ backgroundImage: `url(${meshSrc})` }}
-            aria-hidden="true"
-          />
-        )}
-      </div>
+    <section ref={sectionRef} className="bp">
+      <div ref={sceneRef} className="bp__scene">
+        <div className="bp__stage">
+          {/* Burger stays in flow */}
+          <motion.div
+            ref={burgerRef}
+            className="bp__burger"
+            style={{ opacity, y }}
+          >
+            {haloSrc ? (
+              <img
+                className="bp__glow"
+                src={haloSrc}
+                alt=""
+                aria-hidden="true"
+              />
+            ) : (
+              <div className="bp__glow" aria-hidden="true" />
+            )}
+            <img className="bp__burgerImg" src={burgerSrc} alt={burgerAlt} />
+          </motion.div>
 
-      <div
-        ref={stackRef}
-        className="burger-panel__stack"
-        style={{
-          position: "absolute",
-          left: "50%",
-          top: "8%",
-          zIndex: 2,
-          pointerEvents: "none",
-        }}
-      >
-        {haloSrc ? (
-          <img
-            src={haloSrc}
-            alt=""
-            aria-hidden="true"
-            className="burger-panel__spotlight"
-          />
-        ) : (
-          <div className="burger-panel__spotlight" aria-hidden="true" />
-        )}
+          {/* We keep a non-fixed placeholder to maintain layout height if needed (optional) */}
+          <div style={{ width: 1, height: 1, visibility: "hidden" }} />
 
-        <img
-          className="burger-panel__burger"
-          src={burgerSrc}
-          alt={burgerAlt}
-          decoding="async"
-          style={{
-            position: "relative",
-            left: "auto",
-            top: "auto",
-            translate: "0 0",
-          }}
-        />
-      </div>
-
-      <div ref={contentRef} className="burger-panel__content">
-        <h2 id="burger-panel-title" className="burger-panel__title">
-          {title}
-        </h2>
+          {/* Render fixed panel INTO <body> only while inside the section */}
+          {active &&
+            typeof document !== "undefined" &&
+            createPortal(PanelOverlay, document.body)}
+        </div>
       </div>
     </section>
   );

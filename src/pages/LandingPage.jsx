@@ -55,7 +55,7 @@ export default function LandingPage() {
         checkIconSrc="/images/icons/check-circle.svg"
       />
       <BurgerPanelSection
-        title="با منرو تو قوی‌تر باش"
+        title="با منرو تو چشم باش"
         burgerSrc="/images/burger-landing.png"
       />
       <FAQSection />

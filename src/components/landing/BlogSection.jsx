@@ -1,12 +1,6 @@
 // components/landing/BlogsSection.jsx
-import React, {
-  useRef,
-  useState,
-  useMemo,
-  useEffect,
-  useLayoutEffect,
-} from "react";
-import gsap from "gsap";
+import React, { useRef, useState, useMemo, useEffect } from "react";
+import Marquee from "react-fast-marquee";
 
 import ClockIcon from "../icons/ClockIcon";
 import ArrowUpIcon from "../icons/ArrowUpIcon";
@@ -131,90 +125,20 @@ export default function BlogSection({
   highlightWord = "منرو",
 }) {
   const railRef = useRef(null);
-  const marqueeRef = useRef(null);
 
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(true);
+  const [playMarquee, setPlayMarquee] = useState(true); // respect prefers-reduced-motion
+
+  useEffect(() => {
+    const mql = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    if (mql?.matches) setPlayMarquee(false);
+  }, []);
 
   const marqueeChunk = useMemo(
     () => <HighlightedChunk text={sectionTitle} token={highlightWord} />,
     [sectionTitle, highlightWord]
   );
-
-  /** ------- GSAP marquee: continuous belt, no reset ------- */
-  useLayoutEffect(() => {
-    const mql = window.matchMedia?.("(prefers-reduced-motion: reduce)");
-    if (mql?.matches) return;
-
-    const ctx = gsap.context(() => {
-      const root = marqueeRef.current;
-      if (!root) return;
-
-      const track = root.querySelector(".blogs__marquee-track");
-      const rowA = track?.querySelector(".blogs__marquee-row");
-      if (!track || !rowA) return;
-
-      // Ensure two identical rows exist (for wrap)
-      if (track.children.length < 2) {
-        const clone = rowA.cloneNode(true);
-        clone.setAttribute("aria-hidden", "true");
-        track.appendChild(clone);
-      }
-
-      gsap.set(track, { x: 0, force3D: true });
-
-      const SPEED = 90; // px/sec
-      let rowW = 0;
-      let x = 0;
-
-      const measure = () => {
-        // subpixel width for accuracy
-        rowW = rowA.getBoundingClientRect().width || rowA.offsetWidth || 0;
-      };
-
-      const wrap = (val) => {
-        if (!rowW) return val;
-        let r = val % -rowW; // keep in (-rowW..0]
-        if (r > 0) r -= rowW;
-        return r;
-      };
-
-      const rebuild = () => {
-        measure();
-        x = wrap(x);
-        gsap.set(track, { x });
-      };
-
-      // Start measurable ASAP and after fonts/resize
-      measure();
-      rebuild();
-      const raf = requestAnimationFrame(rebuild);
-      if (document.fonts?.ready) document.fonts.ready.then(rebuild);
-
-      const ro = new ResizeObserver(rebuild);
-      ro.observe(rowA);
-
-      // GSAP ticker: deltaTime is in **milliseconds** (per docs)
-      const tick = (_time, deltaMS) => {
-        const dt = (typeof deltaMS === "number" ? deltaMS : 16.6667) / 1000; // sec
-        if (!rowW) {
-          measure();
-          if (!rowW) return;
-        }
-        x = wrap(x - SPEED * dt);
-        gsap.set(track, { x });
-      };
-      gsap.ticker.add(tick); // runs with requestAnimationFrame. :contentReference[oaicite:1]{index=1}
-
-      return () => {
-        cancelAnimationFrame(raf);
-        ro.disconnect();
-        gsap.ticker.remove(tick);
-      };
-    }, marqueeRef);
-
-    return () => ctx.revert();
-  }, []);
 
   /** ------- Rail controls (step = card width + CSS gap) ------- */
   const getStep = () => {
@@ -265,25 +189,28 @@ export default function BlogSection({
         {sectionTitle}
       </h2>
 
-      {/* Marquee */}
-      <div className="blogs__marquee" aria-hidden="true" ref={marqueeRef}>
-        <div className="blogs__marquee-track">
-          {/* Row A */}
-          <div className="blogs__marquee-row">
+      {/* Marquee (react-fast-marquee) */}
+      <div className="blogs__marquee" aria-hidden="true" dir="ltr">
+        <div className="marquee__track" style={{ "--dur": "22s" }}>
+          <div className="marquee__row" dir="rtl">
             {Array.from({ length: 8 }).map((_, i) => (
-              <React.Fragment key={`A-${i}`}>
-                {marqueeChunk}
-                <span aria-hidden="true">&nbsp;&nbsp;</span>
-              </React.Fragment>
+              <span className="marquee__item" key={`A-${i}`}>
+                <span className="blogs__marquee-chunk">
+                  {sectionTitle.replace(highlightWord, "")}
+                  <span className="blogs__marquee-accent">{highlightWord}</span>
+                </span>
+              </span>
             ))}
           </div>
-          {/* Row B (duplicate for wrap) */}
-          <div className="blogs__marquee-row" aria-hidden="true">
+          {/* exact duplicate for wrap */}
+          <div className="marquee__row" dir="rtl" aria-hidden="true">
             {Array.from({ length: 8 }).map((_, i) => (
-              <React.Fragment key={`B-${i}`}>
-                {marqueeChunk}
-                <span aria-hidden="true">&nbsp;&nbsp;</span>
-              </React.Fragment>
+              <span className="marquee__item" key={`B-${i}`}>
+                <span className="blogs__marquee-chunk">
+                  {sectionTitle.replace(highlightWord, "")}
+                  <span className="blogs__marquee-accent">{highlightWord}</span>
+                </span>
+              </span>
             ))}
           </div>
         </div>

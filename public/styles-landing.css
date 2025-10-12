@@ -1495,38 +1495,59 @@ body {
   margin: 10rem 0;
   overflow: hidden; /* ok: only hides outer overflow, rail still scrolls */
 }
-
-/* ----- Marquee ----- */
+/* ----- Marquee (CSS-only) ----- */
 .blogs__marquee {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
+  width: 100%;
   height: 140px;
-  overflow: hidden; /* hard crop at edges */
-  pointer-events: none;
   z-index: 0;
-}
-
-.blogs__marquee-track {
-  display: inline-flex;
-  padding-inline: 4vw;
-  gap: 0;
-  will-change: transform;
-}
-
-.blogs__marquee-row {
-  white-space: nowrap;
+  /* remove: display:flex / centering */
   font-weight: 700;
   font-size: 90px;
-  letter-spacing: -0.02em;
-  color: var(--text);
-  padding-inline: 0;
-  flex: 0 0 auto;
 }
 
+.marquee__track {
+  /* two identical rows laid side-by-side => track width = 2 * row width */
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: marquee-scroll var(--dur, 22s) linear infinite;
+}
+
+.marquee__row {
+  /* each row has identical width and no external spacing */
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.marquee__item {
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 1rem; /* internal spacing; no margins */
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  } /* move by exactly one row width */
+}
+
+/* keep your accent */
 .blogs__marquee-accent {
   color: #ff683c;
+}
+
+/* mobile size */
+@media (max-width: 640px) {
+  .blogs__marquee {
+    height: 100px;
+    font-size: clamp(3.2rem, 12vw, 6rem);
+  }
 }
 
 /* ----- Viewport (inline container width helps scroll calc) ----- */

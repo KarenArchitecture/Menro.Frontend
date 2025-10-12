@@ -29,7 +29,7 @@ export default function SalesBoostCard({
       ease: "none",
       scrollTrigger: {
         trigger: el,
-        start: "top 80%",
+        start: "top 98%",
         end: "top 30%",
         scrub: true,
       },

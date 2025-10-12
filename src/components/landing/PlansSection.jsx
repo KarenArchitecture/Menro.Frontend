@@ -5,8 +5,7 @@ import PlanCard from "./PlanCard";
 import plansData from "./plans";
 
 function getRank(index, activeIndex, total) {
-  // 0 = front, 1 = behind, 2 = deeper, 3 = deepest
-  return (index - activeIndex + total) % total;
+  return (index - activeIndex + total) % total; // 0..3
 }
 
 export default function PlansSection({ plans = plansData, initialActiveId }) {
@@ -23,22 +22,22 @@ export default function PlansSection({ plans = plansData, initialActiveId }) {
     [plans, activeId]
   );
 
-  const cardRefs = useRef([]); // holds .plans__deck-card nodes
+  const cardRefs = useRef([]); // .plans__deck-card nodes
 
-  // ======== SPEED CONTROLS (edit these) ========
-  // Increase SPEED for slower motion; decrease for faster.
-  const SPEED = 0.5; // very slow. Try 1.0 (normal), 0.7 (faster), 3.0 (super slow)
-  const D = {
-    layout: 1 * SPEED,
-    drop: 1 * SPEED,
-    reflow: 1 * SPEED,
-    rise: 1 * SPEED,
-    settle: 1 * SPEED,
-    fadeOut: 1 * SPEED,
-    contentIn: 1 * SPEED,
+  // ===== Animation tuning =====
+  const T = {
+    reflow: 0.38, // others shifting to new ranks
+    lift: 0.34, // selected lifting forward
+    settle: 0.22, // selected settling from overshoot
+    contentIn: 0.25, // content fade in
+    fadeOut: 0.18, // old content fade out
+    stagger: 0.04, // cascade for other cards reflow
   };
-  const LINEAR = "none"; // constant velocity (no ease curve)
-  // =============================================
+  const EASE_OUT = "power2.out";
+  const EASE_IN = "power2.in";
+  const EASE_IO = "power2.inOut";
+  const OVERSHOOT = 1.035; // tiny scale overshoot
+  const LIFT_Y = -22; // small upward lift
 
   // Visual states per rank (front -> deepest)
   const STATES = useMemo(
@@ -51,72 +50,31 @@ export default function PlansSection({ plans = plansData, initialActiveId }) {
     []
   );
 
-  const layoutTo = (ai, animate = true) => {
-    const reduce = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-    const dur = animate && !reduce ? D.layout : 0;
-    const ease = LINEAR;
-
+  const placeInstant = (ai) => {
     cardRefs.current.forEach((wrapEl, i) => {
       if (!wrapEl) return;
       const rank = getRank(i, ai, plans.length);
       const st = STATES[rank];
 
-      gsap.to(wrapEl, {
-        y: st.y,
-        scale: st.scale,
-        zIndex: st.z,
-        duration: dur,
-        ease,
-        overwrite: true,
-      });
-
+      gsap.set(wrapEl, { y: st.y, scale: st.scale, zIndex: st.z });
       const cardEl = wrapEl.querySelector(".plan-card");
-      if (cardEl) {
-        gsap.to(cardEl, {
-          boxShadow: st.shadow,
-          duration: dur,
-          ease,
-          overwrite: true,
-        });
-      }
+      if (cardEl) gsap.set(cardEl, { boxShadow: st.shadow });
 
       const contentEl = wrapEl.querySelector(".plan-card__content");
       if (contentEl) {
-        if (rank === 0) {
-          gsap.to(contentEl, {
-            autoAlpha: 1,
-            y: 0,
-            duration: dur ? D.contentIn : 0,
-            ease: LINEAR,
-            delay: dur ? 0.1 : 0,
-            overwrite: true,
-            onStart: () => gsap.set(contentEl, { pointerEvents: "auto" }),
-          });
-        } else {
-          gsap.to(contentEl, {
-            autoAlpha: 0,
-            y: 8,
-            duration: dur ? D.fadeOut : 0,
-            ease: LINEAR,
-            overwrite: true,
-            onStart: () => gsap.set(contentEl, { pointerEvents: "none" }),
-          });
-        }
+        if (rank === 0)
+          gsap.set(contentEl, { autoAlpha: 1, y: 0, pointerEvents: "auto" });
+        else gsap.set(contentEl, { autoAlpha: 0, y: 8, pointerEvents: "none" });
       }
-
       wrapEl.classList.toggle("is-active", rank === 0);
     });
   };
 
-  // initial placement
   useEffect(() => {
-    layoutTo(activeIndex, false);
+    placeInstant(activeIndex);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // --- SHUFFLE: drop selected down -> others reflow -> selected rises to front
   const shuffleTo = (targetIndex) => {
     if (isAnimating || targetIndex === activeIndex) return;
 
@@ -125,17 +83,17 @@ export default function PlansSection({ plans = plansData, initialActiveId }) {
     ).matches;
     if (reduce) {
       setActiveId(plans[targetIndex].id);
-      layoutTo(targetIndex, false);
+      placeInstant(targetIndex);
       return;
     }
 
     setIsAnimating(true);
 
     const tl = gsap.timeline({
-      defaults: { ease: LINEAR }, // constant speed
+      defaults: { overwrite: true },
       onComplete: () => {
         setActiveId(plans[targetIndex].id);
-        layoutTo(targetIndex, false); // lock exact final transforms
+        placeInstant(targetIndex); // snap to canonical state
         setIsAnimating(false);
       },
     });
@@ -144,39 +102,26 @@ export default function PlansSection({ plans = plansData, initialActiveId }) {
     const currentActiveEl = cardRefs.current[activeIndex];
     if (!selectedEl) return;
 
-    // Fade out the current active card's content
+    // 1) Fade out current content early (cleaner)
     const currentContent = currentActiveEl?.querySelector(
       ".plan-card__content"
     );
     if (currentContent) {
       tl.to(
         currentContent,
-        { autoAlpha: 0, y: 8, duration: D.fadeOut, ease: LINEAR },
+        { autoAlpha: 0, y: 8, duration: T.fadeOut, ease: EASE_IN },
         0
       );
+      tl.set(currentContent, { pointerEvents: "none" }, 0);
     }
 
-    // ---- Phase A: selected drops DOWN behind the deck
-    const DROP = 140; // px
-    const selectedStartRank = getRank(targetIndex, activeIndex, plans.length);
-    const selectedStartScale = STATES[selectedStartRank].scale;
-    tl.to(
-      selectedEl,
-      {
-        y: `+=${DROP}`,
-        scale: Math.max(0.88, selectedStartScale - 0.04),
-        zIndex: Math.min(5, STATES[selectedStartRank].z),
-        duration: D.drop,
-        ease: LINEAR,
-      },
-      0
-    );
-
-    // ---- Phase B: while it's down, move EVERY card to its new ranks
+    // 2) Reflow everyone to their new ranks (short stagger for depth feel)
     cardRefs.current.forEach((wrapEl, i) => {
-      if (!wrapEl || i === targetIndex) return;
+      if (!wrapEl) return;
       const rank = getRank(i, targetIndex, plans.length);
       const st = STATES[rank];
+
+      const at = i === targetIndex ? 0 : i * T.stagger;
 
       tl.to(
         wrapEl,
@@ -184,45 +129,56 @@ export default function PlansSection({ plans = plansData, initialActiveId }) {
           y: st.y,
           scale: st.scale,
           zIndex: st.z,
-          duration: D.reflow,
-          ease: LINEAR,
-          overwrite: true,
+          duration: T.reflow,
+          ease: EASE_IO,
         },
-        0.12 * SPEED // keep timing relationship, scaled
+        at
       );
 
       const cardEl = wrapEl.querySelector(".plan-card");
       if (cardEl) {
         tl.to(
           cardEl,
-          { boxShadow: st.shadow, duration: D.reflow, ease: LINEAR },
-          "<"
+          { boxShadow: st.shadow, duration: T.reflow, ease: EASE_IO },
+          `<`
         );
       }
     });
 
-    // ---- Phase C: selected comes FORWARD and UP to the front
+    // 3) Selected: gentle lift with overshoot, then settle
     const front = STATES[0];
     const selectedContent = selectedEl.querySelector(".plan-card__content");
 
-    tl.set(selectedEl, { zIndex: 100 }, 0.34 * SPEED);
+    tl.set(selectedEl, { zIndex: 100 }, 0); // ensure on top during lift
     tl.to(
       selectedEl,
-      { y: front.y - 10, scale: 1.02, duration: D.rise, ease: LINEAR },
-      0.34 * SPEED
+      {
+        y: front.y + LIFT_Y,
+        scale: OVERSHOOT,
+        duration: T.lift,
+        ease: EASE_OUT,
+      },
+      0.06
     );
     tl.to(
       selectedEl,
-      { y: front.y, scale: 1, duration: D.settle, ease: LINEAR },
-      ">-0.02"
+      { y: front.y, scale: 1, duration: T.settle, ease: EASE_IN },
+      `>-0.02`
     );
 
+    // 4) Selected content fades in after settle
     if (selectedContent) {
       tl.fromTo(
         selectedContent,
         { autoAlpha: 0, y: 10 },
-        { autoAlpha: 1, y: 0, duration: D.contentIn, ease: LINEAR },
-        "-=0.18 * SPEED"
+        {
+          autoAlpha: 1,
+          y: 0,
+          duration: T.contentIn,
+          ease: EASE_OUT,
+          onStart: () => gsap.set(selectedContent, { pointerEvents: "auto" }),
+        },
+        `>-0.05`
       );
     }
   };
@@ -256,7 +212,7 @@ export default function PlansSection({ plans = plansData, initialActiveId }) {
         پلن‌های منرو
       </h2>
 
-      {/* Deck: all four real cards absolutely stacked */}
+      {/* Deck */}
       <div className="plans__deck">
         {plans.map((p, i) => (
           <div

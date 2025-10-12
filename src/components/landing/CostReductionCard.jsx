@@ -24,7 +24,7 @@ export default function CostReductionCard({
     if (!card || !path || !dotGroup) return;
 
     const len = path.getTotalLength();
-    const st = { trigger: card, start: "top 80%", end: "top 30%", scrub: true };
+    const st = { trigger: card, start: "top 98%", end: "top 30%", scrub: true };
 
     const ctx = gsap.context(() => {
       // Count number 0 -> value

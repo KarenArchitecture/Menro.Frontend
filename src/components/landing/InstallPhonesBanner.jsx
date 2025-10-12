@@ -29,12 +29,12 @@ export default function InstallPhonesBanner({
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: "top 60%", // fire when section top hits 80% viewport
+          start: "top 80%", // fire when section top hits 80% viewport
           toggleActions: "play none none none", // one-shot
           once: true, // don’t re-trigger on scroll back
           // markers: true,                 // <- uncomment to debug
         },
-        defaults: { ease: "power3.inout" },
+        defaults: { ease: "power3.out" },
       });
 
       // Fade/slide to final positions

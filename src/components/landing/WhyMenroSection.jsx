@@ -64,7 +64,7 @@ export default function WhyMenroSection() {
       {/* Fixed center title */}
       <div className="why-static__titles" ref={titlesRef}>
         <h2 className="why-static__title">چرا منرو؟</h2>
-        <p className="why-static__subtitle">در لحظه همراه تو</p>
+        <p className="why-static__subtitle">هر لحظه همراه تو</p>
       </div>
 
       {/* Cards */}

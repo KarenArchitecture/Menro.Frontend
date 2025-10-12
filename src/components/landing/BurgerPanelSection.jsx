@@ -20,36 +20,60 @@ export default function BurgerPanelSection({
   const sceneRef = useRef(null);
   const burgerRef = useRef(null);
 
-  // ------ Burger animation (unchanged) ------
+  // ===== Burger animation (unchanged) =====
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start 90%", "end 10%"],
   });
-  const opacity = useTransform(
+
+  const burgerOpacity = useTransform(
     scrollYProgress,
     [0.0, 0.06, 0.85, 0.95],
     [0, 1, 1, 0]
   );
-  const y = useTransform(scrollYProgress, [0.06, 0.55], ["0vh", "-120vh"]);
+  const burgerY = useTransform(
+    scrollYProgress,
+    [0.06, 0.55],
+    ["0vh", "-120vh"]
+  );
 
-  // ------ Panel: portal + fixed to viewport ------
+  // ===== Panel: portal + fixed + smooth fade + de-tilt =====
   const { scrollYProgress: sectionProg } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"], // 0 at section top, 1 at section bottom
   });
 
-  // de-tilt across the section
-  const rotateX = useTransform(sectionProg, [0, 1], ["26deg", "0deg"]);
-  const transform = useMotionTemplate`translate(-50%, -50%) rotateX(${rotateX})`;
+  // soft fade edges to avoid pop
+  const panelOpacity = useTransform(
+    sectionProg,
+    [0.0, 0.04, 0.96, 1.0],
+    [0, 1, 1, 0]
+  );
 
-  // toggle portal when inside section (attach to viewport)
+  // de-tilt across most of the section
+  const panelRotateX = useTransform(
+    sectionProg,
+    [0, 0.15, 0.55, 0.9, 1],
+    ["20deg", "10deg", "0deg", "0deg", "0deg"]
+  );
+  const panelTransform = useMotionTemplate`
+  perspective(700px) translate3d(-50%, -50%, 0) rotateX(${panelRotateX})
+`;
+  // mount into portal slightly before/after to avoid mount pop
   const [active, setActive] = useState(false);
   useMotionValueEvent(sectionProg, "change", (v) => {
-    const on = v > 0 && v < 1;
+    const on = v > -0.02 && v < 1.02;
     setActive((prev) => (prev !== on ? on : prev));
   });
+  // ===== Title animation (fade + slide down) =====
+  const titleOpacity = useTransform(
+    sectionProg,
+    [0.1, 0.25, 0.85, 0.95],
+    [0, 1, 1, 0]
+  );
+  const titleYPercent = useTransform(sectionProg, [0.3, 1], [-30, 0]);
+  const titleTransform = useMotionTemplate`translateY(${titleYPercent}%)`;
 
-  // The fixed panel element we portal to <body>
   const PanelOverlay = (
     <motion.div
       className="bp__panel"
@@ -57,9 +81,10 @@ export default function BurgerPanelSection({
         position: "fixed",
         left: "50%",
         top: "50%",
-        transform,
-        transformOrigin: "50% 100%",
-        willChange: "transform",
+        transform: panelTransform,
+        transformOrigin: "0 100%",
+        willChange: "transform, opacity",
+        opacity: panelOpacity, // <-- use the correct var
         zIndex: 10,
         pointerEvents: "none",
       }}
@@ -71,7 +96,12 @@ export default function BurgerPanelSection({
           aria-hidden="true"
         />
       )}
-      <h2 className="bp__title">{title}</h2>
+      <motion.h2
+        className="bp__title"
+        style={{ opacity: titleOpacity, transform: titleTransform }}
+      >
+        {title}
+      </motion.h2>
     </motion.div>
   );
 
@@ -79,11 +109,11 @@ export default function BurgerPanelSection({
     <section ref={sectionRef} className="bp">
       <div ref={sceneRef} className="bp__scene">
         <div className="bp__stage">
-          {/* Burger stays in flow */}
+          {/* Burger */}
           <motion.div
             ref={burgerRef}
             className="bp__burger"
-            style={{ opacity, y }}
+            style={{ opacity: burgerOpacity, y: burgerY }}
           >
             {haloSrc ? (
               <img
@@ -98,10 +128,7 @@ export default function BurgerPanelSection({
             <img className="bp__burgerImg" src={burgerSrc} alt={burgerAlt} />
           </motion.div>
 
-          {/* We keep a non-fixed placeholder to maintain layout height if needed (optional) */}
-          <div style={{ width: 1, height: 1, visibility: "hidden" }} />
-
-          {/* Render fixed panel INTO <body> only while inside the section */}
+          {/* Portal the panel so it's truly fixed to the viewport */}
           {active &&
             typeof document !== "undefined" &&
             createPortal(PanelOverlay, document.body)}

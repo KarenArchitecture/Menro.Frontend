@@ -18,6 +18,7 @@ const NAV = [
 
   { isDivider: true, label: "حساب کاربری" },
   { key: "profile", label: "پروفایل کاربری", icon: "fas fa-user-circle" },
+  { key: "category-settings", label: "تنظیمات دسته‌ها", icon: "fas fa-cog" },
 ];
 
 export default function AdminSidebar({

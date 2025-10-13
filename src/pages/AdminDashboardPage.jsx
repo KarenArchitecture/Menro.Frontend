@@ -15,6 +15,7 @@ import FinancialSection from "../components/admin/FinancialSection";
 import AdsBookingSection from "../components/admin/AdsBookingSection";
 import ProfileSection from "../components/admin/ProfileSection";
 import OrdersSection from "../components/admin/OrdersSection";
+import CategorySettingsSection from "../components/admin/CategorySettingsSection";
 
 // لیست ماه‌ها برای برچسب فارسی
 const monthFa = [
@@ -334,6 +335,15 @@ export default function AdminDashboardPage() {
         {/* fallback / WIP */}
         <section id="fallback-view" className={viewClass("fallback")}>
           <h2 className="content-title">صفحه در حال ساخت</h2>
+        </section>
+
+        {/* CATEGORY SETTINGS */}
+        <section
+          id="category-settings-view"
+          className={viewClass("category-settings")}
+        >
+          <h2 className="content-title">تنظیمات دسته‌های از پیش‌تعریف‌شده</h2>
+          <CategorySettingsSection />
         </section>
       </main>
     </div>

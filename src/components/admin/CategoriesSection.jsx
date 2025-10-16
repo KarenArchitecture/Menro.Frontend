@@ -1,6 +1,8 @@
 import React, { useMemo, useState, useEffect } from "react";
 import IconPicker, { ICON_BY_KEY, renderIconByKey } from "./IconPicker";
 import { getPredefined, onPredefinedChange } from "../admin/predefinedStore";
+import adminGlobalCategory from "../../api/adminGlobalCategory";
+import adminCustomCategory from "../../api/adminCustomCategory";
 
 function GenericCategoryIcon() {
   return (
@@ -70,6 +72,25 @@ export default function CategoriesSection() {
   const [editName, setEditName] = useState("");
   const [editIconKey, setEditIconKey] = useState(null);
   const [editPickerOpen, setEditPickerOpen] = useState(false);
+  const [adding, setAdding] = useState(false);
+
+  // load gCat list
+  const [globalCategories, setGlobalCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const res = await adminGlobalCategory.get("/read-all");
+        setGlobalCategories(res.data);
+      } catch (err) {
+        console.error("Failed to load global categories", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCategories();
+  }, []);
 
   const existingSlugs = useMemo(
     () => categories.map((c) => c.slug),
@@ -126,7 +147,7 @@ export default function CategoriesSection() {
   }
 
   // use shared predefined items (name + iconKey)
-  function addPredefined(item) {
+  async function addPredefined(item) {
     const slug = slugify(item.name);
     if (existingSlugs.includes(slug)) return;
     setCategories((prev) => [
@@ -185,7 +206,6 @@ export default function CategoriesSection() {
         <p className="panel-subtitle">
           یک دسته‌بندی سفارشی ایجاد کنید یا از لیست‌های آماده انتخاب نمایید.
         </p>
-
         <div className="input-group-inline">
           <input
             type="text"
@@ -221,7 +241,6 @@ export default function CategoriesSection() {
             افزودن
           </button>
         </div>
-
         {(errors.name || errors.icon || errors.duplicate) && (
           <div className="form-errors">
             {errors.name && <div className="form-error">{errors.name}</div>}
@@ -231,24 +250,33 @@ export default function CategoriesSection() {
             )}
           </div>
         )}
-
         <hr className="form-divider" />
 
         <label>پیشنهادهای آماده برای افزودن:</label>
         <div className="predefined-tags">
-          {PREDEFINED.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className="tag"
-              onClick={() => addPredefined(item)}
-              title="افزودن"
-            >
-              <i className="fas fa-plus" />
-              <span className="tag-icon">{iconForKey(item.iconKey)}</span>
-              {item.name}
-            </button>
-          ))}
+          {loading ? (
+            <p>در حال بارگذاری...</p>
+          ) : globalCategories.length === 0 ? (
+            <p>دسته‌بندی‌ای یافت نشد</p>
+          ) : (
+            globalCategories.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className="tag"
+                onClick={() => addPredefined(item)}
+                title="افزودن"
+              >
+                <i className="fas fa-plus" />
+                {/* رندر SVG از رشته ذخیره‌شده در دیتابیس */}
+                <span
+                  className="tag-icon"
+                  dangerouslySetInnerHTML={{ __html: item.icon }}
+                />
+                {item.name}
+              </button>
+            ))
+          )}
         </div>
       </div>
 

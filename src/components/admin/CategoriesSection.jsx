@@ -95,19 +95,17 @@ export default function CategoriesSection() {
   // load cCat list
   const [customCategories, setCustomCategories] = useState([]);
   const [loadingCustoms, setLoadingCustoms] = useState(true);
-
+  const loadCustomCategories = async () => {
+    try {
+      const res = await adminCustomCategory.get("/read-all");
+      setCustomCategories(res.data);
+    } catch (err) {
+      console.error("Failed to load custom categories", err);
+    } finally {
+      setLoadingCustoms(false);
+    }
+  };
   useEffect(() => {
-    const loadCustomCategories = async () => {
-      try {
-        const res = await adminCustomCategory.get("/read-all");
-        setCustomCategories(res.data);
-      } catch (err) {
-        console.error("Failed to load custom categories", err);
-      } finally {
-        setLoadingCustoms(false);
-      }
-    };
-
     loadCustomCategories();
   }, []);
   // ..
@@ -166,33 +164,29 @@ export default function CategoriesSection() {
   }
 
   // use shared predefined items (name + iconKey)
-  async function addPredefined(item) {
-    const slug = slugify(item.name);
-    if (existingSlugs.includes(slug)) return;
-    setCategories((prev) => [
-      ...prev,
-      {
-        id: uid(),
-        name: item.name,
-        slug,
-        iconKey: item.iconKey || null,
-        source: "predefined",
-        locked: true,
-        createdAt: Date.now(),
-      },
-    ]);
-  }
+  const addPredefined = async (globalCat) => {
+    try {
+      const res = await adminCustomCategory.post("/add-from-global", null, {
+        params: { globalCategoryId: globalCat.id },
+      });
 
-  function removeCategory(id) {
-    setCategories((prev) => prev.filter((c) => c.id !== id));
-  }
+      console.log("Added successfully:", res.data.message);
+      await loadCustomCategories();
+    } catch (err) {
+      console.error("Failed to add category from global", err);
+    }
+  };
 
-  function beginEdit(cat) {
-    if (cat.locked) return;
-    setEditingId(cat.id);
-    setEditName(cat.name);
-    setEditIconKey(cat.iconKey);
-  }
+  // function removeCategory(id) {
+  //   setCategories((prev) => prev.filter((c) => c.id !== id));
+  // }
+
+  // function beginEdit(cat) {
+  //   if (cat.locked) return;
+  //   setEditingId(cat.id);
+  //   setEditName(cat.name);
+  //   setEditIconKey(cat.iconKey);
+  // }
   function saveEdit() {
     const newName = editName.trim().replace(/\s+/g, " ");
     const newSlug = slugify(newName);
@@ -283,16 +277,16 @@ export default function CategoriesSection() {
                 key={item.id}
                 type="button"
                 className="tag"
-                onClick={() => addPredefined(item)}
-                title="افزودن"
+                onClick={() => addPredefined(item)} // کال شدن متد
+                title="افزودن به دسته‌بندی‌های من"
               >
                 <i className="fas fa-plus" />
-                {/* رندر SVG از رشته ذخیره‌شده در دیتابیس */}
+                {/* آیکن SVG ذخیره‌شده در دیتابیس */}
                 <span
                   className="tag-icon"
                   dangerouslySetInnerHTML={{ __html: item.icon }}
                 />
-                {item.name}
+                <span className="tag-name">{item.name}</span>
               </button>
             ))
           )}

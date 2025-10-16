@@ -47,7 +47,7 @@ const ICON_LIBRARY = Object.entries(ICON_BY_KEY).map(([key, Icon]) => ({
 }));
 
 export default function CategoriesSection() {
-  const PREDEFINED = useSharedPredefined();
+  // const PREDEFINED = useSharedPredefined();
 
   const [categories, setCategories] = useState(() => {
     try {
@@ -72,7 +72,7 @@ export default function CategoriesSection() {
   const [editName, setEditName] = useState("");
   const [editIconKey, setEditIconKey] = useState(null);
   const [editPickerOpen, setEditPickerOpen] = useState(false);
-  const [adding, setAdding] = useState(false);
+  // const [adding, setAdding] = useState(false);
 
   // load gCat list
   const [globalCategories, setGlobalCategories] = useState([]);
@@ -92,6 +92,25 @@ export default function CategoriesSection() {
     loadCategories();
   }, []);
 
+  // load cCat list
+  const [customCategories, setCustomCategories] = useState([]);
+  const [loadingCustoms, setLoadingCustoms] = useState(true);
+
+  useEffect(() => {
+    const loadCustomCategories = async () => {
+      try {
+        const res = await adminCustomCategory.get("/read-all");
+        setCustomCategories(res.data);
+      } catch (err) {
+        console.error("Failed to load custom categories", err);
+      } finally {
+        setLoadingCustoms(false);
+      }
+    };
+
+    loadCustomCategories();
+  }, []);
+  // ..
   const existingSlugs = useMemo(
     () => categories.map((c) => c.slug),
     [categories]
@@ -283,7 +302,9 @@ export default function CategoriesSection() {
       <div className="panel">
         <h3>دسته‌بندی‌های فعلی رستوران</h3>
         <div className="category-list">
-          {categories.length === 0 ? (
+          {loadingCustoms ? (
+            <p>در حال بارگذاری...</p>
+          ) : customCategories.length === 0 ? (
             <div className="category-item">
               <span
                 className="category-title"
@@ -293,10 +314,9 @@ export default function CategoriesSection() {
               </span>
             </div>
           ) : (
-            categories.map((cat) => (
+            customCategories.map((cat) => (
               <div key={cat.id} className="category-item">
                 <div className="category-meta">
-                  <span className="cat-icon">{iconForKey(cat.iconKey)}</span>
                   <span className="category-title">{cat.name}</span>
                   {cat.locked && (
                     <span className="cat-lock" title="ثابت">
@@ -310,7 +330,7 @@ export default function CategoriesSection() {
                     <button
                       className="btn btn-icon"
                       title="ویرایش"
-                      onClick={() => beginEdit(cat)}
+                      onClick={() => console.log("edit custom:", cat)}
                     >
                       <i className="fas fa-edit" />
                     </button>
@@ -318,7 +338,7 @@ export default function CategoriesSection() {
                   <button
                     className="btn btn-icon btn-danger"
                     title="حذف"
-                    onClick={() => removeCategory(cat.id)}
+                    onClick={() => console.log("remove custom:", cat.id)}
                   >
                     <i className="fas fa-trash" />
                   </button>

@@ -106,9 +106,27 @@ export default function CategoriesSection() {
     }
   };
   useEffect(() => {
-    loadCustomCategories();
+    const fetch = async () => {
+      await loadCustomCategories();
+    };
+    fetch();
   }, []);
-  // ..
+  // چاپ لیست دسته بندی ها
+  useEffect(() => {
+    console.log("Custom categories updated:", customCategories);
+  }, [customCategories]);
+
+  // delete category
+  const removeCustomCategory = async (catId) => {
+    try {
+      const res = await adminCustomCategory.delete(`/delete/${catId}`);
+      console.log("Deleted successfully:", res.data.message);
+      await loadCustomCategories(); // رفرش لیست بعد از حذف
+    } catch (err) {
+      console.error("Failed to delete custom category", err);
+    }
+  };
+
   const existingSlugs = useMemo(
     () => categories.map((c) => c.slug),
     [categories]
@@ -332,7 +350,8 @@ export default function CategoriesSection() {
                   <button
                     className="btn btn-icon btn-danger"
                     title="حذف"
-                    onClick={() => console.log("remove custom:", cat.id)}
+                    // onClick={() => console.log("remove custom:", cat.id)}
+                    onClick={() => removeCustomCategory(cat.id)}
                   >
                     <i className="fas fa-trash" />
                   </button>

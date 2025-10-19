@@ -73,12 +73,138 @@ export default function StatsSection() {
           : plusEnd
           ? `${pretty}+`
           : pretty;
-
         if (t < 1) requestAnimationFrame(tick);
       };
 
       requestAnimationFrame(tick);
     });
+  }, []);
+
+  // === Cursor-repel on icons ===
+  useEffect(() => {
+    const root = sectionRef.current;
+    if (!root) return;
+
+    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (mql.matches) return;
+
+    const ICON_SEL = ".stat-icon";
+    const icons = Array.from(root.querySelectorAll(ICON_SEL));
+
+    const states = new Map(); // per icon: { tx, ty, targetX, targetY, raf, rect }
+    const maxShift = 16; // px — tweak strength here
+    const lerpAlpha = 0.18; // smoothing (0..1), lower = smoother
+
+    function ensureState(el) {
+      if (!states.has(el)) {
+        states.set(el, {
+          tx: 0,
+          ty: 0,
+          targetX: 0,
+          targetY: 0,
+          raf: 0,
+          rect: el.getBoundingClientRect(),
+        });
+      }
+      return states.get(el);
+    }
+
+    function onPointerEnter(e) {
+      const el = e.currentTarget;
+      const st = ensureState(el);
+      st.rect = el.getBoundingClientRect();
+    }
+
+    function onPointerMove(e) {
+      const el = e.currentTarget;
+      const st = ensureState(el);
+
+      // position inside the icon
+      const r = st.rect;
+      const x = e.clientX - r.left;
+      const y = e.clientY - r.top;
+
+      // normalize (-1..1) relative to center
+      const nx = (x / r.width) * 2 - 1;
+      const ny = (y / r.height) * 2 - 1;
+
+      // move opposite to cursor direction
+      st.targetX = -nx * maxShift;
+      st.targetY = -ny * maxShift;
+
+      if (!st.raf) st.raf = requestAnimationFrame(() => animate(el));
+    }
+
+    function onPointerLeave(e) {
+      const el = e.currentTarget;
+      const st = ensureState(el);
+      st.targetX = 0;
+      st.targetY = 0;
+      if (!st.raf) st.raf = requestAnimationFrame(() => animate(el));
+    }
+
+    function animate(el) {
+      const st = states.get(el);
+      if (!st) return;
+
+      // lerp towards target
+      st.tx += (st.targetX - st.tx) * lerpAlpha;
+      st.ty += (st.targetY - st.ty) * lerpAlpha;
+
+      // snap small values to zero
+      if (Math.abs(st.tx) < 0.05) st.tx = 0;
+      if (Math.abs(st.ty) < 0.05) st.ty = 0;
+
+      // apply transform to the IMG (so layout box stays stable)
+      const img = el.querySelector("img");
+      if (img) img.style.transform = `translate(${st.tx}px, ${st.ty}px)`;
+
+      // continue animating while not at rest
+      if (st.tx !== st.targetX || st.ty !== st.targetY) {
+        st.raf = requestAnimationFrame(() => animate(el));
+      } else {
+        st.raf = 0;
+      }
+    }
+
+    // attach listeners
+    icons.forEach((el) => {
+      el.style.setProperty("perspective", "600px"); // harmless, future-proof if you add tilt
+      el.addEventListener("pointerenter", onPointerEnter);
+      el.addEventListener("pointermove", onPointerMove);
+      el.addEventListener("pointerleave", onPointerLeave);
+    });
+
+    // keep rects fresh on resize/scroll (optional)
+    const ro = new ResizeObserver(() => {
+      icons.forEach((el) => {
+        const st = ensureState(el);
+        st.rect = el.getBoundingClientRect();
+      });
+    });
+    icons.forEach((el) => ro.observe(el));
+
+    const onScroll = () => {
+      icons.forEach((el) => {
+        const st = ensureState(el);
+        st.rect = el.getBoundingClientRect();
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    // cleanup
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      ro.disconnect();
+      icons.forEach((el) => {
+        el.removeEventListener("pointerenter", onPointerEnter);
+        el.removeEventListener("pointermove", onPointerMove);
+        el.removeEventListener("pointerleave", onPointerLeave);
+        const img = el.querySelector("img");
+        if (img) img.style.transform = "";
+      });
+      states.clear();
+    };
   }, []);
 
   // helpers
@@ -104,8 +230,8 @@ export default function StatsSection() {
       <div className="stats-container">
         {stats.map((stat) => (
           <div key={stat.id} className="stat-item">
-            <div className="stat-icon">
-              <img src={stat.icon} alt={`Stat ${stat.id}`} />
+            <div className="stat-icon" data-shift="16">
+              <img src={stat.icon} alt={`Stat ${stat.id}`} draggable="false" />
             </div>
             <div className="stat-number">{stat.number}</div>
             <div className="stat-text">{stat.text}</div>

@@ -254,14 +254,14 @@ body {
 
 .why-static__title {
   margin: 0;
-  font-size: 170px;
+  font-size: 140px;
   font-weight: 800;
 }
 
 .why-static__subtitle {
   margin: 0.8rem 0 0;
   color: #999fa8;
-  font-size: 100px;
+  font-size: 60px;
   font-weight: 400;
 }
 
@@ -392,14 +392,14 @@ body {
   right: 13rem;
 }
 .pos-b {
-  left: 10rem;
-  bottom: 30rem;
+  left: 40rem;
+  bottom: 0;
   height: 311px;
   width: 363px;
   background: linear-gradient(246.95deg, #1c2128 0.52%, #111b2f 98.07%);
 }
 .pos-c {
-  bottom: 70rem;
+  top: 55rem;
   right: 62rem;
   height: 311px;
   width: 363px;
@@ -407,7 +407,7 @@ body {
 }
 .pos-d {
   top: 80rem;
-  left: 43rem;
+  right: 15rem;
   height: 311px;
   width: 363px;
   background: linear-gradient(246.95deg, #1c2128 0.52%, #201924 98.07%);
@@ -421,8 +421,8 @@ body {
   background: linear-gradient(246.95deg, #1c2128 0.52%, #192422 98.07%);
 }
 .pos-f {
-  top: 55rem;
-  right: 40rem;
+  top: 22rem;
+  left: 20rem;
   width: 170px;
   height: 170px;
   display: flex;
@@ -432,7 +432,7 @@ body {
 }
 
 .pos-i {
-  left: 80rem;
+  left: 15rem;
   top: 92rem;
   width: 170px;
   height: 170px;
@@ -460,7 +460,7 @@ body {
   font-weight: 600;
 }
 .pos-g {
-  bottom: 50rem;
+  bottom: 10rem;
   right: 26rem;
   width: 170px;
   height: 170px;
@@ -603,8 +603,8 @@ body {
   width: 300px;
   height: 300px;
   padding: 18px;
-  left: 16rem;
-  top: 115rem;
+  left: 47rem;
+  top: 105rem;
   position: absolute;
   overflow: visible;
   background: linear-gradient(246.95deg, #1c2128 0.52%, #201924 98.07%);
@@ -711,6 +711,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden; /* prevent image edges showing during translate */
+  will-change: transform; /* cheap hint (future-proof if you tilt later) */
 }
 
 .stat-icon img {
@@ -718,6 +720,10 @@ body {
   height: 100%;
   object-fit: contain;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+  will-change: transform;
+  transition: transform 0.18s ease-out; /* helps first frame + mouseleave */
+  pointer-events: none; /* ensures container receives pointer events */
+  user-select: none;
 }
 
 .stat-number {

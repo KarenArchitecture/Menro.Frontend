@@ -111,10 +111,6 @@ export default function CategoriesSection() {
     };
     fetch();
   }, []);
-  // چاپ لیست دسته بندی ها
-  useEffect(() => {
-    console.log("Custom categories updated:", customCategories);
-  }, [customCategories]);
 
   // delete category
   const removeCustomCategory = async (catId) => {
@@ -180,6 +176,33 @@ export default function CategoriesSection() {
     setSelectedIconKey(null);
     setErrors({ name: "", icon: "", duplicate: "" });
   }
+
+  // add custom category
+  const submitCreateCustomCategory = async () => {
+    const name = nameInput.trim();
+
+    if (!name) {
+      alert("نام دسته‌بندی را وارد کنید");
+      return;
+    }
+
+    try {
+      const dto = {
+        name: name,
+        svgIcon: "", // temp empty
+      };
+
+      const res = await adminCustomCategory.post("/add", dto);
+
+      await loadCustomCategories(); // رفرش لیست بعد از افزودن
+
+      // پاک‌سازی فرم
+      setNameInput("");
+    } catch (err) {
+      console.error("Failed to create custom category", err);
+      alert(err.response?.data?.message ?? "خطا در افزودن دسته‌بندی");
+    }
+  };
 
   // use shared predefined items (name + iconKey)
   const addPredefined = async (globalCat) => {
@@ -268,7 +291,10 @@ export default function CategoriesSection() {
             انتخاب آیکن
           </button>
 
-          <button className="btn btn-primary" onClick={addCustomCategory}>
+          <button
+            className="btn btn-primary"
+            onClick={submitCreateCustomCategory}
+          >
             افزودن
           </button>
         </div>

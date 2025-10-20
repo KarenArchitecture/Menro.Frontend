@@ -134,48 +134,26 @@ export default function CategoriesSection() {
     const C = ICON_BY_KEY[key];
     return C ? <C /> : <GenericCategoryIcon />;
   };
+  // get custom category
 
-  function addCustomCategory() {
-    const rawName = nameInput.trim();
-    const cleaned = rawName.replace(/\s+/g, " ");
-    const slug = slugify(cleaned);
+  const getCustomCategory = async (id) => {
+    try {
+      const res = await adminCustomCategory.get("/read", {
+        params: { catId: id },
+      });
 
-    let next = { name: "", icon: "", duplicate: "" };
-    let hasErr = false;
+      const cat = res.data;
+      console.log("Fetched for edit:", cat);
 
-    if (!cleaned) {
-      next.name = "نام دسته‌بندی را وارد کنید.";
-      hasErr = true;
+      // مقداردهی به state‌های ویرایش
+      setEditingId(cat.id);
+      setEditName(cat.name);
+      setEditIconKey(cat.svgIcon || "");
+    } catch (err) {
+      console.error("Failed to fetch category", err);
+      alert(err.response?.data?.message ?? "خطا در دریافت دسته‌بندی");
     }
-    if (!selectedIconKey) {
-      next.icon = "لطفاً یک آیکن برای این دسته‌بندی انتخاب کنید.";
-      hasErr = true;
-    }
-    if (!hasErr && existingSlugs.includes(slug)) {
-      next.duplicate = "این نام قبلاً اضافه شده است.";
-      hasErr = true;
-    }
-
-    setErrors(next);
-    if (hasErr) return;
-
-    setCategories((prev) => [
-      ...prev,
-      {
-        id: uid(),
-        name: cleaned,
-        slug,
-        iconKey: selectedIconKey,
-        source: "custom",
-        locked: false,
-        createdAt: Date.now(),
-      },
-    ]);
-
-    setNameInput("");
-    setSelectedIconKey(null);
-    setErrors({ name: "", icon: "", duplicate: "" });
-  }
+  };
 
   // add custom category
   const submitCreateCustomCategory = async () => {
@@ -228,24 +206,35 @@ export default function CategoriesSection() {
   //   setEditName(cat.name);
   //   setEditIconKey(cat.iconKey);
   // }
-  function saveEdit() {
+  const saveEdit = async () => {
     const newName = editName.trim().replace(/\s+/g, " ");
-    const newSlug = slugify(newName);
-    if (!newName) return;
-    if (categories.some((c) => c.id !== editingId && c.slug === newSlug)) {
+
+    if (!newName) {
+      alert("نام دسته‌بندی نمی‌تواند خالی باشد.");
       return;
     }
-    setCategories((prev) =>
-      prev.map((c) =>
-        c.id === editingId
-          ? { ...c, name: newName, slug: newSlug, iconKey: editIconKey || null }
-          : c
-      )
-    );
-    setEditingId(null);
-    setEditName("");
-    setEditIconKey(null);
-  }
+
+    try {
+      const dto = {
+        id: editingId,
+        name: editName.trim(),
+        svgIcon: editIconKey || "", // فعلاً خالی می‌فرستیم
+      };
+
+      const res = await adminCustomCategory.put("/update", dto);
+      console.log("Edit response:", res.data);
+
+      // بعد از موفقیت، لیست رو رفرش کن
+      await loadCustomCategories();
+
+      // و modal رو ببند
+      cancelEdit();
+    } catch (err) {
+      console.error("Failed to update category", err);
+      alert(err.response?.data?.message ?? "خطا در ذخیره تغییرات");
+    }
+  };
+
   function cancelEdit() {
     setEditingId(null);
     setEditName("");
@@ -356,19 +345,19 @@ export default function CategoriesSection() {
               <div key={cat.id} className="category-item">
                 <div className="category-meta">
                   <span className="category-title">{cat.name}</span>
-                  {cat.locked && (
-                    <span className="cat-lock" title="ثابت">
+                  {cat.globalCategoryId !== null && (
+                    <span className="cat-lock" title="دسته‌بندی عمومی">
                       <i className="fas fa-lock" />
                     </span>
                   )}
                 </div>
 
                 <div className="item-actions">
-                  {!cat.locked && (
+                  {cat.globalCategoryId === null && (
                     <button
                       className="btn btn-icon"
                       title="ویرایش"
-                      onClick={() => console.log("edit custom:", cat)}
+                      onClick={() => getCustomCategory(cat.id)}
                     >
                       <i className="fas fa-edit" />
                     </button>
@@ -376,7 +365,6 @@ export default function CategoriesSection() {
                   <button
                     className="btn btn-icon btn-danger"
                     title="حذف"
-                    // onClick={() => console.log("remove custom:", cat.id)}
                     onClick={() => removeCustomCategory(cat.id)}
                   >
                     <i className="fas fa-trash" />

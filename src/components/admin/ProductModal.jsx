@@ -223,6 +223,7 @@ export default function ProductModal({
       : null;
 
     const payload = {
+      id: productId,
       name: document.getElementById("product-name")?.value || "",
       ingredients: document.getElementById("product-description")?.value || "",
       foodCategoryId: Number(
@@ -248,13 +249,13 @@ export default function ProductModal({
       if (mode === "create") {
         await adminFoodAxios.post("/add", payload);
       } else if (mode === "edit" && productId) {
-        await adminFoodAxios.put(`/${productId}`, payload);
+        await adminFoodAxios.put("/update", payload);
       }
 
       alert("محصول با موفقیت ذخیره شد");
 
       onSaved?.(); // لیست غذاها رو رفرش کن
-      resetForm(); // فرم ریست بشه
+      //resetForm(); // فرم ریست بشه
       onClose?.(); // مودال بسته بشه
     } catch (err) {
       console.error("خطا در ذخیره محصول:", err);

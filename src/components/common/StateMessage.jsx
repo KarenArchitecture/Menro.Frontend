@@ -1,17 +1,16 @@
 import React from "react";
+import { AlertCircle, Info, Inbox } from "lucide-react";
+import "../../assets/css/state-message.css";
+
 /**
  * Usage:
- * <StateMessage kind="error">خطایی رخ داد</StateMessage>
- * <StateMessage kind="empty">سفارشی یافت نشد</StateMessage>
- * <StateMessage kind="info">در حال بارگذاری…</StateMessage>
- *
- * Optional props:
- * - title: bold heading line
- * - action: a React node (e.g. a link/button)
- * - compact: boolean (smaller padding if needed)
+ * <StateMessage kind="error" title="خطا">متن خطا</StateMessage>
+ * <StateMessage kind="empty" title="خالی">موردی یافت نشد</StateMessage>
+ * <StateMessage kind="info" title="در حال بارگذاری">صبر کنید...</StateMessage>
  */
+
 export default function StateMessage({
-    kind = "info",         // "info" | "error" | "empty"
+    kind = "info",
     title,
     children,
     action,
@@ -19,23 +18,25 @@ export default function StateMessage({
     className = "",
     ...rest
     }) {
-    const classes = [
-        "state-block",
-        `state-${kind}`,
-        compact ? "state-compact" : "",
-        className,
-    ]
-        .filter(Boolean)
-        .join(" ");
+    const icons = {
+        error: <AlertCircle className="state-icon error" />,
+        empty: <Inbox className="state-icon empty" />,
+        info: <Info className="state-icon info" />,
+    };
 
     return (
-        <div className={classes} role={kind === "error" ? "alert" : "status"} {...rest}>
-        <div className="state-block__icon" aria-hidden="true" />
-        <div className="state-block__body">
-            {title ? <div className="state-block__title">{title}</div> : null}
-            {children ? <p className="state-block__text">{children}</p> : null}
-            {action ? <div className="state-block__action">{action}</div> : null}
-        </div>
+        <div
+        className={`state-message ${kind} ${compact ? "compact" : ""} ${className}`}
+        role={kind === "error" ? "alert" : "status"}
+        {...rest}
+        >
+        <div className="state-message__icon-wrapper">{icons[kind]}</div>
+
+        {title && <h3 className="state-message__title">{title}</h3>}
+
+        {children && <div className="state-message__text">{children}</div>}
+
+        {action && <div className="state-message__action">{action}</div>}
         </div>
     );
 }

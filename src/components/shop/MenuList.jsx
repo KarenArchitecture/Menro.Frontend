@@ -157,19 +157,18 @@
 // export default MenuList;
 
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import MenuItem from "./MenuItem";
+import StateMessage from "../common/StateMessage";
+import ShimmerRow from "../common/ShimmerRow";
+import { getRestaurantMenuBySlug } from "../../api/restaurants";
+import { ALL_CAT_SVG } from "./FoodCategoryList";
 
-function MenuList({
-  activeCategory,
-  onSelectItem,
-  onSeeAll,
-  categories = [],
-  setActiveCategory,
-}) {
+function MenuList({ restaurantSlug, activeCategory, onSelectItem, onSeeAll, setActiveCategory }) {
   const isHorizontal = activeCategory === "all";
   const scrollClass = isHorizontal ? "horizontal-scroll" : "vertical-scroll";
 
-  // ------- helpers for svg coloring -------
+  // Helpers for SVG coloring
   const decodeHtml = (html) => {
     const txt = document.createElement("textarea");
     txt.innerHTML = html || "";
@@ -178,21 +177,57 @@ function MenuList({
   const getColoredIcon = (svgString, fillColor = "#999FA8") => {
     if (!svgString) return "";
     const decoded = decodeHtml(svgString);
-    return decoded.replace(
-      /fill=['"]?#?[a-zA-Z0-9]+['"]?/gi,
-      `fill="${fillColor}"`
-    );
+    return decoded.replace(/fill=['"]?#?[a-zA-Z0-9]+['"]?/gi, `fill="${fillColor}"`);
   };
 
-  if (!categories?.length) return <p>در حال بارگذاری…</p>;
+  // Fetch menu from API
+  const { data: foods = [], isLoading, isError } = useQuery({
+    queryKey: ["restaurantMenu", restaurantSlug],
+    queryFn: () => getRestaurantMenuBySlug(restaurantSlug),
+    enabled: !!restaurantSlug,
+    refetchOnMount: "always",
+    staleTime: 60 * 1000,
+  });
 
-  const catList = categories;
+  // Loading state
+  if (isLoading) return <ShimmerRow height={250} style={{ margin: "16px 0" }} />;
 
-  const activeIndex = catList.findIndex(
-    (c) => String(c.id) === String(activeCategory)
-  );
-  const prevCat =
-    !isHorizontal && activeIndex > 0 ? catList[activeIndex - 1] : null;
+  // Error state
+  if (isError) {
+    return (
+      <StateMessage kind="error" title="خطا در دریافت منو">
+        دریافت منوی رستوران با مشکل مواجه شد.
+      </StateMessage>
+    );
+  }
+
+  // Empty state
+  if (!foods?.length) {
+    return <StateMessage kind="empty" title="هیچ غذایی موجود نیست" />;
+  }
+
+  // Group foods by category dynamically
+  const catMap = {};
+  foods.forEach((food) => {
+    const catId = food.customFoodCategoryId ?? "uncategorized";
+    const catName = food.customFoodCategoryName ?? "نامشخص";
+    const catSvg = food.customFoodCategorySvg ?? "";
+    if (!catMap[catId]) {
+      catMap[catId] = { id: catId, name: catName, svgIcon: catSvg, foods: [] };
+    }
+    catMap[catId].foods.push(food);
+  });
+
+  const catList = [
+    { id: "all", name: "همه", svgIcon: ALL_CAT_SVG, foods }, // horizontal "all"
+    ...Object.values(catMap),
+  ];
+
+  console.log("activeCategory:", activeCategory);
+  console.log("catList IDs:", catList.map(c => c.id));
+
+  const activeIndex = catList.findIndex((c) => String(c.id) === String(activeCategory));
+  const prevCat = !isHorizontal && activeIndex > 0 ? catList[activeIndex - 1] : null;
   const nextCat = !isHorizontal && activeIndex >= 0 ? catList[activeIndex + 1] : null;
   const showPrev = prevCat && String(prevCat.id) !== "all";
   const showNext = Boolean(nextCat);
@@ -201,35 +236,25 @@ function MenuList({
     <div className="res-menu">
       {catList.map((section) => {
         const catId = String(section.id);
-        if (!isHorizontal && catId !== activeCategory) return null;
+        // if (!isHorizontal && catId !== activeCategory) return null;
+        if (!isHorizontal && String(catId) !== String(activeCategory)) return null;
 
         return (
           <section key={catId} data-category-section={catId}>
             <div className="menu_nav">
               <p className="menu_nav-title">{section.name}</p>
-              <button
-                className="menu_nav-btn"
-                onClick={() => onSeeAll?.(catId, section)}
-              >
+              <button className="menu_nav-btn" onClick={() => onSeeAll?.(catId, section)}>
                 مشاهده همه <span className="arrow">‹</span>
               </button>
             </div>
 
             <div className={`food_items ${scrollClass}`}>
               {section.foods.map((item) => (
-                <MenuItem
-                  key={item.id}
-                  item={{ ...item, categoryTitle: section.name }}
-                  onOpen={onSelectItem}
-                />
+                <MenuItem key={item.id} item={{ ...item, categoryTitle: section.name }} onOpen={onSelectItem} />
               ))}
 
               {isHorizontal && (
-                <button
-                  type="button"
-                  className="seeall-card"
-                  onClick={() => onSeeAll?.(catId, section)}
-                >
+                <button type="button" className="seeall-card" onClick={() => onSeeAll?.(catId, section)}>
                   <span className="seeall-arrow">‹</span>
                   <span className="seeall-text">مشاهده همه</span>
                 </button>
@@ -246,15 +271,9 @@ function MenuList({
                     aria-label={`رفتن به ${nextCat.name}`}
                   >
                     <span>{nextCat.name}</span>
-                    <span
-                      className="category-icon"
-                      dangerouslySetInnerHTML={{
-                        __html: getColoredIcon(nextCat.svgIcon, "#D17842"),
-                      }}
-                    />
+                    <span className="category-icon" dangerouslySetInnerHTML={{ __html: getColoredIcon(nextCat.svgIcon, "#D17842") }} />
                   </button>
                 )}
-
                 {showPrev && (
                   <button
                     type="button"
@@ -262,12 +281,7 @@ function MenuList({
                     onClick={() => setActiveCategory?.(prevCat.id)}
                     aria-label={`رفتن به ${prevCat.name}`}
                   >
-                    <span
-                      className="category-icon"
-                      dangerouslySetInnerHTML={{
-                        __html: getColoredIcon(prevCat.svgIcon, "#D17842"),
-                      }}
-                    />
+                    <span className="category-icon" dangerouslySetInnerHTML={{ __html: getColoredIcon(prevCat.svgIcon, "#D17842") }} />
                     <span>{prevCat.name}</span>
                   </button>
                 )}

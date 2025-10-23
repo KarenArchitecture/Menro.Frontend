@@ -30,6 +30,8 @@ body {
     padding: 0;
 }
 
+/* Fade in the app for first render */
+
 .container {
     padding: 3rem 1.4rem;
 }

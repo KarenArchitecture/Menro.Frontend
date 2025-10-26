@@ -1,6 +1,8 @@
 import React, { useMemo, useState, useEffect } from "react";
 import IconPicker, { ICON_BY_KEY, renderIconByKey } from "./IconPicker";
 import { getPredefined, onPredefinedChange } from "../admin/predefinedStore";
+import adminGlobalCategory from "../../api/adminGlobalCategory";
+import adminCustomCategory from "../../api/adminCustomCategory";
 
 function GenericCategoryIcon() {
   return (
@@ -45,7 +47,7 @@ const ICON_LIBRARY = Object.entries(ICON_BY_KEY).map(([key, Icon]) => ({
 }));
 
 export default function CategoriesSection() {
-  const PREDEFINED = useSharedPredefined();
+  // const PREDEFINED = useSharedPredefined();
 
   const [categories, setCategories] = useState(() => {
     try {
@@ -70,6 +72,56 @@ export default function CategoriesSection() {
   const [editName, setEditName] = useState("");
   const [editIconKey, setEditIconKey] = useState(null);
   const [editPickerOpen, setEditPickerOpen] = useState(false);
+  // const [adding, setAdding] = useState(false);
+
+  // load gCat list
+  const [globalCategories, setGlobalCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const res = await adminGlobalCategory.get("/read-all");
+        setGlobalCategories(res.data);
+      } catch (err) {
+        console.error("Failed to load global categories", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCategories();
+  }, []);
+
+  // load cCat list
+  const [customCategories, setCustomCategories] = useState([]);
+  const [loadingCustoms, setLoadingCustoms] = useState(true);
+  const loadCustomCategories = async () => {
+    try {
+      const res = await adminCustomCategory.get("/read-all");
+      setCustomCategories(res.data);
+    } catch (err) {
+      console.error("Failed to load custom categories", err);
+    } finally {
+      setLoadingCustoms(false);
+    }
+  };
+  useEffect(() => {
+    const fetch = async () => {
+      await loadCustomCategories();
+    };
+    fetch();
+  }, []);
+
+  // delete category
+  const removeCustomCategory = async (catId) => {
+    try {
+      const res = await adminCustomCategory.delete(`/delete/${catId}`);
+      console.log("Deleted successfully:", res.data.message);
+      await loadCustomCategories(); // رفرش لیست بعد از حذف
+    } catch (err) {
+      console.error("Failed to delete custom category", err);
+    }
+  };
 
   const existingSlugs = useMemo(
     () => categories.map((c) => c.slug),
@@ -82,95 +134,107 @@ export default function CategoriesSection() {
     const C = ICON_BY_KEY[key];
     return C ? <C /> : <GenericCategoryIcon />;
   };
+  // get custom category
 
-  function addCustomCategory() {
-    const rawName = nameInput.trim();
-    const cleaned = rawName.replace(/\s+/g, " ");
-    const slug = slugify(cleaned);
+  const getCustomCategory = async (id) => {
+    try {
+      const res = await adminCustomCategory.get("/read", {
+        params: { catId: id },
+      });
 
-    let next = { name: "", icon: "", duplicate: "" };
-    let hasErr = false;
+      const cat = res.data;
+      console.log("Fetched for edit:", cat);
 
-    if (!cleaned) {
-      next.name = "نام دسته‌بندی را وارد کنید.";
-      hasErr = true;
+      // مقداردهی به state‌های ویرایش
+      setEditingId(cat.id);
+      setEditName(cat.name);
+      setEditIconKey(cat.svgIcon || "");
+    } catch (err) {
+      console.error("Failed to fetch category", err);
+      alert(err.response?.data?.message ?? "خطا در دریافت دسته‌بندی");
     }
-    if (!selectedIconKey) {
-      next.icon = "لطفاً یک آیکن برای این دسته‌بندی انتخاب کنید.";
-      hasErr = true;
-    }
-    if (!hasErr && existingSlugs.includes(slug)) {
-      next.duplicate = "این نام قبلاً اضافه شده است.";
-      hasErr = true;
-    }
+  };
 
-    setErrors(next);
-    if (hasErr) return;
+  // add custom category
+  const submitCreateCustomCategory = async () => {
+    const name = nameInput.trim();
 
-    setCategories((prev) => [
-      ...prev,
-      {
-        id: uid(),
-        name: cleaned,
-        slug,
-        iconKey: selectedIconKey,
-        source: "custom",
-        locked: false,
-        createdAt: Date.now(),
-      },
-    ]);
-
-    setNameInput("");
-    setSelectedIconKey(null);
-    setErrors({ name: "", icon: "", duplicate: "" });
-  }
-
-  // use shared predefined items (name + iconKey)
-  function addPredefined(item) {
-    const slug = slugify(item.name);
-    if (existingSlugs.includes(slug)) return;
-    setCategories((prev) => [
-      ...prev,
-      {
-        id: uid(),
-        name: item.name,
-        slug,
-        iconKey: item.iconKey || null,
-        source: "predefined",
-        locked: true,
-        createdAt: Date.now(),
-      },
-    ]);
-  }
-
-  function removeCategory(id) {
-    setCategories((prev) => prev.filter((c) => c.id !== id));
-  }
-
-  function beginEdit(cat) {
-    if (cat.locked) return;
-    setEditingId(cat.id);
-    setEditName(cat.name);
-    setEditIconKey(cat.iconKey);
-  }
-  function saveEdit() {
-    const newName = editName.trim().replace(/\s+/g, " ");
-    const newSlug = slugify(newName);
-    if (!newName) return;
-    if (categories.some((c) => c.id !== editingId && c.slug === newSlug)) {
+    if (!name) {
+      alert("نام دسته‌بندی را وارد کنید");
       return;
     }
-    setCategories((prev) =>
-      prev.map((c) =>
-        c.id === editingId
-          ? { ...c, name: newName, slug: newSlug, iconKey: editIconKey || null }
-          : c
-      )
-    );
-    setEditingId(null);
-    setEditName("");
-    setEditIconKey(null);
-  }
+
+    try {
+      const dto = {
+        name: name,
+        svgIcon: "", // temp empty
+      };
+
+      const res = await adminCustomCategory.post("/add", dto);
+
+      await loadCustomCategories(); // رفرش لیست بعد از افزودن
+
+      // پاک‌سازی فرم
+      setNameInput("");
+    } catch (err) {
+      console.error("Failed to create custom category", err);
+      alert(err.response?.data?.message ?? "خطا در افزودن دسته‌بندی");
+    }
+  };
+
+  // use shared predefined items (name + iconKey)
+  const addPredefined = async (globalCat) => {
+    try {
+      const res = await adminCustomCategory.post("/add-from-global", null, {
+        params: { globalCategoryId: globalCat.id },
+      });
+
+      console.log("Added successfully:", res.data.message);
+      await loadCustomCategories();
+    } catch (err) {
+      console.error("Failed to add category from global", err);
+    }
+  };
+
+  // function removeCategory(id) {
+  //   setCategories((prev) => prev.filter((c) => c.id !== id));
+  // }
+
+  // function beginEdit(cat) {
+  //   if (cat.locked) return;
+  //   setEditingId(cat.id);
+  //   setEditName(cat.name);
+  //   setEditIconKey(cat.iconKey);
+  // }
+  const saveEdit = async () => {
+    const newName = editName.trim().replace(/\s+/g, " ");
+
+    if (!newName) {
+      alert("نام دسته‌بندی نمی‌تواند خالی باشد.");
+      return;
+    }
+
+    try {
+      const dto = {
+        id: editingId,
+        name: editName.trim(),
+        svgIcon: editIconKey || "", // فعلاً خالی می‌فرستیم
+      };
+
+      const res = await adminCustomCategory.put("/update", dto);
+      console.log("Edit response:", res.data);
+
+      // بعد از موفقیت، لیست رو رفرش کن
+      await loadCustomCategories();
+
+      // و modal رو ببند
+      cancelEdit();
+    } catch (err) {
+      console.error("Failed to update category", err);
+      alert(err.response?.data?.message ?? "خطا در ذخیره تغییرات");
+    }
+  };
+
   function cancelEdit() {
     setEditingId(null);
     setEditName("");
@@ -185,7 +249,6 @@ export default function CategoriesSection() {
         <p className="panel-subtitle">
           یک دسته‌بندی سفارشی ایجاد کنید یا از لیست‌های آماده انتخاب نمایید.
         </p>
-
         <div className="input-group-inline">
           <input
             type="text"
@@ -217,11 +280,13 @@ export default function CategoriesSection() {
             انتخاب آیکن
           </button>
 
-          <button className="btn btn-primary" onClick={addCustomCategory}>
+          <button
+            className="btn btn-primary"
+            onClick={submitCreateCustomCategory}
+          >
             افزودن
           </button>
         </div>
-
         {(errors.name || errors.icon || errors.duplicate) && (
           <div className="form-errors">
             {errors.name && <div className="form-error">{errors.name}</div>}
@@ -231,31 +296,42 @@ export default function CategoriesSection() {
             )}
           </div>
         )}
-
         <hr className="form-divider" />
 
         <label>پیشنهادهای آماده برای افزودن:</label>
         <div className="predefined-tags">
-          {PREDEFINED.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className="tag"
-              onClick={() => addPredefined(item)}
-              title="افزودن"
-            >
-              <i className="fas fa-plus" />
-              <span className="tag-icon">{iconForKey(item.iconKey)}</span>
-              {item.name}
-            </button>
-          ))}
+          {loading ? (
+            <p>در حال بارگذاری...</p>
+          ) : globalCategories.length === 0 ? (
+            <p>دسته‌بندی‌ای یافت نشد</p>
+          ) : (
+            globalCategories.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className="tag"
+                onClick={() => addPredefined(item)} // کال شدن متد
+                title="افزودن به دسته‌بندی‌های من"
+              >
+                <i className="fas fa-plus" />
+                {/* آیکن SVG ذخیره‌شده در دیتابیس */}
+                <span
+                  className="tag-icon"
+                  dangerouslySetInnerHTML={{ __html: item.icon }}
+                />
+                <span className="tag-name">{item.name}</span>
+              </button>
+            ))
+          )}
         </div>
       </div>
 
       <div className="panel">
         <h3>دسته‌بندی‌های فعلی رستوران</h3>
         <div className="category-list">
-          {categories.length === 0 ? (
+          {loadingCustoms ? (
+            <p>در حال بارگذاری...</p>
+          ) : customCategories.length === 0 ? (
             <div className="category-item">
               <span
                 className="category-title"
@@ -265,24 +341,23 @@ export default function CategoriesSection() {
               </span>
             </div>
           ) : (
-            categories.map((cat) => (
+            customCategories.map((cat) => (
               <div key={cat.id} className="category-item">
                 <div className="category-meta">
-                  <span className="cat-icon">{iconForKey(cat.iconKey)}</span>
                   <span className="category-title">{cat.name}</span>
-                  {cat.locked && (
-                    <span className="cat-lock" title="ثابت">
+                  {cat.globalCategoryId !== null && (
+                    <span className="cat-lock" title="دسته‌بندی عمومی">
                       <i className="fas fa-lock" />
                     </span>
                   )}
                 </div>
 
                 <div className="item-actions">
-                  {!cat.locked && (
+                  {cat.globalCategoryId === null && (
                     <button
                       className="btn btn-icon"
                       title="ویرایش"
-                      onClick={() => beginEdit(cat)}
+                      onClick={() => getCustomCategory(cat.id)}
                     >
                       <i className="fas fa-edit" />
                     </button>
@@ -290,7 +365,7 @@ export default function CategoriesSection() {
                   <button
                     className="btn btn-icon btn-danger"
                     title="حذف"
-                    onClick={() => removeCategory(cat.id)}
+                    onClick={() => removeCustomCategory(cat.id)}
                   >
                     <i className="fas fa-trash" />
                   </button>

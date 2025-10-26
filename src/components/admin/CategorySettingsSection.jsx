@@ -11,7 +11,7 @@ import {
   setPredefined,
   resetPredefined,
 } from "./predefinedStore";
-
+import fileAxios from "../../api/fileAxios.js";
 /** Return the uploaded SVG's original filename and MIME type */
 export function getSvgUploadMeta(file) {
   return {
@@ -61,31 +61,46 @@ export default function CategorySettingsSection() {
   const restoreDefaults = () => setPredefList(resetPredefined());
 
   // ✅ Upload SVG -> log file info + register + show messages
-  const handleUploadSvg = (file) => {
+  const handleUploadSvg = async (file) => {
     if (!file) return;
 
+    // 🔹 بررسی فرمت
     if (!file.name.toLowerCase().endsWith(".svg")) {
       setUploadMessage({
-        text: "لطفا یک فایل SVG بارگذاری کنید.",
+        text: "فقط فایل SVG مجاز است.",
         type: "error",
       });
       return;
     }
 
-    const meta = getSvgUploadMeta(file);
-    console.log("Uploaded SVG Info →", meta.name, meta.type);
-    setUploadMessage({
-      text: `فایل "${meta.name}" با موفقیت بارگذاری شد.`,
-      type: "info",
-    });
+    try {
+      // 🔹 ساخت FormData برای ارسال فایل به بک‌اند
+      const formData = new FormData();
+      formData.append("file", file);
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const label = file.name.replace(/\.svg$/i, "");
-      registerCustomIcon({ label, dataUrl: e.target.result });
-      setCustomIcons(listCustomIcons());
-    };
-    reader.readAsDataURL(file);
+      // 🔹 ارسال فایل با axios
+      const res = await fileAxios.post("/upload-icon", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      // 🔹 بک‌اند فقط نام فایل را برمی‌گرداند (مثلاً heart.svg)
+      const { fileName } = res.data;
+      console.log("Uploaded SVG →", fileName);
+
+      setUploadMessage({
+        text: `فایل "${fileName}" با موفقیت آپلود شد.`,
+        type: "info",
+      });
+
+      // ✅ در این مرحله، fileName را می‌توانی به مدل دسته‌بندی اضافه کنی
+      // مثلاً هنگام ذخیره دسته‌بندی، property ای مثل iconName: fileName بفرستی
+    } catch (err) {
+      console.error("Upload failed:", err);
+      setUploadMessage({
+        text: "آپلود با خطا مواجه شد.",
+        type: "error",
+      });
+    }
   };
 
   const handleRemoveCustomIcon = (key) => {

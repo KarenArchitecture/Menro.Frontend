@@ -15,7 +15,7 @@ import axios from "axios";
 const base = import.meta.env.VITE_API_BASE_URL?.replace("/public", "") || "https://localhost:7270/api";
 
 const authAxios = axios.create({
-  baseURL: `${base}/auth`,
+  baseURL: "https://localhost:7270/api/auth",
   withCredentials: true,
 });
 

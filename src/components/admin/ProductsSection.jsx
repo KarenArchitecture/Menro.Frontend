@@ -1,34 +1,61 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ProductModal from "./ProductModal";
-
-const SAMPLE_ROWS = [
-  {
-    name: "کباب کوبیده",
-    category: "کباب‌ها",
-    price: "۱۵۰,۰۰۰ تومان",
-    active: true,
-  },
-  {
-    name: "پیتزا پپرونی",
-    category: "فست فود",
-    price: "۲۲۰,۰۰۰ تومان",
-    active: true,
-  },
-];
+import adminFoodAxios from "../../api/adminFoodAxios";
 
 export default function ProductsSection() {
-  const [isModalOpen, setModalOpen] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [mode, setMode] = useState("create"); // 'create' | 'edit'
+
+  const [selectedProductId, setSelectedProductId] = useState(null);
+
+  // گرفتن لیست غذاها
+  const fetchProducts = async () => {
+    try {
+      const { data } = await adminFoodAxios.get("/read-all");
+      setProducts(data);
+    } catch (err) {
+      console.error("خطا در گرفتن لیست محصولات:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   const openCreate = () => {
     setMode("create");
-    setModalOpen(true);
+    setIsModalOpen(true);
   };
 
-  const openEdit = () => {
+  const openEdit = (product) => {
     setMode("edit");
-    setModalOpen(true);
+    setSelectedProductId(product.id);
+    setIsModalOpen(true);
+    // می‌تونی product رو هم به ProductModal پاس بدی
   };
+
+  // 🔴 متد حذف محصول
+  const handleDelete = async (foodId) => {
+    console.log("Food ID to delete:", foodId); // 👈 اینجا ببین چه مقداری میاد
+
+    if (!window.confirm("آیا مطمئن هستید که می‌خواهید این غذا را حذف کنید؟")) {
+      return;
+    }
+
+    try {
+      await adminFoodAxios.delete(`/${foodId}`);
+      alert("محصول با موفقیت حذف شد");
+      fetchProducts();
+    } catch (err) {
+      console.error("خطا در حذف محصول:", err);
+    }
+  };
+
+  if (loading) return <p>در حال بارگذاری...</p>;
 
   return (
     <>
@@ -53,29 +80,37 @@ export default function ProductsSection() {
               </tr>
             </thead>
             <tbody>
-              {SAMPLE_ROWS.map((row, i) => (
-                <tr key={`${row.name}-${i}`}>
+              {products.map((row, i) => (
+                <tr key={row.id || i}>
                   <td>{row.name}</td>
-                  <td>{row.category}</td>
-                  <td>{row.price}</td>
+                  <td>{row.foodCategoryName}</td>
+                  <td>
+                    {row.price > 0
+                      ? `${row.price.toLocaleString()} تومان`
+                      : "-"}
+                  </td>
                   <td>
                     <span
                       className={`status-chip ${
-                        row.active ? "active" : "danger"
+                        row.isAvailable ? "active" : "danger"
                       }`}
                     >
-                      {row.active ? "فعال" : "غیرفعال"}
+                      {row.isAvailable ? "فعال" : "غیرفعال"}
                     </span>
                   </td>
                   <td>
                     <button
                       className="btn btn-icon"
                       title="ویرایش"
-                      onClick={openEdit}
+                      onClick={() => openEdit(row)}
                     >
                       <i className="fas fa-edit" />
                     </button>
-                    <button className="btn btn-icon btn-danger" title="حذف">
+                    <button
+                      className="btn btn-icon btn-danger"
+                      title="حذف"
+                      onClick={() => handleDelete(row.id)}
+                    >
                       <i className="fas fa-trash" />
                     </button>
                   </td>
@@ -87,10 +122,10 @@ export default function ProductsSection() {
 
         {/* CARDS (phones) */}
         <div className="cards-list products-cards">
-          {SAMPLE_ROWS.map((row, i) => (
+          {products.map((row, i) => (
             <article
               className="data-card"
-              key={`${row.name}-card-${i}`}
+              key={`card-${row.id || i}`}
               aria-label="محصول"
             >
               <div className="row">
@@ -99,18 +134,22 @@ export default function ProductsSection() {
               </div>
               <div className="row">
                 <span className="label">دسته‌بندی</span>
-                <span className="value">{row.category}</span>
+                <span className="value">{row.foodCategoryName}</span>
               </div>
               <div className="row">
                 <span className="label">قیمت پایه</span>
-                <span className="value">{row.price}</span>
+                <span className="value">
+                  {row.price > 0 ? `${row.price.toLocaleString()} تومان` : "-"}
+                </span>
               </div>
               <div className="row" style={{ alignItems: "center" }}>
                 <span className="label">وضعیت</span>
                 <span
-                  className={`status-chip ${row.active ? "active" : "danger"}`}
+                  className={`status-chip ${
+                    row.isAvailable ? "active" : "danger"
+                  }`}
                 >
-                  {row.active ? "فعال" : "غیرفعال"}
+                  {row.isAvailable ? "فعال" : "غیرفعال"}
                 </span>
               </div>
               <div
@@ -122,11 +161,15 @@ export default function ProductsSection() {
                   <button
                     className="btn btn-icon"
                     title="ویرایش"
-                    onClick={openEdit}
+                    onClick={() => openEdit(row)}
                   >
                     <i className="fas fa-edit" />
                   </button>
-                  <button className="btn btn-icon btn-danger" title="حذف">
+                  <button
+                    className="btn btn-icon btn-danger"
+                    title="حذف"
+                    onClick={() => handleDelete(row.id)}
+                  >
                     <i className="fas fa-trash" />
                   </button>
                 </div>
@@ -139,7 +182,9 @@ export default function ProductsSection() {
       <ProductModal
         isOpen={isModalOpen}
         mode={mode}
-        onClose={() => setModalOpen(false)}
+        productId={selectedProductId}
+        onClose={() => setIsModalOpen(false)}
+        onSaved={fetchProducts} // وقتی غذا ذخیره شد، لیست رفرش بشه
       />
     </>
   );

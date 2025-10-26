@@ -12,11 +12,13 @@ const NAV = [
   { key: "music", label: "مدیریت موسیقی", icon: "fas fa-music" },
 
   { isDivider: true, label: "کسب و کار" },
+  { key: "orders", label: "مدیریت سفارش‌ها", icon: "fas fa-receipt" },
   { key: "financial", label: "مالی", icon: "fas fa-file-invoice-dollar" },
   { key: "ads", label: "رزرو تبلیغات", icon: "fas fa-bullhorn" },
 
   { isDivider: true, label: "حساب کاربری" },
   { key: "profile", label: "پروفایل کاربری", icon: "fas fa-user-circle" },
+  { key: "category-settings", label: "تنظیمات دسته‌ها", icon: "fas fa-cog" },
 ];
 
 export default function AdminSidebar({

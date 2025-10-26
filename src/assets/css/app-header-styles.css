@@ -12,7 +12,7 @@
 
   .app-header__pill {
     margin: 0 auto;
-    width: min(60vw, 1100px);
+    width: 50vw;
     overflow: hidden;
     padding: 22px 28px;
     min-height: 58px;
@@ -26,11 +26,11 @@
   }
 
   .app-header__nav {
+    gap: 15rem;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    column-gap: 28rem;
     direction: rtl;
   }
 
@@ -38,14 +38,10 @@
   .app-header__left {
     display: flex;
     align-items: center;
-    gap: 2rem;
+    gap: 1.5rem;
     list-style: none;
     margin: 0;
     padding: 0;
-  }
-  .app-header__right {
-    gap: 3rem;
-    padding-right: 3rem;
   }
 
   .app-header__link {
@@ -95,6 +91,7 @@
   }
 
   .icon-btn > svg {
+    color: #4e5053;
     width: 22px;
     height: 22px;
   }

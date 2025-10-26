@@ -4,6 +4,7 @@
         "Helvetica Neue", Arial, "Noto Sans", sans-serif;
     --font-alt: ui-rounded, "SF Pro Rounded", "Vazirmatn", sans-serif;
 }
+
 * {
     box-sizing: border-box;
     font-family: "Vazirmatn", sans-serif;

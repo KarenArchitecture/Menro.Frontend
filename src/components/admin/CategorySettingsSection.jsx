@@ -12,6 +12,14 @@ import {
   resetPredefined,
 } from "./predefinedStore";
 
+/** Return the uploaded SVG's original filename and MIME type */
+export function getSvgUploadMeta(file) {
+  return {
+    name: file?.name || "",
+    type: file?.type || "image/svg+xml",
+  };
+}
+
 function GenericCategoryIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
@@ -22,12 +30,13 @@ function GenericCategoryIcon() {
 }
 
 export default function CategorySettingsSection() {
-  // 🔸 Shared predefined list (name + iconKey)
   const [predefList, setPredefList] = useState(() => getPredefined());
   const [pickerIndex, setPickerIndex] = useState(null);
-
-  // 🔧 Admin-only custom icons registry (upload/remove)
   const [customIcons, setCustomIcons] = useState(() => listCustomIcons());
+  const [uploadMessage, setUploadMessage] = useState({
+    text: "تنها فایل‌های SVG مجاز به آپلود هستند.",
+    type: "info", // info | error
+  });
 
   const iconForKey = (key) =>
     renderIconByKey(key) ||
@@ -48,22 +57,28 @@ export default function CategorySettingsSection() {
     closePicker();
   };
 
-  // ✅ Persist predefined to shared store (used by CategoriesSection)
-  const savePredefined = () => {
-    setPredefined(predefList);
-  };
-  const restoreDefaults = () => {
-    const d = resetPredefined();
-    setPredefList(d);
-  };
+  const savePredefined = () => setPredefined(predefList);
+  const restoreDefaults = () => setPredefList(resetPredefined());
 
-  // ✅ Upload SVG -> add to global icon list (selectable in picker across app)
+  // ✅ Upload SVG -> log file info + register + show messages
   const handleUploadSvg = (file) => {
     if (!file) return;
+
     if (!file.name.toLowerCase().endsWith(".svg")) {
-      alert("فقط فایل SVG مجاز است.");
+      setUploadMessage({
+        text: "لطفا یک فایل SVG بارگذاری کنید.",
+        type: "error",
+      });
       return;
     }
+
+    const meta = getSvgUploadMeta(file);
+    console.log("Uploaded SVG Info →", meta.name, meta.type);
+    setUploadMessage({
+      text: `فایل "${meta.name}" با موفقیت بارگذاری شد.`,
+      type: "info",
+    });
+
     const reader = new FileReader();
     reader.onload = (e) => {
       const label = file.name.replace(/\.svg$/i, "");
@@ -73,11 +88,13 @@ export default function CategorySettingsSection() {
     reader.readAsDataURL(file);
   };
 
-  // ✅ Remove custom icon (blocked if any predefined uses it)
   const handleRemoveCustomIcon = (key) => {
     const inUse = predefList.some((p) => p.iconKey === key);
     if (inUse) {
-      alert("این آیکن در حال استفاده است. ابتدا آیکن آن دسته را تغییر دهید.");
+      setUploadMessage({
+        text: "این آیکن در حال استفاده است. ابتدا آیکن آن دسته را تغییر دهید.",
+        type: "error",
+      });
       return;
     }
     removeCustomIcon(key);
@@ -138,7 +155,7 @@ export default function CategorySettingsSection() {
         </div>
       </div>
 
-      {/* Icon picker (select-only; no upload here) */}
+      {/* Icon picker */}
       <IconPicker
         open={pickerIndex !== null}
         onClose={closePicker}
@@ -146,13 +163,13 @@ export default function CategorySettingsSection() {
         onSelect={applyPicker}
       />
 
-      {/* ---- Custom icon management (Settings-only) ---- */}
+      {/* ---- Custom icon management ---- */}
       <div className="panel" style={{ marginTop: 24 }}>
         <h4>مدیریت آیکن‌های سفارشی</h4>
 
         <div
           className="input-group-inline"
-          style={{ marginBottom: 12, gap: 8 }}
+          style={{ marginBottom: 12, gap: 8, alignItems: "center" }}
         >
           <input
             id="settings-upload-svg"
@@ -170,6 +187,18 @@ export default function CategorySettingsSection() {
           >
             <i className="fas fa-upload" /> آپلود SVG
           </button>
+
+          {/* Instruction / status message */}
+          <span
+            style={{
+              fontSize: 13,
+              color: uploadMessage.type === "error" ? "#ff4d4d" : "#ffffff",
+              marginInlineStart: 12,
+              transition: "color 0.3s ease",
+            }}
+          >
+            {uploadMessage.text}
+          </span>
         </div>
 
         {customIcons.length === 0 ? (

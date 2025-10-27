@@ -27,7 +27,16 @@ export default function CategorySettingsSection() {
     const fetchCategories = async () => {
       try {
         const res = await adminGlobalCategoryAxios.get("/read-all");
-        setCategories(res.data);
+
+        const mapped = res.data.map((x) => ({
+          id: x.id,
+          name: x.name,
+          iconId: x.icon?.id ?? null,
+          svgIcon: x.icon?.fileName ?? null,
+          iconUrl: x.icon?.url ?? null, // برای نمایش آیکن واقعی
+        }));
+
+        setCategories(mapped);
       } catch (err) {
         console.error("Error fetching categories:", err);
       }
@@ -37,10 +46,10 @@ export default function CategorySettingsSection() {
 
   // نمایش آیکن هر دسته
   const iconForItem = (item) => {
-    if (item.svgIcon)
+    if (item.iconUrl)
       return (
         <img
-          src={`/icons/${item.svgIcon}`}
+          src={item.iconUrl}
           alt={item.name}
           width={24}
           height={24}

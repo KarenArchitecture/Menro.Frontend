@@ -8,7 +8,7 @@ import Panel from "../components/admin/Panel";
 // import StatCard from "../components/admin/StatCard"; // removed
 import LineChart from "../components/admin/LineChart";
 import ProductsSection from "../components/admin/ProductsSection";
-import CategoriesSection from "../components/admin/CategoriesSection";
+// import CategoriesSection from "../components/admin/CategoriesSection";
 import ThemeSection from "../components/admin/ThemeSection";
 import MusicSection from "../components/admin/MusicSection";
 import FinancialSection from "../components/admin/FinancialSection";
@@ -290,11 +290,11 @@ export default function AdminDashboardPage() {
           <ProductsSection />
         </section>
 
-        {/* CATEGORIES */}
+        {/* CATEGORIES
         <section id="categories-view" className={viewClass("categories")}>
           <h2 className="content-title">مدیریت دسته‌بندی‌ها</h2>
           <CategoriesSection />
-        </section>
+        </section> */}
 
         {/* THEME */}
         <section id="theme-view" className={viewClass("theme")}>

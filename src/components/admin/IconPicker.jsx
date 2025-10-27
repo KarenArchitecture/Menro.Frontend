@@ -1,129 +1,40 @@
 import React, { useMemo, useState, useEffect } from "react";
 import iconAxios from "../../api/iconAxios.js";
+import fileAxios from "../../api/fileAxios.js";
+export const ICON_BY_KEY = {};
 
-export const ICON_BY_KEY = ICON_LIBRARY.reduce((acc, i) => {
-  acc[i.key] = i.src; // map to URL string
-  return acc;
-}, {});
-
-/** ----- Custom SVG storage (shown in picker, uploaded elsewhere) ----- */
-const CUSTOM_ICONS_KEY = "admin.custom.icons"; // local cache of user-uploaded SVGs (data URLs)
-const CUSTOM_PREFIX = "custom-";
-
-function loadCustomIcons() {
+// گرفتن لیست آیکن‌ها از بک‌اند
+export async function fetchAllIcons() {
   try {
-    const raw = localStorage.getItem(CUSTOM_ICONS_KEY);
-    const arr = raw ? JSON.parse(raw) : [];
-    return Array.isArray(arr) ? arr : [];
-  } catch {
+    const res = await iconAxios.get("/read-all");
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching icons:", err);
     return [];
   }
 }
 
-// Expose list/remove for a separate Settings UI
-export function listCustomIcons() {
-  return loadCustomIcons();
-}
-export function removeCustomIcon(key) {
-  const list = loadCustomIcons().filter((x) => x.key !== key);
-  saveCustomIcons(list);
-}
-function saveCustomIcons(list) {
-  try {
-    localStorage.setItem(CUSTOM_ICONS_KEY, JSON.stringify(list || []));
-  } catch {}
-}
-
-function slugifyBase(name = "") {
-  return name
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-zA-Z0-9\-\u0600-\u06FF]/g, "")
-    .toLowerCase();
-}
-
-/** Called from Settings (outside modal) after upload.
- * Store dataUrl now; later you can replace with server URL returned by your backend.
- */
-export function registerCustomIcon({ label, dataUrl }) {
-  const list = loadCustomIcons();
-  const base = slugifyBase(label || "icon");
-  let key = `${CUSTOM_PREFIX}${base}`;
-  let i = 1;
-  while (list.some((x) => x.key === key))
-    key = `${CUSTOM_PREFIX}${base}-${i++}`;
-  list.push({ key, label: label || key, dataUrl });
-  saveCustomIcons(list);
-  return key;
-}
-
-/** Render by key (library + custom) with <img>. */
-export function renderIconByKey(key, { size = 24, alt } = {}) {
-  if (!key) return null;
-
-  // library (URL string)
-  const libSrc = ICON_BY_KEY[key];
-  if (libSrc) {
-    return (
-      <img
-        src={libSrc}
-        alt={alt || key}
-        width={size}
-        height={size}
-        style={{ objectFit: "contain" }}
-        loading="lazy"
-        decoding="async"
-      />
-    );
-  }
-
-  // custom (dataUrl or future server URL)
-  if (key.startsWith(CUSTOM_PREFIX)) {
-    const found = loadCustomIcons().find((x) => x.key === key);
-    if (found?.dataUrl) {
-      return (
-        <img
-          src={found.dataUrl}
-          alt={alt || found.label || key}
-          width={size}
-          height={size}
-          style={{ objectFit: "contain" }}
-          loading="lazy"
-          decoding="async"
-        />
-      );
-    }
-  }
-
-  return null;
-}
-
-/** ----- IconPicker (NO upload UI here) ----- */
+/** ----- IconPicker (فقط آیکن‌های دیتابیس) ----- */
 export default function IconPicker({ open, onClose, value, onSelect }) {
   const [q, setQ] = useState("");
-  const [customs, setCustoms] = useState([]);
+  const [backendIcons, setBackendIcons] = useState([]);
 
   useEffect(() => {
-    if (open) setCustoms(loadCustomIcons());
+    if (open) {
+      fetchAllIcons().then((data) => setBackendIcons(data || []));
+    }
   }, [open]);
 
-  // Merge library (static) + customs (user uploads)
-  const merged = useMemo(() => {
-    const lib = ICON_LIBRARY.map((x) => ({ ...x, type: "library" }));
-    const cus = customs.map((x) => ({ ...x, type: "custom" }));
-    return [...lib, ...cus];
-  }, [customs]);
-
-  // Simple search on key/label
+  // آیکن‌های بک‌اند
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
-    if (!query) return merged;
-    return merged.filter((i) => {
-      const key = i.key?.toLowerCase() || "";
+    if (!query) return backendIcons;
+    return backendIcons.filter((i) => {
       const label = (i.label || "").toLowerCase();
-      return key.includes(query) || label.includes(query);
+      const fileName = (i.fileName || "").toLowerCase();
+      return label.includes(query) || fileName.includes(query);
     });
-  }, [q, merged]);
+  }, [q, backendIcons]);
 
   if (!open) return null;
 
@@ -148,23 +59,21 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
 
         <div className="icon-grid" role="listbox" aria-label="Icon grid">
           {filtered.map((item) => {
-            const selected = value === item.key;
-            const isCustom = item.type === "custom";
-            const src = isCustom ? item.dataUrl : item.src;
+            const selected = value === item.id;
 
             return (
               <button
-                key={item.key}
+                key={item.id}
                 className={`icon-cell ${selected ? "is-selected" : ""}`}
-                onClick={() => onSelect?.(item.key)}
-                title={item.label || item.key}
+                onClick={() => onSelect?.(item.id)} // id به بک‌اند برمی‌گرده
+                title={item.label || item.fileName}
                 role="option"
                 aria-selected={selected}
               >
                 <span className="icon-cell__gfx">
                   <img
-                    src={src}
-                    alt={item.label || item.key}
+                    src={item.url}
+                    alt={item.label || item.fileName}
                     width={24}
                     height={24}
                     style={{ objectFit: "contain" }}
@@ -173,12 +82,7 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
                   />
                 </span>
                 <span className="icon-cell__label">
-                  {item.label || item.key}
-                  {isCustom && (
-                    <span className="badge" style={{ marginInlineStart: 6 }}>
-                      سفارشی
-                    </span>
-                  )}
+                  {item.label || item.fileName}
                 </span>
               </button>
             );

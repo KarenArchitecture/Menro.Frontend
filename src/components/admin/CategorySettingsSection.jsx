@@ -1,25 +1,10 @@
-import React, { useState } from "react";
-import IconPicker, {
-  ICON_BY_KEY,
-  renderIconByKey,
-  registerCustomIcon,
-  listCustomIcons,
-  removeCustomIcon,
-} from "./IconPicker";
-import {
-  getPredefined,
-  setPredefined,
-  resetPredefined,
-} from "./predefinedStore";
+import React, { useState, useEffect } from "react";
+import IconPicker from "./IconPicker";
 import fileAxios from "../../api/fileAxios.js";
-/** Return the uploaded SVG's original filename and MIME type */
-export function getSvgUploadMeta(file) {
-  return {
-    name: file?.name || "",
-    type: file?.type || "image/svg+xml",
-  };
-}
+import iconAxios from "../../api/iconAxios.js";
+import adminGlobalCategoryAxios from "../../api/adminGlobalCategoryAxios.js";
 
+/** Placeholder for categories without icon */
 function GenericCategoryIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
@@ -30,118 +15,138 @@ function GenericCategoryIcon() {
 }
 
 export default function CategorySettingsSection() {
-  const [predefList, setPredefList] = useState(() => getPredefined());
+  const [categories, setCategories] = useState([]);
   const [pickerIndex, setPickerIndex] = useState(null);
-  const [customIcons, setCustomIcons] = useState(() => listCustomIcons());
   const [uploadMessage, setUploadMessage] = useState({
     text: "تنها فایل‌های SVG مجاز به آپلود هستند.",
-    type: "info", // info | error
+    type: "info",
   });
 
-  const iconForKey = (key) =>
-    renderIconByKey(key) ||
-    (ICON_BY_KEY[key] ? (
-      React.createElement(ICON_BY_KEY[key])
-    ) : (
-      <GenericCategoryIcon />
-    ));
+  // ✅ خواندن لیست دسته‌بندی‌ها از بک‌اند
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await adminGlobalCategoryAxios.get("/read-all");
+        setCategories(res.data);
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // نمایش آیکن هر دسته
+  const iconForItem = (item) => {
+    if (item.svgIcon)
+      return (
+        <img
+          src={`/icons/${item.svgIcon}`}
+          alt={item.name}
+          width={24}
+          height={24}
+          style={{ objectFit: "contain" }}
+        />
+      );
+    return <GenericCategoryIcon />;
+  };
 
   const openPickerFor = (idx) => setPickerIndex(idx);
   const closePicker = () => setPickerIndex(null);
-  const applyPicker = (key) => {
-    setPredefList((list) => {
+
+  // وقتی آیکن انتخاب میشه از IconPicker
+  const applyPicker = (selectedIconId, selectedFileName) => {
+    setCategories((list) => {
       const next = [...list];
-      next[pickerIndex] = { ...next[pickerIndex], iconKey: key };
+      next[pickerIndex] = {
+        ...next[pickerIndex],
+        iconId: selectedIconId,
+        svgIcon: selectedFileName,
+      };
       return next;
     });
     closePicker();
   };
 
-  const savePredefined = () => setPredefined(predefList);
-  const restoreDefaults = () => setPredefList(resetPredefined());
+  //ذخیره تغییرات در بک‌اند
+  const saveCategories = async () => {
+    try {
+      await categoryAxios.put("/update-many", categories);
+      alert("تغییرات با موفقیت ذخیره شد ✅");
+    } catch (err) {
+      console.error("Error saving categories:", err);
+      alert("ذخیره‌سازی با خطا مواجه شد!");
+    }
+  };
 
-  // ✅ Upload SVG -> log file info + register + show messages
+  // ✅ آپلود فایل SVG جدید و ثبت در دیتابیس
   const handleUploadSvg = async (file) => {
     if (!file) return;
-
-    // 🔹 بررسی فرمت
     if (!file.name.toLowerCase().endsWith(".svg")) {
-      setUploadMessage({
-        text: "فقط فایل SVG مجاز است.",
-        type: "error",
-      });
+      setUploadMessage({ text: "فقط فایل SVG مجاز است.", type: "error" });
       return;
     }
 
     try {
-      // 🔹 ساخت FormData برای ارسال فایل به بک‌اند
       const formData = new FormData();
       formData.append("file", file);
 
-      // 🔹 ارسال فایل با axios
+      // مرحله ۱: آپلود فایل در بک‌اند (FileController)
       const res = await fileAxios.post("/upload-icon", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      // 🔹 بک‌اند فقط نام فایل را برمی‌گرداند (مثلاً heart.svg)
       const { fileName } = res.data;
-      console.log("Uploaded SVG →", fileName);
+
+      // مرحله ۲: ثبت در جدول Icon (IconController)
+      await iconAxios.post("/add", {
+        fileName,
+        label: file.name.replace(/\.svg$/i, ""),
+      });
 
       setUploadMessage({
-        text: `فایل "${fileName}" با موفقیت آپلود شد.`,
+        text: `آیکن "${fileName}" با موفقیت آپلود و ذخیره شد.`,
         type: "info",
       });
-
-      // ✅ در این مرحله، fileName را می‌توانی به مدل دسته‌بندی اضافه کنی
-      // مثلاً هنگام ذخیره دسته‌بندی، property ای مثل iconName: fileName بفرستی
     } catch (err) {
       console.error("Upload failed:", err);
-      setUploadMessage({
-        text: "آپلود با خطا مواجه شد.",
-        type: "error",
-      });
+      setUploadMessage({ text: "آپلود با خطا مواجه شد.", type: "error" });
     }
-  };
-
-  const handleRemoveCustomIcon = (key) => {
-    const inUse = predefList.some((p) => p.iconKey === key);
-    if (inUse) {
-      setUploadMessage({
-        text: "این آیکن در حال استفاده است. ابتدا آیکن آن دسته را تغییر دهید.",
-        type: "error",
-      });
-      return;
-    }
-    removeCustomIcon(key);
-    setCustomIcons(listCustomIcons());
   };
 
   return (
     <div className="panels-grid-single-column" dir="rtl">
-      {/* ---- Shared predefined editor ---- */}
       <div className="panel">
-        <h3>ویرایش دسته‌های از پیش‌تعریف‌شده</h3>
-        <p className="panel-subtitle">دسته بندی‌های پیش‌فرض رستوران‌ها</p>
+        <h3>ویرایش دسته‌بندی‌های عمومی</h3>
+        <p className="panel-subtitle">
+          دسته‌بندی‌هایی که برای همه رستوران‌ها نمایش داده می‌شوند.
+        </p>
 
         <div className="predef-table">
-          {predefList.map((it, idx) => (
+          {categories.map((it, idx) => (
             <div key={it.id} className="predef-row">
               <div className="predef-icon">
-                <span className="icon-preview">{iconForKey(it.iconKey)}</span>
+                <span className="icon-preview">{iconForItem(it)}</span>
                 <button className="btn" onClick={() => openPickerFor(idx)}>
                   تغییر آیکن
                 </button>
               </div>
 
               <div className="predef-name">
-                <label style={{ display: "block", fontSize: 12, opacity: 0.8 }}>
-                  نام
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: 12,
+                    opacity: 0.8,
+                    marginBottom: 4,
+                  }}
+                >
+                  نام دسته
                 </label>
                 <input
                   type="text"
                   value={it.name}
                   onChange={(e) =>
-                    setPredefList((list) => {
+                    setCategories((list) => {
                       const next = [...list];
                       next[idx] = { ...next[idx], name: e.target.value };
                       return next;
@@ -152,8 +157,10 @@ export default function CategorySettingsSection() {
             </div>
           ))}
 
-          {predefList.length === 0 && (
-            <p style={{ opacity: 0.7, marginTop: 8 }}>هیچ آیتمی وجود ندارد.</p>
+          {categories.length === 0 && (
+            <p style={{ opacity: 0.7, marginTop: 8 }}>
+              هیچ دسته‌بندی وجود ندارد.
+            </p>
           )}
         </div>
 
@@ -161,26 +168,25 @@ export default function CategorySettingsSection() {
           className="panel-actions"
           style={{ display: "flex", gap: 8, marginTop: 12 }}
         >
-          <button className="btn" onClick={restoreDefaults}>
-            بازنشانی به پیش‌فرض
-          </button>
-          <button className="btn btn-primary" onClick={savePredefined}>
+          <button className="btn btn-primary" onClick={saveCategories}>
             ذخیره تغییرات
           </button>
         </div>
       </div>
 
-      {/* Icon picker */}
+      {/* Icon picker modal */}
       <IconPicker
         open={pickerIndex !== null}
         onClose={closePicker}
-        value={pickerIndex !== null ? predefList[pickerIndex]?.iconKey : ""}
+        value={
+          pickerIndex !== null ? categories[pickerIndex]?.iconId ?? "" : ""
+        }
         onSelect={applyPicker}
       />
 
-      {/* ---- Custom icon management ---- */}
+      {/* ---- Upload new icons ---- */}
       <div className="panel" style={{ marginTop: 24 }}>
-        <h4>مدیریت آیکن‌های سفارشی</h4>
+        <h4>افزودن آیکن جدید</h4>
 
         <div
           className="input-group-inline"
@@ -203,7 +209,6 @@ export default function CategorySettingsSection() {
             <i className="fas fa-upload" /> آپلود SVG
           </button>
 
-          {/* Instruction / status message */}
           <span
             style={{
               fontSize: 13,
@@ -215,48 +220,6 @@ export default function CategorySettingsSection() {
             {uploadMessage.text}
           </span>
         </div>
-
-        {customIcons.length === 0 ? (
-          <p style={{ opacity: 0.7 }}>هنوز آیکن سفارشی اضافه نشده است.</p>
-        ) : (
-          <div className="custom-icons-list">
-            {customIcons.map((ic) => {
-              const inUse = predefList.some((p) => p.iconKey === ic.key);
-              return (
-                <div key={ic.key} className="custom-icon-row">
-                  <span className="icon">
-                    <img
-                      src={ic.dataUrl}
-                      alt={ic.label || ic.key}
-                      width={24}
-                      height={24}
-                      style={{ objectFit: "contain" }}
-                    />
-                  </span>
-                  <span className="name">{ic.label || ic.key}</span>
-                  <div className="actions">
-                    <button
-                      className="btn btn-icon btn-danger"
-                      title={inUse ? "در حال استفاده" : "حذف آیکن"}
-                      disabled={inUse}
-                      onClick={() => handleRemoveCustomIcon(ic.key)}
-                    >
-                      <i className="fas fa-trash" />
-                    </button>
-                    {inUse && (
-                      <span
-                        className="badge badge-warning"
-                        style={{ marginInlineStart: 8 }}
-                      >
-                        در حال استفاده
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
       </div>
     </div>
   );

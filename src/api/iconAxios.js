@@ -13,17 +13,4 @@ iconAxios.interceptors.request.use((config) => {
   return config;
 });
 
-export const getAllIcons = async () => {
-  const res = await iconAxios.get("/read-all");
-  return res.data;
-};
-
-export const addIcon = async (data) => {
-  const res = await iconAxios.post("/add", data);
-  return res.data;
-};
-
-export const deleteIcon = async (id) => {
-  const res = await iconAxios.delete(`/delete?id=${id}`);
-  return res.data;
-};
+export default iconAxios;

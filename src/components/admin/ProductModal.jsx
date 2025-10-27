@@ -313,15 +313,6 @@ export default function ProductModal({
                 <label htmlFor="product-description">توضیح مختصر محصول</label>
                 <textarea id="product-description" rows={4} />
               </div>
-
-              {/* categories */}
-              {/* <div className="input-group">
-                <label htmlFor="product-category">دسته‌بندی</label>
-                <select id="product-category" required>
-                  <option value="kabab">کباب‌ها</option>
-                  <option value="fastfood">فست فود</option>
-                </select>
-              </div> */}
               <div className="input-group">
                 <label htmlFor="product-category">دسته‌بندی</label>
                 <select id="product-category" required>

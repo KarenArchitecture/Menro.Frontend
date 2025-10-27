@@ -1,445 +1,457 @@
-// import React, { useMemo, useState, useEffect } from "react";
-// import IconPicker, { ICON_BY_KEY, renderIconByKey } from "./IconPicker";
-// import { getPredefined, onPredefinedChange } from "../admin/predefinedStore";
-// import adminGlobalCategoryAxios from "../../api/adminGlobalCategoryAxios";
-// import adminCustomCategory from "../../api/adminCustomCategory";
+import React, { useMemo, useState, useEffect } from "react";
+import IconPicker from "./IconPicker";
+import adminGlobalCategoryAxios from "../../api/adminGlobalCategoryAxios.js";
+import adminCustomCategoryAxios from "../../api/adminCustomCategoryAxios.js";
 
-// function GenericCategoryIcon() {
-//   return (
-//     <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
-//       <circle cx="12" cy="12" r="9" fill="currentColor" opacity="0.15" />
-//       <path d="M7 12h10M12 7v10" stroke="currentColor" strokeWidth="1.8" />
-//     </svg>
-//   );
-// }
+function GenericCategoryIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" fill="currentColor" opacity="0.15" />
+      <path d="M7 12h10M12 7v10" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  );
+}
 
-// function normalizePersian(s = "") {
-//   return s.replace(/[ي]/g, "ی").replace(/[ك]/g, "ک");
-// }
-// function slugify(name = "") {
-//   const s = normalizePersian(name).trim().replace(/\s+/g, " ");
-//   return s
-//     .replace(/[^ء-ی0-9\s\-]/g, "")
-//     .replace(/\s+/g, "-")
-//     .toLowerCase();
-// }
-// function uid() {
-//   return Math.random().toString(36).slice(2, 10);
-// }
+function normalizePersian(s = "") {
+  return s.replace(/[ي]/g, "ی").replace(/[ك]/g, "ک");
+}
+function slugify(name = "") {
+  const s = normalizePersian(name).trim().replace(/\s+/g, " ");
+  return s
+    .replace(/[^ء-ی0-9\s\-]/g, "")
+    .replace(/\s+/g, "-")
+    .toLowerCase();
+}
+function uid() {
+  return Math.random().toString(36).slice(2, 10);
+}
 
-// function useSharedPredefined() {
-//   const [predef, setPredef] = React.useState(() => getPredefined());
+export default function CategoriesSection() {
+  // const PREDEFINED = useSharedPredefined();
 
-//   React.useEffect(() => {
-//     const update = () => setPredef(getPredefined());
-//     // subscribe to store events (same tab) + storage (other tabs)
-//     const unsubscribe = onPredefinedChange(update);
-//     return unsubscribe;
-//   }, []);
+  const [categories, setCategories] = useState(() => {
+    try {
+      const saved = localStorage.getItem("admin.categories");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem("admin.categories", JSON.stringify(categories));
+    } catch {}
+  }, [categories]);
 
-//   return predef;
-// }
+  const [nameInput, setNameInput] = useState("");
+  const [selectedIconKey, setSelectedIconKey] = useState(null);
+  const [iconPickerOpen, setIconPickerOpen] = useState(false);
+  const [errors, setErrors] = useState({ name: "", icon: "", duplicate: "" });
 
-// const ICON_LIBRARY = Object.entries(ICON_BY_KEY).map(([key, Icon]) => ({
-//   key,
-//   label: key,
-//   Icon,
-// }));
+  const [editingId, setEditingId] = useState(null);
+  const [editName, setEditName] = useState("");
+  const [editIconKey, setEditIconKey] = useState(null);
+  const [editPickerOpen, setEditPickerOpen] = useState(false);
+  // const [adding, setAdding] = useState(false);
 
-// export default function CategoriesSection() {
-//   // const PREDEFINED = useSharedPredefined();
+  // load gCat list
+  const [globalCategories, setGlobalCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const res = await adminGlobalCategoryAxios.get("/read-all");
+        setGlobalCategories(res.data);
+      } catch (err) {
+        console.error("Failed to load global categories", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-//   const [categories, setCategories] = useState(() => {
-//     try {
-//       const saved = localStorage.getItem("admin.categories");
-//       return saved ? JSON.parse(saved) : [];
-//     } catch {
-//       return [];
-//     }
-//   });
-//   useEffect(() => {
-//     try {
-//       localStorage.setItem("admin.categories", JSON.stringify(categories));
-//     } catch {}
-//   }, [categories]);
+    loadCategories();
+  }, []);
 
-//   const [nameInput, setNameInput] = useState("");
-//   const [selectedIconKey, setSelectedIconKey] = useState(null);
-//   const [iconPickerOpen, setIconPickerOpen] = useState(false);
-//   const [errors, setErrors] = useState({ name: "", icon: "", duplicate: "" });
+  // load cCat list
+  const [customCategories, setCustomCategories] = useState([]);
+  const [loadingCustoms, setLoadingCustoms] = useState(true);
+  const loadCustomCategories = async () => {
+    try {
+      const res = await adminCustomCategoryAxios.get("/read-all");
+      setCustomCategories(res.data);
+    } catch (err) {
+      console.error("Failed to load custom categories", err);
+    } finally {
+      setLoadingCustoms(false);
+    }
+  };
+  useEffect(() => {
+    const fetch = async () => {
+      await loadCustomCategories();
+    };
+    fetch();
+  }, []);
 
-//   const [editingId, setEditingId] = useState(null);
-//   const [editName, setEditName] = useState("");
-//   const [editIconKey, setEditIconKey] = useState(null);
-//   const [editPickerOpen, setEditPickerOpen] = useState(false);
+  // delete category
+  const removeCustomCategory = async (catId) => {
+    try {
+      const res = await adminCustomCategoryAxios.delete(`/delete/${catId}`);
+      console.log("Deleted successfully:", res.data.message);
+      await loadCustomCategories(); // رفرش لیست بعد از حذف
+    } catch (err) {
+      console.error("Failed to delete custom category", err);
+    }
+  };
 
-//   // load gCat list
-//   const [globalCategories, setGlobalCategories] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   useEffect(() => {
-//     const loadCategories = async () => {
-//       try {
-//         const res = await adminGlobalCategoryAxios.get("/read-all");
-//         setGlobalCategories(res.data);
-//       } catch (err) {
-//         console.error("Failed to load global categories", err);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
+  const existingSlugs = useMemo(
+    () => categories.map((c) => c.slug),
+    [categories]
+  );
 
-//     loadCategories();
-//   }, []);
+  // get custom category
 
-//   // load cCat list
-//   const [customCategories, setCustomCategories] = useState([]);
-//   const [loadingCustoms, setLoadingCustoms] = useState(true);
-//   const loadCustomCategories = async () => {
-//     try {
-//       const res = await adminCustomCategory.get("/read-all");
-//       setCustomCategories(res.data);
-//     } catch (err) {
-//       console.error("Failed to load custom categories", err);
-//     } finally {
-//       setLoadingCustoms(false);
-//     }
-//   };
-//   useEffect(() => {
-//     const fetch = async () => {
-//       await loadCustomCategories();
-//     };
-//     fetch();
-//   }, []);
+  const getCustomCategory = async (id) => {
+    try {
+      const res = await adminCustomCategoryAxios.get("/read", {
+        params: { catId: id },
+      });
 
-//   // delete category
-//   const removeCustomCategory = async (catId) => {
-//     try {
-//       const res = await adminCustomCategory.delete(`/delete/${catId}`);
-//       console.log("Deleted successfully:", res.data.message);
-//       await loadCustomCategories(); // رفرش لیست بعد از حذف
-//     } catch (err) {
-//       console.error("Failed to delete custom category", err);
-//     }
-//   };
+      const cat = res.data;
+      console.log("Fetched for edit:", cat);
 
-//   const existingSlugs = useMemo(
-//     () => categories.map((c) => c.slug),
-//     [categories]
-//   );
+      // مقداردهی به state‌های ویرایش
+      setEditingId(cat.id);
+      setEditName(cat.name);
+      setEditIconKey(cat.svgIcon || "");
+    } catch (err) {
+      console.error("Failed to fetch category", err);
+      alert(err.response?.data?.message ?? "خطا در دریافت دسته‌بندی");
+    }
+  };
 
-//   const iconForKey = (key) => {
-//     const el = renderIconByKey(key);
-//     if (el) return el;
-//     const C = ICON_BY_KEY[key];
-//     return C ? <C /> : <GenericCategoryIcon />;
-//   };
-//   // get custom category
+  // add custom category
+  const submitCreateCustomCategory = async () => {
+    const name = nameInput.trim();
 
-//   const getCustomCategory = async (id) => {
-//     try {
-//       const res = await adminCustomCategory.get("/read", {
-//         params: { catId: id },
-//       });
+    if (!name) {
+      alert("نام دسته‌بندی را وارد کنید");
+      return;
+    }
 
-//       const cat = res.data;
-//       console.log("Fetched for edit:", cat);
+    try {
+      const dto = {
+        name: name,
+        svgIcon: "", // temp empty
+      };
 
-//       // مقداردهی به state‌های ویرایش
-//       setEditingId(cat.id);
-//       setEditName(cat.name);
-//       setEditIconKey(cat.svgIcon || "");
-//     } catch (err) {
-//       console.error("Failed to fetch category", err);
-//       alert(err.response?.data?.message ?? "خطا در دریافت دسته‌بندی");
-//     }
-//   };
+      const res = await adminCustomCategoryAxios.post("/add", dto);
 
-//   // add custom category
-//   const submitCreateCustomCategory = async () => {
-//     const name = nameInput.trim();
+      await loadCustomCategories(); // رفرش لیست بعد از افزودن
 
-//     if (!name) {
-//       alert("نام دسته‌بندی را وارد کنید");
-//       return;
-//     }
+      // پاک‌سازی فرم
+      setNameInput("");
+    } catch (err) {
+      console.error("Failed to create custom category", err);
+      alert(err.response?.data?.message ?? "خطا در افزودن دسته‌بندی");
+    }
+  };
 
-//     try {
-//       const dto = {
-//         name: name,
-//         svgIcon: "", // temp empty
-//       };
+  // use shared predefined items (name + iconKey)
+  const addPredefined = async (globalCat) => {
+    try {
+      const res = await adminCustomCategoryAxios.post(
+        "/add-from-global",
+        null,
+        {
+          params: { globalCategoryId: globalCat.id },
+        }
+      );
 
-//       const res = await adminCustomCategory.post("/add", dto);
+      console.log("Added successfully:", res.data.message);
+      await loadCustomCategories();
+    } catch (err) {
+      console.error("Failed to add category from global", err);
+    }
+  };
 
-//       await loadCustomCategories(); // رفرش لیست بعد از افزودن
+  // function removeCategory(id) {
+  //   setCategories((prev) => prev.filter((c) => c.id !== id));
+  // }
 
-//       // پاک‌سازی فرم
-//       setNameInput("");
-//     } catch (err) {
-//       console.error("Failed to create custom category", err);
-//       alert(err.response?.data?.message ?? "خطا در افزودن دسته‌بندی");
-//     }
-//   };
+  // function beginEdit(cat) {
+  //   if (cat.locked) return;
+  //   setEditingId(cat.id);
+  //   setEditName(cat.name);
+  //   setEditIconKey(cat.iconKey);
+  // }
+  const saveEdit = async () => {
+    const newName = editName.trim().replace(/\s+/g, " ");
 
-//   // use shared predefined items (name + iconKey)
-//   const addPredefined = async (globalCat) => {
-//     try {
-//       const res = await adminCustomCategory.post("/add-from-global", null, {
-//         params: { globalCategoryId: globalCat.id },
-//       });
+    if (!newName) {
+      alert("نام دسته‌بندی نمی‌تواند خالی باشد.");
+      return;
+    }
 
-//       console.log("Added successfully:", res.data.message);
-//       await loadCustomCategories();
-//     } catch (err) {
-//       console.error("Failed to add category from global", err);
-//     }
-//   };
+    try {
+      const dto = {
+        id: editingId,
+        name: editName.trim(),
+        svgIcon: editIconKey || "", // فعلاً خالی می‌فرستیم
+      };
 
-//   // function removeCategory(id) {
-//   //   setCategories((prev) => prev.filter((c) => c.id !== id));
-//   // }
+      const res = await adminCustomCategoryAxios.put("/update", dto);
+      console.log("Edit response:", res.data);
 
-//   // function beginEdit(cat) {
-//   //   if (cat.locked) return;
-//   //   setEditingId(cat.id);
-//   //   setEditName(cat.name);
-//   //   setEditIconKey(cat.iconKey);
-//   // }
-//   const saveEdit = async () => {
-//     const newName = editName.trim().replace(/\s+/g, " ");
+      // بعد از موفقیت، لیست رو رفرش کن
+      await loadCustomCategories();
 
-//     if (!newName) {
-//       alert("نام دسته‌بندی نمی‌تواند خالی باشد.");
-//       return;
-//     }
+      // و modal رو ببند
+      cancelEdit();
+    } catch (err) {
+      console.error("Failed to update category", err);
+      alert(err.response?.data?.message ?? "خطا در ذخیره تغییرات");
+    }
+  };
 
-//     try {
-//       const dto = {
-//         id: editingId,
-//         name: editName.trim(),
-//         svgIcon: editIconKey || "", // فعلاً خالی می‌فرستیم
-//       };
+  function cancelEdit() {
+    setEditingId(null);
+    setEditName("");
+    setEditIconKey(null);
+    setEditPickerOpen(false);
+  }
 
-//       const res = await adminCustomCategory.put("/update", dto);
-//       console.log("Edit response:", res.data);
+  return (
+    <div className="panels-grid-single-column" id="categories-view">
+      <div className="panel">
+        <h3>افزودن دسته‌بندی جدید</h3>
+        <p className="panel-subtitle">
+          یک دسته‌بندی سفارشی ایجاد کنید یا از لیست‌های آماده انتخاب نمایید.
+        </p>
+        <div className="input-group-inline">
+          <input
+            type="text"
+            id="custom-category-name"
+            placeholder="نام دسته‌بندی سفارشی خود را وارد کنید..."
+            value={nameInput}
+            onChange={(e) => {
+              setNameInput(e.target.value);
+              if (errors.name || errors.duplicate) {
+                setErrors((prev) => ({ ...prev, name: "", duplicate: "" }));
+              }
+            }}
+            onKeyDown={(e) => e.key === "Enter" && addCustomCategory()}
+          />
 
-//       // بعد از موفقیت، لیست رو رفرش کن
-//       await loadCustomCategories();
+          <button
+            type="button"
+            className="btn"
+            onClick={() => setIconPickerOpen(true)}
+            title="انتخاب آیکن"
+          >
+            {selectedIconKey ? (
+              <span className="icon-preview">
+                {iconForKey(selectedIconKey)}
+              </span>
+            ) : (
+              <i className="fas fa-icons" />
+            )}{" "}
+            انتخاب آیکن
+          </button>
 
-//       // و modal رو ببند
-//       cancelEdit();
-//     } catch (err) {
-//       console.error("Failed to update category", err);
-//       alert(err.response?.data?.message ?? "خطا در ذخیره تغییرات");
-//     }
-//   };
+          <button
+            className="btn btn-primary"
+            onClick={submitCreateCustomCategory}
+          >
+            افزودن
+          </button>
+        </div>
+        {(errors.name || errors.icon || errors.duplicate) && (
+          <div className="form-errors">
+            {errors.name && <div className="form-error">{errors.name}</div>}
+            {errors.icon && <div className="form-error">{errors.icon}</div>}
+            {errors.duplicate && (
+              <div className="form-error">{errors.duplicate}</div>
+            )}
+          </div>
+        )}
+        <hr className="form-divider" />
 
-//   function cancelEdit() {
-//     setEditingId(null);
-//     setEditName("");
-//     setEditIconKey(null);
-//     setEditPickerOpen(false);
-//   }
+        <label>پیشنهادهای آماده برای افزودن:</label>
+        <div className="predefined-tags">
+          {loading ? (
+            <p>در حال بارگذاری...</p>
+          ) : globalCategories.length === 0 ? (
+            <p>دسته‌بندی‌ای یافت نشد</p>
+          ) : (
+            globalCategories.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className="tag"
+                onClick={() => addPredefined(item)} // کال شدن متد
+                title="افزودن به دسته‌بندی‌های من"
+              >
+                <i className="fas fa-plus" />
+                {/* آیکن SVG ذخیره‌شده در دیتابیس */}
+                {item.icon && item.icon.url ? (
+                  <img
+                    src={item.icon.url}
+                    alt={item.name}
+                    width={20}
+                    height={20}
+                    style={{
+                      objectFit: "contain",
+                      verticalAlign: "middle",
+                      marginInlineEnd: 6,
+                    }}
+                  />
+                ) : (
+                  <GenericCategoryIcon />
+                )}
 
-//   return (
-//     <div className="panels-grid-single-column" id="categories-view">
-//       <div className="panel">
-//         <h3>افزودن دسته‌بندی جدید</h3>
-//         <p className="panel-subtitle">
-//           یک دسته‌بندی سفارشی ایجاد کنید یا از لیست‌های آماده انتخاب نمایید.
-//         </p>
-//         <div className="input-group-inline">
-//           <input
-//             type="text"
-//             id="custom-category-name"
-//             placeholder="نام دسته‌بندی سفارشی خود را وارد کنید..."
-//             value={nameInput}
-//             onChange={(e) => {
-//               setNameInput(e.target.value);
-//               if (errors.name || errors.duplicate) {
-//                 setErrors((prev) => ({ ...prev, name: "", duplicate: "" }));
-//               }
-//             }}
-//             onKeyDown={(e) => e.key === "Enter" && addCustomCategory()}
-//           />
+                <span className="tag-name">{item.name}</span>
+              </button>
+            ))
+          )}
+        </div>
+      </div>
 
-//           <button
-//             type="button"
-//             className="btn"
-//             onClick={() => setIconPickerOpen(true)}
-//             title="انتخاب آیکن"
-//           >
-//             {selectedIconKey ? (
-//               <span className="icon-preview">
-//                 {iconForKey(selectedIconKey)}
-//               </span>
-//             ) : (
-//               <i className="fas fa-icons" />
-//             )}{" "}
-//             انتخاب آیکن
-//           </button>
+      <div className="panel">
+        <h3>دسته‌بندی‌های فعلی رستوران</h3>
+        <div className="category-list">
+          {loadingCustoms ? (
+            <p>در حال بارگذاری...</p>
+          ) : customCategories.length === 0 ? (
+            <div className="category-item">
+              <GenericCategoryIcon />
+              <span
+                className="category-title"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                هنوز دسته‌بندی‌ای اضافه نشده است.
+              </span>
+            </div>
+          ) : (
+            customCategories.map((cat) => (
+              <div key={cat.id} className="category-item">
+                <div
+                  className="category-meta"
+                  style={{ display: "flex", alignItems: "center", gap: 8 }}
+                >
+                  {cat.icon && cat.icon.url ? (
+                    <img
+                      src={cat.icon.url}
+                      alt={cat.name}
+                      width={22}
+                      height={22}
+                      style={{
+                        objectFit: "contain",
+                        verticalAlign: "middle",
+                        opacity: 0.9,
+                      }}
+                    />
+                  ) : (
+                    <GenericCategoryIcon />
+                  )}
 
-//           <button
-//             className="btn btn-primary"
-//             onClick={submitCreateCustomCategory}
-//           >
-//             افزودن
-//           </button>
-//         </div>
-//         {(errors.name || errors.icon || errors.duplicate) && (
-//           <div className="form-errors">
-//             {errors.name && <div className="form-error">{errors.name}</div>}
-//             {errors.icon && <div className="form-error">{errors.icon}</div>}
-//             {errors.duplicate && (
-//               <div className="form-error">{errors.duplicate}</div>
-//             )}
-//           </div>
-//         )}
-//         <hr className="form-divider" />
+                  <span className="category-title">{cat.name}</span>
 
-//         <label>پیشنهادهای آماده برای افزودن:</label>
-//         <div className="predefined-tags">
-//           {loading ? (
-//             <p>در حال بارگذاری...</p>
-//           ) : globalCategories.length === 0 ? (
-//             <p>دسته‌بندی‌ای یافت نشد</p>
-//           ) : (
-//             globalCategories.map((item) => (
-//               <button
-//                 key={item.id}
-//                 type="button"
-//                 className="tag"
-//                 onClick={() => addPredefined(item)} // کال شدن متد
-//                 title="افزودن به دسته‌بندی‌های من"
-//               >
-//                 <i className="fas fa-plus" />
-//                 {/* آیکن SVG ذخیره‌شده در دیتابیس */}
-//                 <span
-//                   className="tag-icon"
-//                   dangerouslySetInnerHTML={{ __html: item.icon }}
-//                 />
-//                 <span className="tag-name">{item.name}</span>
-//               </button>
-//             ))
-//           )}
-//         </div>
-//       </div>
+                  {cat.globalCategoryId !== null && (
+                    <span className="cat-lock" title="دسته‌بندی عمومی">
+                      <i className="fas fa-lock" />
+                    </span>
+                  )}
+                </div>
 
-//       <div className="panel">
-//         <h3>دسته‌بندی‌های فعلی رستوران</h3>
-//         <div className="category-list">
-//           {loadingCustoms ? (
-//             <p>در حال بارگذاری...</p>
-//           ) : customCategories.length === 0 ? (
-//             <div className="category-item">
-//               <span
-//                 className="category-title"
-//                 style={{ color: "var(--text-secondary)" }}
-//               >
-//                 هنوز دسته‌بندی‌ای اضافه نشده است.
-//               </span>
-//             </div>
-//           ) : (
-//             customCategories.map((cat) => (
-//               <div key={cat.id} className="category-item">
-//                 <div className="category-meta">
-//                   <span className="category-title">{cat.name}</span>
-//                   {cat.globalCategoryId !== null && (
-//                     <span className="cat-lock" title="دسته‌بندی عمومی">
-//                       <i className="fas fa-lock" />
-//                     </span>
-//                   )}
-//                 </div>
+                <div className="item-actions">
+                  {cat.globalCategoryId === null && (
+                    <button
+                      className="btn btn-icon"
+                      title="ویرایش"
+                      onClick={() => getCustomCategory(cat.id)}
+                    >
+                      <i className="fas fa-edit" />
+                    </button>
+                  )}
+                  <button
+                    className="btn btn-icon btn-danger"
+                    title="حذف"
+                    onClick={() => removeCustomCategory(cat.id)}
+                  >
+                    <i className="fas fa-trash" />
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
 
-//                 <div className="item-actions">
-//                   {cat.globalCategoryId === null && (
-//                     <button
-//                       className="btn btn-icon"
-//                       title="ویرایش"
-//                       onClick={() => getCustomCategory(cat.id)}
-//                     >
-//                       <i className="fas fa-edit" />
-//                     </button>
-//                   )}
-//                   <button
-//                     className="btn btn-icon btn-danger"
-//                     title="حذف"
-//                     onClick={() => removeCustomCategory(cat.id)}
-//                   >
-//                     <i className="fas fa-trash" />
-//                   </button>
-//                 </div>
-//               </div>
-//             ))
-//           )}
-//         </div>
-//       </div>
+      {/* pickers */}
+      <IconPicker
+        open={iconPickerOpen}
+        onClose={() => setIconPickerOpen(false)}
+        value={selectedIconKey}
+        onSelect={(key) => {
+          setSelectedIconKey(key);
+          setErrors((prev) => ({ ...prev, icon: "" }));
+          setIconPickerOpen(false);
+        }}
+      />
 
-//       {/* pickers */}
-//       <IconPicker
-//         open={iconPickerOpen}
-//         onClose={() => setIconPickerOpen(false)}
-//         value={selectedIconKey}
-//         onSelect={(key) => {
-//           setSelectedIconKey(key);
-//           setErrors((prev) => ({ ...prev, icon: "" }));
-//           setIconPickerOpen(false);
-//         }}
-//       />
+      {editingId && (
+        <div className="modal-backdrop" role="dialog" aria-modal="true">
+          <div className="modal">
+            <div className="modal-header">
+              <h4>ویرایش دسته‌بندی</h4>
+              <button
+                className="btn btn-icon"
+                onClick={cancelEdit}
+                aria-label="بستن"
+              >
+                <i className="fas fa-times" />
+              </button>
+            </div>
 
-//       {editingId && (
-//         <div className="modal-backdrop" role="dialog" aria-modal="true">
-//           <div className="modal">
-//             <div className="modal-header">
-//               <h4>ویرایش دسته‌بندی</h4>
-//               <button
-//                 className="btn btn-icon"
-//                 onClick={cancelEdit}
-//                 aria-label="بستن"
-//               >
-//                 <i className="fas fa-times" />
-//               </button>
-//             </div>
+            <div className="form-vertical">
+              <label htmlFor="edit-name">نام</label>
+              <input
+                id="edit-name"
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+              />
 
-//             <div className="form-vertical">
-//               <label htmlFor="edit-name">نام</label>
-//               <input
-//                 id="edit-name"
-//                 type="text"
-//                 value={editName}
-//                 onChange={(e) => setEditName(e.target.value)}
-//               />
+              <label>آیکن</label>
+              <div className="input-group-inline">
+                <div className="icon-preview">{iconForKey(editIconKey)}</div>
+                <button className="btn" onClick={() => setEditPickerOpen(true)}>
+                  تغییر آیکن
+                </button>
+              </div>
+            </div>
 
-//               <label>آیکن</label>
-//               <div className="input-group-inline">
-//                 <div className="icon-preview">{iconForKey(editIconKey)}</div>
-//                 <button className="btn" onClick={() => setEditPickerOpen(true)}>
-//                   تغییر آیکن
-//                 </button>
-//               </div>
-//             </div>
+            <div className="modal-footer">
+              <button className="btn" onClick={cancelEdit}>
+                انصراف
+              </button>
+              <button className="btn btn-primary" onClick={saveEdit}>
+                ذخیره
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-//             <div className="modal-footer">
-//               <button className="btn" onClick={cancelEdit}>
-//                 انصراف
-//               </button>
-//               <button className="btn btn-primary" onClick={saveEdit}>
-//                 ذخیره
-//               </button>
-//             </div>
-//           </div>
-//         </div>
-//       )}
-
-//       <IconPicker
-//         open={editPickerOpen}
-//         onClose={() => setEditPickerOpen(false)}
-//         value={editIconKey}
-//         onSelect={(key) => {
-//           setEditIconKey(key);
-//           setEditPickerOpen(false);
-//         }}
-//       />
-//     </div>
-//   );
-// }
+      <IconPicker
+        open={editPickerOpen}
+        onClose={() => setEditPickerOpen(false)}
+        value={editIconKey}
+        onSelect={(key) => {
+          setEditIconKey(key);
+          setEditPickerOpen(false);
+        }}
+      />
+    </div>
+  );
+}

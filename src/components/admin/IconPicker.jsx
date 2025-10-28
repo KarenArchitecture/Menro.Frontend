@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import iconAxios from "../../api/iconAxios.js";
 export const ICON_BY_KEY = {};
+
 function DefaultIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
@@ -15,7 +16,6 @@ export function renderIconByKey(key) {
   return IconComponent ? <IconComponent /> : <DefaultIcon />;
 }
 
-// گرفتن لیست آیکن‌ها از بک‌اند
 export async function fetchAllIcons() {
   try {
     const res = await iconAxios.get("/read-all");
@@ -26,7 +26,6 @@ export async function fetchAllIcons() {
   }
 }
 
-/** ----- IconPicker (فقط آیکن‌های دیتابیس) ----- */
 export default function IconPicker({ open, onClose, value, onSelect }) {
   const [q, setQ] = useState("");
   const [backendIcons, setBackendIcons] = useState([]);
@@ -37,7 +36,6 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
     }
   }, [open]);
 
-  // آیکن‌های بک‌اند
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
     if (!query) return backendIcons;
@@ -49,6 +47,13 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
   }, [q, backendIcons]);
 
   if (!open) return null;
+
+  // 🔸 delete handler (frontend only — backend-ready)
+  const handleDeleteIcon = async (id) => {
+    console.log("Delete icon clicked:", id);
+    // backend: await iconAxios.delete(`/delete/${id}`)
+    setBackendIcons((prev) => prev.filter((x) => x.id !== id));
+  };
 
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true">
@@ -74,7 +79,7 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
             const selected = value === item.id;
 
             return (
-              <button
+              <div
                 key={item.id}
                 className={`icon-cell ${selected ? "is-selected" : ""}`}
                 onClick={() => onSelect?.(item)} // id به بک‌اند برمی‌گرده

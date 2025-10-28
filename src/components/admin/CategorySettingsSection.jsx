@@ -17,36 +17,42 @@ function GenericCategoryIcon() {
 export default function CategorySettingsSection() {
   const [categories, setCategories] = useState([]);
   const [pickerIndex, setPickerIndex] = useState(null);
+
+  // ⬇️ Add-new form states
+  const [newName, setNewName] = useState("");
+  const [newIconId, setNewIconId] = useState(null);
+  const [newIconFileName, setNewIconFileName] = useState("");
+  const [addPickerOpen, setAddPickerOpen] = useState(false);
+
   const [uploadMessage, setUploadMessage] = useState({
     text: "تنها فایل‌های SVG مجاز به آپلود هستند.",
     type: "info",
   });
 
-  // ✅ خواندن لیست دسته‌بندی‌ها از بک‌اند
+  // ✅ Load global categories
+  const fetchCategories = async () => {
+    try {
+      const res = await adminGlobalCategoryAxios.get("/read-all");
+      const mapped = res.data.map((x) => ({
+        id: x.id,
+        name: x.name,
+        iconId: x.icon?.id ?? null,
+        svgIcon: x.icon?.fileName ?? null,
+        iconUrl: x.icon?.url ?? null,
+      }));
+      setCategories(mapped);
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+    }
+  };
+
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await adminGlobalCategoryAxios.get("/read-all");
-
-        const mapped = res.data.map((x) => ({
-          id: x.id,
-          name: x.name,
-          iconId: x.icon?.id ?? null,
-          svgIcon: x.icon?.fileName ?? null,
-          iconUrl: x.icon?.url ?? null, // برای نمایش آیکن واقعی
-        }));
-
-        setCategories(mapped);
-      } catch (err) {
-        console.error("Error fetching categories:", err);
-      }
-    };
     fetchCategories();
   }, []);
 
-  // نمایش آیکن هر دسته
+  // 🔎 Render icon per item
   const iconForItem = (item) => {
-    if (item.iconUrl)
+    if (item.iconUrl) {
       return (
         <img
           src={item.iconUrl}
@@ -56,13 +62,14 @@ export default function CategorySettingsSection() {
           style={{ objectFit: "contain" }}
         />
       );
+    }
     return <GenericCategoryIcon />;
   };
 
+  // ===== Editing existing categories (icon change) =====
   const openPickerFor = (idx) => setPickerIndex(idx);
   const closePicker = () => setPickerIndex(null);
 
-  // وقتی آیکن انتخاب میشه از IconPicker
   const applyPicker = (selectedIconId, selectedFileName) => {
     setCategories((list) => {
       const next = [...list];
@@ -76,18 +83,19 @@ export default function CategorySettingsSection() {
     closePicker();
   };
 
-  //ذخیره تغییرات در بک‌اند
+  // ===== Save existing categories (bulk) =====
   const saveCategories = async () => {
     try {
-      await categoryAxios.put("/update-many", categories);
+      await adminGlobalCategoryAxios.put("/update-many", categories);
       alert("تغییرات با موفقیت ذخیره شد ✅");
+      fetchCategories();
     } catch (err) {
       console.error("Error saving categories:", err);
       alert("ذخیره‌سازی با خطا مواجه شد!");
     }
   };
 
-  // ✅ آپلود فایل SVG جدید و ثبت در دیتابیس
+  // ===== Upload new SVG and register in DB (icons) =====
   const handleUploadSvg = async (file) => {
     if (!file) return;
     if (!file.name.toLowerCase().endsWith(".svg")) {
@@ -99,15 +107,14 @@ export default function CategorySettingsSection() {
       const formData = new FormData();
       formData.append("file", file);
 
-      // مرحله ۱: آپلود فایل در بک‌اند (FileController)
+      // 1) upload raw file → returns { fileName }
       const res = await fileAxios.post("/upload-icon", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
       const { fileName } = res.data;
 
-      // مرحله ۲: ثبت در جدول Icon (IconController)
-      await iconAxios.post("/add", {
+      // 2) create Icon record → returns created icon (with id)
+      const iconRes = await iconAxios.post("/add", {
         fileName,
         label: file.name.replace(/\.svg$/i, ""),
       });
@@ -116,14 +123,90 @@ export default function CategorySettingsSection() {
         text: `آیکن "${fileName}" با موفقیت آپلود و ذخیره شد.`,
         type: "info",
       });
+
+      // (Optional) if you want the new icon to be selectable immediately in the picker,
+      // make sure your IconPicker reads icons from backend or a shared store refreshed here.
     } catch (err) {
       console.error("Upload failed:", err);
       setUploadMessage({ text: "آپلود با خطا مواجه شد.", type: "error" });
     }
   };
 
+  // ===== Add NEW global category (copied behavior) =====
+  const submitCreateGlobalCategory = async () => {
+    const trimmed = newName.trim();
+    if (!trimmed) {
+      alert("نام دسته‌بندی را وارد کنید");
+      return;
+    }
+
+    try {
+      await adminGlobalCategoryAxios.post("/add", {
+        name: trimmed,
+        iconId: newIconId || null,
+      });
+
+      // refresh + clear
+      await fetchCategories();
+      setNewName("");
+      setNewIconId(null);
+      setNewIconFileName("");
+    } catch (err) {
+      console.error("Failed to create global category", err);
+      alert(err.response?.data?.message ?? "خطا در افزودن دسته‌بندی");
+    }
+  };
+
   return (
     <div className="panels-grid-single-column" dir="rtl">
+      {/* 🔹 Add NEW Global Category (this block is the copy you wanted) */}
+      <div className="panel">
+        <h3>افزودن دسته‌بندی عمومی جدید</h3>
+        <p className="panel-subtitle">
+          نام را وارد کنید و یک آیکن از لیست آیکن‌ها انتخاب کنید.
+        </p>
+
+        <div className="input-group-inline">
+          <input
+            type="text"
+            placeholder="نام دسته‌بندی عمومی…"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+          />
+
+          <button
+            type="button"
+            className="btn"
+            onClick={() => setAddPickerOpen(true)}
+            title="انتخاب آیکن"
+          >
+            {newIconFileName ? (
+              <span className="icon-preview" title={newIconFileName}>
+                {/* We don’t have a URL here; we only show its fileName */}
+                <i className="fas fa-check-circle" style={{ opacity: 0.85 }} />
+              </span>
+            ) : (
+              <i className="fas fa-icons" />
+            )}{" "}
+            انتخاب آیکن
+          </button>
+
+          <button
+            className="btn btn-primary"
+            onClick={submitCreateGlobalCategory}
+          >
+            افزودن
+          </button>
+        </div>
+
+        {newIconFileName && (
+          <div style={{ marginTop: 8, fontSize: 12, opacity: 0.85 }}>
+            آیکن انتخاب‌شده: <b>{newIconFileName}</b>
+          </div>
+        )}
+      </div>
+
+      {/* 🔹 Edit existing GLOBAL categories */}
       <div className="panel">
         <h3>ویرایش دسته‌بندی‌های عمومی</h3>
         <p className="panel-subtitle">
@@ -183,14 +266,28 @@ export default function CategorySettingsSection() {
         </div>
       </div>
 
-      {/* Icon picker modal */}
+      {/* Icon picker for editing existing category rows */}
       <IconPicker
         open={pickerIndex !== null}
         onClose={closePicker}
         value={
           pickerIndex !== null ? categories[pickerIndex]?.iconId ?? "" : ""
         }
-        onSelect={applyPicker}
+        onSelect={(selectedIconId, selectedFileName) => {
+          applyPicker(selectedIconId, selectedFileName);
+        }}
+      />
+
+      {/* Icon picker for ADD NEW category */}
+      <IconPicker
+        open={addPickerOpen}
+        onClose={() => setAddPickerOpen(false)}
+        value={newIconId}
+        onSelect={(selectedIconId, selectedFileName) => {
+          setNewIconId(selectedIconId);
+          setNewIconFileName(selectedFileName || "");
+          setAddPickerOpen(false);
+        }}
       />
 
       {/* ---- Upload new icons ---- */}

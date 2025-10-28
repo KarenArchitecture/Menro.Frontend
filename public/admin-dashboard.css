@@ -1154,6 +1154,7 @@ textarea {
   line-height: 1.45;
 }
 
+/* MUSIC TAB */
 .music-layout {
   display: grid;
   grid-template-columns: 2fr 1fr;

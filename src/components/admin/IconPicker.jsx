@@ -77,7 +77,7 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
               <button
                 key={item.id}
                 className={`icon-cell ${selected ? "is-selected" : ""}`}
-                onClick={() => onSelect?.(item.id)} // id به بک‌اند برمی‌گرده
+                onClick={() => onSelect?.(item)} // id به بک‌اند برمی‌گرده
                 title={item.label || item.fileName}
                 role="option"
                 aria-selected={selected}

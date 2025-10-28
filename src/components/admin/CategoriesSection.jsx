@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
-import IconPicker, { renderIconByKey } from "./IconPicker";
+import IconPicker from "./IconPicker";
 import adminGlobalCategoryAxios from "../../api/adminGlobalCategoryAxios.js";
 import adminCustomCategoryAxios from "../../api/adminCustomCategoryAxios.js";
 
@@ -12,23 +12,7 @@ function GenericCategoryIcon() {
   );
 }
 
-function normalizePersian(s = "") {
-  return s.replace(/[ي]/g, "ی").replace(/[ك]/g, "ک");
-}
-function slugify(name = "") {
-  const s = normalizePersian(name).trim().replace(/\s+/g, " ");
-  return s
-    .replace(/[^ء-ی0-9\s\-]/g, "")
-    .replace(/\s+/g, "-")
-    .toLowerCase();
-}
-function uid() {
-  return Math.random().toString(36).slice(2, 10);
-}
-
 export default function CategoriesSection() {
-  // const PREDEFINED = useSharedPredefined();
-
   const [categories, setCategories] = useState(() => {
     try {
       const saved = localStorage.getItem("admin.categories");
@@ -37,24 +21,31 @@ export default function CategoriesSection() {
       return [];
     }
   });
+
   useEffect(() => {
     try {
       localStorage.setItem("admin.categories", JSON.stringify(categories));
     } catch {}
   }, [categories]);
 
+  // states
   const [nameInput, setNameInput] = useState("");
-  const [selectedIconKey, setSelectedIconKey] = useState(null);
-  const [iconPickerOpen, setIconPickerOpen] = useState(false);
   const [errors, setErrors] = useState({ name: "", icon: "", duplicate: "" });
+
+  // icon (add)
+  const [selectedIconId, setSelectedIconId] = useState(null);
+  const [selectedIconUrl, setSelectedIconUrl] = useState(null);
+  const [iconPickerOpen, setIconPickerOpen] = useState(false);
+
+  // icon (edit)
+  const [editIconId, setEditIconId] = useState(null);
+  const [editIconUrl, setEditIconUrl] = useState(null);
+  const [editPickerOpen, setEditPickerOpen] = useState(false);
 
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState("");
-  const [editIconKey, setEditIconKey] = useState(null);
-  const [editPickerOpen, setEditPickerOpen] = useState(false);
-  // const [adding, setAdding] = useState(false);
 
-  // load gCat list
+  // global categories
   const [globalCategories, setGlobalCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -68,13 +59,13 @@ export default function CategoriesSection() {
         setLoading(false);
       }
     };
-
     loadCategories();
   }, []);
 
-  // load cCat list
+  // custom categories
   const [customCategories, setCustomCategories] = useState([]);
   const [loadingCustoms, setLoadingCustoms] = useState(true);
+
   const loadCustomCategories = async () => {
     try {
       const res = await adminCustomCategoryAxios.get("/read-all");
@@ -85,44 +76,35 @@ export default function CategoriesSection() {
       setLoadingCustoms(false);
     }
   };
+
   useEffect(() => {
-    const fetch = async () => {
-      await loadCustomCategories();
-    };
-    fetch();
+    loadCustomCategories();
   }, []);
 
-  // delete category
+  // delete
   const removeCustomCategory = async (catId) => {
     try {
       const res = await adminCustomCategoryAxios.delete(`/delete/${catId}`);
       console.log("Deleted successfully:", res.data.message);
-      await loadCustomCategories(); // رفرش لیست بعد از حذف
+      await loadCustomCategories();
     } catch (err) {
       console.error("Failed to delete custom category", err);
     }
   };
 
-  const existingSlugs = useMemo(
-    () => categories.map((c) => c.slug),
-    [categories]
-  );
-
-  // get custom category
-
+  // get single category (for edit)
   const getCustomCategory = async (id) => {
     try {
       const res = await adminCustomCategoryAxios.get("/read", {
         params: { catId: id },
       });
-
       const cat = res.data;
       console.log("Fetched for edit:", cat);
 
-      // مقداردهی به state‌های ویرایش
       setEditingId(cat.id);
       setEditName(cat.name);
-      setEditIconKey(cat.svgIcon || "");
+      setEditIconId(cat.icon?.id || null);
+      setEditIconUrl(cat.icon?.url || null);
     } catch (err) {
       console.error("Failed to fetch category", err);
       alert(err.response?.data?.message ?? "خطا در دریافت دسته‌بندی");
@@ -132,7 +114,6 @@ export default function CategoriesSection() {
   // add custom category
   const submitCreateCustomCategory = async () => {
     const name = nameInput.trim();
-
     if (!name) {
       alert("نام دسته‌بندی را وارد کنید");
       return;
@@ -141,52 +122,43 @@ export default function CategoriesSection() {
     try {
       const dto = {
         name: name,
-        svgIcon: "", // temp empty
+        iconId: selectedIconId,
       };
 
       const res = await adminCustomCategoryAxios.post("/add", dto);
 
-      await loadCustomCategories(); // رفرش لیست بعد از افزودن
+      console.log("✅ Added:", res.data);
 
-      // پاک‌سازی فرم
+      await loadCustomCategories();
+
+      // reset
       setNameInput("");
+      setSelectedIconId(null);
+      setSelectedIconUrl(null);
     } catch (err) {
       console.error("Failed to create custom category", err);
       alert(err.response?.data?.message ?? "خطا در افزودن دسته‌بندی");
     }
   };
 
-  // use shared predefined items (name + iconKey)
+  // add from predefined (global)
   const addPredefined = async (globalCat) => {
     try {
       const res = await adminCustomCategoryAxios.post(
         "/add-from-global",
         null,
-        {
-          params: { globalCategoryId: globalCat.id },
-        }
+        { params: { globalCategoryId: globalCat.id } }
       );
-
-      console.log("Added successfully:", res.data.message);
+      console.log("Added from global:", res.data.message);
       await loadCustomCategories();
     } catch (err) {
       console.error("Failed to add category from global", err);
     }
   };
 
-  // function removeCategory(id) {
-  //   setCategories((prev) => prev.filter((c) => c.id !== id));
-  // }
-
-  // function beginEdit(cat) {
-  //   if (cat.locked) return;
-  //   setEditingId(cat.id);
-  //   setEditName(cat.name);
-  //   setEditIconKey(cat.iconKey);
-  // }
+  // edit category
   const saveEdit = async () => {
     const newName = editName.trim().replace(/\s+/g, " ");
-
     if (!newName) {
       alert("نام دسته‌بندی نمی‌تواند خالی باشد.");
       return;
@@ -195,38 +167,37 @@ export default function CategoriesSection() {
     try {
       const dto = {
         id: editingId,
-        name: editName.trim(),
-        svgIcon: editIconKey || "", // فعلاً خالی می‌فرستیم
+        name: newName,
+        iconId: editIconId ?? null,
       };
 
       const res = await adminCustomCategoryAxios.put("/update", dto);
-      console.log("Edit response:", res.data);
-
-      // بعد از موفقیت، لیست رو رفرش کن
+      console.log("✅ Edit response:", res.data);
       await loadCustomCategories();
-
-      // و modal رو ببند
       cancelEdit();
     } catch (err) {
-      console.error("Failed to update category", err);
+      console.error("❌ Failed to update category", err);
       alert(err.response?.data?.message ?? "خطا در ذخیره تغییرات");
     }
   };
 
-  function cancelEdit() {
+  const cancelEdit = () => {
     setEditingId(null);
     setEditName("");
-    setEditIconKey(null);
+    setEditIconId(null);
+    setEditIconUrl(null);
     setEditPickerOpen(false);
-  }
+  };
 
   return (
     <div className="panels-grid-single-column" id="categories-view">
+      {/* --- Add new category --- */}
       <div className="panel">
         <h3>افزودن دسته‌بندی جدید</h3>
         <p className="panel-subtitle">
           یک دسته‌بندی سفارشی ایجاد کنید یا از لیست‌های آماده انتخاب نمایید.
         </p>
+
         <div className="input-group-inline">
           <input
             type="text"
@@ -239,7 +210,7 @@ export default function CategoriesSection() {
                 setErrors((prev) => ({ ...prev, name: "", duplicate: "" }));
               }
             }}
-            onKeyDown={(e) => e.key === "Enter" && addCustomCategory()}
+            onKeyDown={(e) => e.key === "Enter" && submitCreateCustomCategory()}
           />
 
           <button
@@ -248,15 +219,35 @@ export default function CategoriesSection() {
             onClick={() => setIconPickerOpen(true)}
             title="انتخاب آیکن"
           >
-            {selectedIconKey ? (
+            {selectedIconUrl ? (
               <span className="icon-preview">
-                {renderIconByKey(selectedIconKey)}
+                <img
+                  src={selectedIconUrl}
+                  width={24}
+                  height={24}
+                  alt="icon"
+                  style={{ objectFit: "contain", verticalAlign: "middle" }}
+                />
               </span>
             ) : (
               <i className="fas fa-icons" />
             )}{" "}
             انتخاب آیکن
           </button>
+
+          <IconPicker
+            open={iconPickerOpen}
+            onClose={() => setIconPickerOpen(false)}
+            value={selectedIconId}
+            onSelect={(icon) => {
+              console.log("✅ Icon selected from modal:", icon); // 👈 اینجا مقدار واقعی رو ببین
+
+              setSelectedIconId(icon?.id ?? null);
+              setSelectedIconUrl(icon?.url ?? null);
+
+              setIconPickerOpen(false);
+            }}
+          />
 
           <button
             className="btn btn-primary"
@@ -265,6 +256,7 @@ export default function CategoriesSection() {
             افزودن
           </button>
         </div>
+
         {(errors.name || errors.icon || errors.duplicate) && (
           <div className="form-errors">
             {errors.name && <div className="form-error">{errors.name}</div>}
@@ -274,6 +266,7 @@ export default function CategoriesSection() {
             )}
           </div>
         )}
+
         <hr className="form-divider" />
 
         <label>پیشنهادهای آماده برای افزودن:</label>
@@ -288,11 +281,10 @@ export default function CategoriesSection() {
                 key={item.id}
                 type="button"
                 className="tag"
-                onClick={() => addPredefined(item)} // کال شدن متد
+                onClick={() => addPredefined(item)}
                 title="افزودن به دسته‌بندی‌های من"
               >
                 <i className="fas fa-plus" />
-                {/* آیکن SVG ذخیره‌شده در دیتابیس */}
                 {item.icon && item.icon.url ? (
                   <img
                     src={item.icon.url}
@@ -308,7 +300,6 @@ export default function CategoriesSection() {
                 ) : (
                   <GenericCategoryIcon />
                 )}
-
                 <span className="tag-name">{item.name}</span>
               </button>
             ))
@@ -316,6 +307,7 @@ export default function CategoriesSection() {
         </div>
       </div>
 
+      {/* --- Custom categories list --- */}
       <div className="panel">
         <h3>دسته‌بندی‌های فعلی رستوران</h3>
         <div className="category-list">
@@ -387,18 +379,7 @@ export default function CategoriesSection() {
         </div>
       </div>
 
-      {/* pickers */}
-      <IconPicker
-        open={iconPickerOpen}
-        onClose={() => setIconPickerOpen(false)}
-        value={selectedIconKey}
-        onSelect={(key) => {
-          setSelectedIconKey(key);
-          setErrors((prev) => ({ ...prev, icon: "" }));
-          setIconPickerOpen(false);
-        }}
-      />
-
+      {/* --- Edit modal --- */}
       {editingId && (
         <div className="modal-backdrop" role="dialog" aria-modal="true">
           <div className="modal">
@@ -425,7 +406,20 @@ export default function CategoriesSection() {
               <label>آیکن</label>
               <div className="input-group-inline">
                 <div className="icon-preview">
-                  {renderIconByKey(editIconKey)}
+                  {editIconUrl ? (
+                    <img
+                      src={editIconUrl}
+                      width={24}
+                      height={24}
+                      alt="icon"
+                      style={{
+                        objectFit: "contain",
+                        verticalAlign: "middle",
+                      }}
+                    />
+                  ) : (
+                    <GenericCategoryIcon />
+                  )}
                 </div>
                 <button className="btn" onClick={() => setEditPickerOpen(true)}>
                   تغییر آیکن
@@ -445,12 +439,15 @@ export default function CategoriesSection() {
         </div>
       )}
 
+      {/* Icon picker for edit */}
       <IconPicker
         open={editPickerOpen}
         onClose={() => setEditPickerOpen(false)}
-        value={editIconKey}
-        onSelect={(key) => {
-          setEditIconKey(key);
+        value={editIconId}
+        onSelect={(icon) => {
+          console.log("✅ Icon selected (edit):", icon);
+          setEditIconId(icon?.id ?? null);
+          setEditIconUrl(icon?.url ?? null);
           setEditPickerOpen(false);
         }}
       />

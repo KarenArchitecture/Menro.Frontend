@@ -1074,6 +1074,7 @@ textarea {
   max-height: 360px;
   overflow: auto;
   padding: 4px;
+  padding-left: 15px;
 }
 .icon-cell {
   display: flex;
@@ -1089,6 +1090,7 @@ textarea {
   color: var(--text-primary);
   cursor: pointer;
   transition: transform 0.08s ease, background 0.15s ease, border 0.15s ease;
+  width: 100%;
 }
 .icon-cell:hover {
   background: #1f1f1f;
@@ -2713,4 +2715,37 @@ textarea {
   .custom-icons-list {
     grid-template-columns: 1fr;
   }
+}
+
+/* Wrapper to handle hover for delete icon */
+.icon-cell-wrapper {
+  position: relative;
+}
+
+.delete-icon-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ff4d4d;
+  border: none;
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.icon-cell-wrapper:hover .delete-icon-btn {
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+.delete-icon-btn:hover {
+  background: #ff4d4d;
+  color: #fff;
 }

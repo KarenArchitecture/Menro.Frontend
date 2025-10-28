@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
-import IconPicker from "./IconPicker";
+import IconPicker, { renderIconByKey } from "./IconPicker";
 import adminGlobalCategoryAxios from "../../api/adminGlobalCategoryAxios.js";
 import adminCustomCategoryAxios from "../../api/adminCustomCategoryAxios.js";
 
@@ -250,7 +250,7 @@ export default function CategoriesSection() {
           >
             {selectedIconKey ? (
               <span className="icon-preview">
-                {iconForKey(selectedIconKey)}
+                {renderIconByKey(selectedIconKey)}
               </span>
             ) : (
               <i className="fas fa-icons" />
@@ -424,7 +424,9 @@ export default function CategoriesSection() {
 
               <label>آیکن</label>
               <div className="input-group-inline">
-                <div className="icon-preview">{iconForKey(editIconKey)}</div>
+                <div className="icon-preview">
+                  {renderIconByKey(editIconKey)}
+                </div>
                 <button className="btn" onClick={() => setEditPickerOpen(true)}>
                   تغییر آیکن
                 </button>

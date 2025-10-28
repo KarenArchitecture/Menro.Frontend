@@ -1,7 +1,19 @@
 import React, { useMemo, useState, useEffect } from "react";
 import iconAxios from "../../api/iconAxios.js";
-import fileAxios from "../../api/fileAxios.js";
 export const ICON_BY_KEY = {};
+function DefaultIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" fill="currentColor" opacity="0.15" />
+      <path d="M7 12h10M12 7v10" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
+export function renderIconByKey(key) {
+  const IconComponent = ICON_BY_KEY[key];
+  return IconComponent ? <IconComponent /> : <DefaultIcon />;
+}
 
 // گرفتن لیست آیکن‌ها از بک‌اند
 export async function fetchAllIcons() {

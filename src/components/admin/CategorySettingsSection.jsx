@@ -22,6 +22,9 @@ export default function CategorySettingsSection() {
   const [selectedIconKey, setSelectedIconKey] = useState(null);
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
 
+  const [selectedIconId, setSelectedIconId] = useState(null);
+  const [selectedIconUrl, setSelectedIconUrl] = useState(null);
+
   // Edit
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState("");
@@ -53,25 +56,33 @@ export default function CategorySettingsSection() {
   // ==== Add global category ====
   const submitCreateGlobalCategory = async () => {
     const name = nameInput.trim();
+
     if (!name) {
       alert("نام دسته‌بندی را وارد کنید");
+      return;
+    }
+
+    if (!selectedIconId) {
+      alert("لطفاً آیکن را انتخاب کنید");
       return;
     }
 
     try {
       const dto = {
         name: name,
-        iconId: selectedIconKey || null,
+        iconId: selectedIconId,
       };
-
       await adminGlobalCategoryAxios.post("/add", dto);
+
       await loadCategories();
 
+      // reset fields
       setNameInput("");
-      setSelectedIconKey(null);
+      setSelectedIconId(null);
+      setSelectedIconUrl(null);
     } catch (err) {
       console.error("Failed to create global category", err);
-      alert(err.response?.data?.message ?? "خطا در افزودن دسته‌بندی");
+      alert(err.response?.data?.message ?? "خطا در افزودن دسته‌بندی عمومی");
     }
   };
 
@@ -174,23 +185,32 @@ export default function CategorySettingsSection() {
         </p>
 
         <div className="input-group-inline">
+          {/* 🔹 ورودی نام دسته‌بندی */}
           <input
             type="text"
-            id="custom-category-name"
+            id="global-category-name"
             placeholder="نام دسته‌بندی عمومی خود را وارد کنید..."
             value={nameInput}
             onChange={(e) => setNameInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && submitCreateGlobalCategory()}
           />
 
+          {/* 🔹 دکمه انتخاب آیکن */}
           <button
             type="button"
             className="btn"
             onClick={() => setIconPickerOpen(true)}
             title="انتخاب آیکن"
           >
-            {selectedIconKey ? (
+            {selectedIconUrl ? (
               <span className="icon-preview">
-                {renderIconByKey(selectedIconKey)}
+                <img
+                  src={selectedIconUrl}
+                  width={24}
+                  height={24}
+                  alt="icon"
+                  style={{ objectFit: "contain", verticalAlign: "middle" }}
+                />
               </span>
             ) : (
               <i className="fas fa-icons" />
@@ -198,6 +218,17 @@ export default function CategorySettingsSection() {
             انتخاب آیکن
           </button>
 
+          <IconPicker
+            open={iconPickerOpen}
+            onClose={() => setIconPickerOpen(false)}
+            value={selectedIconId}
+            onSelect={(icon) => {
+              console.log("✅ Icon selected (global):", icon);
+              setSelectedIconId(icon?.id ?? null);
+              setSelectedIconUrl(icon?.url ?? null);
+              setIconPickerOpen(false);
+            }}
+          />
           <button
             className="btn btn-primary"
             onClick={submitCreateGlobalCategory}
@@ -316,23 +347,14 @@ export default function CategorySettingsSection() {
         </div>
       )}
 
-      {/* Pickers */}
-      <IconPicker
-        open={iconPickerOpen}
-        onClose={() => setIconPickerOpen(false)}
-        value={selectedIconKey}
-        onSelect={(key) => {
-          setSelectedIconKey(key);
-          setIconPickerOpen(false);
-        }}
-      />
-
+      {/* Icon picker for EDIT */}
       <IconPicker
         open={editPickerOpen}
         onClose={() => setEditPickerOpen(false)}
         value={editIconKey}
-        onSelect={(key) => {
-          setEditIconKey(key);
+        onSelect={(icon) => {
+          console.log("✅ Icon selected (edit):", icon);
+          setEditIconKey(icon?.id ?? null);
           setEditPickerOpen(false);
         }}
       />

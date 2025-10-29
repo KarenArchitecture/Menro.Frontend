@@ -240,11 +240,8 @@ export default function CategoriesSection() {
             onClose={() => setIconPickerOpen(false)}
             value={selectedIconId}
             onSelect={(icon) => {
-              console.log("✅ Icon selected from modal:", icon); // 👈 اینجا مقدار واقعی رو ببین
-
               setSelectedIconId(icon?.id ?? null);
               setSelectedIconUrl(icon?.url ?? null);
-
               setIconPickerOpen(false);
             }}
           />

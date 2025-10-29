@@ -29,6 +29,18 @@ export async function fetchAllIcons() {
 export default function IconPicker({ open, onClose, value, onSelect }) {
   const [q, setQ] = useState("");
   const [backendIcons, setBackendIcons] = useState([]);
+  useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        onClose?.(); // بستن مودال
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, onClose]);
 
   useEffect(() => {
     if (open) {
@@ -50,8 +62,7 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
 
   // 🔸 delete handler (frontend only — backend-ready)
   const handleDeleteIcon = async (id) => {
-    console.log("Delete icon clicked:", id);
-    // backend: await iconAxios.delete(`/delete/${id}`)
+    // // backend: await iconAxios.delete(`/delete/${id}`)
     setBackendIcons((prev) => prev.filter((x) => x.id !== id));
   };
 
@@ -81,27 +92,40 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
             return (
               <div
                 key={item.id}
-                className={`icon-cell ${selected ? "is-selected" : ""}`}
-                onClick={() => onSelect?.(item)} // id به بک‌اند برمی‌گرده
-                title={item.label || item.fileName}
-                role="option"
-                aria-selected={selected}
+                className={`icon-cell-wrapper ${selected ? "is-selected" : ""}`}
               >
-                <span className="icon-cell__gfx">
-                  <img
-                    src={item.url}
-                    alt={item.label || item.fileName}
-                    width={24}
-                    height={24}
-                    style={{ objectFit: "contain" }}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </span>
-                <span className="icon-cell__label">
-                  {item.label || item.fileName}
-                </span>
-              </button>
+                <button
+                  className={`icon-cell ${selected ? "is-selected" : ""}`}
+                  onClick={() => onSelect?.(item)}
+                  title={item.label || item.fileName}
+                  role="option"
+                  aria-selected={selected}
+                >
+                  <span className="icon-cell__gfx">
+                    <img
+                      src={item.url}
+                      alt={item.label || item.fileName}
+                      width={24}
+                      height={24}
+                      style={{ objectFit: "contain" }}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </span>
+                  <span className="icon-cell__label">
+                    {item.label || item.fileName}
+                  </span>
+                </button>
+
+                {/* 🗑 Trash icon (hover visible) */}
+                <button
+                  className="delete-icon-btn"
+                  title="حذف آیکن"
+                  onClick={() => handleDeleteIcon(item.id)}
+                >
+                  <i className="fas fa-trash" />
+                </button>
+              </div>
             );
           })}
 

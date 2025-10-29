@@ -1,11 +1,9 @@
 import React, { useEffect, useState, useCallback } from "react";
 import usePageStyles from "../hooks/usePageStyles";
 import adminAxios from "../api/adminDashboardAxios";
-// import restaurantAxios from "../api/restaurantAxios"; // not used
 import AdminHeader from "../components/admin/AdminHeader";
 import AdminSidebar from "../components/admin/AdminSidebar";
 import Panel from "../components/admin/Panel";
-// import StatCard from "../components/admin/StatCard"; // removed
 import LineChart from "../components/admin/LineChart";
 import ProductsSection from "../components/admin/ProductsSection";
 import CategoriesSection from "../components/admin/CategoriesSection";

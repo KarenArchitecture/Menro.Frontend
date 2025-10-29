@@ -17,18 +17,17 @@ export default function CategorySettingsSection() {
   const [globalCategories, setGlobalCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Add new
+  // Add
   const [nameInput, setNameInput] = useState("");
-  const [selectedIconKey, setSelectedIconKey] = useState(null);
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
-
   const [selectedIconId, setSelectedIconId] = useState(null);
   const [selectedIconUrl, setSelectedIconUrl] = useState(null);
 
   // Edit
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState("");
-  const [editIconKey, setEditIconKey] = useState(null);
+  const [editIconId, setEditIconId] = useState(null);
+  const [editIconUrl, setEditIconUrl] = useState(null);
   const [editPickerOpen, setEditPickerOpen] = useState(false);
 
   // Upload feedback
@@ -99,17 +98,22 @@ export default function CategorySettingsSection() {
   // ==== Get category for edit ====
   const getGlobalCategory = async (id) => {
     try {
+      console.log("Sending GET request with id:", id);
+
       const res = await adminGlobalCategoryAxios.get("/read", {
         params: { catId: id },
       });
 
       const cat = res.data;
+
       setEditingId(cat.id);
       setEditName(cat.name);
-      setEditIconKey(cat.icon?.id || null);
+      setEditIconId(cat.icon?.id ?? null);
+      setEditIconUrl(cat.icon?.url ?? null);
     } catch (err) {
-      console.error("Failed to fetch category", err);
-      alert(err.response?.data?.message ?? "خطا در دریافت دسته‌بندی");
+      console.error("❌ Failed to fetch global category", err);
+      alert(err.response?.data?.message ?? "خطا در دریافت اطلاعات دسته‌بندی");
+      console.log(id);
     }
   };
 
@@ -125,21 +129,26 @@ export default function CategorySettingsSection() {
       const dto = {
         id: editingId,
         name: newName,
-        iconId: editIconKey || null,
+        iconId: editIconId ?? null,
       };
-      await adminGlobalCategoryAxios.put("/update", dto);
-      await loadCategories();
-      cancelEdit();
+
+      console.log("🚀 Sending update DTO:", dto);
+
+      const res = await adminGlobalCategoryAxios.put("/update", dto);
+      console.log("✅ Updated global category:", res.data);
+
+      await loadCategories(); // 🔁 رفرش لیست بعد از موفقیت
+      cancelEdit(); // 🌀 بستن مودال
     } catch (err) {
-      console.error("Failed to update category", err);
+      console.error("❌ Failed to update category", err);
       alert(err.response?.data?.message ?? "خطا در ذخیره تغییرات");
     }
   };
-
   const cancelEdit = () => {
     setEditingId(null);
     setEditName("");
-    setEditIconKey(null);
+    setEditIconId(null);
+    setEditIconUrl(null);
     setEditPickerOpen(false);
   };
 
@@ -327,7 +336,17 @@ export default function CategorySettingsSection() {
               <label>آیکن</label>
               <div className="input-group-inline">
                 <div className="icon-preview">
-                  {renderIconByKey(editIconKey)}
+                  {editIconUrl ? (
+                    <img
+                      src={editIconUrl}
+                      alt="icon"
+                      width={24}
+                      height={24}
+                      style={{ objectFit: "contain", verticalAlign: "middle" }}
+                    />
+                  ) : (
+                    <GenericCategoryIcon />
+                  )}
                 </div>
                 <button className="btn" onClick={() => setEditPickerOpen(true)}>
                   تغییر آیکن
@@ -351,10 +370,11 @@ export default function CategorySettingsSection() {
       <IconPicker
         open={editPickerOpen}
         onClose={() => setEditPickerOpen(false)}
-        value={editIconKey}
+        value={editIconId}
         onSelect={(icon) => {
           console.log("✅ Icon selected (edit):", icon);
-          setEditIconKey(icon?.id ?? null);
+          setEditIconId(icon?.id ?? null);
+          setEditIconUrl(icon?.url ?? null);
           setEditPickerOpen(false);
         }}
       />

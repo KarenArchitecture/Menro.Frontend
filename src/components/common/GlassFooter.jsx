@@ -17,7 +17,11 @@ export default function GlassFooter() {
       <div className="footer-glass__inner">
         {/* Row 1: logo + nav */}
         <div className="footer-glass__top">
-          <span className="footer-glass__brand">منرو</span>
+          <img
+            src="/images/menroLogo.png"
+            alt="منرو"
+            className="footer-glass__brand"
+          />
           <nav className="footer-glass__nav" aria-label="لینک‌های فوتر">
             <a href="#">وب اپ</a>
             <a href="#">درباره ما</a>

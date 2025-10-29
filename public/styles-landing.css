@@ -819,8 +819,8 @@ body {
 /* Back phone (left, slightly bigger, behind) */
 .install-banner__phone--back {
   z-index: 2;
-  width: 415px;
-  height: 758px;
+  width: 400px;
+  height: 600px;
   right: 63%;
   top: 10%;
   transform: rotate(-9deg) translateY(8px);
@@ -830,8 +830,8 @@ body {
 /* Front phone (on top, slight tilt the other way) */
 .install-banner__phone--front {
   z-index: 3;
-  width: 420px;
-  height: 769px;
+  width: 400px;
+  height: 600px;
   right: 43%;
   top: -1%;
   transform: rotate(6deg);
@@ -843,8 +843,8 @@ body {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  height: 456px;
-  width: 1422px;
+  height: 400px;
+  width: 1200px;
   z-index: 1;
   pointer-events: none;
 }
@@ -921,8 +921,8 @@ body {
 
 /* Base sizes (match the front card) */
 :root {
-  --plan-card-w: 1422px;
-  --plan-card-h: 530px;
+  --plan-card-w: 1200px;
+  --plan-card-h: 350px;
 }
 
 /* Container */
@@ -936,8 +936,8 @@ body {
 .plans__tabs {
   margin: 0 auto 2rem;
   background: rgba(255, 255, 255, 0.03);
-  width: 1422px;
-  height: 127px;
+  width: 1200px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: space-around;
@@ -1048,7 +1048,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 1rem 1.2rem;
+  padding: 1rem 3rem;
+  margin-bottom: 80px;
 }
 .plan-card__chip {
   color: #ff9d10;
@@ -1069,29 +1070,31 @@ body {
 /* CTA */
 .plan-card__actions {
   color: #f3f6fc;
-  margin-top: 130px;
+  margin-top: 30px;
 }
 .plan-card__actions .btn.btn-light {
-  font-size: 25px;
+  font-size: 17px;
   font-weight: 700;
   background: #f3f5f7;
   color: #0b0f13;
-  width: 324px;
-  height: 84px;
+  width: 200px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 15px;
+  border-radius: 10px;
+  box-shadow: 0px -1px 11px 1px #fff;
 }
 
 /* Features (left) */
 .plan-card__features {
-  list-style: none;
-  margin: 0;
-  padding: 1rem 0 1rem 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-inline-end: 10px;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable both-edges;
+  direction: ltr;
 }
 .plan-card__feature {
   display: flex;
@@ -1112,6 +1115,64 @@ body {
   height: 20px;
   flex: 0 0 20px;
   transform: translateY(2px);
+}
+
+.plan-card__features > li {
+  direction: rtl;
+}
+
+.plans__deck-card.is-active .plan-card__content {
+  pointer-events: auto;
+}
+
+.plan-card__features::-webkit-scrollbar {
+  width: 8px;
+}
+.plan-card__features::-webkit-scrollbar-track {
+  background: transparent;
+}
+.plan-card__features::-webkit-scrollbar-thumb {
+  background: rgba(120, 210, 230, 0.35);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.plan-card__features::-webkit-scrollbar-thumb:hover {
+  background: rgba(120, 210, 230, 0.5);
+}
+
+/* ظاهر اسکرول‌بار (WebKit: Chrome/Safari/Edge) */
+.plan-card__features::-webkit-scrollbar {
+  width: 8px;
+}
+.plan-card__features::-webkit-scrollbar-track {
+  background: transparent;
+}
+.plan-card__features::-webkit-scrollbar-thumb {
+  background: rgba(120, 210, 230, 0.35); /* آبی-سبز کم‌رنگ */
+  border-radius: 8px;
+  border: 2px solid transparent; /* باریک‌تر دیده بشه */
+  background-clip: padding-box;
+}
+.plan-card__features::-webkit-scrollbar-thumb:hover {
+  background: rgba(120, 210, 230, 0.5);
+}
+
+/* Firefox */
+.plan-card__features {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(120, 210, 230, 0.5) transparent;
+}
+
+/* اگر کارت‌ها لایه/سه‌بعدی‌اند، مطمئن شو چیزی روی features نیفتاده */
+.plan-card__bg {
+  pointer-events: none;
+}
+
+/* برای نمایش بهتر آیکن‌ها کنار متن اسکرولی */
+.plan-card__feature {
+  gap: 0.8rem;
+  align-items: flex-start;
 }
 
 /* --- Mobile fixes --- */
@@ -1815,27 +1876,29 @@ body {
 
 /* Glass footer */
 .footer-glass {
-  width: 1422px;
-  height: 279px;
-  position: relative;
+  position: relative; /* anchor for the button */
+  width: 1200px;
+  height: 250px;
   margin: 0 auto;
-  border-radius: 24px;
   background: rgba(12, 15, 20, 0.6); /* #0C0F14 at 60% */
   border: 1px solid #394350;
   border-radius: 20px;
-  backdrop-filter: blur(60px); /* Frosted glass */
-  -webkit-backdrop-filter: blur(60px); /* Safari support */
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35); /* optional depth */
+  backdrop-filter: blur(60px);
+  -webkit-backdrop-filter: blur(60px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
   color: #fff;
-  overflow: hidden;
+  overflow: visible; /* let the button hang outside */
   padding: 2.8rem 3.2rem 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Inner layout */
 .footer-glass__inner {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 6rem;
 }
 
 .footer-glass__top {
@@ -1843,14 +1906,12 @@ body {
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 1.6rem;
+  gap: 5rem;
 }
 
 .footer-glass__brand {
-  color: #ff683c;
-  font-size: 70px;
-  font-weight: 700;
-  padding-right: 1rem;
+  width: 100px;
+  height: 40px;
 }
 
 .footer-glass__nav {
@@ -1875,7 +1936,7 @@ body {
   padding-left: 6rem;
   flex-direction: row-reverse;
   justify-content: flex-start;
-  gap: 25rem;
+  gap: 28rem;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -1899,7 +1960,7 @@ body {
   display: grid;
   place-items: center;
   text-decoration: none;
-  font-size: 1.6rem;
+  font-size: 2rem;
   transition: background 0.2s;
 }
 .footer-glass__socials a:hover {
@@ -1907,29 +1968,47 @@ body {
 }
 
 .footer-glass__socials a svg {
-  width: 38px;
-  height: 38px;
+  width: 30px;
+  height: 30px;
 }
 
 /* Back-to-top pill */
 .footer-glass__backtotop {
   position: absolute;
-  bottom: -18px;
+  bottom: -18px; /* hang below the footer */
   left: 50%;
   transform: translateX(-50%);
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
+  width: 56px; /* slightly larger for better tap area */
+  height: 56px;
+  border-radius: 16px;
   background: rgba(15, 15, 16, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   cursor: pointer;
   display: grid;
   place-items: center;
+  z-index: 6; /* above footer */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
+
 .footer-glass__backtotop:hover {
   background: rgba(15, 15, 16, 0.65);
+}
+
+.footer-glass__backtotop::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: -22px; /* how far it dips into footer */
+  width: 128px; /* socket width */
+  height: 64px; /* socket height */
+  border-radius: 18px;
+  border: 1px solid #394350; /* match footer border */
+  background: transparent;
+  pointer-events: none;
+  z-index: -1; /* sits behind the button, above footer */
 }
 
 .footer-glass__chevron {

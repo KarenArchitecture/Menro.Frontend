@@ -1,5 +1,6 @@
 // components/landing/BlogsSection.jsx
 import React, { useRef, useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Marquee from "react-fast-marquee";
 
 import ClockIcon from "../icons/ClockIcon";
@@ -67,6 +68,122 @@ const DEFAULT_POSTS = [
   },
 ];
 
+/* ---------------------------------- */
+/* Cursor follower (pill)             */
+/* ---------------------------------- */
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+
+function BlogCursorFollower({ targetEl, offsetY = -5 }) {
+  const hostRef = useRef(null);
+  const pos = useRef({ x: -9999, y: -9999 });
+  const aim = useRef({ x: -9999, y: -9999 });
+  const rafRef = useRef(0);
+
+  useEffect(() => {
+    const host = hostRef.current;
+    const section = targetEl?.current;
+    if (!host || !section) return;
+
+    const prefersReduced = window.matchMedia?.(
+      "(prefers-reduced-motion: reduce)"
+    )?.matches;
+    const hasFinePointer =
+      window.matchMedia?.("(pointer: fine)")?.matches ?? true;
+    if (!hasFinePointer) return; // skip touch/coarse pointers
+
+    const onEnter = () => {
+      host.style.opacity = "1";
+    };
+    const onLeave = () => {
+      host.style.opacity = "0";
+    };
+    const onMove = (e) => {
+      aim.current.x = e.clientX;
+      aim.current.y = e.clientY + offsetY;
+      if (host.style.opacity === "0") {
+        pos.current.x = aim.current.x;
+        pos.current.y = aim.current.y;
+      }
+    };
+
+    const tick = () => {
+      const t = prefersReduced ? 1 : 0.18;
+      pos.current.x = lerp(pos.current.x, aim.current.x, t);
+      pos.current.y = lerp(pos.current.y, aim.current.y, t);
+      host.style.transform = `translate3d(${pos.current.x}px, ${pos.current.y}px, 0)`;
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    section.addEventListener("mouseenter", onEnter);
+    section.addEventListener("mouseleave", onLeave);
+    section.addEventListener("mousemove", onMove, { passive: true });
+
+    host.style.opacity = "0";
+    rafRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      section.removeEventListener("mouseenter", onEnter);
+      section.removeEventListener("mouseleave", onLeave);
+      section.removeEventListener("mousemove", onMove);
+    };
+  }, [targetEl, offsetY]);
+
+  return createPortal(
+    <div
+      ref={hostRef}
+      className="blog-cursor-follower"
+      aria-hidden="true"
+      role="presentation"
+      /* fallback inline styles so it works even before CSS lands */
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        zIndex: 9999,
+        pointerEvents: "none",
+        transform: "translate3d(-9999px,-9999px,0)",
+        transition: "opacity 180ms ease",
+      }}
+    >
+      <div
+        className="blog-cursor-pill"
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "0.6rem",
+          padding: ".8rem 1.4rem",
+          borderRadius: "999px",
+          border: "1px solid rgba(255,255,255,.14)",
+          background: "rgba(14,16,20,.72)",
+          backdropFilter: "blur(6px)",
+          boxShadow: "0 4px 22px rgba(0,0,0,.35)",
+          fontSize: "1.35rem",
+          color: "#e9eef5",
+          transform: "translate(-50%,-100%)",
+          whiteSpace: "nowrap",
+        }}
+      >
+        <span
+          className="dot"
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: "50%",
+            background: "#ff9d10",
+            boxShadow: "0 0 0 2px rgba(255,157,16,.2)",
+            display: "inline-block",
+          }}
+        />
+        <span className="label">برای اسکرول بکشید</span>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 /** Card */
 function BlogCard({ post }) {
   const { title, href, coverSrc, readingMins } = post;
@@ -125,10 +242,11 @@ export default function BlogSection({
   highlightWord = "منرو",
 }) {
   const railRef = useRef(null);
+  const sectionRef = useRef(null);
 
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(true);
-  const [playMarquee, setPlayMarquee] = useState(true); // respect prefers-reduced-motion
+  const [playMarquee, setPlayMarquee] = useState(true);
 
   useEffect(() => {
     const mql = window.matchMedia?.("(prefers-reduced-motion: reduce)");
@@ -160,10 +278,10 @@ export default function BlogSection({
     setCanNext(sl < max - 1);
   };
 
-  const scrollBy = (delta) =>
+  const scrollByAmount = (delta) =>
     railRef.current?.scrollBy({ left: delta, behavior: "smooth" });
-  const onPrev = () => scrollBy(-(getStep() || 0));
-  const onNext = () => scrollBy(getStep() || 0);
+  const onPrev = () => scrollByAmount(-(getStep() || 0));
+  const onNext = () => scrollByAmount(getStep() || 0);
 
   useEffect(() => {
     const el = railRef.current;
@@ -184,12 +302,21 @@ export default function BlogSection({
   }, []);
 
   return (
-    <section className="blogs" dir="rtl" aria-labelledby="blogs-title">
+    <section
+      className="blogs"
+      dir="rtl"
+      aria-labelledby="blogs-title"
+      ref={sectionRef}
+      style={{ cursor: "pointer" }} // pointer cursor inside section
+    >
+      {/* Cursor follower (portal) */}
+      <BlogCursorFollower targetEl={sectionRef} />
+
       <h2 id="blogs-title" className="sr-only">
         {sectionTitle}
       </h2>
 
-      {/* Marquee (react-fast-marquee) */}
+      {/* Marquee */}
       <div className="blogs__marquee" aria-hidden="true" dir="ltr">
         <div className="marquee__track" style={{ "--dur": "22s" }}>
           <div className="marquee__row" dir="rtl">
@@ -202,7 +329,6 @@ export default function BlogSection({
               </span>
             ))}
           </div>
-          {/* exact duplicate for wrap */}
           <div className="marquee__row" dir="rtl" aria-hidden="true">
             {Array.from({ length: 8 }).map((_, i) => (
               <span className="marquee__item" key={`B-${i}`}>

@@ -1495,6 +1495,60 @@ body {
 /***************************************
  * Blogs Section — horizontal filmstrip
  **************************************/
+/* Show pointer only inside Blogs section */
+.blogs {
+  cursor: pointer;
+}
+
+/* The follower container is absolutely positioned to viewport via transform */
+.blog-cursor-follower {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+
+  transform: translate3d(-9999px, -9999px, 0);
+  transition: opacity 180ms ease;
+  will-change: transform;
+}
+
+/* The pill UI */
+.blog-cursor-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(14, 16, 20, 0.72);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35);
+  font-size: 1.35rem;
+  color: #e9eef5;
+  translate: 0 -20%; /* center above cursor */
+}
+
+/* Little orange slider dot (match your brand) */
+.blog-cursor-pill .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff9d10; /* Menro orange */
+  box-shadow: 0 0 0 2px rgba(255, 157, 16, 0.2);
+}
+
+.blog-cursor-pill .label {
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .blog-cursor-follower {
+    transition: none;
+  }
+}
+
 .blogs {
   position: relative;
   background: #0b0f13;
@@ -1588,8 +1642,8 @@ body {
 /* ----- Card ----- */
 .blogs__card {
   flex: 0 0 auto; /* don't shrink; keep natural block width */
-  width: 450px; /* if you want natural image width, remove this */
-  height: 600px;
+  width: 250px; /* if you want natural image width, remove this */
+  height: 400px;
   list-style: none;
   scroll-snap-align: start;
 }
@@ -1671,8 +1725,8 @@ body {
   margin: 4rem;
 }
 .blogs__all {
-  width: 398px;
-  height: 97px;
+  width: 250px;
+  height: 67px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1686,7 +1740,7 @@ body {
   -webkit-backdrop-filter: blur(var(--glass-blur));
 }
 .blogs__all-link {
-  font-size: 30px;
+  font-size: 20px;
   font-weight: 600;
   color: #fff;
 }
@@ -1696,12 +1750,13 @@ body {
   grid-auto-flow: column;
   gap: 10px;
 }
+
 .blogs__arrow {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 93px;
-  height: 93px;
+  width: 63px;
+  height: 63px;
   border-radius: 20px;
   border: 1px solid #394350;
   background: rgba(255, 255, 255, 0.04);

@@ -2,9 +2,6 @@ import usePageStyles from "../hooks/usePageStyles";
 
 import Hero from "../components/landing/Hero";
 import AppHeader from "../components/common/AppHeader";
-import ProfileIcon from "../components/icons/ProfileIcon";
-import CartIcon from "../components/icons/CartIcon";
-import SearchIcon from "../components/icons/SearchIcon";
 
 import StatsSection from "../components/landing/StatsSection";
 import WhyMenroSection from "../components/landing/WhyMenroSection";
@@ -17,22 +14,39 @@ import GlassFooter from "../components/common/GlassFooter";
 
 export default function LandingPage() {
   const leftIcons = [
-    { key: "profile", icon: <ProfileIcon /> },
-    { key: "cart", icon: <CartIcon />, badge: 1 },
-    { key: "search", icon: <SearchIcon /> },
-  ];
-  const rightLinks = [
-    { label: "منرو", href: "#", active: true },
-    { label: "خانه", href: "#" },
-    { label: "نقشه", href: "#" },
-    { label: "مقالات", href: "#" },
+    {
+      key: "profile",
+      icon: (
+        <img
+          src="/images/app-header-profile.svg"
+          alt="profile"
+          className="icon"
+        />
+      ),
+    },
+    {
+      key: "cart",
+      icon: (
+        <img src="/images/app-header-bag.svg" alt="cart" className="icon" />
+      ),
+      badge: 1,
+    },
+    {
+      key: "search",
+      icon: (
+        <img
+          src="/images/app-header-search.svg"
+          alt="search"
+          className="icon"
+        />
+      ),
+    },
   ];
 
   usePageStyles("/styles-landing.css");
   return (
     <div dir="rtl">
       <AppHeader
-        rightLinks={rightLinks}
         leftIcons={leftIcons}
         position="fixed"
         top={12}

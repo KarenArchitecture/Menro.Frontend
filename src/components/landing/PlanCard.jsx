@@ -47,11 +47,11 @@ export default function PlanCard({ plan }) {
           <ul className="plan-card__features" aria-label={`امکانات ${title}`}>
             {features.map((f, i) => (
               <li key={i} className="plan-card__feature">
+                <span>{f}</span>
                 <GreenCheckIcon
                   aria-hidden="true"
                   className="plan-card__feature-icon"
                 />
-                <span>{f}</span>
               </li>
             ))}
           </ul>

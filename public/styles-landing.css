@@ -1065,6 +1065,7 @@ body {
   margin: 0 0 1.2rem;
   color: var(--muted);
   font-size: 1.6rem;
+  max-width: 600px;
 }
 
 /* CTA */
@@ -1085,17 +1086,28 @@ body {
   border-radius: 10px;
   box-shadow: 0px -1px 11px 1px #fff;
 }
-
-/* Features (left) */
 .plan-card__features {
-  max-height: 220px;
+  max-height: 300px;
   overflow-y: auto;
   padding-inline-end: 10px;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   scrollbar-gutter: stable both-edges;
-  direction: ltr;
+  direction: rtl;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  margin-bottom: 7rem;
 }
+.plan-card__features::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none; /* Chrome/Safari/Edge (WebKit) */
+  background: transparent;
+}
+
 .plan-card__feature {
   display: flex;
   flex-direction: row-reverse;
@@ -1123,45 +1135,6 @@ body {
 
 .plans__deck-card.is-active .plan-card__content {
   pointer-events: auto;
-}
-
-.plan-card__features::-webkit-scrollbar {
-  width: 8px;
-}
-.plan-card__features::-webkit-scrollbar-track {
-  background: transparent;
-}
-.plan-card__features::-webkit-scrollbar-thumb {
-  background: rgba(120, 210, 230, 0.35);
-  border-radius: 8px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-}
-.plan-card__features::-webkit-scrollbar-thumb:hover {
-  background: rgba(120, 210, 230, 0.5);
-}
-
-/* ظاهر اسکرول‌بار (WebKit: Chrome/Safari/Edge) */
-.plan-card__features::-webkit-scrollbar {
-  width: 8px;
-}
-.plan-card__features::-webkit-scrollbar-track {
-  background: transparent;
-}
-.plan-card__features::-webkit-scrollbar-thumb {
-  background: rgba(120, 210, 230, 0.35); /* آبی-سبز کم‌رنگ */
-  border-radius: 8px;
-  border: 2px solid transparent; /* باریک‌تر دیده بشه */
-  background-clip: padding-box;
-}
-.plan-card__features::-webkit-scrollbar-thumb:hover {
-  background: rgba(120, 210, 230, 0.5);
-}
-
-/* Firefox */
-.plan-card__features {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(120, 210, 230, 0.5) transparent;
 }
 
 /* اگر کارت‌ها لایه/سه‌بعدی‌اند، مطمئن شو چیزی روی features نیفتاده */

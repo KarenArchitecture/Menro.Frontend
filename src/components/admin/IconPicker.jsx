@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import iconAxios from "../../api/iconAxios.js";
 export const ICON_BY_KEY = {};
+import { getCurrentUserRole } from "../../utils/auth";
 
 function DefaultIcon() {
   return (
@@ -29,6 +30,8 @@ export async function fetchAllIcons() {
 export default function IconPicker({ open, onClose, value, onSelect }) {
   const [q, setQ] = useState("");
   const [backendIcons, setBackendIcons] = useState([]);
+  const role = getCurrentUserRole();
+  const isAdmin = role === "Admin";
   useEffect(() => {
     if (!open) return;
 
@@ -62,8 +65,23 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
 
   // 🔸 delete handler (frontend only — backend-ready)
   const handleDeleteIcon = async (id) => {
-    // // backend: await iconAxios.delete(`/delete/${id}`)
-    setBackendIcons((prev) => prev.filter((x) => x.id !== id));
+    const confirmed = window.confirm("آیا از حذف این آیکن اطمینان دارید؟");
+    if (!confirmed) return;
+
+    try {
+      console.log("🗑 Deleting icon:", id);
+
+      // فراخوانی مطابق با کنترلر
+      await iconAxios.delete(`/delete?id=${id}`);
+
+      // حذف از لیست بدون نیاز به refetch
+      setBackendIcons((prev) => prev.filter((x) => x.id !== id));
+
+      alert("آیکن با موفقیت حذف شد ✅");
+    } catch (err) {
+      console.error("❌ Failed to delete icon:", err);
+      alert(err.response?.data?.message ?? "خطا در حذف آیکن");
+    }
   };
 
   return (
@@ -118,13 +136,21 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
                 </button>
 
                 {/* 🗑 Trash icon (hover visible) */}
-                <button
-                  className="delete-icon-btn"
-                  title="حذف آیکن"
-                  onClick={() => handleDeleteIcon(item.id)}
-                >
-                  <i className="fas fa-trash" />
-                </button>
+                {isAdmin && (
+                  <button
+                    className="delete-icon-btn"
+                    title="حذف آیکن"
+                    onClick={() => {
+                      if (
+                        window.confirm("آیا از حذف این آیکن اطمینان دارید؟")
+                      ) {
+                        handleDeleteIcon(item.id);
+                      }
+                    }}
+                  >
+                    <i className="fas fa-trash" />
+                  </button>
+                )}
               </div>
             );
           })}

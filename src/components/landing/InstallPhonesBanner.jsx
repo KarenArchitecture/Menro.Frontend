@@ -20,41 +20,81 @@ export default function InstallPhonesBanner({
     if (mql.matches) return;
 
     const ctx = gsap.context(() => {
-      // Keep phones hidden/off-screen until we play the animation
-      gsap.set([backRef.current, frontRef.current], {
+      // Final positions (unchanged)
+      const REST = {
+        back: { x: -185, y: -179 },
+        front: { x: 16, y: -239 },
+      };
+
+      // Start positions (below final)
+      const START = {
+        backY: REST.back.y + 500,
+        frontY: REST.front.y + 520,
+      };
+
+      // Constant velocity (px/sec)
+      const SPEED = 400;
+      const backDur = Math.abs(START.backY - REST.back.y) / SPEED;
+      const frontDur = Math.abs(START.frontY - REST.front.y) / SPEED;
+
+      // Pin to final x/y first; animate only 'y' to avoid end-pop
+      gsap.set(backRef.current, {
+        x: REST.back.x,
+        y: REST.back.y,
         autoAlpha: 0,
-        y: -500,
+        transformPerspective: 1000,
+        z: 0.01,
+        willChange: "transform, opacity",
+      });
+      gsap.set(frontRef.current, {
+        x: REST.front.x,
+        y: REST.front.y,
+        autoAlpha: 0,
+        transformPerspective: 1000,
+        z: 0.01,
+        willChange: "transform, opacity",
       });
 
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: "top 80%", // fire when section top hits 80% viewport
-          toggleActions: "play none none none", // one-shot
-          once: true, // don’t re-trigger on scroll back
-          // markers: true,                 // <- uncomment to debug
+          start: "top 80%",
+          toggleActions: "play none none none",
+          once: true,
         },
-        defaults: { ease: "power3.out" },
       });
 
-      // Fade/slide to final positions
-      tl.to(backRef.current, {
-        autoAlpha: 1,
-        x: -185,
-        y: -179,
-        duration: 1.2, // edit to change speed
-      }).to(
-        frontRef.current,
+      // Back phone — linear, uniform speed, animate only 'y'
+      tl.fromTo(
+        backRef.current,
+        { y: START.backY, autoAlpha: 0, immediateRender: false },
         {
+          y: REST.back.y,
           autoAlpha: 1,
-          x: 59,
-          y: -295,
-          duration: 1.2, // edit to change speed
-        },
-        "-=0.25"
-      );
+          duration: backDur,
+          ease: "none",
+          overwrite: "auto",
+        }
+      )
+        // Front phone — overlap slightly
+        .fromTo(
+          frontRef.current,
+          { y: START.frontY, autoAlpha: 0, immediateRender: false },
+          {
+            y: REST.front.y,
+            autoAlpha: 1,
+            duration: frontDur,
+            ease: "none",
+            overwrite: "auto",
+          },
+          "-=0.20"
+        )
+        // Optional: release heavy hints after animation
+        .add(() =>
+          gsap.set([backRef.current, frontRef.current], { willChange: "auto" })
+        );
 
-      // Refresh after images load to ensure correct trigger position
+      // Keep trigger correct after images load
       const imgs = sectionRef.current.querySelectorAll("img");
       const onLoad = () => ScrollTrigger.refresh();
       imgs.forEach((img) => {

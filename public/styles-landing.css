@@ -819,8 +819,8 @@ body {
 /* Back phone (left, slightly bigger, behind) */
 .install-banner__phone--back {
   z-index: 2;
-  width: 400px;
-  height: 600px;
+  width: 350px;
+  height: 550px;
   right: 63%;
   top: 10%;
   transform: rotate(-9deg) translateY(8px);
@@ -830,8 +830,8 @@ body {
 /* Front phone (on top, slight tilt the other way) */
 .install-banner__phone--front {
   z-index: 3;
-  width: 400px;
-  height: 600px;
+  width: 350px;
+  height: 550px;
   right: 43%;
   top: -1%;
   transform: rotate(6deg);

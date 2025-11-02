@@ -423,8 +423,8 @@ body {
 .pos-f {
   top: 22rem;
   left: 20rem;
-  width: 170px;
-  height: 170px;
+  width: 100px;
+  height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -434,8 +434,8 @@ body {
 .pos-i {
   left: 15rem;
   top: 92rem;
-  width: 170px;
-  height: 170px;
+  width: 100px;
+  height: 100px;
   background: linear-gradient(246.95deg, #111b2f 0.52%, #111b2f 98.07%);
 }
 #why-menro
@@ -443,7 +443,7 @@ body {
   > div
   > div.icon-card__title {
   color: #ff683c;
-  font-size: 40px;
+  font-size: 28px;
   font-weight: 800;
 }
 #why-menro > div.why-card.icon-card.why-card.why-card--small.pos-f > div {
@@ -456,14 +456,22 @@ body {
   > div.why-card.icon-card.why-card.why-card--small.pos-f
   > div
   > div.icon-card__title {
-  font-size: 15px;
+  font-size: 8px;
   font-weight: 600;
+}
+#why-menro
+  > div.why-card.icon-card.why-card.why-card--small.pos-f
+  > div
+  > div.big-icon
+  > svg {
+  width: 30px;
+  height: 30px;
 }
 .pos-g {
   bottom: 10rem;
   right: 26rem;
-  width: 170px;
-  height: 170px;
+  width: 100px;
+  height: 100px;
   background: linear-gradient(246.95deg, #192422 0.52%, #192422 98.07%);
   text-align: center;
 }
@@ -471,8 +479,17 @@ body {
   > div.why-card.icon-card.why-card.why-card--panel.pos-g
   > div
   > div.icon-card__title {
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 600;
+}
+
+#why-menro
+  > div.why-card.icon-card.why-card.why-card--panel.pos-g
+  > div
+  > div.big-icon
+  > svg {
+  width: 40px;
+  height: 40px;
 }
 
 .pos-h {
@@ -497,6 +514,10 @@ body {
 }
 
 /*  info cards (general)  */
+.info-card {
+  width: 250px;
+  height: 250px;
+}
 .info-card__header {
   display: flex;
   align-items: center;
@@ -504,29 +525,31 @@ body {
 }
 
 .info-icon {
-  width: 46px;
-  height: 46px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
 }
 
 .info-title {
-  font-size: 30px;
+  font-size: 20px;
   font-weight: 700;
 }
 
 .info-desc {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 500;
   color: #999fa8;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 2rem 0 0 0;
 }
 
 /* --- Sales Boost Card --- */
 .sales-boost {
-  width: 300px;
-  height: 300px;
+  width: 180px;
+  height: 180px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -570,13 +593,19 @@ body {
   flex-direction: column;
 }
 
+#why-menro > div.why-card.sales-boost.why-card.pos-a > div > svg {
+  margin: 3rem auto;
+  width: 130px;
+  height: 130px;
+}
+
 .sales-boost__value {
-  font-size: 30px;
+  font-size: 18px;
   font-weight: 700;
   color: #fff;
 }
 .sales-boost__subtitle {
-  font-size: 10px;
+  font-size: 8px;
   font-weight: 600;
   color: #999fa8;
 }
@@ -600,8 +629,8 @@ body {
 }
 /* ---- Cost Reduction (static) ---- */
 .cost-reduction {
-  width: 300px;
-  height: 300px;
+  width: 250px;
+  height: 250px;
   padding: 18px;
   left: 47rem;
   top: 105rem;
@@ -615,8 +644,8 @@ body {
   position: absolute;
   top: 14px;
   left: 14px;
-  width: 70px;
-  height: 70px;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
   background: rgba(0, 0, 0, 0.28);
   display: grid;
@@ -652,14 +681,14 @@ body {
   left: 16px;
   bottom: 14px;
   font-weight: 700;
-  font-size: 30px;
+  font-size: 20px;
   color: #ffffff;
 }
 
 /* pill badge bottom-right */
 .cost-reduction .badge {
-  width: 215px;
-  height: 51px;
+  width: 180px;
+  height: 40px;
   position: absolute;
   right: -71px;
   bottom: 12px;
@@ -667,13 +696,26 @@ body {
   color: #0b0e12;
   padding: 8px 12px;
   border-radius: 12px;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
 }
 .cost-reduction .cost-chart {
   position: absolute;
   inset: 25px -2px 52px 10px; /* your chart bounds */
   overflow: hidden; /* clip stray path bits */
+}
+
+#why-menro
+  > div.why-card.cost-reduction.why-card.why-card--chart.pos-h
+  > div.cost-reduction__icon
+  > svg {
+  width: 30px;
+  height: 30px;
+}
+
+#why-menro > div.why-card.cost-reduction.why-card.why-card--chart.pos-h > svg {
+  width: 246px;
+  height: 185px;
 }
 /***************************************
  * ۴) بخش آمار (Stats Section)
@@ -1298,7 +1340,7 @@ body {
 /* --- Burger (independent of scene) --- */
 .bp__burger {
   position: absolute;
-  left: 25rem;
+  left: 30rem;
   top: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;

@@ -8,7 +8,8 @@ export default function ProtectedRoute({ roles = [], children }) {
   if (loading) return null;
 
   if (!user) {
-    return <Navigate to="/login" />;
+    const returnUrl = encodeURIComponent(location.pathname);
+    return <Navigate to={`/login?returnUrl=${returnUrl}`} replace={false} />;
   }
 
   const hasAccess =

@@ -1,15 +1,20 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import usePageStyles from "../hooks/usePageStyles";
 import authAxios from "../api/authAxios";
 import { useAuth } from "../context/AuthContext";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
+  //
+  const location = useLocation();
+  const navigate = useNavigate();
+  const params = new URLSearchParams(location.search);
+  const returnUrl = params.get("returnUrl");
+  const { refreshUser } = useAuth();
+
   /* loginpage CSS (/public) */
   usePageStyles("/styles-login.css");
-  const navigate = useNavigate();
-  const { refreshUser } = useAuth();
 
   /* -------------------------------
    * local UI state
@@ -95,7 +100,7 @@ export default function LoginPage() {
             err.response?.data?.message || "کد وارد شده صحیح نیست.";
           throw new Error(message);
         }),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       if (data.needsRegister) {
         const expiresAt = Date.now() + 60_000; // 60 s
         localStorage.setItem(
@@ -105,8 +110,9 @@ export default function LoginPage() {
         navigate("/register");
       } else {
         localStorage.setItem("token", data.token);
-        refreshUser();
-        navigate("/");
+        await refreshUser();
+        if (!returnUrl?.startsWith("/")) returnUrl = "/";
+        navigate(returnUrl || "/", { replace: true });
       }
     },
     onError: (err) => showMsg(err.message),
@@ -122,10 +128,11 @@ export default function LoginPage() {
           const message = err.response?.data?.message || "ورود ناموفق بود";
           throw new Error(message);
         }),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       localStorage.setItem("token", data.token);
-      refreshUser();
-      navigate("/");
+      await refreshUser();
+      if (!returnUrl?.startsWith("/")) returnUrl = "/";
+      navigate(returnUrl || "/", { replace: true });
     },
     onError: (err) => showMsg(err.message),
   });

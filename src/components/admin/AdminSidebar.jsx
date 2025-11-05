@@ -1,6 +1,7 @@
 // src/components/admin/AdminSidebar.jsx
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const NAV = [
   { key: "dashboard", label: "داشبورد", icon: "fas fa-tachometer-alt" },
@@ -40,6 +41,17 @@ export default function AdminSidebar({
     onClose?.(); // auto-close on mobile
   };
 
+  // admin role check
+  const { user } = useAuth();
+  const roles = user?.roles || [];
+  const isAdmin = roles.includes("admin");
+  // logout handler
+  const { logout } = useAuth();
+  const handleLogout = () => {
+    logout();
+  };
+
+  // render
   return (
     <aside
       className={`sidebar ${isOpen ? "is-open" : ""}`}
@@ -61,8 +73,11 @@ export default function AdminSidebar({
 
       <nav className="sidebar-nav">
         <ul>
-          {NAV.map((item) =>
-            item.isDivider ? (
+          {NAV.map((item) => {
+            // 🔸 فقط برای ادمین
+            if (item.key === "category-settings" && !isAdmin) return null;
+
+            return item.isDivider ? (
               <li key={item.label} className="nav-section-title">
                 {item.label}
               </li>
@@ -81,17 +96,11 @@ export default function AdminSidebar({
                   <i className={`nav-icon ${item.icon}`} /> {item.label}
                 </a>
               </li>
-            )
-          )}
-
+            );
+          })}
           {/* Static logout link */}
           <li className="nav-item">
-            <Link
-              to="/login"
-              onClick={() => {
-                onClose?.();
-              }}
-            >
+            <Link to="/" onClick={handleLogout}>
               <i className="fas fa-sign-out-alt nav-icon" /> خروج
             </Link>
           </li>

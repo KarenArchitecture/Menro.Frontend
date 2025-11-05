@@ -1,8 +1,9 @@
 // src/components/admin/AdminSidebar.jsx
 import React, { useEffect } from "react";
+import { replace, useNavigate } from "react-router-dom";
+
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-
 const NAV = [
   { key: "dashboard", label: "داشبورد", icon: "fas fa-tachometer-alt" },
 
@@ -28,6 +29,7 @@ export default function AdminSidebar({
   activeTab,
   onSelect,
 }) {
+  const navigate = useNavigate();
   // Close on ESC (useful when off-canvas is open on mobile)
   useEffect(() => {
     if (!isOpen) return;
@@ -47,8 +49,12 @@ export default function AdminSidebar({
   const isAdmin = roles.includes("admin");
   // logout handler
   const { logout } = useAuth();
-  const handleLogout = () => {
+  const { refreshUser } = useAuth();
+
+  const handleLogout = async () => {
     logout();
+    await refreshUser();
+    navigate("/", { replace: false });
   };
 
   // render
@@ -58,8 +64,13 @@ export default function AdminSidebar({
       aria-hidden={isOpen ? "false" : "true"}
     >
       <div className="sidebar-header">
-        <h1 className="sidebar-logo">منرو</h1>
-
+        <h1
+          className="sidebar-logo"
+          style={{ cursor: "pointer" }}
+          onClick={() => navigate("/")}
+        >
+          منرو
+        </h1>
         {/* Close button shows on MD/SM only (CSS below) */}
         <button
           type="button"
@@ -101,7 +112,7 @@ export default function AdminSidebar({
           {/* Static logout link */}
           <li className="nav-item">
             <Link to="/" onClick={handleLogout}>
-              <i className="fas fa-sign-out-alt nav-icon" /> خروج
+              <i className="fas fa-sign-out-alt nav-icon" /> خروج از حساب کاربری
             </Link>
           </li>
         </ul>

@@ -9,9 +9,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const logout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("user"); //
-    localStorage.removeItem("userPhone"); //
-    setUser(null);
+    localStorage.removeItem("userPhone");
   };
   const refreshUser = async () => {
     const token = localStorage.getItem("token");

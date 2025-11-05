@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import usePageStyles from "../hooks/usePageStyles";
 import authAxios from "../api/authAxios";
+import { useAuth } from "../context/AuthContext";
 
 export default function RegisterPage() {
   usePageStyles("/styles-register.css");
-
   const navigate = useNavigate();
+  const { refreshUser } = useAuth();
 
   /* local form state */
   const [fullName, setFullName] = useState("");
@@ -45,9 +46,9 @@ export default function RegisterPage() {
     },
     onSuccess: (data) => {
       localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.removeItem("userPhone");
-      navigate("/", { replace: true });
+      refreshUser();
+      navigate("/login", { replace: true });
     },
     onError: (err) => setMsg({ text: err.message, type: "error" }),
   });

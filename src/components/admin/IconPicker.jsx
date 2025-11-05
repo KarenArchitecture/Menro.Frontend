@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import iconAxios from "../../api/iconAxios.js";
+import { useAuth } from "../../context/AuthContext";
 export const ICON_BY_KEY = {};
-import { getCurrentUserRole } from "../../utils/auth";
 
 function DefaultIcon() {
   return (
@@ -30,8 +30,10 @@ export async function fetchAllIcons() {
 export default function IconPicker({ open, onClose, value, onSelect }) {
   const [q, setQ] = useState("");
   const [backendIcons, setBackendIcons] = useState([]);
-  const role = getCurrentUserRole();
-  const isAdmin = role === "Admin";
+  // role check
+  const { user } = useAuth();
+  const roles = user?.roles || []; // اگه کاربر نال باشه، آرایه خالی برمی‌گردونه
+  const isAdmin = roles.includes("admin"); // بررسی نقش
   useEffect(() => {
     if (!open) return;
 
@@ -76,10 +78,7 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
 
       // حذف از لیست بدون نیاز به refetch
       setBackendIcons((prev) => prev.filter((x) => x.id !== id));
-
-      alert("آیکن با موفقیت حذف شد ✅");
     } catch (err) {
-      console.error("❌ Failed to delete icon:", err);
       alert(err.response?.data?.message ?? "خطا در حذف آیکن");
     }
   };
@@ -135,17 +134,12 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
                   </span>
                 </button>
 
-                {/* 🗑 Trash icon (hover visible) */}
                 {isAdmin && (
                   <button
                     className="delete-icon-btn"
                     title="حذف آیکن"
                     onClick={() => {
-                      if (
-                        window.confirm("آیا از حذف این آیکن اطمینان دارید؟")
-                      ) {
-                        handleDeleteIcon(item.id);
-                      }
+                      handleDeleteIcon(item.id);
                     }}
                   >
                     <i className="fas fa-trash" />

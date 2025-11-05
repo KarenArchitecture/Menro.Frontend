@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import usePageStyles from "../hooks/usePageStyles";
 import authAxios from "../api/authAxios";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
   /* loginpage CSS (/public) */
   usePageStyles("/styles-login.css");
   const navigate = useNavigate();
+  const { refreshUser } = useAuth();
 
   /* -------------------------------
    * local UI state
@@ -103,7 +105,7 @@ export default function LoginPage() {
         navigate("/register");
       } else {
         localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
+        refreshUser();
         navigate("/");
       }
     },
@@ -122,7 +124,7 @@ export default function LoginPage() {
         }),
     onSuccess: (data) => {
       localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      refreshUser();
       navigate("/");
     },
     onError: (err) => showMsg(err.message),

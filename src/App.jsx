@@ -8,6 +8,7 @@ import RegisterRestaurantPage from "./pages/RegisterRestaurantPage";
 import MobileNav from "./components/common/MobileNav";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import ProtectedRoute from "./components/common/ProtectedRoute";
+import UnauthorizedPage from "./pages/UnauthorizedPage";
 
 export default function App() {
   const { pathname } = useLocation();
@@ -24,7 +25,15 @@ export default function App() {
           path="/register-restaurant"
           element={<RegisterRestaurantPage />}
         />
-        <Route path="/admin" element={<AdminDashboardPage />} />
+        <Route path="/unauthorized" element={<UnauthorizedPage />} />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute roles={["admin", "owner"]}>
+              <AdminDashboardPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
       {!isAdmin && <MobileNav />}
     </>

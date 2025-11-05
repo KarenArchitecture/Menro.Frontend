@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import SearchBar from "../common/SearchBar";
+import { useAuth } from "../../context/AuthContext";
 
 export default function AdminHeader({
   userFullName, // (string)
@@ -10,8 +11,9 @@ export default function AdminHeader({
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const inputRef = useRef(null);
 
-  // Fallbacks
-  const displayName = userFullName;
+  // Admin profile
+  const { user } = useAuth();
+  const displayName = user?.fullName || "کاربر ناشناس";
   const displayAvatar = avatarUrl || "/images/avatar-placeholder.png";
 
   // Focus the input; ESC to close
@@ -52,16 +54,6 @@ export default function AdminHeader({
         <span title={displayName}>
           {isLoading ? "در حال بارگذاری..." : <>خوش آمدید، {displayName}</>}
         </span>
-
-        {/* avatar */}
-        {/* <img
-          src={displayAvatar}
-          alt={`تصویر ${displayName}`}
-          className="user-avatar"
-          onError={(e) => {
-            e.currentTarget.src = "/images/avatar-placeholder.png";
-          }}
-        /> */}
 
         {/* Mobile search icon (only on phones) */}
         <button

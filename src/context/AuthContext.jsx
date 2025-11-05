@@ -58,6 +58,7 @@ export function AuthProvider({ children }) {
         id: decoded.nameid || decoded.sub,
         email: decoded.email,
         roles: normalizedRoles.map((r) => r.toLowerCase()),
+        fullName: decoded.fullName || decoded.name || "",
       });
     } catch (err) {
       console.error("❌ Invalid token:", err);

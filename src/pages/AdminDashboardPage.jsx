@@ -38,17 +38,26 @@ export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // dashboard dto
+  const [dashboardData, setDashboardData] = useState(null);
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        const { data } = await adminAxios.get("/dashboard");
+        setDashboardData(data);
+      } catch (err) {
+        console.error("خطا در دریافت داده داشبورد:", err);
+      }
+    };
+    loadDashboard();
+  }, []);
+
   // Monthly chart
-  const [labels, setLabels] = useState([]);
-  const [data, setData] = useState([]);
+  const labels =
+    dashboardData?.monthlySales?.map((x) => monthFa[x.month - 1]) ?? [];
 
-  // Restaurant context (null for global admin)
-  const [restaurantId, setRestaurantId] = useState(null);
-
-  // Top panels data
-  const [totalRevenue, setTotalRevenue] = useState(0);
-  const [todayOrders, setTodayOrders] = useState(0);
-  const [todayProfit, setTodayProfit] = useState(0);
+  const data =
+    dashboardData?.monthlySales?.map((x) => Number(x.totalSales)) ?? [];
 
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
   const toggleSidebar = useCallback(() => setSidebarOpen((v) => !v), []);
@@ -71,83 +80,12 @@ export default function AdminDashboardPage() {
   const viewClass = (tab) =>
     `content-view ${activeTab === tab ? "active" : ""}`;
 
-  // restaurant id
-  useEffect(() => {
-    const fetchRestaurantId = async () => {
-      try {
-        const res = await adminAxios.get("/restaurant-id");
-        setRestaurantId(res.data.restaurantId ?? null);
-      } catch (err) {
-        console.error("خطا در دریافت آیدی رستوران", err);
-        setRestaurantId(null);
-      }
-    };
-    fetchRestaurantId();
-  }, []);
-
-  // monthly chart
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const url =
-          restaurantId != null
-            ? `/monthly-sales?restaurantId=${restaurantId}`
-            : `/monthly-sales`;
-        const { data: json } = await adminAxios.get(url);
-        setLabels(json.map((x) => monthFa[x.month - 1]));
-        setData(json.map((x) => Number(x.totalSales)));
-      } catch (err) {
-        console.error("خطا در دریافت داده‌های فروش", err);
-      }
-    };
-    load();
-  }, [restaurantId]);
-
-  // total revenue (all-time or to-date)
-  useEffect(() => {
-    const loadTotal = async () => {
-      try {
-        const url =
-          restaurantId != null
-            ? `/total-revenue?restaurantId=${restaurantId}`
-            : `/total-revenue`;
-        // expected: { total: number }
-        const { data } = await adminAxios.get(url);
-        setTotalRevenue(Number(data?.total ?? 0));
-      } catch (e) {
-        setTotalRevenue(12500000); // fallback demo
-        console.warn("total-revenue fallback used:", e?.message);
-      }
-    };
-    loadTotal();
-  }, [restaurantId]);
-
-  // today stats
-  useEffect(() => {
-    const loadToday = async () => {
-      try {
-        const url =
-          restaurantId != null
-            ? `/today-stats?restaurantId=${restaurantId}`
-            : `/today-stats`;
-        // expected: { orders: number, profit: number }
-        const { data } = await adminAxios.get(url);
-        setTodayOrders(Number(data?.orders ?? 0));
-        setTodayProfit(Number(data?.profit ?? 0));
-      } catch (e) {
-        setTodayOrders(52);
-        setTodayProfit(1865000);
-        console.warn("today-stats fallback used:", e?.message);
-      }
-    };
-    loadToday();
-  }, [restaurantId]);
-
   if (!cssReady) return null;
 
   const formatTomans = (n) =>
     (Number(n) || 0).toLocaleString("fa-IR") + " تومان";
 
+  // render
   return (
     <div className="dashboard-container page-ready" dir="rtl">
       {sidebarOpen && (
@@ -192,7 +130,7 @@ export default function AdminDashboardPage() {
                   <div>
                     <div style={{ opacity: 0.85, fontSize: 14 }}>جمع درآمد</div>
                     <div style={{ fontSize: 24, fontWeight: 900 }}>
-                      {formatTomans(totalRevenue)}
+                      {formatTomans(dashboardData?.totalRevenue)}
                     </div>
                   </div>
                 </div>
@@ -228,7 +166,9 @@ export default function AdminDashboardPage() {
                         تعداد سفارش‌های امروز
                       </div>
                       <div style={{ fontSize: 22, fontWeight: 900 }}>
-                        {todayOrders.toLocaleString("fa-IR")}
+                        {dashboardData?.todayOrdersCount?.toLocaleString(
+                          "fa-IR"
+                        )}
                       </div>
                     </div>
                   </div>
@@ -251,10 +191,10 @@ export default function AdminDashboardPage() {
                     />
                     <div>
                       <div style={{ opacity: 0.8, fontSize: 14 }}>
-                        سود امروز
+                        درآمد امروز
                       </div>
                       <div style={{ fontSize: 22, fontWeight: 900 }}>
-                        {formatTomans(todayProfit)}
+                        {formatTomans(dashboardData?.todayRevenue)}
                       </div>
                     </div>
                   </div>

@@ -54,7 +54,7 @@ export default function SalesBoostCard({
   return (
     <div ref={cardRef} className={`why-card sales-boost ${className}`}>
       <div className="sales-boost__ring">
-        <svg width="180" height="180" viewBox="0 0 180 180">
+        <svg width="120" height="120" viewBox="0 0 180 180">
           {/* base thin gray ring */}
           <circle
             cx="90"

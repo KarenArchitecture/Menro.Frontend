@@ -245,13 +245,19 @@ body {
 .why-static__titles {
   position: fixed;
   top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%); /* GSAP will add translateY (%) on top */
   text-align: center;
   pointer-events: none;
-  opacity: 0; /* gsap animates this */
+  /* opacity: 0;  <-- remove this line */
+  will-change: transform;
 }
-
+.hero {
+  position: relative;
+  z-index: 10;
+}
+.why-static__titles {
+  z-index: 5;
+}
 .why-static__title {
   margin: 0;
   font-size: 140px;
@@ -474,6 +480,7 @@ body {
   height: 100px;
   background: linear-gradient(246.95deg, #192422 0.52%, #192422 98.07%);
   text-align: center;
+  padding: 8px 0;
 }
 #why-menro
   > div.why-card.icon-card.why-card.why-card--panel.pos-g

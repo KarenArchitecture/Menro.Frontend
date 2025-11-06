@@ -15,22 +15,6 @@ import ProfileSection from "../components/admin/ProfileSection";
 import OrdersSection from "../components/admin/OrdersSection";
 import CategorySettingsSection from "../components/admin/CategorySettingsSection";
 
-// لیست ماه‌ها برای برچسب فارسی
-const monthFa = [
-  "ژانویه",
-  "فوریه",
-  "مارس",
-  "آوریل",
-  "مه",
-  "ژوئن",
-  "ژوئیه",
-  "اوت",
-  "سپتامبر",
-  "اکتبر",
-  "نوامبر",
-  "دسامبر",
-];
-
 export default function AdminDashboardPage() {
   /* ensure CSS loaded */
   const cssReady = usePageStyles("/admin-dashboard.css");
@@ -45,6 +29,7 @@ export default function AdminDashboardPage() {
       try {
         const { data } = await adminAxios.get("/dashboard");
         setDashboardData(data);
+        console.log("📅 فروش ماهانه:", data.monthlySales);
       } catch (err) {
         console.error("خطا در دریافت داده داشبورد:", err);
       }
@@ -53,8 +38,7 @@ export default function AdminDashboardPage() {
   }, []);
 
   // Monthly chart
-  const labels =
-    dashboardData?.monthlySales?.map((x) => monthFa[x.month - 1]) ?? [];
+  const labels = dashboardData?.monthlySales?.map((x) => x.monthName) ?? [];
 
   const data =
     dashboardData?.monthlySales?.map((x) => Number(x.totalSales)) ?? [];

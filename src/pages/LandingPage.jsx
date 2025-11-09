@@ -60,7 +60,6 @@ export default function LandingPage() {
         phoneFrontSrc="/images/phone-right.png"
         phoneBackSrc="/images/phone-left.png"
       >
-        {/* (optional) If you want real text over the card later, drop it here) */}
         <h2 className="hero__title">نرم‌افزار و پنل پیشرفته منرو</h2>
         <h3 className="hero__description">همین حالا نصب کنید</h3>
       </InstallPhonesBanner>

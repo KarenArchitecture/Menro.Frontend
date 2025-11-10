@@ -7,12 +7,21 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const logout = () => {
-    localStorage.removeItem("token");
+  const logout = async () => {
+    try {
+      await authAxios.post("/logout", {}, { withCredentials: true }); // سرور کوکی رو حذف می‌کنه
+    } catch (err) {
+      console.warn("⚠️ logout request failed:", err);
+    }
+
+    // پاک‌سازی سمت فرانت
+    localStorage.removeItem("accessToken");
     localStorage.removeItem("userPhone");
+    setUser(null);
   };
+
   const refreshUser = async () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("accessToken");
     if (!token) {
       setUser(null);
       return;
@@ -30,13 +39,13 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.error("❌ refreshUser failed:", err);
       setUser(null);
-      localStorage.removeItem("token");
+      localStorage.removeItem("accessToken");
     }
   };
 
   useEffect(() => {
     // 🔹 مرحله اول: decode فوری برای سرعت
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("accessToken");
     if (!token) {
       setLoading(false);
       return;
@@ -60,7 +69,7 @@ export function AuthProvider({ children }) {
       });
     } catch (err) {
       console.error("❌ Invalid token:", err);
-      localStorage.removeItem("token");
+      localStorage.removeItem("accessToken");
     }
 
     // 🔹 مرحله دوم: درخواست /auth/me برای دقت و به‌روزرسانی
@@ -78,7 +87,7 @@ export function AuthProvider({ children }) {
       .catch((err) => {
         console.warn("⚠️ Failed to fetch /auth/me:", err);
         setUser(null);
-        localStorage.removeItem("token");
+        localStorage.removeItem("accessToken");
       })
       .finally(() => setLoading(false));
   }, []);

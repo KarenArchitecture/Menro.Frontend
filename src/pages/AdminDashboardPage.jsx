@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import usePageStyles from "../hooks/usePageStyles";
-import adminAxios from "../api/adminDashboardAxios";
+import adminDashboardAxios from "../api/adminDashboardAxios";
 import AdminHeader from "../components/admin/AdminHeader";
 import AdminSidebar from "../components/admin/AdminSidebar";
 import Panel from "../components/admin/Panel";
@@ -27,7 +27,7 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const loadDashboard = async () => {
       try {
-        const { data } = await adminAxios.get("/dashboard");
+        const { data } = await adminDashboardAxios.get("/dashboard");
         setDashboardData(data);
         console.log("📅 فروش ماهانه:", data.monthlySales);
       } catch (err) {

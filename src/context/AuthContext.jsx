@@ -2,23 +2,45 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import authAxios from "../api/authAxios";
 
+export let globalLogout = () => {};
+export function setGlobalLogout(fn) {
+  globalLogout = fn;
+}
+
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
   const logout = async () => {
     try {
-      await authAxios.post("/logout", {}, { withCredentials: true }); // سرور کوکی رو حذف می‌کنه
+      await authAxios.post("/logout", {}, { withCredentials: true });
     } catch (err) {
       console.warn("⚠️ logout request failed:", err);
     }
 
-    // پاک‌سازی سمت فرانت
     localStorage.removeItem("accessToken");
     localStorage.removeItem("userPhone");
     setUser(null);
+    localStorage.setItem("logout-event", Date.now().toString());
+    if (redirect) navigate("/", { replace: true });
   };
+
+  // 🔹 sync logout بین تب‌ها
+  useEffect(() => {
+    const syncLogout = (event) => {
+      if (event.key === "logout-event") setUser(null);
+    };
+    window.addEventListener("storage", syncLogout);
+    return () => window.removeEventListener("storage", syncLogout);
+  }, []);
+
+  // 🔹 ثبت logout جهانی برای استفاده در interceptor
+  useEffect(() => {
+    setGlobalLogout(logout);
+    refreshUser();
+  }, [logout]);
 
   const refreshUser = async () => {
     const token = localStorage.getItem("accessToken");
@@ -43,8 +65,8 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // 🔹 decode token و load اولیه
   useEffect(() => {
-    // 🔹 مرحله اول: decode فوری برای سرعت
     const token = localStorage.getItem("accessToken");
     if (!token) {
       setLoading(false);
@@ -72,7 +94,6 @@ export function AuthProvider({ children }) {
       localStorage.removeItem("accessToken");
     }
 
-    // 🔹 مرحله دوم: درخواست /auth/me برای دقت و به‌روزرسانی
     authAxios
       .get("/me")
       .then((res) => {

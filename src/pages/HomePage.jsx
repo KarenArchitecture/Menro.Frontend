@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import Header from "../components/common/Header";
 import Carousel from "../components/home/Carousel";
 import RestaurantList from "../components/home/RestaurantList";
@@ -7,6 +8,11 @@ import PopularFoodLazyList from "../components/home/PopularFoodLazyList";
 import AuthActions from "../components/common/AuthActions";
 
 export default function HomePage() {
+  console.log("🏠 Home rendered");
+  useEffect(() => {
+    console.log("🔹 Home mounted");
+    return () => console.log("🔸 Home unmounted");
+  }, []);
   return (
     <>
       <Header />

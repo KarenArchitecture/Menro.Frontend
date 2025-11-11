@@ -1,3 +1,4 @@
+// src/context/AuthContext.jsx
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import authAxios from "../api/authAxios";
@@ -13,7 +14,10 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const logout = async () => {
+  /* ------------------------
+    LOGOUT
+   ---------------------- */
+  const logout = async (redirect = true) => {
     try {
       await authAxios.post("/logout", {}, { withCredentials: true });
     } catch (err) {
@@ -24,10 +28,11 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("userPhone");
     setUser(null);
     localStorage.setItem("logout-event", Date.now().toString());
-    if (redirect) navigate("/", { replace: true });
+
+    if (redirect) window.location.href = "/"; // به صفحه اصلی برگرد
   };
 
-  // 🔹 sync logout بین تب‌ها
+  // sync logout بین تب‌ها
   useEffect(() => {
     const syncLogout = (event) => {
       if (event.key === "logout-event") setUser(null);
@@ -36,12 +41,14 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener("storage", syncLogout);
   }, []);
 
-  // 🔹 ثبت logout جهانی برای استفاده در interceptor
+  // ثبت logout جهانی برای interceptor
   useEffect(() => {
     setGlobalLogout(logout);
-    refreshUser();
-  }, [logout]);
+  }, []);
 
+  /* ------------------------
+   * REFRESH USER
+   * ---------------------- */
   const refreshUser = async () => {
     const token = localStorage.getItem("accessToken");
     if (!token) {
@@ -59,15 +66,21 @@ export function AuthProvider({ children }) {
         fullName: res.data.fullName,
       });
     } catch (err) {
-      console.error("❌ refreshUser failed:", err);
+      console.warn("❌ refreshUser failed:", err);
+      if (err.response?.status === 401) {
+        localStorage.removeItem("accessToken");
+      }
       setUser(null);
-      localStorage.removeItem("accessToken");
     }
   };
 
-  // 🔹 decode token و load اولیه
+  /* ------------------------
+   * INITIAL LOAD
+   * ---------------------- */
   useEffect(() => {
+    let cancelled = false;
     const token = localStorage.getItem("accessToken");
+
     if (!token) {
       setLoading(false);
       return;
@@ -83,20 +96,24 @@ export function AuthProvider({ children }) {
         ? [roles]
         : [];
 
-      setUser({
-        id: decoded.nameid || decoded.sub,
-        email: decoded.email,
-        roles: normalizedRoles.map((r) => r.toLowerCase()),
-        fullName: decoded.fullName || decoded.name || "",
-      });
+      if (!cancelled) {
+        setUser({
+          id: decoded.nameid || decoded.sub,
+          email: decoded.email,
+          roles: normalizedRoles.map((r) => r.toLowerCase()),
+          fullName: decoded.fullName || decoded.name || "",
+        });
+      }
     } catch (err) {
       console.error("❌ Invalid token:", err);
       localStorage.removeItem("accessToken");
     }
 
+    // فقط یک بار فراخوانی /me
     authAxios
       .get("/me")
       .then((res) => {
+        if (cancelled) return;
         setUser({
           id: res.data.id,
           email: res.data.email,
@@ -106,13 +123,23 @@ export function AuthProvider({ children }) {
         });
       })
       .catch((err) => {
+        if (cancelled) return;
         console.warn("⚠️ Failed to fetch /auth/me:", err);
+        if (err.response?.status === 401) {
+          localStorage.removeItem("accessToken");
+        }
         setUser(null);
-        localStorage.removeItem("accessToken");
       })
-      .finally(() => setLoading(false));
+      .finally(() => !cancelled && setLoading(false));
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
+  /* ------------------------
+   * RETURN
+   * ---------------------- */
   return (
     <AuthContext.Provider
       value={{ user, setUser, logout, loading, refreshUser }}

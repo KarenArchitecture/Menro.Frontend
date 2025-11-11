@@ -137,7 +137,7 @@ export const fetchRestaurantCategories = async () => {
 
 // restaurant registeration
 export const registerRestaurant = async (payload) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("accessToken");
 
   const response = await restaurantAxios.post("/register", payload, {
     headers: {

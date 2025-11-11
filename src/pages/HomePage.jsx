@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 // // import Header from "../components/common/Header";
 // import React, { useEffect } from "react";
 // import Header from "../components/common/Header";
@@ -26,7 +27,6 @@
 //   );
 // }
 
-
 // src/pages/HomePage.jsx
 import React, { useEffect } from "react";
 import Header from "../components/common/Header";
@@ -36,6 +36,11 @@ import PreviousOrders from "../components/home/PreviousOrders";
 import PopularFoodAndAdBannerLazyList from "../components/home/PopularFoodAndAdBannerLazyList";
 
 export default function HomePage() {
+  console.log("🏠 Home rendered");
+  useEffect(() => {
+    console.log("🔹 Home mounted");
+    return () => console.log("🔸 Home unmounted");
+  }, []);
   useEffect(() => {
     window.__menroAdExcludes = [];
   }, []);
@@ -52,4 +57,3 @@ export default function HomePage() {
     </>
   );
 }
-

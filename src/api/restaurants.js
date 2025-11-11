@@ -10,10 +10,10 @@ const RESTAURANT_URL = "/restaurant";
 
 /* ───────────────  🏠 Home Page  ─────────────── */
 export const getFeaturedRestaurants = () =>
-  publicAxios.get(`${RESTAURANT_URL}/featured`).then(r => r.data);
+  publicAxios.get(`${RESTAURANT_URL}/featured`).then((r) => r.data);
 
 export const getRandomRestaurants = () =>
-  publicAxios.get(`${RESTAURANT_URL}/random`).then(r => r.data);
+  publicAxios.get(`${RESTAURANT_URL}/random`).then((r) => r.data);
 
 // ── 🎯 Ad Banners ──
 // export const getAdBanner = () =>
@@ -26,39 +26,40 @@ export const getRandomAdBanner = (excludeIds = []) =>
         exclude: excludeIds.length ? excludeIds.join(",") : undefined,
       },
     })
-    .then(r => r.data);
+    .then((r) => r.data);
 
 export const postAdImpression = (bannerId) =>
   publicAxios.post(`${RESTAURANT_URL}/ad-banner/${bannerId}/impression`);
 
-
 /* ───────────────  🛍 Shop Page  ─────────────── */
 export const getRestaurantBannerBySlug = (slug) =>
-  publicAxios.get(`${RESTAURANT_URL}/banner/${slug}`).then(r => r.data);
-
+  publicAxios.get(`${RESTAURANT_URL}/banner/${slug}`).then((r) => r.data);
 
 /* ───────────────  🍴 Restaurant Page (Dynamic Menu & Item Detail) ─────────────── */
 
 export const getRestaurantMenuBySlug = (restaurantSlug) =>
-  publicAxios.get(`${RESTAURANT_URL}/menu/${restaurantSlug}`).then(r => r.data);
+  publicAxios
+    .get(`${RESTAURANT_URL}/menu/${restaurantSlug}`)
+    .then((r) => r.data);
 
 export const getFoodDetail = (foodId) =>
-  publicAxios.get(`${RESTAURANT_URL}/${foodId}/details`).then(r => r.data);
-
+  publicAxios.get(`${RESTAURANT_URL}/${foodId}/details`).then((r) => r.data);
 
 /* ───────────────  ⚙️ Owner/Admin Utilities  ─────────────── */
 export const getFoodCategoriesByRestaurantSlug = (slug) =>
-  publicAxios.get(`${RESTAURANT_URL}/${slug}/foodcategories`).then(r => r.data);
+  publicAxios
+    .get(`${RESTAURANT_URL}/${slug}/foodcategories`)
+    .then((r) => r.data);
 
 export const fetchRestaurantCategories = async () => {
   const response = await restaurantAxios.get("/categories");
   return response.data;
 };
 
-
 /* ───────────────  🧾 Registration  ─────────────── */
 export const registerRestaurant = async (payload) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("accessToken");
+
   const response = await restaurantAxios.post("/register", payload, {
     headers: { Authorization: `Bearer ${token}` },
   });

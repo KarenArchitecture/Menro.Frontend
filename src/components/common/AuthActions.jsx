@@ -1,13 +1,12 @@
 // components/home/AuthActions.jsx
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 export default function AuthActions() {
+  const { logout } = useAuth();
   const navigate = useNavigate();
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("userPhone");
-    navigate("/");
+    logout();
   };
 
   return (

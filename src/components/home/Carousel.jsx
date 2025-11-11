@@ -282,7 +282,7 @@ function Carousel() {
     };
 
     const slideInterval = setInterval(goToNext, 3000);
-    return () => clearInterval(slideInterval);z
+    return () => clearInterval(slideInterval);
   }, [currentIndex, slides, isDragging]);
 
   const goToSlide = (slideIndex) =>

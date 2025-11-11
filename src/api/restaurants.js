@@ -16,8 +16,8 @@ export const getRandomRestaurants = () =>
   publicAxios.get(`${RESTAURANT_URL}/random`).then(r => r.data);
 
 // ── 🎯 Ad Banners ──
-export const getAdBanner = () =>
-  publicAxios.get(`${RESTAURANT_URL}/ad-banner`).then(r => r.data);
+// export const getAdBanner = () =>
+//   publicAxios.get(`${RESTAURANT_URL}/ad-banner`).then(r => r.data);
 
 export const getRandomAdBanner = (excludeIds = []) =>
   publicAxios

@@ -161,7 +161,9 @@ export default function PopularFoodAndAdBannerLazyList() {
   }
 
   // ───────────── Empty ─────────────
-  const pages = (data?.pages ?? []).filter(Boolean);
+  const pages = (data?.pages ?? [])
+  .flat()
+  .filter(Boolean);
   if (!pages || pages.length === 0) {
     return (
       <StateMessage kind="empty" title="موردی یافت نشد">

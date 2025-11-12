@@ -34,7 +34,6 @@ export default function App() {
           element={<RegisterRestaurantPage />}
         />
         <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/admin" element={<AdminDashboardPage />} />
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
         <Route
           path="/admin"

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import usePageStyles from "../hooks/usePageStyles";
 import authAxios from "../api/authAxios";
@@ -153,8 +153,8 @@ export default function LoginPage() {
       }
       sendOtp.mutate(phone);
     } else {
-      if (code.length !== 4) {
-        showMsg("کد باید ۴ رقم باشد.");
+      if (code.length !== 6) {
+        showMsg("کد باید 6 رقم باشد.");
         return;
       }
       verifyUser.mutate({
@@ -234,8 +234,8 @@ export default function LoginPage() {
                 <input
                   id="code"
                   type="text"
-                  maxLength="4"
-                  placeholder="----"
+                  maxLength="6"
+                  placeholder="------"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                 />
@@ -281,7 +281,7 @@ export default function LoginPage() {
             onSubmit={handlePasswordSubmit}
           >
             <div className="input-group">
-              <label htmlFor="pw-phone">ایمیل یا شماره تلفن</label>
+              <label htmlFor="pw-phone">شماره تلفن</label>
               <input
                 id="pw-phone"
                 type="text"

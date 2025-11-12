@@ -2,8 +2,11 @@ import React, { useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import authAxios from "../api/authAxios";
 import usePageStyles from "../hooks/usePageStyles";
+/* ────────────────────────────────
+function OTP({ length = 6, onValue }) {
+──────────────────────────────── */
 
-function OTP({ length = 4, onValue }) {
+function OTP({ length = 6, onValue }) {
   const refs = useRef([]);
   const [boxes, setBoxes] = useState(Array(length).fill(""));
 
@@ -45,28 +48,44 @@ export default function ForgotPassword() {
   const [code, setCode] = useState("");
   const [pass, setPass] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [msg, setMsg] = useState(""); // For error/success messages
+  const [msg, setMsg] = useState("");
 
   /* 1) send OTP */
   const sendOtp = useMutation({
     mutationFn: async (phoneNumber) => {
-      await authAxios.post("/send-otp", { phoneNumber });
+      const { data } = await authAxios.post("/send-otp", { phoneNumber });
+      return data;
     },
     onSuccess: () => {
-      setMsg("کد تأیید ارسال شد.");
+      setMsg("کد تأیید ارسال شد ✅");
       setStep(2);
     },
-    onError: (err) => setMsg(err.response?.data?.message || "خطا در ارسال کد."),
+    onError: (err) => {
+      const msg =
+        err.response?.data?.message ||
+        "خطا در ارسال کد، لطفاً دوباره تلاش کنید.";
+      setMsg(msg);
+    },
   });
 
   /* 2) verify OTP */
   const verifyOtp = useMutation({
     mutationFn: async ({ phoneNumber, code }) => {
-      await authAxios.post("/verify-otp", { phoneNumber, code });
+      const payload = {
+        phoneNumber,
+        method: "otp",
+        codeOrPassword: code,
+      };
+      const { data } = await authAxios.post("/verify", payload);
+      return data;
     },
-    onSuccess: () => {
-      setMsg("کد تأیید شد.");
-      setStep(3);
+    onSuccess: (data) => {
+      if (data.verified) {
+        setMsg("کد تأیید شد ✅");
+        setStep(3);
+      } else {
+        setMsg("کد وارد شده معتبر نیست.");
+      }
     },
     onError: (err) =>
       setMsg(err.response?.data?.message || "کد وارد شده صحیح نیست."),
@@ -82,15 +101,15 @@ export default function ForgotPassword() {
       });
     },
     onSuccess: () => {
-      setMsg("رمز عبور با موفقیت تغییر کرد.");
-      setStep(1);
-      setPhone("");
-      setCode("");
-      setPass("");
-      setConfirm("");
+      setMsg("رمز عبور با موفقیت تغییر کرد ✅");
+      setTimeout(() => {
+        // بازگشت به صفحه ورود
+        window.location.href = "/login";
+      }, 1200);
     },
-    onError: (err) =>
-      setMsg(err.response?.data?.message || "تغییر رمز عبور ناموفق بود."),
+    onError: (err) => {
+      setMsg(err.response?.data?.message || "تغییر رمز عبور ناموفق بود.");
+    },
   });
 
   return (
@@ -98,6 +117,7 @@ export default function ForgotPassword() {
       <div className="auth-card">
         <h1 className="auth-title">فراموشی رمز عبور</h1>
 
+        {/* Progress Tabs */}
         <div className="auth-tabs">
           <button className={`auth-tab ${step === 1 ? "is-active" : ""}`}>
             شماره
@@ -122,7 +142,7 @@ export default function ForgotPassword() {
             className="auth-body"
             onSubmit={(e) => {
               e.preventDefault();
-              if (phone.length !== 11) {
+              if (!/^\d{11}$/.test(phone)) {
                 setMsg("شماره تلفن باید ۱۱ رقم باشد.");
                 return;
               }
@@ -138,8 +158,12 @@ export default function ForgotPassword() {
               onChange={(e) => setPhone(e.target.value.replace(/[^\d]/g, ""))}
               required
             />
-            <button className="btn btn-primary mt-16" type="submit">
-              ارسال کد
+            <button
+              className="btn btn-primary mt-16"
+              type="submit"
+              disabled={sendOtp.isPending}
+            >
+              {sendOtp.isPending ? "در حال ارسال..." : "ارسال کد"}
             </button>
             {msg && <p className="form-message">{msg}</p>}
           </form>
@@ -151,8 +175,8 @@ export default function ForgotPassword() {
             className="auth-body"
             onSubmit={(e) => {
               e.preventDefault();
-              if (code.length !== 4) {
-                setMsg("کد باید ۴ رقم باشد.");
+              if (code.length !== 6) {
+                setMsg("کد باید ۶ رقم باشد.");
                 return;
               }
               setMsg("");
@@ -160,7 +184,7 @@ export default function ForgotPassword() {
             }}
           >
             <p className="auth-label">کد ارسال شده به {phone}</p>
-            <OTP length={4} onValue={setCode} />
+            <OTP length={6} onValue={setCode} />
 
             <div className="row gap">
               <button
@@ -173,9 +197,9 @@ export default function ForgotPassword() {
               <button
                 className="btn btn-primary"
                 type="submit"
-                disabled={code.length !== 4}
+                disabled={verifyOtp.isPending || code.length !== 6}
               >
-                تایید کد
+                {verifyOtp.isPending ? "در حال بررسی..." : "تأیید کد"}
               </button>
             </div>
             {msg && <p className="form-message">{msg}</p>}
@@ -224,8 +248,12 @@ export default function ForgotPassword() {
               minLength={6}
             />
 
-            <button className="btn btn-primary mt-16" type="submit">
-              ثبت رمز جدید
+            <button
+              className="btn btn-primary mt-16"
+              type="submit"
+              disabled={resetPassword.isPending}
+            >
+              {resetPassword.isPending ? "در حال ثبت..." : "ثبت رمز جدید"}
             </button>
             {msg && <p className="form-message">{msg}</p>}
           </form>

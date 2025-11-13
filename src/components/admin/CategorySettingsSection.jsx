@@ -155,6 +155,7 @@ export default function CategorySettingsSection() {
   // ==== Upload SVG ====
   const handleUploadSvg = async (file) => {
     if (!file) return;
+
     if (!file.name.toLowerCase().endsWith(".svg")) {
       setUploadMessage({ text: "فقط فایل SVG مجاز است.", type: "error" });
       return;
@@ -162,20 +163,15 @@ export default function CategorySettingsSection() {
 
     try {
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("Icon", file);
+      formData.append("Label", file.name.replace(/\.svg$/i, "")); // label
 
-      const res = await fileAxios.post("/upload-icon", formData, {
+      const res = await iconAxios.post("/add", formData, {
         headers: { "Content-Type": "multipart/form-data" },
-      });
-      const { fileName } = res.data;
-
-      await iconAxios.post("/add", {
-        fileName,
-        label: file.name.replace(/\.svg$/i, ""),
       });
 
       setUploadMessage({
-        text: `آیکن "${fileName}" با موفقیت آپلود شد.`,
+        text: `آیکن با موفقیت آپلود شد.`,
         type: "info",
       });
     } catch (err) {

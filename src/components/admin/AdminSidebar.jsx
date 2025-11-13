@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { replace, useNavigate } from "react-router-dom";
 
 import { Link } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../Context/AuthContext";
 const NAV = [
   { key: "dashboard", label: "داشبورد", icon: "fas fa-tachometer-alt" },
 

@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import authAxios from "../api/authAxios";
+import userAxios from "../api/userAxios";
 
 export let globalLogout = () => {};
 export function setGlobalLogout(fn) {
@@ -13,6 +14,27 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [avatarUrl, setAvatarUrl] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem("accessToken"));
+
+  // get avatar url
+  useEffect(() => {
+    if (!token) {
+      setAvatarUrl(null);
+      return;
+    }
+
+    const loadUserProfile = async () => {
+      try {
+        const { data } = await userAxios.get("/profile");
+        setAvatarUrl(data.profileImageUrl);
+      } catch (err) {
+        console.error("خطا در لود پروفایل:", err);
+      }
+    };
+
+    loadUserProfile();
+  }, [token]);
 
   /* ------------------------
     LOGOUT
@@ -24,8 +46,10 @@ export function AuthProvider({ children }) {
       console.warn("⚠️ logout request failed:", err);
     }
 
-    localStorage.removeItem("accessToken");
     localStorage.removeItem("userPhone");
+    localStorage.removeItem("accessToken");
+    setToken(null);
+    setAvatarUrl(null); // 🛑 عکس قبلی را هم پاک کن
     setUser(null);
     localStorage.setItem("logout-event", Date.now().toString());
 
@@ -142,7 +166,15 @@ export function AuthProvider({ children }) {
    * ---------------------- */
   return (
     <AuthContext.Provider
-      value={{ user, setUser, logout, loading, refreshUser }}
+      value={{
+        user,
+        setUser,
+        logout,
+        loading,
+        refreshUser,
+        avatarUrl,
+        setToken,
+      }}
     >
       {!loading && children}
     </AuthContext.Provider>

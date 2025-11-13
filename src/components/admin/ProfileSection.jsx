@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react";
 import { getUserProfile, updateUserProfile } from "../../api/user.js";
-import { useAuth } from "../../context/AuthContext.jsx";
-import { Link, Navigate } from "react-router-dom";
+import { useAuth } from "../../Context/AuthContext.jsx";
+import { Link } from "react-router-dom";
 
 export default function ProfileSection() {
   // hooks
   const { refreshUser } = useAuth();
 
   // fields
+  //const [newPassword, setNewPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [newPassword, setNewPassword] = useState("");
   const [profileImage, setProfileImage] = useState(null);
+  const [profilePreview, setProfilePreview] = useState(null);
 
   // load profile
   useEffect(() => {
@@ -20,6 +21,9 @@ export default function ProfileSection() {
         const { data } = await getUserProfile();
         setFullName(data.fullName);
         setPhoneNumber(data.phoneNumber);
+        if (data.profileImageUrl) {
+          setProfilePreview(data.profileImageUrl);
+        }
       } catch (err) {
         console.error("خطا در دریافت پروفایل:", err);
       }
@@ -27,8 +31,8 @@ export default function ProfileSection() {
 
     loadProfile();
   }, []);
-  // update profile
 
+  // update profile
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -42,7 +46,6 @@ export default function ProfileSection() {
       await updateUserProfile(formData);
       alert("پروفایل با موفقیت ذخیره شد");
       await refreshUser();
-      //Navigate("/admin");
     } catch (err) {
       alert("خطا در ذخیره تغییرات");
       console.error(err);
@@ -62,6 +65,7 @@ export default function ProfileSection() {
             onChange={(e) => setFullName(e.target.value)}
           />
         </div>
+        <hr style={{ border: "1px solid #444", margin: "20px 0" }} />
 
         {/* Phone Number (read only) */}
         <div className="input-group">
@@ -71,6 +75,7 @@ export default function ProfileSection() {
           </Link>
           <input type="tel" id="user-phone" value={phoneNumber} readOnly />
         </div>
+        <hr style={{ border: "1px solid #444", margin: "20px 0" }} />
 
         {/* New Password */}
         <div className="input-group">
@@ -87,17 +92,44 @@ export default function ProfileSection() {
             تغییر رمز عبور
           </Link>
         </div>
+        <hr style={{ border: "1px solid #444", margin: "20px 0" }} />
 
         {/* Profile Image */}
+
+        <label htmlFor="user-avatar-upload">عکس پروفایل</label>
+        <br />
         <div className="input-group">
-          <label htmlFor="user-avatar-upload">عکس پروفایل</label>
+          <div style={{ textAlign: "center" }}>
+            {profilePreview && (
+              <img
+                src={profilePreview}
+                alt="عکس پروفایل"
+                style={{
+                  width: "120px",
+                  height: "120px",
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  margin: "15px auto",
+                }}
+              />
+            )}
+          </div>
+
           <input
             type="file"
             id="user-avatar-upload"
             accept="image/*"
-            onChange={(e) => setProfileImage(e.target.files[0])}
+            onChange={(e) => {
+              const file = e.target.files[0];
+              setProfileImage(file);
+
+              if (file) {
+                setProfilePreview(URL.createObjectURL(file));
+              }
+            }}
           />
         </div>
+        <hr style={{ border: "1px solid #444", margin: "20px 0" }} />
 
         <button type="submit" className="btn btn-primary">
           ذخیره تغییرات

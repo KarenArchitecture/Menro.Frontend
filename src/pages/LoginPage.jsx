@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import usePageStyles from "../hooks/usePageStyles";
 import authAxios from "../api/authAxios";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../Context/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
@@ -11,7 +11,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
   const returnUrl = params.get("returnUrl");
-  const { refreshUser } = useAuth();
+  const { refreshUser, setToken } = useAuth();
 
   /* loginpage CSS (/public) */
   usePageStyles("/styles-login.css");
@@ -126,6 +126,7 @@ export default function LoginPage() {
     onSuccess: async (data) => {
       const { accessToken } = data;
       localStorage.setItem("accessToken", accessToken);
+      setToken(accessToken);
       await refreshUser();
       navigate(returnUrl?.startsWith("/") ? returnUrl : "/", { replace: true });
     },
@@ -133,9 +134,7 @@ export default function LoginPage() {
       const msg = err.response?.data?.message || "ورود ناموفق بود.";
       showMsg(msg);
     },
-  });
-
-  /* handlers */
+  }); /* handlers */
 
   const handleOtpSubmit = (e) => {
     e.preventDefault();

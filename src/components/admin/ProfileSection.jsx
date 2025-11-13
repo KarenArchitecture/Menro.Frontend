@@ -70,7 +70,7 @@ export default function ProfileSection() {
         {/* Phone Number (read only) */}
         <div className="input-group">
           <label htmlFor="user-phone">شماره تلفن</label>{" "}
-          <Link to={"/login"} className="btn btn-primary">
+          <Link to={"/change-phone"} className="btn btn-primary">
             تغییر شماره همراه
           </Link>
           <input type="tel" id="user-phone" value={phoneNumber} readOnly />

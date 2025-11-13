@@ -1,6 +1,6 @@
 // src/components/admin/AdminSidebar.jsx
 import React, { useEffect } from "react";
-import { replace, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { Link } from "react-router-dom";
 import { useAuth } from "../../Context/AuthContext";
@@ -58,16 +58,12 @@ export default function AdminSidebar({
   };
 
   // admin role check
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const roles = user?.roles || [];
   const isAdmin = roles.includes("admin");
   // logout handler
-  const { logout } = useAuth();
-  const { refreshUser } = useAuth();
-
   const handleLogout = async () => {
     logout();
-    await refreshUser();
     navigate("/", { replace: false });
   };
 

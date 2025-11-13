@@ -11,6 +11,7 @@ import AdminDashboardPage from "./pages/AdminDashboardPage";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import LandingPage from "./pages/LandingPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
+import ChangePhone from "./pages/ChangePhone";
 
 export default function App() {
   const { pathname } = useLocation();
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/change-phone" element={<ChangePhone />} />
         <Route
           path="/register-restaurant"
           element={<RegisterRestaurantPage />}

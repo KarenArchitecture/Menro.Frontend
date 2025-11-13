@@ -11,7 +11,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
   const returnUrl = params.get("returnUrl");
-  const { refreshUser, setToken } = useAuth();
+  const { refreshUser, setToken, loginWithUserId } = useAuth();
 
   /* loginpage CSS (/public) */
   usePageStyles("/styles-login.css");
@@ -120,22 +120,18 @@ export default function LoginPage() {
   /* 2) login after verification */
   const finalLogin = useMutation({
     mutationFn: async ({ userId }) => {
-      const { data } = await authAxios.post("/login", { userId });
-      return data;
+      await loginWithUserId(userId);
     },
-    onSuccess: async (data) => {
-      const { accessToken } = data;
-      localStorage.setItem("accessToken", accessToken);
-      setToken(accessToken);
-      await refreshUser();
+    onSuccess: () => {
       navigate(returnUrl?.startsWith("/") ? returnUrl : "/", { replace: true });
     },
     onError: (err) => {
-      const msg = err.response?.data?.message || "ورود ناموفق بود.";
+      const msg = err.response?.data?.message || "ورود ناموفق بود";
       showMsg(msg);
     },
-  }); /* handlers */
+  });
 
+  /* handlers */
   const handleOtpSubmit = (e) => {
     e.preventDefault();
     clearMsg();

@@ -137,8 +137,8 @@ export default function CategorySettingsSection() {
       const res = await adminGlobalCategoryAxios.put("/update", dto);
       console.log("✅ Updated global category:", res.data);
 
-      await loadCategories(); // 🔁 رفرش لیست بعد از موفقیت
-      cancelEdit(); // 🌀 بستن مودال
+      await loadCategories();
+      cancelEdit();
     } catch (err) {
       console.error("❌ Failed to update category", err);
       alert(err.response?.data?.message ?? "خطا در ذخیره تغییرات");

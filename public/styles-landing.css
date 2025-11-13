@@ -1,6 +1,7 @@
 /***************************************
  * ۱) توکن‌ها و پایه
  **************************************/
+
 :root {
   --bg: #0f0f10;
   --bg-hero: #0b0f13;
@@ -256,7 +257,7 @@ body {
   z-index: 10;
 }
 .why-static__titles {
-  z-index: 5;
+  z-index: 0;
 }
 .why-static__title {
   margin: 0;
@@ -988,7 +989,7 @@ body {
   position: relative;
   height: 100vh; /* how long the “scroll jail” lasts */
   background: #0b0f13;
-  margin-top: 10rem;
+  margin-top: 30rem;
 }
 
 .plans-pin__sticky {
@@ -1039,6 +1040,7 @@ body {
   border: 1px solid #394350;
   border-radius: 16px;
   padding: 0.8rem;
+  z-index: 9999;
 }
 
 .plans__tab {

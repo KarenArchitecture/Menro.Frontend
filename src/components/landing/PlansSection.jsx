@@ -1,82 +1,119 @@
 import React, { useEffect, useRef, useState } from "react";
-import { motion, useMotionValue, useTransform } from "framer-motion";
+import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import PlanCard from "./PlanCard";
 import plansData from "./plans";
 
-const SCROLL_FACTOR = 2000; // bigger = slower scrub
+const SCROLL_FACTOR = 3000; // wheel scrub speed
 const EPS = 0.001;
 
 export default function PlansSection({ plans = plansData }) {
   const sectionRef = useRef(null);
   const [activeStep, setActiveStep] = useState(0);
-  const progress = useMotionValue(0); // 0..1 manual progress
+  const [viewportH, setViewportH] = useState(900);
+  const progress = useMotionValue(0); // 0..1
 
   useEffect(() => {
+    setViewportH(window.innerHeight || 900);
+  }, []);
+
+  // --- helpers ---
+  const getNavH = () => {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(
+      "--nav-h"
+    );
+    const n = parseInt(v || "96", 10);
+    return Number.isFinite(n) ? n : 96;
+  };
+
+  // ✅ OPTION A: Loosen the engagement window so fast scrolls still trigger
+  const inPinnedViewport = () => {
+    const el = sectionRef.current;
+    if (!el) return false;
+    const rect = el.getBoundingClientRect();
+    const vpH = window.innerHeight;
+    const navH = getNavH();
+
+    const TOP_TOL = 120; // px tolerance above header line
+    const BOTTOM_VIS = vpH * 0.35; // require only 35% of viewport below
+
+    // Was: rect.top <= navH + EPS && rect.bottom >= vpH - EPS
+    return rect.top <= navH + TOP_TOL && rect.bottom >= BOTTOM_VIS;
+  };
+
+  const focusTab = (index) => {
     const el = sectionRef.current;
     if (!el) return;
 
-    const getNavH = () => {
-      const v = getComputedStyle(document.documentElement).getPropertyValue(
-        "--nav-h"
-      );
-      const n = parseInt(v || "96", 10);
-      return Number.isFinite(n) ? n : 96;
-    };
+    // 1) Ensure the section is pinned/visible under the header
+    const rect = el.getBoundingClientRect();
+    const docTop = window.pageYOffset || document.documentElement.scrollTop;
+    const sectionTop = docTop + rect.top;
 
-    const inPinnedViewport = () => {
-      const rect = el.getBoundingClientRect();
-      const vpH = window.innerHeight;
-      const navH = getNavH();
-      // Section spans the viewport area under the header while pinned
-      return rect.top <= navH + EPS && rect.bottom >= vpH - EPS;
-    };
+    if (!inPinnedViewport()) {
+      window.scrollTo({
+        top: sectionTop,
+        behavior: "smooth",
+      });
+    }
+
+    // 2) Animate progress to the selected card's midpoint
+    const seg = 1 / (plans.length + 1);
+    // slightly past midpoint so previous cards are definitely out
+    const target = Math.min(1, (index + 0.52) * seg);
+
+    // cancel any running animation and animate this value
+    const controls = animate(progress, target, {
+      duration: 0.55,
+      ease: [0.22, 0.68, 0.2, 0.99], // nice ease-out
+    });
+
+    // Optional: stop if component unmounts
+    return () => controls.stop();
+  };
+
+  // --- wheel/touch scrub (unchanged) ---
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
 
     const clamp01 = (v) => Math.max(0, Math.min(1, v));
 
     const onWheel = (e) => {
       if (!inPinnedViewport()) return;
-
       const v = progress.get();
       const atStart = v <= EPS;
       const atEnd = v >= 1 - EPS;
       const forward = e.deltaY > 0;
-
-      // RELEASE at boundaries in the scroll direction (let page move)
       if ((atStart && !forward) || (atEnd && forward)) return;
 
-      // Otherwise capture and scrub
       e.preventDefault();
-      const delta = Math.max(-80, Math.min(80, e.deltaY)); // clamp spikes
+      const delta = Math.max(-80, Math.min(80, e.deltaY));
       const next = clamp01(v + delta / SCROLL_FACTOR);
       progress.set(next);
 
-      // Keep the page visually parked while capturing
       const rect = el.getBoundingClientRect();
       const lockTop = window.scrollY + rect.top;
       window.scrollTo({ top: lockTop });
     };
 
-    // Touch support (reverse on swipe down)
     let lastY = null;
     const onTouchStart = (e) => {
       lastY = e.touches[0].clientY;
     };
     const onTouchMove = (e) => {
       if (!inPinnedViewport()) return;
-
       const y = e.touches[0].clientY;
-      const dy = lastY == null ? 0 : lastY - y; // finger up => forward
+      const dy = lastY == null ? 0 : lastY - y; // up => forward
       lastY = y;
 
       const v = progress.get();
       const atStart = v <= EPS;
       const atEnd = v >= 1 - EPS;
       const forward = dy > 0;
-
       if ((atStart && !forward) || (atEnd && forward)) return;
 
       e.preventDefault();
-      const next = clamp01(v + dy / (SCROLL_FACTOR * 0.9));
+      const next = Math.max(0, Math.min(1, v + dy / (SCROLL_FACTOR * 0.9)));
       progress.set(next);
 
       const rect = el.getBoundingClientRect();
@@ -101,7 +138,7 @@ export default function PlansSection({ plans = plansData }) {
     };
   }, [progress]);
 
-  // active tab indicator from manual progress (plays forward/backward)
+  // active tab highlight driven by progress
   useEffect(() => {
     const total = plans.length || 1;
     return progress.on("change", (v) => {
@@ -111,6 +148,19 @@ export default function PlansSection({ plans = plansData }) {
       setActiveStep(cur);
     });
   }, [plans, progress]);
+
+  // fade header + disable its clicks only while interacting with the deck
+  useEffect(() => {
+    const header = document.querySelector(".app-header");
+    if (!header) return;
+
+    const off = progress.on("change", (v) => {
+      const dim = v > 0.02 && v < 0.98;
+      header.classList.toggle("is-dim", dim);
+    });
+
+    return () => off();
+  }, [progress]);
 
   return (
     <section
@@ -127,7 +177,7 @@ export default function PlansSection({ plans = plansData }) {
               aria-selected={i === activeStep}
               className={`plans__tab ${i === activeStep ? "is-active" : ""}`}
               type="button"
-              onClick={() => progress.set((i + 0.5) / (plans.length + 1))}
+              onClick={() => focusTab(i)}
             >
               {p.label}
             </button>
@@ -146,6 +196,7 @@ export default function PlansSection({ plans = plansData }) {
               total={plans.length}
               plan={plan}
               progress={progress}
+              viewportH={viewportH}
             />
           ))}
         </div>
@@ -154,7 +205,7 @@ export default function PlansSection({ plans = plansData }) {
   );
 }
 
-function PlanMotionCard({ index, total, plan, progress }) {
+function PlanMotionCard({ index, total, plan, progress, viewportH }) {
   const seg = 1 / (total + 1);
   const start = index * seg;
   const mid = (index + 0.5) * seg;
@@ -163,10 +214,13 @@ function PlanMotionCard({ index, total, plan, progress }) {
   const baseY = index * 32;
   const baseScale = 1 - index * 0.04;
 
+  // fly well above viewport (adjust multiplier to taste)
+  const outY = -Math.max(320, Math.round(viewportH * 0.8));
+
   const y = useTransform(
     progress,
     [0, start, mid, end, 1],
-    [baseY, baseY, 0, -220, -260]
+    [baseY, baseY, 0, outY, outY]
   );
   const scale = useTransform(
     progress,

@@ -8,6 +8,11 @@
     padding: 0 32px;
     pointer-events: none;
     display: block;
+    transition: opacity 0.25s ease;
+  }
+
+  .app-header.is-dim {
+    opacity: 0;
   }
 
   .app-header__pill {
@@ -145,4 +150,15 @@
   width: 40px;
   height: 40px;
   margin-top: 10px;
+}
+.app-header,
+.app-header .app-header__pill {
+  transition: opacity 0.25s ease;
+}
+
+/* when dimmed: fade + 100% click-through */
+.app-header.is-dim,
+.app-header.is-dim .app-header__pill {
+  opacity: 0; /* or .25 if you prefer */
+  pointer-events: none; /* <-- stops the pill from catching clicks */
 }

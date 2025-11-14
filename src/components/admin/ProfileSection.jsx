@@ -8,7 +8,6 @@ export default function ProfileSection() {
   const { refreshUser } = useAuth();
 
   // fields
-  //const [newPassword, setNewPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [profileImage, setProfileImage] = useState(null);
@@ -39,12 +38,10 @@ export default function ProfileSection() {
     const formData = new FormData();
     formData.append("fullName", fullName);
 
-    if (newPassword) formData.append("newPassword", newPassword);
     if (profileImage) formData.append("profileImage", profileImage);
 
     try {
       await updateUserProfile(formData);
-      alert("پروفایل با موفقیت ذخیره شد");
       await refreshUser();
     } catch (err) {
       alert("خطا در ذخیره تغییرات");

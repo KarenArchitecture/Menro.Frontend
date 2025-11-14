@@ -19,7 +19,7 @@ export default function ProductModal({
   // برای ریست کردن فرم بعد بسته شدن
   const [name, setName] = useState("");
   const [ingredients, setIngredients] = useState("");
-  const [foodCategoryId, setFoodCategoryId] = useState(0);
+  const [foodCategoryId, setFoodCategoryId] = useState("");
   const [price, setPrice] = useState("");
 
   // دسته‌بندی‌ها
@@ -27,7 +27,7 @@ export default function ProductModal({
   const [loadingCategories, setLoadingCategories] = useState(false);
 
   useEffect(() => {
-    if (!isOpen) return; // موقتاً اینو کامنت کن ببین کال میشه یا نه
+    if (!isOpen) return;
 
     const fetchCategories = async () => {
       setLoadingCategories(true); // ✅ قبل از درخواست
@@ -47,50 +47,72 @@ export default function ProductModal({
     fetchCategories();
   }, [isOpen]);
 
+  // unselect category on create mode
+  useEffect(() => {
+    if (isOpen && mode === "create") {
+      setFoodCategoryId("");
+    }
+  }, [isOpen, mode]);
+
   // food details
   useEffect(() => {
-    if (isOpen && mode === "edit" && productId) {
-      const fetchProduct = async () => {
-        try {
-          const { data } = await adminFoodAxios.get(`/${productId}`);
-          console.log("product fetched:", data);
+    if (!isOpen || mode !== "edit" || !productId) return;
 
-          // پر کردن فیلدهای ساده
-          document.getElementById("product-name").value = data.name || "";
-          document.getElementById("product-description").value =
-            data.ingredients || "";
-          document.getElementById("product-category").value =
-            data.foodCategoryId;
+    const fetchProduct = async () => {
+      try {
+        const { data } = await adminFoodAxios.get(`/${productId}`);
+        console.log("product fetched:", data);
 
-          if (data.hasVariants && data.variants) {
-            setHasVariants(true);
-            setVariants(
-              data.variants.map((v) => ({
-                id: uid(),
-                name: v.name,
-                price: v.price.toString(),
-                isDefault: false,
-                addons: v.addons
-                  ? v.addons.map((a) => ({
-                      id: uid(),
-                      name: a.name,
-                      price: a.extraPrice.toString(),
-                    }))
-                  : [],
-              }))
-            );
-          } else {
-            setHasVariants(false);
-            document.getElementById("product-price").value = data.price || "";
-          }
-        } catch (err) {
-          console.error("خطا در گرفتن اطلاعات محصول:", err);
+        setName(data.name || "");
+        setIngredients(data.ingredients || "");
+        setFoodCategoryId(data.foodCategoryId ?? ""); // همان عدد یا خالی
+
+        if (data.hasVariants && data.variants) {
+          setHasVariants(true);
+
+          setVariants(
+            data.variants.map((v, index) => ({
+              id: uid(),
+              name: v.name,
+              price: v.price?.toString() || "",
+              isDefault: v.isDefault ?? index === 0,
+              addons: v.addons
+                ? v.addons.map((a) => ({
+                    id: uid(),
+                    name: a.name,
+                    price: a.extraPrice?.toString() || "",
+                  }))
+                : [],
+            }))
+          );
+        } else {
+          setHasVariants(false);
+          setPrice(data.price?.toString() || "");
         }
-      };
+      } catch (err) {
+        console.error("خطا در گرفتن اطلاعات محصول:", err);
+      }
+    };
 
-      fetchProduct();
-    }
+    fetchProduct();
   }, [isOpen, mode, productId]);
+
+  // ② بررسی وجود داشتن یا نداشتن دسته‌بندی غذا
+  useEffect(() => {
+    if (!isOpen || mode !== "edit") return;
+    if (loadingCategories) return; // صبر کن تا دسته‌ها لود بشن
+
+    if (!foodCategoryId) return; // محصول دسته نداشته
+
+    const exists = categories.some(
+      (c) => Number(c.id) === Number(foodCategoryId)
+    );
+
+    if (!exists) {
+      console.warn("⚠ دسته‌بندی محصول حذف شده → foodCategoryId = ''");
+      setFoodCategoryId(""); // باعث نمایش گزینه "دسته‌بندی پاک شده" می‌شود
+    }
+  }, [isOpen, mode, loadingCategories, categories, foodCategoryId]);
 
   //  simple vs variants
   const [hasVariants, setHasVariants] = useState(false);
@@ -204,9 +226,7 @@ export default function ProductModal({
         }
       }
     } else {
-      const basePrice = (
-        document.getElementById("product-price")?.value || ""
-      ).trim();
+      const basePrice = (price || "").trim();
       if (!basePrice) {
         alert("قیمت پایه را وارد کنید.");
         return;
@@ -214,21 +234,14 @@ export default function ProductModal({
     }
 
     const basePriceValue = !hasVariants
-      ? Number(
-          (document.getElementById("product-price")?.value || "0").replace(
-            /[^\d]/g,
-            ""
-          )
-        )
+      ? Number(String(price || "0").replace(/[^\d]/g, ""))
       : null;
 
     const payload = {
       id: productId,
-      name: document.getElementById("product-name")?.value || "",
-      ingredients: document.getElementById("product-description")?.value || "",
-      foodCategoryId: Number(
-        document.getElementById("product-category")?.value || "0"
-      ),
+      name: name.trim(),
+      ingredients: ingredients.trim(),
+      foodCategoryId: Number(foodCategoryId || 0),
       price: basePriceValue ?? 0,
       imageUrl: "",
       hasVariants: hasVariants,
@@ -243,6 +256,7 @@ export default function ProductModal({
           }))
         : [],
     };
+
     // console.log("payload:", JSON.stringify(payload, null, 2));
 
     try {
@@ -251,8 +265,6 @@ export default function ProductModal({
       } else if (mode === "edit" && productId) {
         await adminFoodAxios.put("/update", payload);
       }
-
-      alert("محصول با موفقیت ذخیره شد");
 
       onSaved?.(); // لیست غذاها رو رفرش کن
       //resetForm(); // فرم ریست بشه
@@ -281,6 +293,11 @@ export default function ProductModal({
     const priceEl = document.getElementById("product-price");
     if (priceEl) priceEl.value = "";
   };
+  useEffect(() => {
+    if (!isOpen) {
+      resetForm();
+    }
+  }, [isOpen]);
 
   return (
     <div
@@ -296,7 +313,6 @@ export default function ProductModal({
             <i className="fas fa-times" />
           </button>
         </div>
-
         <div className="modal-body">
           <form
             id="product-form"
@@ -306,27 +322,53 @@ export default function ProductModal({
             <div className="form-column">
               <div className="input-group">
                 <label htmlFor="product-name">نام محصول</label>
-                <input type="text" id="product-name" required />
+                <input
+                  type="text"
+                  id="product-name"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
               </div>
 
               <div className="input-group">
                 <label htmlFor="product-description">توضیح مختصر محصول</label>
-                <textarea id="product-description" rows={4} />
+                <textarea
+                  id="product-description"
+                  rows={4}
+                  value={ingredients}
+                  onChange={(e) => setIngredients(e.target.value)}
+                />
               </div>
               <div className="input-group">
                 <label htmlFor="product-category">دسته‌بندی</label>
-                <select id="product-category" required>
-                  {loadingCategories ? (
-                    <option>در حال بارگذاری...</option>
-                  ) : categories.length > 0 ? (
-                    categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
+                <select
+                  id="product-category"
+                  required
+                  value={foodCategoryId}
+                  onChange={(e) => setFoodCategoryId(e.target.value)}
+                >
+                  {/* حالت EDIT: اگر دسته‌بندی محصول حذف شده */}
+                  {mode === "edit" &&
+                    foodCategoryId === "" &&
+                    !loadingCategories &&
+                    categories.length > 0 && (
+                      <option value="" disabled>
+                        دسته‌بندی پاک شده
                       </option>
-                    ))
-                  ) : (
-                    <option disabled>دسته‌ای یافت نشد</option>
-                  )}
+                    )}
+
+                  {/* حالت عمومی: گزینه انتخاب اولیه */}
+                  <option value="" disabled>
+                    انتخاب دسته‌بندی
+                  </option>
+
+                  {/* دسته‌بندی‌های واقعی */}
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -388,6 +430,10 @@ export default function ProductModal({
                     type="text"
                     id="product-price"
                     placeholder="مثال: ۱۵۰۰۰۰"
+                    value={price}
+                    onChange={
+                      (e) => setPrice(e.target.value.replace(/[^\d]/g, "")) // فقط رقم
+                    }
                   />
                 </div>
               )}

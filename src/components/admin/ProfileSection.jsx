@@ -81,14 +81,7 @@ export default function ProfileSection() {
         <div className="input-group">
           <label htmlFor="user-password">رمز عبور جدید</label>
           <br></br>
-          {/* <input
-            type="password"
-            id="user-password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            placeholder="برای تغییر، رمز جدید را وارد کنید"
-          /> */}
-          <Link to={"/forgot-password"} className="btn btn-primary">
+          <Link to={"/change-password"} className="btn btn-primary">
             تغییر رمز عبور
           </Link>
         </div>

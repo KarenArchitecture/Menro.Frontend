@@ -30,7 +30,7 @@ export default function ProductModal({
     if (!isOpen) return;
 
     const fetchCategories = async () => {
-      setLoadingCategories(true); // ✅ قبل از درخواست
+      setLoadingCategories(true);
 
       try {
         const { data } = await adminFoodAxios.get("/categories");
@@ -46,13 +46,6 @@ export default function ProductModal({
 
     fetchCategories();
   }, [isOpen]);
-
-  // unselect category on create mode
-  useEffect(() => {
-    if (isOpen && mode === "create") {
-      setFoodCategoryId("");
-    }
-  }, [isOpen, mode]);
 
   // food details
   useEffect(() => {
@@ -97,7 +90,7 @@ export default function ProductModal({
     fetchProduct();
   }, [isOpen, mode, productId]);
 
-  // ② بررسی وجود داشتن یا نداشتن دسته‌بندی غذا
+  // hasCategory check for food
   useEffect(() => {
     if (!isOpen || mode !== "edit") return;
     if (loadingCategories) return; // صبر کن تا دسته‌ها لود بشن
@@ -113,6 +106,12 @@ export default function ProductModal({
       setFoodCategoryId(""); // باعث نمایش گزینه "دسته‌بندی پاک شده" می‌شود
     }
   }, [isOpen, mode, loadingCategories, categories, foodCategoryId]);
+  // unselect category on create mode
+  useEffect(() => {
+    if (isOpen && mode === "create") {
+      setFoodCategoryId("");
+    }
+  }, [isOpen, mode]);
 
   //  simple vs variants
   const [hasVariants, setHasVariants] = useState(false);
@@ -249,6 +248,7 @@ export default function ProductModal({
         ? variants.map((v) => ({
             name: v.name.trim(),
             price: Number(String(v.price).replace(/[^\d]/g, "")),
+            isDefault: v.isDefault,
             addons: v.addons.map((a) => ({
               name: a.name.trim(),
               extraPrice: Number(String(a.price).replace(/[^\d]/g, "")),

@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { getUserProfile, updateUserProfile } from "../../api/user.js";
 import { useAuth } from "../../Context/AuthContext.jsx";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function ProfileSection() {
   // hooks
   const { refreshUser } = useAuth();
+  const navigate = useNavigate();
 
   // fields
-  //const [newPassword, setNewPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [profileImage, setProfileImage] = useState(null);
@@ -39,13 +40,12 @@ export default function ProfileSection() {
     const formData = new FormData();
     formData.append("fullName", fullName);
 
-    if (newPassword) formData.append("newPassword", newPassword);
     if (profileImage) formData.append("profileImage", profileImage);
 
     try {
       await updateUserProfile(formData);
-      alert("پروفایل با موفقیت ذخیره شد");
       await refreshUser();
+      navigate(0);
     } catch (err) {
       alert("خطا در ذخیره تغییرات");
       console.error(err);

@@ -6,6 +6,7 @@ import {
   registerRestaurant,
 } from "../api/restaurants";
 import usePageStyles from "../hooks/usePageStyles";
+import { useAuth } from "../Context/AuthContext";
 
 //  HH:MM  ➔  HH:MM:SS
 const normalizeTime = (t) => (t.length === 5 ? `${t}:00` : t);
@@ -19,6 +20,7 @@ const isTimeValid = (start, end) => {
 export default function RegisterRestaurantPage() {
   /* load CSS (/public) */
   usePageStyles("/register-rastaurant.css");
+  const { refreshUser } = useAuth();
 
   const navigate = useNavigate();
 
@@ -59,9 +61,10 @@ export default function RegisterRestaurantPage() {
 
       return await registerRestaurant(payload);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await refreshUser(); // ✅ نقش جدید Owner را از سرور بگیر
       setMsg({ text: "رستوران با موفقیت ثبت شد", type: "success" });
-      navigate("/", { replace: true });
+      navigate("/admin", { replace: true });
     },
     onError: (err) => setMsg({ text: err.message, type: "error" }),
   });

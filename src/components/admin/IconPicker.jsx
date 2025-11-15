@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import iconAxios from "../../api/iconAxios.js";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../Context/AuthContext";
 export const ICON_BY_KEY = {};
 
 function DefaultIcon() {
@@ -65,7 +65,7 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
 
   if (!open) return null;
 
-  // 🔸 delete handler (frontend only — backend-ready)
+  // 🔸 delete handler
   const handleDeleteIcon = async (id) => {
     const confirmed = window.confirm("آیا از حذف این آیکن اطمینان دارید؟");
     if (!confirmed) return;

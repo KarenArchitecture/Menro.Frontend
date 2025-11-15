@@ -3,54 +3,51 @@ import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import usePageStyles from "../hooks/usePageStyles";
 import authAxios from "../api/authAxios";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../Context/AuthContext";
 
 export default function RegisterPage() {
   usePageStyles("/styles-register.css");
   const navigate = useNavigate();
-  const { refreshUser } = useAuth();
+  const { registerUser } = useAuth();
 
-  /* local form state */
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [msg, setMsg] = useState({ text: "", type: "" }); // success | error
+  const [msg, setMsg] = useState({ text: "", type: "" });
 
-  /* pre‑fill phone if it exists in localStorage (optional)*/
+  /* pre-fill phone from localStorage */
   useEffect(() => {
     const raw = localStorage.getItem("userPhone");
-    if (!raw) return;
+    if (!raw) {
+      navigate("/login", { replace: true });
+      return;
+    }
     try {
       const saved = JSON.parse(raw);
       if (saved.value && Date.now() < saved.expiresAt) {
         setPhone(saved.value);
       } else {
         localStorage.removeItem("userPhone");
+        navigate("/login", { replace: true });
       }
     } catch {
       localStorage.removeItem("userPhone");
+      navigate("/login", { replace: true });
     }
-  }, []);
+  }, [navigate]);
 
   /* register mutation */
   const registerMutation = useMutation({
     mutationFn: async (payload) => {
-      try {
-        const res = await authAxios.post("/register", payload);
-        return res.data;
-      } catch (err) {
-        const message = err.response?.data?.message || "ثبت‌نام ناموفق بود";
-        throw new Error(message);
-      }
+      return await registerUser(payload);
     },
-    onSuccess: (data) => {
-      localStorage.setItem("token", data.token);
-      localStorage.removeItem("userPhone");
-      refreshUser();
-      navigate("/login", { replace: true });
+    onSuccess: () => {
+      navigate("/", { replace: true });
     },
-    onError: (err) => setMsg({ text: err.message, type: "error" }),
+    onError: (err) => {
+      setMsg({ text: err.message, type: "error" });
+    },
   });
 
   /* form submit */
@@ -58,27 +55,25 @@ export default function RegisterPage() {
     e.preventDefault();
     setMsg({ text: "", type: "" });
 
-    /* basic checks */
     if (!fullName.trim()) {
       setMsg({ text: "وارد کردن نام الزامی است", type: "error" });
       return;
     }
-    if (!/^\d{11}$/.test(phone)) {
-      setMsg({ text: "شماره تلفن باید ۱۱ رقم باشد", type: "error" });
-      return;
-    }
 
-    registerMutation.mutate({ fullName, phoneNumber: phone, email, password });
+    registerMutation.mutate({
+      fullName,
+      phoneNumber: phone,
+      email,
+      password,
+    });
   };
 
-  /* UI */
   return (
     <div className="form-container">
       <form className="profile-form active-form" onSubmit={handleSubmit}>
         <h2>تکمیل اطلاعات کاربر</h2>
-        <p>برای تجربه بهتر، لطفا اطلاعات پروفایل خود را تکمیل کنید.</p>
+        <p>برای ادامه، لطفاً اطلاعات خود را وارد کنید.</p>
 
-        {/* name */}
         <div className="input-group">
           <label htmlFor="name">نام و نام خانوادگی</label>
           <input
@@ -90,20 +85,12 @@ export default function RegisterPage() {
           />
         </div>
 
-        {/* phone */}
         <div className="input-group">
           <label htmlFor="phone">شماره تلفن</label>
-          <input
-            id="phone"
-            type="text"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="09123456789"
-            required
-          />
+          <input id="phone" type="text" value={phone} readOnly />
+          <small>شماره از مرحله قبل تأیید شده است.</small>
         </div>
 
-        {/* email */}
         <div className="input-group">
           <label htmlFor="email">ایمیل (اختیاری)</label>
           <input
@@ -114,7 +101,6 @@ export default function RegisterPage() {
           />
         </div>
 
-        {/* password */}
         <div className="input-group">
           <label htmlFor="pass">رمز عبور (اختیاری)</label>
           <input
@@ -126,12 +112,10 @@ export default function RegisterPage() {
           <small>با انتخاب رمز عبور، حساب خود را امن‌تر کنید.</small>
         </div>
 
-        {/* submit */}
         <button type="submit" disabled={registerMutation.isLoading}>
-          {registerMutation.isLoading ? "در حال ارسال…" : "ذخیره اطلاعات"}
+          {registerMutation.isLoading ? "در حال ارسال…" : "ثبت‌نام"}
         </button>
 
-        {/* message */}
         {msg.text && <p className={`message ${msg.type}`}>{msg.text}</p>}
       </form>
     </div>

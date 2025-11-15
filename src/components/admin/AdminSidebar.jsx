@@ -1,16 +1,15 @@
 // src/components/admin/AdminSidebar.jsx
 import React, { useEffect } from "react";
-import { replace, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { Link } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../Context/AuthContext";
 const NAV = [
   { key: "dashboard", label: "داشبورد", icon: "fas fa-tachometer-alt" },
 
-  { isDivider: true, label: "مدیریت محتوا" },
+  { isDivider: true, label: "مدیریت رستوران" },
   { key: "products", label: "مدیریت محصولات", icon: "fas fa-utensils" },
-  { key: "categories", label: "مدیریت دسته‌بندی‌ها", icon: "fas fa-tags" },
-  { key: "theme", label: "مدیریت قالب", icon: "fas fa-palette" },
+  { key: "categories", label: "دسته‌بندی‌های رستوران", icon: "fas fa-tags" },
   { key: "music", label: "مدیریت موسیقی", icon: "fas fa-music" },
 
   { isDivider: true, label: "کسب و کار" },
@@ -18,9 +17,24 @@ const NAV = [
   { key: "financial", label: "مالی", icon: "fas fa-file-invoice-dollar" },
   { key: "ads", label: "رزرو تبلیغات", icon: "fas fa-bullhorn" },
 
+  // ✅ فقط برای Admin
+  { isDivider: true, label: "مدیریت منرو", roles: ["Admin"] },
+  {
+    key: "category-settings",
+    label: "دسته‌بندی‌های عمومی",
+    icon: "fas fa-tags",
+    roles: ["Admin"],
+  },
+  {
+    key: "restaurants",
+    label: "مدیریت رستوران‌ها",
+    icon: "fas fa-utensils",
+    roles: ["Admin"],
+  },
+
   { isDivider: true, label: "حساب کاربری" },
+  { key: "theme", label: "مدیریت قالب", icon: "fas fa-palette" },
   { key: "profile", label: "پروفایل کاربری", icon: "fas fa-user-circle" },
-  { key: "category-settings", label: "تنظیمات دسته‌ها", icon: "fas fa-cog" },
 ];
 
 export default function AdminSidebar({
@@ -44,16 +58,12 @@ export default function AdminSidebar({
   };
 
   // admin role check
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const roles = user?.roles || [];
   const isAdmin = roles.includes("admin");
   // logout handler
-  const { logout } = useAuth();
-  const { refreshUser } = useAuth();
-
   const handleLogout = async () => {
     logout();
-    await refreshUser();
     navigate("/", { replace: false });
   };
 
@@ -85,8 +95,8 @@ export default function AdminSidebar({
       <nav className="sidebar-nav">
         <ul>
           {NAV.map((item) => {
-            // 🔸 فقط برای ادمین
-            if (item.key === "category-settings" && !isAdmin) return null;
+            // اگر نقش تعریف شده و نقش کاربر جزوش نیست → مخفی
+            if (item.roles && !isAdmin) return null;
 
             return item.isDivider ? (
               <li key={item.label} className="nav-section-title">
@@ -109,10 +119,11 @@ export default function AdminSidebar({
               </li>
             );
           })}
+
           {/* Static logout link */}
           <li className="nav-item">
             <Link to="/" onClick={handleLogout}>
-              <i className="fas fa-sign-out-alt nav-icon" /> خروج از حساب کاربری
+              <i className="fas fa-sign-out-alt nav-icon" /> خروج از حساب
             </Link>
           </li>
         </ul>

@@ -7,7 +7,7 @@ const adminCustomCategoryAxios = axios.create({
 
 // افزودن توکن JWT به تمام درخواست‌ها
 adminCustomCategoryAxios.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token"); // یا از هر جایی که ذخیره‌اش کردی
+  const token = localStorage.getItem("accessToken"); // یا از هر جایی که ذخیره‌اش کردی
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

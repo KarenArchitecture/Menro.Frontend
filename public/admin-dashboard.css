@@ -615,7 +615,7 @@ table td {
 }
 
 .table-container {
-  max-height: 200px; /* Example height */
+  /* max-height: auto; Example height */
   overflow-y: auto;
 }
 

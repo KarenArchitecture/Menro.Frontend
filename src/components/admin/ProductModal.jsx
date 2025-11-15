@@ -19,18 +19,46 @@ export default function ProductModal({
   // برای ریست کردن فرم بعد بسته شدن
   const [name, setName] = useState("");
   const [ingredients, setIngredients] = useState("");
-  const [foodCategoryId, setFoodCategoryId] = useState(0);
+  const [foodCategoryId, setFoodCategoryId] = useState("");
   const [price, setPrice] = useState("");
+  const [hasVariants, setHasVariants] = useState(false);
+  const [variants, setVariants] = useState([
+    {
+      uiId: uid(),
+      dbId: null,
+      name: "",
+      price: "",
+      isDefault: true,
+      addons: [],
+    },
+  ]);
+
+  // UX => close modal on "esc" press
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        onClose?.();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
 
   // دسته‌بندی‌ها
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
 
   useEffect(() => {
-    if (!isOpen) return; // موقتاً اینو کامنت کن ببین کال میشه یا نه
+    if (!isOpen) return;
 
     const fetchCategories = async () => {
-      setLoadingCategories(true); // ✅ قبل از درخواست
+      setLoadingCategories(true);
 
       try {
         const { data } = await adminFoodAxios.get("/categories");
@@ -49,55 +77,71 @@ export default function ProductModal({
 
   // food details
   useEffect(() => {
-    if (isOpen && mode === "edit" && productId) {
-      const fetchProduct = async () => {
-        try {
-          const { data } = await adminFoodAxios.get(`/${productId}`);
-          console.log("product fetched:", data);
+    if (!isOpen || mode !== "edit" || !productId) return;
 
-          // پر کردن فیلدهای ساده
-          document.getElementById("product-name").value = data.name || "";
-          document.getElementById("product-description").value =
-            data.ingredients || "";
-          document.getElementById("product-category").value =
-            data.foodCategoryId;
+    const fetchProduct = async () => {
+      try {
+        const { data } = await adminFoodAxios.get(`/${productId}`);
+        console.log("product fetched:", data);
 
-          if (data.hasVariants && data.variants) {
-            setHasVariants(true);
-            setVariants(
-              data.variants.map((v) => ({
-                id: uid(),
-                name: v.name,
-                price: v.price.toString(),
-                isDefault: false,
-                addons: v.addons
-                  ? v.addons.map((a) => ({
-                      id: uid(),
-                      name: a.name,
-                      price: a.extraPrice.toString(),
-                    }))
-                  : [],
-              }))
-            );
-          } else {
-            setHasVariants(false);
-            document.getElementById("product-price").value = data.price || "";
-          }
-        } catch (err) {
-          console.error("خطا در گرفتن اطلاعات محصول:", err);
+        setName(data.name || "");
+        setIngredients(data.ingredients || "");
+        setFoodCategoryId(data.foodCategoryId ?? ""); // همان عدد یا خالی
+
+        if (data.hasVariants && data.variants) {
+          setHasVariants(true);
+
+          setVariants(
+            (data.variants || []).map((v, index) => ({
+              uiId: uid(),
+              dbId: v.id ?? null,
+              name: v.name ?? "",
+              price: v.price?.toString() ?? "",
+              isDefault: v.isDefault ?? index === 0,
+              addons: (v.addons || []).map((a) => ({
+                uiId: uid(),
+                dbId: a.id ?? null,
+                name: a.name ?? "",
+                price: a.extraPrice?.toString() ?? "",
+              })),
+            }))
+          );
+        } else {
+          setHasVariants(false);
+          setPrice(data.price?.toString() || "");
         }
-      };
+      } catch (err) {
+        console.error("خطا در گرفتن اطلاعات محصول:", err);
+      }
+    };
 
-      fetchProduct();
-    }
+    fetchProduct();
   }, [isOpen, mode, productId]);
 
-  //  simple vs variants
-  const [hasVariants, setHasVariants] = useState(false);
+  // hasCategory check for food
+  useEffect(() => {
+    if (!isOpen || mode !== "edit") return;
+    if (loadingCategories) return; // صبر کن تا دسته‌ها لود بشن
 
-  const [variants, setVariants] = useState([
-    { id: uid(), name: "", price: "", isDefault: true, addons: [] },
-  ]);
+    if (!foodCategoryId) return; // محصول دسته نداشته
+
+    const exists = categories.some(
+      (c) => Number(c.id) === Number(foodCategoryId)
+    );
+
+    if (!exists) {
+      console.warn("⚠ دسته‌بندی محصول حذف شده → foodCategoryId = ''");
+      setFoodCategoryId(""); // باعث نمایش گزینه "دسته‌بندی پاک شده" می‌شود
+    }
+  }, [isOpen, mode, loadingCategories, categories, foodCategoryId]);
+  // unselect category on create mode
+  useEffect(() => {
+    if (isOpen && mode === "create") {
+      setFoodCategoryId("");
+    }
+  }, [isOpen, mode]);
+
+  //  simple vs variants
 
   // ---- helpers: variants ----
   const onToggleHasVariants = (flag) => {
@@ -124,7 +168,7 @@ export default function ProductModal({
 
   const removeVariant = (id) => {
     setVariants((prev) => {
-      const next = prev.filter((v) => v.id !== id);
+      const next = prev.filter((v) => v.uiId !== id);
       if (!next.some((v) => v.isDefault) && next.length > 0) {
         next[0].isDefault = true;
       }
@@ -134,19 +178,21 @@ export default function ProductModal({
 
   const updateVariant = (id, patch) => {
     setVariants((prev) =>
-      prev.map((v) => (v.id === id ? { ...v, ...patch } : v))
+      prev.map((v) => (v.uiId === id ? { ...v, ...patch } : v))
     );
   };
 
   const makeDefault = (id) => {
-    setVariants((prev) => prev.map((v) => ({ ...v, isDefault: v.id === id })));
+    setVariants((prev) =>
+      prev.map((v) => ({ ...v, isDefault: v.uiId === id }))
+    );
   };
 
   // ---- helpers: addons (per variant) ----
   const addAddon = (variantId) => {
     setVariants((prev) =>
       prev.map((v) =>
-        v.id === variantId
+        v.uiId === variantId
           ? {
               ...v,
               addons: [...v.addons, { id: uid(), name: "", price: "" }],
@@ -159,11 +205,11 @@ export default function ProductModal({
   const updateAddon = (variantId, addonId, patch) => {
     setVariants((prev) =>
       prev.map((v) =>
-        v.id === variantId
+        v.uiId === variantId
           ? {
               ...v,
               addons: v.addons.map((a) =>
-                a.id === addonId ? { ...a, ...patch } : a
+                a.uiId === addonId ? { ...a, ...patch } : a
               ),
             }
           : v
@@ -174,8 +220,8 @@ export default function ProductModal({
   const removeAddon = (variantId, addonId) => {
     setVariants((prev) =>
       prev.map((v) =>
-        v.id === variantId
-          ? { ...v, addons: v.addons.filter((a) => a.id !== addonId) }
+        v.uiId === variantId
+          ? { ...v, addons: v.addons.filter((a) => a.uiId !== addonId) }
           : v
       )
     );
@@ -204,9 +250,7 @@ export default function ProductModal({
         }
       }
     } else {
-      const basePrice = (
-        document.getElementById("product-price")?.value || ""
-      ).trim();
+      const basePrice = (price || "").trim();
       if (!basePrice) {
         alert("قیمت پایه را وارد کنید.");
         return;
@@ -214,35 +258,32 @@ export default function ProductModal({
     }
 
     const basePriceValue = !hasVariants
-      ? Number(
-          (document.getElementById("product-price")?.value || "0").replace(
-            /[^\d]/g,
-            ""
-          )
-        )
+      ? Number(String(price || "0").replace(/[^\d]/g, ""))
       : null;
 
     const payload = {
       id: productId,
-      name: document.getElementById("product-name")?.value || "",
-      ingredients: document.getElementById("product-description")?.value || "",
-      foodCategoryId: Number(
-        document.getElementById("product-category")?.value || "0"
-      ),
+      name: name.trim(),
+      ingredients: ingredients.trim(),
+      foodCategoryId: Number(foodCategoryId || 0),
       price: basePriceValue ?? 0,
       imageUrl: "",
       hasVariants: hasVariants,
       variants: hasVariants
         ? variants.map((v) => ({
+            id: v.dbId,
             name: v.name.trim(),
             price: Number(String(v.price).replace(/[^\d]/g, "")),
+            isDefault: v.isDefault,
             addons: v.addons.map((a) => ({
+              id: a.dbId,
               name: a.name.trim(),
               extraPrice: Number(String(a.price).replace(/[^\d]/g, "")),
             })),
           }))
         : [],
     };
+
     // console.log("payload:", JSON.stringify(payload, null, 2));
 
     try {
@@ -251,8 +292,6 @@ export default function ProductModal({
       } else if (mode === "edit" && productId) {
         await adminFoodAxios.put("/update", payload);
       }
-
-      alert("محصول با موفقیت ذخیره شد");
 
       onSaved?.(); // لیست غذاها رو رفرش کن
       //resetForm(); // فرم ریست بشه
@@ -281,6 +320,11 @@ export default function ProductModal({
     const priceEl = document.getElementById("product-price");
     if (priceEl) priceEl.value = "";
   };
+  useEffect(() => {
+    if (!isOpen) {
+      resetForm();
+    }
+  }, [isOpen]);
 
   return (
     <div
@@ -296,7 +340,6 @@ export default function ProductModal({
             <i className="fas fa-times" />
           </button>
         </div>
-
         <div className="modal-body">
           <form
             id="product-form"
@@ -306,27 +349,53 @@ export default function ProductModal({
             <div className="form-column">
               <div className="input-group">
                 <label htmlFor="product-name">نام محصول</label>
-                <input type="text" id="product-name" required />
+                <input
+                  type="text"
+                  id="product-name"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
               </div>
 
               <div className="input-group">
                 <label htmlFor="product-description">توضیح مختصر محصول</label>
-                <textarea id="product-description" rows={4} />
+                <textarea
+                  id="product-description"
+                  rows={4}
+                  value={ingredients}
+                  onChange={(e) => setIngredients(e.target.value)}
+                />
               </div>
               <div className="input-group">
                 <label htmlFor="product-category">دسته‌بندی</label>
-                <select id="product-category" required>
-                  {loadingCategories ? (
-                    <option>در حال بارگذاری...</option>
-                  ) : categories.length > 0 ? (
-                    categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
+                <select
+                  id="product-category"
+                  required
+                  value={foodCategoryId}
+                  onChange={(e) => setFoodCategoryId(e.target.value)}
+                >
+                  {/* حالت EDIT: اگر دسته‌بندی محصول حذف شده */}
+                  {mode === "edit" &&
+                    foodCategoryId === "" &&
+                    !loadingCategories &&
+                    categories.length > 0 && (
+                      <option value="" disabled>
+                        دسته‌بندی پاک شده
                       </option>
-                    ))
-                  ) : (
-                    <option disabled>دسته‌ای یافت نشد</option>
-                  )}
+                    )}
+
+                  {/* حالت عمومی: گزینه انتخاب اولیه */}
+                  <option value="" disabled>
+                    انتخاب دسته‌بندی
+                  </option>
+
+                  {/* دسته‌بندی‌های واقعی */}
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -388,6 +457,10 @@ export default function ProductModal({
                     type="text"
                     id="product-price"
                     placeholder="مثال: ۱۵۰۰۰۰"
+                    value={price}
+                    onChange={
+                      (e) => setPrice(e.target.value.replace(/[^\d]/g, "")) // فقط رقم
+                    }
                   />
                 </div>
               )}
@@ -401,7 +474,7 @@ export default function ProductModal({
 
                   <div id="product-types-container">
                     {variants.map((v) => (
-                      <div key={v.id} style={{ marginBottom: 10 }}>
+                      <div key={v.uiId} style={{ marginBottom: 10 }}>
                         {/* variant row */}
                         <div
                           className="product-type-item"
@@ -418,7 +491,7 @@ export default function ProductModal({
                             placeholder="نام نوع (مثال: ویژه)"
                             value={v.name}
                             onChange={(e) =>
-                              updateVariant(v.id, { name: e.target.value })
+                              updateVariant(v.uiId, { name: e.target.value })
                             }
                           />
 
@@ -430,7 +503,7 @@ export default function ProductModal({
                             value={v.price}
                             onChange={(e) => {
                               const raw = e.target.value.replace(/[^\d]/g, "");
-                              updateVariant(v.id, { price: raw });
+                              updateVariant(v.uiId, { price: raw });
                             }}
                           />
 
@@ -443,7 +516,7 @@ export default function ProductModal({
                               type="radio"
                               name="default_type"
                               checked={v.isDefault}
-                              onChange={() => makeDefault(v.id)}
+                              onChange={() => makeDefault(v.uiId)}
                             />{" "}
                             پیش‌فرض
                           </label>
@@ -452,7 +525,7 @@ export default function ProductModal({
                           <button
                             type="button"
                             className="btn btn-icon btn-danger"
-                            onClick={() => removeVariant(v.id)}
+                            onClick={() => removeVariant(v.uiId)}
                             title="حذف نوع"
                             disabled={variants.length === 1}
                           >
@@ -483,7 +556,7 @@ export default function ProductModal({
 
                           {v.addons.map((a) => (
                             <div
-                              key={a.id}
+                              key={a.uiId}
                               className="addon-item"
                               style={{
                                 display: "grid",
@@ -498,7 +571,7 @@ export default function ProductModal({
                                 placeholder="نام مخلفات"
                                 value={a.name}
                                 onChange={(e) =>
-                                  updateAddon(v.id, a.id, {
+                                  updateAddon(v.uiId, a.uiId, {
                                     name: e.target.value,
                                   })
                                 }
@@ -513,13 +586,13 @@ export default function ProductModal({
                                     /[^\d]/g,
                                     ""
                                   );
-                                  updateAddon(v.id, a.id, { price: raw });
+                                  updateAddon(v.uiId, a.uiId, { price: raw });
                                 }}
                               />
                               <button
                                 type="button"
                                 className="btn btn-icon btn-danger"
-                                onClick={() => removeAddon(v.id, a.id)}
+                                onClick={() => removeAddon(v.uiId, a.uiId)}
                                 title="حذف مخلف"
                               >
                                 <i className="fas fa-trash" />
@@ -531,7 +604,7 @@ export default function ProductModal({
                             type="button"
                             className="btn btn-sm btn-secondary"
                             style={{ marginTop: 6 }}
-                            onClick={() => addAddon(v.id)}
+                            onClick={() => addAddon(v.uiId)}
                           >
                             افزودن مخلفات
                           </button>

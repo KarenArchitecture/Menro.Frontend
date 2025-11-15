@@ -8,3 +8,14 @@ const publicAxios = axios.create({
 });
 
 export default publicAxios;
+
+
+// src/api/publicAxios.js
+// import axios from "axios";
+
+// const publicAxios = axios.create({
+//   baseURL: import.meta.env.VITE_API_BASE_URL || "https://localhost:7270/api/public",
+//   withCredentials: false,
+// });
+
+// export default publicAxios;

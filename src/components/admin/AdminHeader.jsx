@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import SearchBar from "../common/SearchBar";
+import { useAuth } from "../../context/AuthContext";
 
 export default function AdminHeader({
   userName, // (string)
@@ -10,8 +11,9 @@ export default function AdminHeader({
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const inputRef = useRef(null);
 
-  // Fallbacks
-  const displayName = userName || "کاربر ادمین";
+  // Admin profile
+  const { user } = useAuth();
+  const displayName = user?.fullName || "کاربر ناشناس";
   const displayAvatar = avatarUrl || "/images/avatar-placeholder.png";
 
   // Focus the input; ESC to close

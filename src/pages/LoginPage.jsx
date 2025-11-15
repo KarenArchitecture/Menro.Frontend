@@ -1,13 +1,20 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import usePageStyles from "../hooks/usePageStyles";
 import authAxios from "../api/authAxios";
+import { useAuth } from "../context/AuthContext";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
+  //
+  const location = useLocation();
+  const navigate = useNavigate();
+  const params = new URLSearchParams(location.search);
+  const returnUrl = params.get("returnUrl");
+  const { refreshUser } = useAuth();
+
   /* loginpage CSS (/public) */
   usePageStyles("/styles-login.css");
-  const navigate = useNavigate();
 
   /* -------------------------------
    * local UI state
@@ -82,50 +89,50 @@ export default function LoginPage() {
     onError: (err) => showMsg(err.message),
   });
 
-  /* 2) verify OTP & login */
-  const verifyOtp = useMutation({
-    mutationFn: ({ phoneNumber, code }) =>
-      authAxios
-        .post("/verify-otp", { phoneNumber, code })
-        .then((res) => res.data)
-        .catch((err) => {
-          const message =
-            err.response?.data?.message || "کد وارد شده صحیح نیست.";
-          throw new Error(message);
-        }),
-    onSuccess: (data) => {
+  /* 1) verify (otp or password) */
+  const verifyUser = useMutation({
+    mutationFn: async ({ phoneNumber, method, codeOrPassword }) => {
+      const { data } = await authAxios.post("/verify", {
+        phoneNumber,
+        method,
+        codeOrPassword,
+      });
+      return data;
+    },
+    onSuccess: async (data) => {
       if (data.needsRegister) {
-        const expiresAt = Date.now() + 60_000; // 60 s
+        const expiresAt = Date.now() + 60_000;
         localStorage.setItem(
           "userPhone",
           JSON.stringify({ value: phone, expiresAt })
         );
         navigate("/register");
-      } else {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        navigate("/");
+      } else if (data.verified) {
+        // مرحله بعد: لاگین نهایی
+        await finalLogin.mutateAsync({ userId: data.userId });
       }
     },
-    onError: (err) => showMsg(err.message),
-  });
-
-  /* 3) login with password */
-  const loginWithPassword = useMutation({
-    mutationFn: ({ phoneNumber, password }) =>
-      authAxios
-        .post("/login-password", { phoneNumber, password })
-        .then((res) => res.data)
-        .catch((err) => {
-          const message = err.response?.data?.message || "ورود ناموفق بود";
-          throw new Error(message);
-        }),
-    onSuccess: (data) => {
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      navigate("/");
+    onError: (err) => {
+      const msg = err.response?.data?.message || "احراز هویت ناموفق بود.";
+      showMsg(msg);
     },
-    onError: (err) => showMsg(err.message),
+  });
+  /* 2) login after verification */
+  const finalLogin = useMutation({
+    mutationFn: async ({ userId }) => {
+      const { data } = await authAxios.post("/login", { userId });
+      return data;
+    },
+    onSuccess: async (data) => {
+      const { accessToken } = data;
+      localStorage.setItem("accessToken", accessToken);
+      await refreshUser();
+      navigate(returnUrl?.startsWith("/") ? returnUrl : "/", { replace: true });
+    },
+    onError: (err) => {
+      const msg = err.response?.data?.message || "ورود ناموفق بود.";
+      showMsg(msg);
+    },
   });
 
   /* handlers */
@@ -150,9 +157,14 @@ export default function LoginPage() {
         showMsg("کد باید ۴ رقم باشد.");
         return;
       }
-      verifyOtp.mutate({ phoneNumber: phone, code });
+      verifyUser.mutate({
+        phoneNumber: phone,
+        method: "otp",
+        codeOrPassword: code,
+      });
     }
   };
+
   const handleResendCode = () => {
     if (resendTimer > 0) return;
     if (!/^\d{11}$/.test(phone)) {
@@ -169,7 +181,11 @@ export default function LoginPage() {
     if (!pwPhone) return showMsg("شماره تلفن الزامی است");
     if (!password) return showMsg("رمز عبور نمی‌تواند خالی باشد");
 
-    loginWithPassword.mutate({ phoneNumber: pwPhone, password });
+    verifyUser.mutate({
+      phoneNumber: pwPhone,
+      method: "password",
+      codeOrPassword: password,
+    });
   };
 
   /* render */
@@ -230,14 +246,14 @@ export default function LoginPage() {
               type="submit"
               disabled={
                 sendOtp.isPending ||
-                verifyOtp.isPending ||
+                verifyUser.isPending ||
                 (!otpSent && resendTimer > 0)
               }
             >
-              {sendOtp.isPending || verifyOtp.isPending
+              {sendOtp.isPending || verifyUser.isPending
                 ? "در حال ارسال…"
                 : otpSent
-                ? "تایید کد"
+                ? "تأیید کد"
                 : "ادامه"}
             </button>
 
@@ -284,9 +300,15 @@ export default function LoginPage() {
               />
             </div>
 
-            <button type="submit" disabled={loginWithPassword.isPending}>
-              {loginWithPassword.isPending ? "در حال ارسال…" : "ورود"}
+            <button
+              type="submit"
+              disabled={verifyUser.isPending || finalLogin.isPending}
+            >
+              {verifyUser.isPending || finalLogin.isPending
+                ? "در حال بررسی..."
+                : "ورود"}
             </button>
+
             {/* Forgot password link */}
             <div className="forgot-password-link">
               <button

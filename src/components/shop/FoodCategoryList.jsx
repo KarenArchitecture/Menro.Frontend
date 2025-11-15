@@ -103,8 +103,9 @@
 //   );
 // };
 
-// export default FoodCategoryList;
-import React, { useMemo } from "react";
+
+// src/components/shop/FoodCategoryList.jsx
+import React, { useMemo, useState, useEffect } from "react";
 
 /* ---------- constant SVG for “همه” (All) ------------------------------- */
 export const ALL_CAT_SVG = `
@@ -126,87 +127,79 @@ const FoodCategoryList = ({
   /* ---------- helpers -------------------------------------------------- */
   const decodeHtml = (html) => {
     const txt = document.createElement("textarea");
-    txt.innerHTML = html;
+    txt.innerHTML = html || "";
     return txt.value;
   };
 
   const getColoredIcon = (svgString, fillColor) => {
     if (!svgString) return "";
     const decoded = decodeHtml(svgString);
-    return decoded.replace(
-      /fill=['"]?#?[a-zA-Z0-9]+['"]?/gi,
-      `fill="${fillColor}"`
-    );
+    return decoded.replace(/fill=['"]?#?[a-zA-Z0-9]+['"]?/gi, `fill="${fillColor}"`);
   };
 
-  /* ---------- build list ------------------------------------------------ */
+  /* ---------- full category list (prepend “همه”) ------------------------ */
   const fullCategoryList = useMemo(() => {
-    // prepend the “همه” cat unless caller already sent one
     const hasAll = categories.some((c) => c.id === "all");
-    const allCat = {
-      id: "all",
-      key: "all", // ✅ ensure unique React key
-      name: "همه",
-      svgIcon: ALL_CAT_SVG,
-    };
+    const allCat = { id: "all", name: "همه", svgIcon: ALL_CAT_SVG };
     return hasAll ? categories : [allCat, ...categories];
   }, [categories]);
 
+  /* ---------- load & cache SVGs ---------------------------------------- */
+  const [svgCache, setSvgCache] = useState({});
+
+  useEffect(() => {
+    const loadAll = async () => {
+      const cache = {};
+      for (const cat of fullCategoryList) {
+        if (!cat.svgIcon) continue;
+        if (cat.svgIcon.startsWith("http")) {
+          try {
+            const res = await fetch(cat.svgIcon);
+            const text = await res.text();
+            cache[cat.id] = text;
+          } catch {
+            cache[cat.id] = "";
+          }
+        } else {
+          cache[cat.id] = cat.svgIcon;
+        }
+      }
+      setSvgCache(cache);
+    };
+    loadAll();
+  }, [fullCategoryList]);
+
   /* ---------- render ---------------------------------------------------- */
+  const renderCategoryButton = (cat) => {
+    const isActive = activeCategory === cat.id;
+    const rawSvg = svgCache[cat.id] || "";
+    const iconMarkup = getColoredIcon(rawSvg, isActive ? activeFill : defaultFill);
+
+    return (
+      <button
+        key={cat.id}
+        className={`category-btn ${isActive ? "active" : ""}`}
+        onClick={() => setActiveCategory(cat.id)}
+      >
+        <span
+          className="category-icon"
+          dangerouslySetInnerHTML={{ __html: iconMarkup }}
+        />
+        <span>{cat.name}</span>
+      </button>
+    );
+  };
+
   return (
     <>
       {/* ---------- vertical (desktop) ------------ */}
       <aside className="category-sidebar-vertical">
-        {fullCategoryList.map(({ id, key, name, svgIcon }) => {
-          const reactKey = key || id; // fallback if key is missing
-          const isActive = activeCategory === id;
-          const iconMarkup = getColoredIcon(
-            svgIcon,
-            isActive ? activeFill : defaultFill
-          );
-
-          return (
-            <button
-              key={reactKey}
-              className={`sidebar-btn ${isActive ? "active" : ""}`}
-              onClick={() => setActiveCategory(id)}
-            >
-              <span
-                className="category-icon"
-                dangerouslySetInnerHTML={{ __html: iconMarkup }}
-              />
-              <span className="sidebar-catagory-title">{name}</span>
-            </button>
-          );
-        })}
+        {fullCategoryList.map(renderCategoryButton)}
       </aside>
 
       {/* ---------- horizontal (mobile) ----------- */}
       <nav className="category-wrap">
-        <div className="category-bar">
-          {fullCategoryList.map(({ id, key, name, svgIcon }) => {
-            const reactKey = key || id;
-            const isActive = activeCategory === id;
-            const iconMarkup = getColoredIcon(
-              svgIcon,
-              isActive ? activeFill : defaultFill
-            );
-
-            return (
-              <button
-                key={reactKey}
-                className={`category-btn ${isActive ? "active" : ""}`}
-                onClick={() => setActiveCategory(id)}
-              >
-                <span
-                  className="category-icon"
-                  dangerouslySetInnerHTML={{ __html: iconMarkup }}
-                />
-                <span>{name}</span>
-              </button>
-            );
-          })}
-        </div>
+        <div className="category-bar">{fullCategoryList.map(renderCategoryButton)}</div>
       </nav>
     </>
   );

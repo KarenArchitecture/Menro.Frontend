@@ -41,27 +41,44 @@ body {
 /* ========== Banner ========== */
 .banner {
     position: relative;
-    margin: 12px;
-    border-radius: 16px;
     overflow: hidden;
     color: #fff;
     padding: 16px 16px 20px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .banner::before {
     content: "";
     position: absolute;
     inset: 0;
+    background-image: var(--banner-url);
     background-size: cover;
     background-position: center;
-    background-repeat: no-repeat !important;
+    background-repeat: no-repeat;
     filter: brightness(0.55) blur(2px);
+    background-image: linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0.2) 0%,
+            rgba(0, 0, 0, 0.55) 60%,
+            rgba(0, 0, 0, 0.85) 100%
+        ),
+        var(--banner-url);
     z-index: 0;
 }
+
 .banner * {
     position: relative;
     z-index: 1;
 }
+
+/* .banner {
+    width: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+} */
 
 .navbar {
     display: flex;
@@ -156,7 +173,7 @@ button.icon-btn {
     justify-content: flex-end;
     gap: 12px;
     height: 100%;
-    padding-top: 1rem;
+    padding-top: 2rem;
 }
 
 .restaurant-name {
@@ -208,13 +225,13 @@ button.icon-btn {
 
 /* search (right) – generic styles for your <SearchBar /> wrapper */
 .search-bar--hero {
-    flex: 1 1 54%;
     height: 42px;
     border-radius: 10px;
     background: rgba(19, 23, 30, 0.9);
     border: 1px solid rgba(255, 255, 255, 0.12);
     display: flex;
     align-items: center;
+    align-self: center;
     padding-inline: 12px;
     gap: 10px;
     overflow: hidden;
@@ -275,60 +292,63 @@ button.icon-btn {
 .category-bar::-webkit-scrollbar {
     display: none;
 }
-
+/* ---------- BASE BUTTON ---------- */
 .category-btn {
-    background: none;
+    background: transparent;
     border: none;
     color: #ccc;
     display: flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: 0.4rem;
     cursor: pointer;
     white-space: nowrap;
-    transition: color 0.2s ease;
+    padding: 0.45rem 1rem;
+    border-radius: 1.6rem;
+    transition: all 0.25s ease;
 }
 
+/* Icon size */
 .category-btn svg {
     width: 1.6rem;
     height: 1.6rem;
     flex-shrink: 0;
 }
 
+/* Text */
 .category-btn span {
     font-size: 1.4rem;
     font-weight: 600;
-    position: relative;
 }
 
-.category-btn i {
-    font-size: 1rem;
+/* Hover (inactive only) */
+.category-btn:hover:not(.active),
+.category-btn:focus:not(.active) {
+    color: #ffffffcc;
 }
 
-.category-btn:hover,
-.category-btn:focus {
-    color: #d17842;
-}
-
+/* ---------- ACTIVE STATE (FIGMA STYLE) ---------- */
 .category-btn.active {
-    color: #d17842;
-    position: relative;
+    background: #ff7a32; /* orange pill */
+    color: #fff; /* white text */
+    padding: 0.45rem 1.2rem; /* little more horizontal space */
+    border-radius: 1.6rem;
+    box-shadow: 0 0 12px rgba(255, 122, 50, 0.45);
 }
 
+/* remove underline completely */
 .category-btn.active::after {
-    content: "";
-    position: absolute;
-    bottom: -0.6rem;
-    left: 0;
-    right: 0;
-    height: 0.3rem;
-    background-color: #d17842;
-    border-radius: 1px;
+    display: none !important;
 }
 
-.category-btn.active svg {
-    fill: #d17842 !important;
-    stroke: #d17842;
-    color: #d17842 !important;
+/* white icon for active */
+.category-btn.active svg path {
+    fill: #ffffff !important;
+    stroke: #ffffff !important;
+}
+
+/* ensure active text is white */
+.category-btn.active span {
+    color: #fff;
 }
 
 .res-menu-wrapper {
@@ -1227,7 +1247,6 @@ button.icon-btn {
 .checkout-bar {
     z-index: 2000;
 }
-نتیجه
 
 /* Bottom Navigation */
 .bottom-nav {

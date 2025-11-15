@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import usePageStyles from "../hooks/usePageStyles";
 import authAxios from "../api/authAxios";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../Context/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
@@ -11,7 +11,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
   const returnUrl = params.get("returnUrl");
-  const { refreshUser } = useAuth();
+  const { refreshUser, setToken, loginWithUserId } = useAuth();
 
   /* loginpage CSS (/public) */
   usePageStyles("/styles-login.css");
@@ -120,23 +120,18 @@ export default function LoginPage() {
   /* 2) login after verification */
   const finalLogin = useMutation({
     mutationFn: async ({ userId }) => {
-      const { data } = await authAxios.post("/login", { userId });
-      return data;
+      await loginWithUserId(userId);
     },
-    onSuccess: async (data) => {
-      const { accessToken } = data;
-      localStorage.setItem("accessToken", accessToken);
-      await refreshUser();
+    onSuccess: () => {
       navigate(returnUrl?.startsWith("/") ? returnUrl : "/", { replace: true });
     },
     onError: (err) => {
-      const msg = err.response?.data?.message || "ورود ناموفق بود.";
+      const msg = err.response?.data?.message || "ورود ناموفق بود";
       showMsg(msg);
     },
   });
 
   /* handlers */
-
   const handleOtpSubmit = (e) => {
     e.preventDefault();
     clearMsg();
@@ -153,8 +148,8 @@ export default function LoginPage() {
       }
       sendOtp.mutate(phone);
     } else {
-      if (code.length !== 4) {
-        showMsg("کد باید ۴ رقم باشد.");
+      if (code.length !== 6) {
+        showMsg("کد باید 6 رقم باشد.");
         return;
       }
       verifyUser.mutate({
@@ -234,8 +229,8 @@ export default function LoginPage() {
                 <input
                   id="code"
                   type="text"
-                  maxLength="4"
-                  placeholder="----"
+                  maxLength="6"
+                  placeholder="------"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                 />
@@ -281,7 +276,7 @@ export default function LoginPage() {
             onSubmit={handlePasswordSubmit}
           >
             <div className="input-group">
-              <label htmlFor="pw-phone">ایمیل یا شماره تلفن</label>
+              <label htmlFor="pw-phone">شماره تلفن</label>
               <input
                 id="pw-phone"
                 type="text"

@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import authAxios from "../api/authAxios";
 import usePageStyles from "../hooks/usePageStyles";
+import { useNavigate } from "react-router-dom";
 /* ────────────────────────────────
 function OTP({ length = 6, onValue }) {
 ──────────────────────────────── */
@@ -40,15 +41,13 @@ function OTP({ length = 6, onValue }) {
   );
 }
 
-export default function ForgotPassword() {
+export default function ChangePhone() {
   usePageStyles("/forgot-password.css");
-
+  const [newPhone, setNewPhone] = useState("");
   const [step, setStep] = useState(1);
-  const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
-  const [pass, setPass] = useState("");
-  const [confirm, setConfirm] = useState("");
   const [msg, setMsg] = useState("");
+  const navigate = useNavigate();
 
   /* 1) send OTP */
   const sendOtp = useMutation({
@@ -75,14 +74,21 @@ export default function ForgotPassword() {
         phoneNumber,
         method: "otp",
         codeOrPassword: code,
+        operation: "change-phone",
       };
+
       const { data } = await authAxios.post("/verify", payload);
       return data;
     },
     onSuccess: (data) => {
       if (data.verified) {
         setMsg("کد تأیید شد ✅");
-        setStep(3);
+
+        // ⭐ مرحله مهم: کال متد تغییر شماره
+        changePhone.mutate(newPhone);
+
+        // ❌ نیازی به navigate نیست
+        // این در changePhone.onSuccess انجام می‌شود
       } else {
         setMsg("کد وارد شده معتبر نیست.");
       }
@@ -91,31 +97,28 @@ export default function ForgotPassword() {
       setMsg(err.response?.data?.message || "کد وارد شده صحیح نیست."),
   });
 
-  /* 3) reset password */
-  const resetPassword = useMutation({
-    mutationFn: async ({ phoneNumber, newPassword, newPasswordConfirm }) => {
-      await authAxios.post("/reset-password", {
-        phoneNumber,
-        newPassword,
-        newPasswordConfirm,
-      });
+  /* 3) change phone */
+  const changePhone = useMutation({
+    mutationFn: async (newPhone) => {
+      const payload = { newPhone }; // مطابق DTO بک‌اند
+      await authAxios.put("/change-phone", payload);
     },
     onSuccess: () => {
-      setMsg("رمز عبور با موفقیت تغییر کرد ✅");
+      setMsg("شماره با موفقیت تغییر کرد ✔");
+
       setTimeout(() => {
-        // بازگشت به صفحه ورود
-        window.location.href = "/login";
-      }, 1200);
+        navigate("/admin");
+      }, 800);
     },
     onError: (err) => {
-      setMsg(err.response?.data?.message || "تغییر رمز عبور ناموفق بود.");
+      setMsg(err.response?.data?.message || "تغییر شماره ناموفق بود.");
     },
   });
 
   return (
     <section className="auth-wrap" dir="rtl">
       <div className="auth-card">
-        <h1 className="auth-title">فراموشی رمز عبور</h1>
+        <h1 className="auth-title">تغییر شماره همراه</h1>
 
         {/* Progress Tabs */}
         <div className="auth-tabs">
@@ -128,12 +131,6 @@ export default function ForgotPassword() {
           >
             کد
           </button>
-          <button
-            className={`auth-tab ${step === 3 ? "is-active" : ""}`}
-            disabled
-          >
-            رمز جدید
-          </button>
         </div>
 
         {/* STEP 1: PHONE */}
@@ -142,20 +139,22 @@ export default function ForgotPassword() {
             className="auth-body"
             onSubmit={(e) => {
               e.preventDefault();
-              if (!/^\d{11}$/.test(phone)) {
+              if (!/^\d{11}$/.test(newPhone)) {
                 setMsg("شماره تلفن باید ۱۱ رقم باشد.");
                 return;
               }
               setMsg("");
-              sendOtp.mutate(phone);
+              sendOtp.mutate(newPhone);
             }}
           >
             <label className="auth-label">شماره تلفن</label>
             <input
               className="auth-input"
               inputMode="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value.replace(/[^\d]/g, ""))}
+              value={newPhone}
+              onChange={(e) =>
+                setNewPhone(e.target.value.replace(/[^\d]/g, ""))
+              }
               required
             />
             <button
@@ -180,17 +179,21 @@ export default function ForgotPassword() {
                 return;
               }
               setMsg("");
-              verifyOtp.mutate({ phoneNumber: phone, code });
+              verifyOtp.mutate({
+                phoneNumber: newPhone,
+                code,
+                operation: "change-phone",
+              });
             }}
           >
-            <p className="auth-label">کد ارسال شده به {phone}</p>
+            <p className="auth-label">کد ارسال شده به {newPhone}</p>
             <OTP length={6} onValue={setCode} />
 
             <div className="row gap">
               <button
                 className="btn btn-secondary"
                 type="button"
-                onClick={() => sendOtp.mutate(phone)}
+                onClick={() => sendOtp.mutate(newPhone)}
               >
                 ارسال مجدد
               </button>
@@ -202,59 +205,6 @@ export default function ForgotPassword() {
                 {verifyOtp.isPending ? "در حال بررسی..." : "تأیید کد"}
               </button>
             </div>
-            {msg && <p className="form-message">{msg}</p>}
-          </form>
-        )}
-
-        {/* STEP 3: NEW PASSWORD */}
-        {step === 3 && (
-          <form
-            className="auth-body"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (pass.length < 6) {
-                setMsg("رمز باید حداقل ۶ کاراکتر باشد.");
-                return;
-              }
-              if (pass !== confirm) {
-                setMsg("رمزها یکسان نیستند.");
-                return;
-              }
-              setMsg("");
-              resetPassword.mutate({
-                phoneNumber: phone,
-                newPassword: pass,
-                newPasswordConfirm: confirm,
-              });
-            }}
-          >
-            <label className="auth-label">رمز جدید</label>
-            <input
-              type="password"
-              className="auth-input"
-              value={pass}
-              onChange={(e) => setPass(e.target.value)}
-              required
-              minLength={6}
-            />
-
-            <label className="auth-label">تکرار رمز</label>
-            <input
-              type="password"
-              className="auth-input"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              required
-              minLength={6}
-            />
-
-            <button
-              className="btn btn-primary mt-16"
-              type="submit"
-              disabled={resetPassword.isPending}
-            >
-              {resetPassword.isPending ? "در حال ثبت..." : "ثبت رمز جدید"}
-            </button>
             {msg && <p className="form-message">{msg}</p>}
           </form>
         )}

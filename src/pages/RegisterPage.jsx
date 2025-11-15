@@ -3,12 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import usePageStyles from "../hooks/usePageStyles";
 import authAxios from "../api/authAxios";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../Context/AuthContext";
 
 export default function RegisterPage() {
   usePageStyles("/styles-register.css");
   const navigate = useNavigate();
-  const { refreshUser } = useAuth();
+  const { registerUser } = useAuth();
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -40,21 +40,14 @@ export default function RegisterPage() {
   /* register mutation */
   const registerMutation = useMutation({
     mutationFn: async (payload) => {
-      try {
-        const { data } = await authAxios.post("/register", payload);
-        return data;
-      } catch (err) {
-        const message = err.response?.data?.message || "ثبت‌نام ناموفق بود";
-        throw new Error(message);
-      }
+      return await registerUser(payload);
     },
-    onSuccess: async (data) => {
-      localStorage.setItem("accessToken", data.token);
-      localStorage.removeItem("userPhone");
-      await refreshUser();
+    onSuccess: () => {
       navigate("/", { replace: true });
     },
-    onError: (err) => setMsg({ text: err.message, type: "error" }),
+    onError: (err) => {
+      setMsg({ text: err.message, type: "error" });
+    },
   });
 
   /* form submit */

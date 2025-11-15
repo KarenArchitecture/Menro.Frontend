@@ -1,10 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import SearchBar from "../common/SearchBar";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../Context/AuthContext";
 
 export default function AdminHeader({
-  userName, // (string)
-  avatarUrl, // (string - absolute or /relative)
   isLoading = false, // show placeholders while fetching (دلخواه)
   onHamburger,
 }) {
@@ -12,7 +10,7 @@ export default function AdminHeader({
   const inputRef = useRef(null);
 
   // Admin profile
-  const { user } = useAuth();
+  const { user, avatarUrl } = useAuth();
   const displayName = user?.fullName || "کاربر ناشناس";
   const displayAvatar = avatarUrl || "/images/avatar-placeholder.png";
 
@@ -54,17 +52,15 @@ export default function AdminHeader({
         <span title={displayName}>
           {isLoading ? "در حال بارگذاری..." : <>خوش آمدید، {displayName}</>}
         </span>
-
         {/* avatar */}
         <img
           src={displayAvatar}
           alt={`تصویر ${displayName}`}
           className="user-avatar"
           onError={(e) => {
-            e.currentTarget.src = "/images/avatar-placeholder.png";
+            e.currentTarget.src = "/images/profile-default.jpg";
           }}
         />
-
         {/* Mobile search icon (only on phones) */}
         <button
           className="admin-search-icon"

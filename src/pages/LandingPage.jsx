@@ -23,9 +23,11 @@ export default function LandingPage() {
   ];
   const rightLinks = [
     { label: "منرو", href: "#", active: true },
-    { label: "خانه", href: "#" },
+    { label: "خانه", href: "/home" },
     { label: "نقشه", href: "#" },
     { label: "مقالات", href: "#" },
+    { label: "پنل", href: "/admin" },
+    { label: "ورود", href: "/login" },
   ];
 
   usePageStyles("/styles-landing.css");

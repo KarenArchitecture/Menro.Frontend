@@ -1,5 +1,5 @@
 import axios from "axios";
-import { globalLogout } from "../context/AuthContext";
+import { globalLogout } from "../Context/AuthContext";
 
 const authAxios = axios.create({
   //baseURL: "https://localhost:5096/api/auth",

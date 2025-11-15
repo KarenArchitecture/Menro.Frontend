@@ -6,7 +6,7 @@ import {
   registerRestaurant,
 } from "../api/restaurants";
 import usePageStyles from "../hooks/usePageStyles";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../Context/AuthContext";
 
 //  HH:MM  ➔  HH:MM:SS
 const normalizeTime = (t) => (t.length === 5 ? `${t}:00` : t);

@@ -1,7 +1,6 @@
 // src/components/admin/AdsBookingSection.jsx
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import adminRestaurantAdAxios from "../../api/adminRestaurantAdAxios";
-import { useNavigate } from "react-router-dom";
 
 export default function AdsBookingSection() {
   const [adType, setAdType] = useState("slider");
@@ -9,58 +8,86 @@ export default function AdsBookingSection() {
   const [days, setDays] = useState(7);
   const [clicks, setClicks] = useState(10000);
   const [link, setLink] = useState("");
-  const navigate = useNavigate();
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+
+  const fileInputRef = useRef(null);
   const totalCost = useMemo(() => {
     let base = adType === "slider" ? 150_000 : 100_000;
     return bookingMethod === "by_day" ? base * days : base + clicks * 10;
   }, [adType, bookingMethod, days, clicks]);
-
   const isValidUrl = (url) => {
     const pattern = /^(https?:\/\/)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/;
     return pattern.test(url);
   };
 
   const handleSubmit = async () => {
-    // target url validation
     if (!link.trim()) {
       alert("لینک مرتبط نباید خالی باشد.");
       return;
     }
+
     const isValidUrl = (url) => {
       const pattern = /^(https?:\/\/)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/;
       return pattern.test(url);
     };
+
     if (!isValidUrl(link)) {
-      alert("لینک وارد شده معتبر نیست. لطفاً آدرس صحیح وارد کنید.");
+      alert("لینک وارد شده معتبر نیست.");
+      return;
+    }
+
+    if (!imageFile) {
+      alert("لطفاً تصویر تبلیغ را آپلود کنید.");
       return;
     }
 
     try {
+      // upload ad image
+      const formData = new FormData();
+      formData.append("file", imageFile);
+
+      const uploadRes = await adminRestaurantAdAxios.post(
+        "/upload-ad-image",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+
+      const fileName = uploadRes.data;
+      console.log({ fileName });
+
+      // build dto and post
       const dto = {
         placementType: adType === "slider" ? 1 : 2,
         billingType: bookingMethod === "by_day" ? 1 : 2,
         cost: totalCost,
-        imageUrl: "", // فعلاً خالی
+        imageFileName: fileName,
         targetUrl: link,
         purchasedUnits: bookingMethod === "by_day" ? days : clicks,
         commercialText: null,
       };
 
-      const { data } = await adminRestaurantAdAxios.post("/addAd", dto);
-      console.log("Ad created:", data);
+      await adminRestaurantAdAxios.post("/addAd", dto);
 
       alert("تبلیغ با موفقیت ثبت شد!");
-      // reset states on fronend
+
+      // form reset
       setAdType("slider");
       setBookingMethod("by_day");
       setDays(7);
       setClicks(10000);
       setLink("");
-    } catch (err) {
-      console.error(err);
-      alert("مشکل در ثبت تبلیغ!");
+      setImageFile(null);
+      setImagePreview(null);
+      fileInputRef.current.value = "";
+      setImageFile(null);
+      setImagePreview(null);
+    } catch (error) {
+      console.error(error);
+      alert("خطایی در ثبت تبلیغ رخ داد.");
     }
   };
+
   return (
     <div className="booking-layout">
       {/* Left: config */}
@@ -181,6 +208,23 @@ export default function AdsBookingSection() {
             />
           </div>
         </div>
+        <div className="config-step">
+          <h4>۵. تصویر تبلیغ را آپلود کنید</h4>
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={(e) => {
+              const file = e.target.files[0];
+              setImageFile(file);
+
+              // پیش‌نمایش
+              const reader = new FileReader();
+              reader.onload = (ev) => setImagePreview(ev.target.result);
+              reader.readAsDataURL(file);
+            }}
+          />
+        </div>
       </div>
 
       {/* Right: preview + summary */}
@@ -193,7 +237,20 @@ export default function AdsBookingSection() {
               adType === "slider" ? "slider-preview" : "banner-preview"
             }`}
           >
-            <span>تصویر تبلیغ شما در اینجا نمایش داده می‌شود</span>
+            {imagePreview ? (
+              <img
+                src={imagePreview}
+                alt="Preview"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  borderRadius: "8px",
+                }}
+              />
+            ) : (
+              <span>تصویر تبلیغ شما در اینجا نمایش داده می‌شود</span>
+            )}
           </div>
         </div>
 

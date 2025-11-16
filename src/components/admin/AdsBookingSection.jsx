@@ -8,6 +8,7 @@ export default function AdsBookingSection() {
   const [days, setDays] = useState(7);
   const [clicks, setClicks] = useState(10000);
   const [link, setLink] = useState("");
+  const [advertisementText, setadvertisementText] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
 
@@ -64,7 +65,7 @@ export default function AdsBookingSection() {
         imageFileName: fileName,
         targetUrl: link,
         purchasedUnits: bookingMethod === "by_day" ? days : clicks,
-        commercialText: null,
+        commercialText: advertisementText,
       };
 
       await adminRestaurantAdAxios.post("/addAd", dto);
@@ -77,8 +78,7 @@ export default function AdsBookingSection() {
       setDays(7);
       setClicks(10000);
       setLink("");
-      setImageFile(null);
-      setImagePreview(null);
+      setadvertisementText("");
       fileInputRef.current.value = "";
       setImageFile(null);
       setImagePreview(null);
@@ -207,23 +207,36 @@ export default function AdsBookingSection() {
               onChange={(e) => setLink(e.target.value)}
             />
           </div>
+          <h4>متن نمایشی تبلیغات خود را وارد کنید</h4>
+          <div className="input-group">
+            <input
+              type="text"
+              id="ad-link"
+              placeholder="رستوران ما بهترینه"
+              value={advertisementText}
+              required
+              onChange={(e) => setadvertisementText(e.target.value)}
+            />
+          </div>
         </div>
         <div className="config-step">
           <h4>۵. تصویر تبلیغ را آپلود کنید</h4>
-          <input
-            type="file"
-            accept="image/*"
-            ref={fileInputRef}
-            onChange={(e) => {
-              const file = e.target.files[0];
-              setImageFile(file);
+          <div className="input-group">
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={(e) => {
+                const file = e.target.files[0];
+                setImageFile(file);
 
-              // پیش‌نمایش
-              const reader = new FileReader();
-              reader.onload = (ev) => setImagePreview(ev.target.result);
-              reader.readAsDataURL(file);
-            }}
-          />
+                // پیش‌نمایش
+                const reader = new FileReader();
+                reader.onload = (ev) => setImagePreview(ev.target.result);
+                reader.readAsDataURL(file);
+              }}
+            />
+          </div>
         </div>
       </div>
 

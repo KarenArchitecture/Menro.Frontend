@@ -166,18 +166,11 @@ function BlogCursorFollower({ targetEl, offsetY = -5 }) {
           whiteSpace: "nowrap",
         }}
       >
-        <span
-          className="dot"
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: "50%",
-            background: "#ff9d10",
-            boxShadow: "0 0 0 2px rgba(255,157,16,.2)",
-            display: "inline-block",
-          }}
-        />
         <span className="label">برای اسکرول بکشید</span>
+        <img
+          src="/images/landing-blog-scroll.svg"
+          alt="scroll indicator for blogs"
+        />
       </div>
     </div>,
     document.body

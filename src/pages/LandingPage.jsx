@@ -11,6 +11,7 @@ import BurgerPanelSection from "../components/landing/BurgerPanelSection";
 import FAQSection from "../components/landing/FAQSection";
 import BlogSection from "../components/landing/BlogSection";
 import GlassFooter from "../components/common/GlassFooter";
+import FooterFruitsScene from "../components/landing/FooterFruitsScene"; // ⬅️ NEW
 
 export default function LandingPage() {
   const leftIcons = [
@@ -74,13 +75,11 @@ export default function LandingPage() {
       <FAQSection />
       <BlogSection />
 
-      <section
-        className="footer-bg"
-        style={{
-          backgroundImage: "url('/images/landing-footer-fruits.png')",
-        }}
-      >
-        <GlassFooter />
+      <section className="footer-bg">
+        <FooterFruitsScene />
+        <div className="footer-bg__content">
+          <GlassFooter />
+        </div>
       </section>
     </div>
   );

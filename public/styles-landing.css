@@ -1415,7 +1415,7 @@ body {
 .bp__glow {
   position: absolute;
   left: 50%;
-  top: 50%;
+  top: 405px;
   transform: translate(-50%, -50%);
   width: clamp(180px, 26vw, 260px);
   height: clamp(180px, 26vw, 260px);
@@ -1423,6 +1423,9 @@ body {
   filter: blur(1px);
   object-fit: cover;
   opacity: 0.9;
+  overflow: initial;
+  width: 800px;
+  z-index: -1;
 }
 
 .bp__burgerImg {
@@ -1939,31 +1942,106 @@ body {
     border-radius: 16px;
   }
 }
-
-/* Section background */
+/* =========================
+   Footer background section
+   ========================= */
 .footer-bg {
   position: relative;
   background-color: #0b0f13;
-  background-repeat: no-repeat;
-  background-position: top center;
-  background-size: contain;
-  padding: 8rem 2rem 12rem; /* enough space for footer + back-to-top */
+  padding: 10rem 2rem 14rem; /* space for fruits + footer + back-to-top */
+  overflow: hidden;
 }
 
-/* Glass footer */
+/* Fruits background scene (5 floating icons behind the glass footer) */
+.footer-bg__scene {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1200px; /* same width as glass footer */
+  height: 100%;
+  z-index: 0; /* behind glass footer */
+  pointer-events: none; /* wrapper doesn't block clicks */
+}
+
+.footer-bg__scene-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Generic fruit wrapper – JS translates the <img>, wrapper stays fixed */
+.footer-bg__item {
+  position: absolute;
+  pointer-events: auto; /* so hover works on the fruit area */
+}
+
+.footer-bg__item img {
+  display: block;
+  user-select: none;
+  pointer-events: none; /* events stay on wrapper */
+  will-change: transform;
+}
+
+/* ----- Positions (tweak numbers if needed) ----- */
+
+/* Tall orange bread / stick behind footer */
+.footer-bg__item--bread {
+  bottom: 15rem;
+  left: 26%;
+  transform: translateX(-32%);
+}
+
+/* Tomato above the stick, slightly to the right */
+.footer-bg__item--tomato {
+  bottom: 34rem;
+  left: 38%;
+  transform: translateX(-4rem);
+}
+
+/* Cucumber crossing the middle-right */
+.footer-bg__item--cucumber {
+  bottom: 17rem;
+  right: 38%;
+}
+
+/* Oil bottle at top-right */
+.footer-bg__item--oil {
+  bottom: 34rem;
+  right: 20%;
+}
+
+/* Juice glass at the very bottom (this one looked correct) */
+.footer-bg__item--juice {
+  bottom: -18rem; /* sticks out from under the card */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Wrapper so glass footer + content sit above fruits */
+.footer-bg__content {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  z-index: 1;
+}
+
+/* =========================
+   Glass footer
+   ========================= */
 .footer-glass {
-  position: relative; /* anchor for the button */
+  position: relative;
   width: 1200px;
   height: 250px;
-  margin: 0 auto;
-  background: rgba(12, 15, 20, 0.6); /* #0C0F14 at 60% */
+  margin: 20rem auto -8rem 0;
+  background: #0c0f1499;
   border: 1px solid #394350;
   border-radius: 20px;
   backdrop-filter: blur(60px);
   -webkit-backdrop-filter: blur(60px);
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
   color: #fff;
-  overflow: visible; /* let the button hang outside */
+  overflow: visible;
   padding: 2.8rem 3.2rem 4rem;
   display: flex;
   align-items: center;

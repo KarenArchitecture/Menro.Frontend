@@ -1762,8 +1762,7 @@ body {
 /* ----- Rail (flex + snap) ----- */
 .blogs__rail {
   display: flex;
-  flex-direction: row-reverse; /* RTL: first item on the right */
-  align-items: center;
+  flex-direction: row-reverse;
   gap: 3rem;
 
   overflow-x: auto;
@@ -1772,9 +1771,10 @@ body {
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x;
 
-  padding-inline: 12px; /* breathing room at edges */
+  padding-inline: 12px;
   scrollbar-width: none;
 }
+
 .blogs__rail::-webkit-scrollbar {
   display: none;
 }

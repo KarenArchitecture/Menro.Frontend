@@ -1,22 +1,66 @@
 // src/components/admin/AdsBookingSection.jsx
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import adminRestaurantAdAxios from "../../api/adminRestaurantAdAxios";
+import { useNavigate } from "react-router-dom";
 
 export default function AdsBookingSection() {
-  const [adType, setAdType] = useState("slider"); // 'slider' | 'banner'
-  const [bookingMethod, setBookingMethod] = useState("by_day"); // 'by_day' | 'by_click'
+  const [adType, setAdType] = useState("slider");
+  const [bookingMethod, setBookingMethod] = useState("by_day");
   const [days, setDays] = useState(7);
   const [clicks, setClicks] = useState(10000);
   const [link, setLink] = useState("");
-
+  const navigate = useNavigate();
   const totalCost = useMemo(() => {
-    // Same formula as your vanilla JS:
-    // base = 150,000 for slider; 100,000 for banner
-    // by_day => base * days
-    // by_click => base + clicks * 10
     let base = adType === "slider" ? 150_000 : 100_000;
     return bookingMethod === "by_day" ? base * days : base + clicks * 10;
   }, [adType, bookingMethod, days, clicks]);
 
+  const isValidUrl = (url) => {
+    const pattern = /^(https?:\/\/)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/;
+    return pattern.test(url);
+  };
+
+  const handleSubmit = async () => {
+    // target url validation
+    if (!link.trim()) {
+      alert("لینک مرتبط نباید خالی باشد.");
+      return;
+    }
+    const isValidUrl = (url) => {
+      const pattern = /^(https?:\/\/)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/;
+      return pattern.test(url);
+    };
+    if (!isValidUrl(link)) {
+      alert("لینک وارد شده معتبر نیست. لطفاً آدرس صحیح وارد کنید.");
+      return;
+    }
+
+    try {
+      const dto = {
+        placementType: adType === "slider" ? 1 : 2,
+        billingType: bookingMethod === "by_day" ? 1 : 2,
+        cost: totalCost,
+        imageUrl: "", // فعلاً خالی
+        targetUrl: link,
+        purchasedUnits: bookingMethod === "by_day" ? days : clicks,
+        commercialText: null,
+      };
+
+      const { data } = await adminRestaurantAdAxios.post("/addAd", dto);
+      console.log("Ad created:", data);
+
+      alert("تبلیغ با موفقیت ثبت شد!");
+      // reset states on fronend
+      setAdType("slider");
+      setBookingMethod("by_day");
+      setDays(7);
+      setClicks(10000);
+      setLink("");
+    } catch (err) {
+      console.error(err);
+      alert("مشکل در ثبت تبلیغ!");
+    }
+  };
   return (
     <div className="booking-layout">
       {/* Left: config */}
@@ -132,6 +176,7 @@ export default function AdsBookingSection() {
               id="ad-link"
               placeholder="https://example.com"
               value={link}
+              required
               onChange={(e) => setLink(e.target.value)}
             />
           </div>
@@ -193,6 +238,7 @@ export default function AdsBookingSection() {
           <button
             className="btn btn-primary full-width"
             style={{ marginTop: 20 }}
+            onClick={handleSubmit}
           >
             ثبت و پرداخت
           </button>

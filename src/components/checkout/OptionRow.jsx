@@ -10,7 +10,13 @@ export default function OptionRow({ itemId, option, onChangeQty }) {
   return (
     <div className="option-row">
       <div className="qty-option">
-        <div className="option-box">{option.title}</div>
+        <div className="option-box">
+          <span className="option-title">{option.title}</span>
+          <div className="price">
+            <strong>{f(lineTotal)}</strong>
+            <span>تومان</span>
+          </div>
+        </div>
 
         <div className="qty-controller">
           <button className="qty-btn plus" type="button" onClick={inc}>
@@ -23,13 +29,7 @@ export default function OptionRow({ itemId, option, onChangeQty }) {
         </div>
       </div>
 
-      <div className="price-option">
-        <div className="price">
-          <strong>{f(lineTotal)}</strong>
-          <span>تومان</span>
-        </div>
-        <div className="weight">{option.weight}</div>
-      </div>
+      <div className="price-option"></div>
     </div>
   );
 }

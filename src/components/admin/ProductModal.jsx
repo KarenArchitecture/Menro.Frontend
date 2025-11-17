@@ -21,34 +21,6 @@ export default function ProductModal({
   const [ingredients, setIngredients] = useState("");
   const [foodCategoryId, setFoodCategoryId] = useState("");
   const [price, setPrice] = useState("");
-  const [hasVariants, setHasVariants] = useState(false);
-  const [variants, setVariants] = useState([
-    {
-      uiId: uid(),
-      dbId: null,
-      name: "",
-      price: "",
-      isDefault: true,
-      addons: [],
-    },
-  ]);
-
-  // UX => close modal on "esc" press
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") {
-        onClose?.();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen, onClose]);
 
   // دسته‌بندی‌ها
   const [categories, setCategories] = useState([]);
@@ -92,18 +64,18 @@ export default function ProductModal({
           setHasVariants(true);
 
           setVariants(
-            (data.variants || []).map((v, index) => ({
-              uiId: uid(),
-              dbId: v.id ?? null,
-              name: v.name ?? "",
-              price: v.price?.toString() ?? "",
+            data.variants.map((v, index) => ({
+              id: uid(),
+              name: v.name,
+              price: v.price?.toString() || "",
               isDefault: v.isDefault ?? index === 0,
-              addons: (v.addons || []).map((a) => ({
-                uiId: uid(),
-                dbId: a.id ?? null,
-                name: a.name ?? "",
-                price: a.extraPrice?.toString() ?? "",
-              })),
+              addons: v.addons
+                ? v.addons.map((a) => ({
+                    id: uid(),
+                    name: a.name,
+                    price: a.extraPrice?.toString() || "",
+                  }))
+                : [],
             }))
           );
         } else {
@@ -142,6 +114,11 @@ export default function ProductModal({
   }, [isOpen, mode]);
 
   //  simple vs variants
+  const [hasVariants, setHasVariants] = useState(false);
+
+  const [variants, setVariants] = useState([
+    { id: uid(), name: "", price: "", isDefault: true, addons: [] },
+  ]);
 
   // ---- helpers: variants ----
   const onToggleHasVariants = (flag) => {
@@ -168,7 +145,7 @@ export default function ProductModal({
 
   const removeVariant = (id) => {
     setVariants((prev) => {
-      const next = prev.filter((v) => v.uiId !== id);
+      const next = prev.filter((v) => v.id !== id);
       if (!next.some((v) => v.isDefault) && next.length > 0) {
         next[0].isDefault = true;
       }
@@ -178,21 +155,19 @@ export default function ProductModal({
 
   const updateVariant = (id, patch) => {
     setVariants((prev) =>
-      prev.map((v) => (v.uiId === id ? { ...v, ...patch } : v))
+      prev.map((v) => (v.id === id ? { ...v, ...patch } : v))
     );
   };
 
   const makeDefault = (id) => {
-    setVariants((prev) =>
-      prev.map((v) => ({ ...v, isDefault: v.uiId === id }))
-    );
+    setVariants((prev) => prev.map((v) => ({ ...v, isDefault: v.id === id })));
   };
 
   // ---- helpers: addons (per variant) ----
   const addAddon = (variantId) => {
     setVariants((prev) =>
       prev.map((v) =>
-        v.uiId === variantId
+        v.id === variantId
           ? {
               ...v,
               addons: [...v.addons, { id: uid(), name: "", price: "" }],
@@ -205,11 +180,11 @@ export default function ProductModal({
   const updateAddon = (variantId, addonId, patch) => {
     setVariants((prev) =>
       prev.map((v) =>
-        v.uiId === variantId
+        v.id === variantId
           ? {
               ...v,
               addons: v.addons.map((a) =>
-                a.uiId === addonId ? { ...a, ...patch } : a
+                a.id === addonId ? { ...a, ...patch } : a
               ),
             }
           : v
@@ -220,8 +195,8 @@ export default function ProductModal({
   const removeAddon = (variantId, addonId) => {
     setVariants((prev) =>
       prev.map((v) =>
-        v.uiId === variantId
-          ? { ...v, addons: v.addons.filter((a) => a.uiId !== addonId) }
+        v.id === variantId
+          ? { ...v, addons: v.addons.filter((a) => a.id !== addonId) }
           : v
       )
     );
@@ -271,12 +246,10 @@ export default function ProductModal({
       hasVariants: hasVariants,
       variants: hasVariants
         ? variants.map((v) => ({
-            id: v.dbId,
             name: v.name.trim(),
             price: Number(String(v.price).replace(/[^\d]/g, "")),
             isDefault: v.isDefault,
             addons: v.addons.map((a) => ({
-              id: a.dbId,
               name: a.name.trim(),
               extraPrice: Number(String(a.price).replace(/[^\d]/g, "")),
             })),
@@ -474,7 +447,7 @@ export default function ProductModal({
 
                   <div id="product-types-container">
                     {variants.map((v) => (
-                      <div key={v.uiId} style={{ marginBottom: 10 }}>
+                      <div key={v.id} style={{ marginBottom: 10 }}>
                         {/* variant row */}
                         <div
                           className="product-type-item"
@@ -491,7 +464,7 @@ export default function ProductModal({
                             placeholder="نام نوع (مثال: ویژه)"
                             value={v.name}
                             onChange={(e) =>
-                              updateVariant(v.uiId, { name: e.target.value })
+                              updateVariant(v.id, { name: e.target.value })
                             }
                           />
 
@@ -503,7 +476,7 @@ export default function ProductModal({
                             value={v.price}
                             onChange={(e) => {
                               const raw = e.target.value.replace(/[^\d]/g, "");
-                              updateVariant(v.uiId, { price: raw });
+                              updateVariant(v.id, { price: raw });
                             }}
                           />
 
@@ -516,7 +489,7 @@ export default function ProductModal({
                               type="radio"
                               name="default_type"
                               checked={v.isDefault}
-                              onChange={() => makeDefault(v.uiId)}
+                              onChange={() => makeDefault(v.id)}
                             />{" "}
                             پیش‌فرض
                           </label>
@@ -525,7 +498,7 @@ export default function ProductModal({
                           <button
                             type="button"
                             className="btn btn-icon btn-danger"
-                            onClick={() => removeVariant(v.uiId)}
+                            onClick={() => removeVariant(v.id)}
                             title="حذف نوع"
                             disabled={variants.length === 1}
                           >
@@ -556,7 +529,7 @@ export default function ProductModal({
 
                           {v.addons.map((a) => (
                             <div
-                              key={a.uiId}
+                              key={a.id}
                               className="addon-item"
                               style={{
                                 display: "grid",
@@ -571,7 +544,7 @@ export default function ProductModal({
                                 placeholder="نام مخلفات"
                                 value={a.name}
                                 onChange={(e) =>
-                                  updateAddon(v.uiId, a.uiId, {
+                                  updateAddon(v.id, a.id, {
                                     name: e.target.value,
                                   })
                                 }
@@ -586,13 +559,13 @@ export default function ProductModal({
                                     /[^\d]/g,
                                     ""
                                   );
-                                  updateAddon(v.uiId, a.uiId, { price: raw });
+                                  updateAddon(v.id, a.id, { price: raw });
                                 }}
                               />
                               <button
                                 type="button"
                                 className="btn btn-icon btn-danger"
-                                onClick={() => removeAddon(v.uiId, a.uiId)}
+                                onClick={() => removeAddon(v.id, a.id)}
                                 title="حذف مخلف"
                               >
                                 <i className="fas fa-trash" />
@@ -604,7 +577,7 @@ export default function ProductModal({
                             type="button"
                             className="btn btn-sm btn-secondary"
                             style={{ marginTop: 6 }}
-                            onClick={() => addAddon(v.uiId)}
+                            onClick={() => addAddon(v.id)}
                           >
                             افزودن مخلفات
                           </button>

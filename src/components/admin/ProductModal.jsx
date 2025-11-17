@@ -29,6 +29,7 @@ export default function ProductModal({
   // عکس محصول
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [existingImageName, setExistingImageName] = useState(null);
   const fileInputRef = useRef(null);
 
   // load categories on open
@@ -83,6 +84,7 @@ export default function ProductModal({
         setIngredients(data.ingredients || "");
         setFoodCategoryId(data.foodCategoryId ?? ""); // همان عدد یا خالی
         setImagePreview(data.imageUrl);
+        setExistingImageName(data.imageName); // just file name
         if (data.hasVariants && data.variants) {
           setHasVariants(true);
 
@@ -118,7 +120,7 @@ export default function ProductModal({
     e.preventDefault();
     let uploadedFileName = null;
 
-    if (mode === "create" && imageFile) {
+    if (imageFile) {
       const formData = new FormData();
       formData.append("file", imageFile);
 
@@ -175,7 +177,7 @@ export default function ProductModal({
       ingredients: ingredients.trim(),
       foodCategoryId: Number(foodCategoryId || 0),
       price: basePriceValue ?? 0,
-      imageUrl: uploadedFileName,
+      imageName: uploadedFileName || existingImageName || null,
       hasVariants: hasVariants,
       variants: hasVariants
         ? variants.map((v) => ({

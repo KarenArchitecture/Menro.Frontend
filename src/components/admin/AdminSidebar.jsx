@@ -1,9 +1,9 @@
 // src/components/admin/AdminSidebar.jsx
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
 import { Link } from "react-router-dom";
 import { useAuth } from "../../Context/AuthContext";
+
 const NAV = [
   { key: "dashboard", label: "داشبورد", icon: "fas fa-tachometer-alt" },
 
@@ -17,14 +17,14 @@ const NAV = [
   { key: "financial", label: "مالی", icon: "fas fa-file-invoice-dollar" },
   { key: "ads", label: "رزرو تبلیغات", icon: "fas fa-bullhorn" },
 
-  //  Ads Settings
+  // Ads Settings (per-restaurant config)
   {
     key: "ads-settings",
     label: "تنظیمات تبلیغات",
     icon: "fas fa-sliders-h",
   },
 
-  // ✅ فقط برای Admin
+  // ✅ فقط برای Admin (منرو)
   { isDivider: true, label: "مدیریت منرو", roles: ["Admin"] },
   {
     key: "category-settings",
@@ -37,6 +37,12 @@ const NAV = [
     label: "مدیریت رستوران‌ها",
     icon: "fas fa-utensils",
     roles: ["Admin"],
+  },
+  {
+    key: "ads-requests",
+    label: "درخواست‌های تبلیغات",
+    icon: "fas fa-clipboard-check",
+    // roles: ["Admin"],
   },
 
   { isDivider: true, label: "حساب کاربری" },
@@ -51,6 +57,7 @@ export default function AdminSidebar({
   onSelect,
 }) {
   const navigate = useNavigate();
+
   // Close on ESC (useful when off-canvas is open on mobile)
   useEffect(() => {
     if (!isOpen) return;
@@ -68,13 +75,13 @@ export default function AdminSidebar({
   const { user, logout } = useAuth();
   const roles = user?.roles || [];
   const isAdmin = roles.includes("admin");
+
   // logout handler
   const handleLogout = async () => {
     logout();
     navigate("/", { replace: false });
   };
 
-  // render
   return (
     <aside
       className={`sidebar ${isOpen ? "is-open" : ""}`}
@@ -88,7 +95,7 @@ export default function AdminSidebar({
         >
           منرو
         </h1>
-        {/* Close button shows on MD/SM only (CSS below) */}
+        {/* Close button shows on MD/SM only (CSS controls visibility) */}
         <button
           type="button"
           className="sidebar-close"

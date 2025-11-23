@@ -1,3 +1,4 @@
+// src/pages/AdminPage.jsx
 import { useState, useCallback } from "react";
 import usePageStyles from "../hooks/usePageStyles";
 import AdminHeader from "../components/admin/AdminHeader";
@@ -13,6 +14,7 @@ import ProfileSection from "../components/admin/ProfileSection";
 import OrdersSection from "../components/admin/OrdersSection";
 import CategorySettingsSection from "../components/admin/CategorySettingsSection";
 import AdsSettingsSection from "../components/admin/AdsSettingsSection";
+import AdsRequestsSection from "../components/admin/AdsRequestsSection";
 
 export default function AdminPage() {
   const cssReady = usePageStyles("/admin-dashboard.css");
@@ -62,6 +64,9 @@ export default function AdminPage() {
 
       case "ads-settings":
         return <AdsSettingsSection />;
+
+      case "ads-requests":
+        return <AdsRequestsSection />;
 
       case "profile":
         return <ProfileSection />;

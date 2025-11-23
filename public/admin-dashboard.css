@@ -1629,6 +1629,12 @@ textarea {
   font-size: 0.98rem;
 }
 
+#ad-request-modal .ad-reject-error {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #f97373; /* soft red */
+}
+
 /* responsive */
 
 @media (max-width: 768px) {

@@ -239,14 +239,6 @@ export default function AdRequestModal({
                 {showRejectInput ? "ثبت رد" : "رد"}
               </button>
             )}
-
-            <button
-              className="btn btn-secondary"
-              type="button"
-              onClick={onClose}
-            >
-              بستن
-            </button>
           </div>
         </div>
       </div>

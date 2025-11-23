@@ -36,7 +36,7 @@ const NAV = [
     key: "restaurants",
     label: "مدیریت رستوران‌ها",
     icon: "fas fa-utensils",
-    roles: ["Admin"],
+    // roles: ["Admin"],
   },
   {
     key: "ads-requests",

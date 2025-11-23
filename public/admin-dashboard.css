@@ -2916,3 +2916,14 @@ textarea {
   background: #ff4d4d;
   color: #fff;
 }
+
+/* RESTAURANT REVIEW MODAL */
+#restaurant-review-modal .restaurant-reject-error {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #f97373; /* soft red */
+}
+.restaurant-description {
+  gap: 2rem;
+  justify-content: flex-start;
+}

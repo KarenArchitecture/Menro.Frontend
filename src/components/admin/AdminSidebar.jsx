@@ -17,6 +17,13 @@ const NAV = [
   { key: "financial", label: "مالی", icon: "fas fa-file-invoice-dollar" },
   { key: "ads", label: "رزرو تبلیغات", icon: "fas fa-bullhorn" },
 
+  //  Ads Settings
+  {
+    key: "ads-settings",
+    label: "تنظیمات تبلیغات",
+    icon: "fas fa-sliders-h",
+  },
+
   // ✅ فقط برای Admin
   { isDivider: true, label: "مدیریت منرو", roles: ["Admin"] },
   {

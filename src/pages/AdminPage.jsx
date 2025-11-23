@@ -12,6 +12,7 @@ import AdsBookingSection from "../components/admin/AdsBookingSection";
 import ProfileSection from "../components/admin/ProfileSection";
 import OrdersSection from "../components/admin/OrdersSection";
 import CategorySettingsSection from "../components/admin/CategorySettingsSection";
+import AdsSettingsSection from "../components/admin/AdsSettingsSection";
 
 export default function AdminPage() {
   const cssReady = usePageStyles("/admin-dashboard.css");
@@ -22,7 +23,6 @@ export default function AdminPage() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // حفظ تب در localStorage
   const handleSelectTab = useCallback((tab) => {
     setActiveTab(tab);
     localStorage.setItem("admin-active-tab", tab);
@@ -59,6 +59,9 @@ export default function AdminPage() {
 
       case "ads":
         return <AdsBookingSection />;
+
+      case "ads-settings":
+        return <AdsSettingsSection />;
 
       case "profile":
         return <ProfileSection />;

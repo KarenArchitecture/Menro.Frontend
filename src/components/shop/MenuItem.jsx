@@ -2,7 +2,7 @@
 // import { useCart } from "./CartContext";
 
 // export default function MenuItem({ item, onOpen }) {
-//   const { name, price, imageUrl, rating = 4.5, reviewsCount = 0 } = item || {};
+//   const { name, price, imageUrl, rating = 4.5, voters = 0 } = item || {};
 //   const cart = useCart();
 
 //   const key = cart.keyOf(item);
@@ -25,11 +25,15 @@
 
 //   const openModal = () => onOpen?.(item);
 
+//   const apiBase = import.meta.env.VITE_API_URL || "";
+//   const apiRoot = apiBase.endsWith("/api") ? apiBase.slice(0, -4) : apiBase;
+
+
 //   return (
 //     <article className="menu-card" dir="rtl" onClick={openModal}>
 //       <div className="menu-card__media">
 //         <img
-//           src={`http://localhost:7270${imageUrl}`}
+//           src={`${apiRoot}${imageUrl}`}
 //           alt={name}
 //           className="menu-card__img"
 //           loading="lazy"
@@ -39,7 +43,7 @@
 //           <i className="fas fa-star menu-card__star" aria-hidden />
 //           <span className="menu-card__ratingValue">{rating}</span>
 //           <span className="menu-card__ratingCount">
-//             ({reviewsCount.toLocaleString("fa-IR")})
+//             ({voters.toLocaleString("fa-IR")})
 //           </span>
 //         </div>
 //       </div>
@@ -90,16 +94,22 @@
 
 import React from "react";
 import { useCart } from "./CartContext";
-import resolveFileUrl from "../../utils/resolveFileUrl";
 
 export default function MenuItem({ item, onOpen }) {
-  const { name, price, imageUrl, rating = 4.5, reviewsCount = 0 } = item || {};
+  const { name, price, imageUrl, rating = 4.5, voters = 0 } = item || {};
   const cart = useCart();
 
   const key = cart.keyOf(item);
   const qty = cart.getQty(key);
 
   const formatTomans = (n) => (Number(n) || 0).toLocaleString("fa-IR");
+
+  const apiBase = import.meta.env.VITE_API_URL || "https://localhost:7270/api";
+
+  // remove "/api" from the end → we should hit the backend root
+  const baseUrl = apiBase.replace(/\/api\/?$/, "");
+
+  const fullImageUrl = `${baseUrl}${imageUrl}`;
 
   const addFirst = (e) => {
     e.stopPropagation();
@@ -120,17 +130,18 @@ export default function MenuItem({ item, onOpen }) {
     <article className="menu-card" dir="rtl" onClick={openModal}>
       <div className="menu-card__media">
         <img
-          src={resolveFileUrl(imageUrl)}
+          src={fullImageUrl}
           alt={name}
           className="menu-card__img"
           loading="lazy"
         />
+
         <div className="menu-card__imgShade" aria-hidden />
         <div className="menu-card__rating">
           <i className="fas fa-star menu-card__star" aria-hidden />
           <span className="menu-card__ratingValue">{rating}</span>
           <span className="menu-card__ratingCount">
-            ({reviewsCount.toLocaleString("fa-IR")})
+            ({voters.toLocaleString("fa-IR")})
           </span>
         </div>
       </div>
@@ -147,17 +158,10 @@ export default function MenuItem({ item, onOpen }) {
 
         <div className="menu-card__footer" onClick={(e) => e.stopPropagation()}>
           {qty <= 0 ? (
-            <button
-              type="button"
-              className="menu-card__addBtn"
-              onClick={addFirst}
-            >
-              +
-            </button>
+            <button className="menu-card__addBtn" onClick={addFirst}>+</button>
           ) : (
             <div className="menu-card__qtyGroup">
               <button
-                type="button"
                 className="menu-card__qtyBtn menu-card__qtyBtn--dec"
                 onClick={dec}
               >
@@ -165,7 +169,6 @@ export default function MenuItem({ item, onOpen }) {
               </button>
               <span className="menu-card__qtyDisplay">{qty}</span>
               <button
-                type="button"
                 className="menu-card__qtyBtn menu-card__qtyBtn--inc"
                 onClick={inc}
               >

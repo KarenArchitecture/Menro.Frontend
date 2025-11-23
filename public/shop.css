@@ -394,6 +394,10 @@ button.icon-btn {
     background-color: #0c0f14;
 }
 
+.menu_nav-title-holder {
+    display: flex;
+}
+
 .category-icon {
     width: 2rem;
     height: 2rem;
@@ -1587,7 +1591,7 @@ button.icon-btn {
         display: none !important;
     }
 
-    .category-sidebar-vertical {
+    /* .category-sidebar-vertical {
         position: -webkit-sticky;
         position: sticky;
         top: 2rem;
@@ -1643,20 +1647,103 @@ button.icon-btn {
 
     .sidebar-btn.active svg {
         fill: #d17842;
-    }
+    } */
 
     /* .res-menu {
         width: auto;
     }
 
+    /* container of vertical category list */
+    .category-sidebar-vertical {
+        display: flex !important;
+        flex-direction: column;
+        background: #0c0f14;
+        padding: 1.5rem 1rem;
+        border-radius: 1.8rem;
+        gap: 1.2rem;
+        width: 180px; /* match Figma */
+    }
 
+    /* hide horizontal bar on desktop */
+    .category-wrap {
+        display: none !important;
+    }
 
- .food_items {
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-padding: 0 1rem;
-  -webkit-overflow-scrolling: touch;
-}
+    /* desktop base */
+    .category-sidebar-vertical .category-btn {
+        background: transparent !important; /* remove pill */
+        box-shadow: none !important;
+        padding: 0.6rem 0.4rem;
+        justify-content: flex-start;
+        width: 100%;
+        border-radius: 0.8rem;
+        transition: all 0.25s ease;
+        color: #bfc5cf;
+    }
+
+    /* icon consistent color */
+    .category-sidebar-vertical .category-btn svg path {
+        fill: #bfc5cf !important;
+        stroke: #bfc5cf !important;
+    }
+
+    /* hover */
+    .category-sidebar-vertical .category-btn:hover {
+        color: #ffffffcc;
+    }
+    .category-sidebar-vertical .category-btn:hover svg path {
+        fill: #ffffffcc !important;
+        stroke: #ffffffcc !important;
+    }
+
+    /* ---------- ACTIVE CATEGORY (DESKTOP) ---------- */
+    .category-sidebar-vertical .category-btn.active {
+        background: transparent !important; /* no pill */
+        color: #ff7a32 !important; /* brand color */
+        font-weight: 700;
+    }
+
+    .category-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center !important;
+        justify-content: center;
+    }
+
+    .category-icon {
+        width: 43px !important;
+        height: 43px !important;
+    }
+    .category-btn span {
+        align-self: center;
+        justify-self: center;
+    }
+
+    .category-btn.active span {
+        color: #ff7a32;
+    }
+
+    .category-sidebar-vertical .category-btn svg {
+        width: 43px;
+        height: 43px;
+    }
+
+    .category-sidebar-vertical .category-btn.active svg path {
+        fill: #ff7a32 !important;
+        stroke: #ff7a32 !important;
+    }
+
+    /* remove underline if mobile CSS added it */
+    .category-sidebar-vertical .category-btn.active::after {
+        display: none !important;
+    }
+
+    .food_items {
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scroll-padding: 0 1rem;
+        -webkit-overflow-scrolling: touch;
+    }
     .food_items {
         max-width: 100%;
         display: flex;
@@ -1665,9 +1752,8 @@ button.icon-btn {
         padding: 1rem;
         scroll-behavior: smooth;
         -webkit-overflow-scrolling: touch;
-    } */
-
-    .res-menu-wrapper {
+    }
+    */ .res-menu-wrapper {
         flex-direction: row;
         justify-content: space-between;
         align-items: flex-start;

@@ -33,13 +33,13 @@ export const postAdImpression = (bannerId) =>
 
 /* ───────────────  🛍 Shop Page  ─────────────── */
 export const getRestaurantBannerBySlug = (slug) =>
-  publicAxios.get(`${RESTAURANT_URL}/banner/${slug}`).then((r) => r.data);
+  publicAxios.get(`${RESTAURANT_URL}/${slug}/banner`).then((r) => r.data);
 
 /* ───────────────  🍴 Restaurant Page (Dynamic Menu & Item Detail) ─────────────── */
 
 export const getRestaurantMenuBySlug = (restaurantSlug) =>
   publicAxios
-    .get(`${RESTAURANT_URL}/menu/${restaurantSlug}`)
+    .get(`${RESTAURANT_URL}/${restaurantSlug}/menu`)
     .then((r) => r.data);
 
 export const getFoodDetail = (foodId) =>

@@ -48,6 +48,7 @@ const NAV = [
   { isDivider: true, label: "حساب کاربری" },
   { key: "theme", label: "مدیریت قالب", icon: "fas fa-palette" },
   { key: "profile", label: "پروفایل کاربری", icon: "fas fa-user-circle" },
+  { key: "restaurant-profile", label: "پروفایل رستوران", icon: "fas fa-store" },
 ];
 
 export default function AdminSidebar({

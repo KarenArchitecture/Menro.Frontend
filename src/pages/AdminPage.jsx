@@ -16,6 +16,7 @@ import CategorySettingsSection from "../components/admin/CategorySettingsSection
 import AdsSettingsSection from "../components/admin/AdsSettingsSection";
 import AdsRequestsSection from "../components/admin/AdsRequestsSection";
 import RestaurantsAdminSection from "../components/admin/RestaurantsAdminSection";
+import RestaurantProfileSection from "../components/admin/RestaurantProfileSection";
 
 export default function AdminPage() {
   const cssReady = usePageStyles("/admin-dashboard.css");
@@ -71,6 +72,9 @@ export default function AdminPage() {
 
       case "restaurants":
         return <RestaurantsAdminSection />;
+
+      case "restaurant-profile":
+        return <RestaurantProfileSection />;
 
       case "profile":
         return <ProfileSection />;

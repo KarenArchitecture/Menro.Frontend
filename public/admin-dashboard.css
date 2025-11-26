@@ -3076,3 +3076,13 @@ textarea {
     width: 100%;
   }
 }
+
+#ads-settings-view .ad-type-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#ads-settings-view .ad-type-toggle .chip {
+  cursor: pointer;
+}

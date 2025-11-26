@@ -93,6 +93,10 @@ export default function RestaurantReviewModal({
               {restaurant.ownerBankAccount || "ثبت نشده"}
             </div>
             <div>
+              <strong>شماره موبایل صاحب رستوران:</strong>{" "}
+              {restaurant.ownerPhoneNumber || "ثبت نشده"}
+            </div>
+            <div>
               <strong>تاریخ تقاضا:</strong>{" "}
               {restaurant.requestedAt || "ثبت نشده"}
             </div>

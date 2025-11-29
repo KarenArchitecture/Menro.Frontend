@@ -1,6 +1,7 @@
 // src/components/admin/AdsRequestsSection.jsx
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import AdRequestModal from "./AdRequestModal";
+import adminRestaurantAdAxios from "../../api/adminRestaurantAdAxios";
 
 /* ---------- helpers ---------- */
 const now = Date.now();
@@ -26,81 +27,57 @@ const ranges = [
   { key: "all", label: "همه", test: () => true },
 ];
 
-/* ---------- mock data for ad requests ---------- */
-const INITIAL_AD_REQUESTS = [
-  {
-    id: "a0",
-    code: "AD-2452",
-    status: "pending", // pending | history
-    decision: null, // approved | rejected | null
-    restaurantName: "رستوران بهار",
-    adType: "slider", // slider | banner
-    reservedAmount: 7,
-    reservedUnit: "روز",
-    paidAmount: 1050000,
-    imageUrl: "https://via.placeholder.com/600x300",
-    adText: "تخفیف ویژه منوی ناهار این هفته!",
-    targetUrl: "https://example.com/restaurant/bahar",
-    requestedAt: "امروز، 12:40",
-    ts: now - 2 * 60 * 60 * 1000,
-  },
-  {
-    id: "a1",
-    code: "AD-2451",
-    status: "pending",
-    decision: null,
-    restaurantName: "کافه آفتاب",
-    adType: "banner",
-    reservedAmount: 10000,
-    reservedUnit: "کلیک",
-    paidAmount: 1200000,
-    imageUrl: "https://via.placeholder.com/600x300",
-    adText: "قهوه دمی با ۲۰٪ تخفیف بعد از ساعت ۸ شب",
-    targetUrl: "https://example.com/cafe/aftab",
-    requestedAt: "امروز، 11:20",
-    ts: now - 3 * 60 * 60 * 1000,
-  },
-  {
-    id: "h1",
-    code: "AD-2440",
-    status: "history",
-    decision: "approved",
-    restaurantName: "رستوران کلاسیک",
-    adType: "slider",
-    reservedAmount: 14,
-    reservedUnit: "روز",
-    paidAmount: 2100000,
-    imageUrl: "https://via.placeholder.com/600x300",
-    adText: "رزرو میز خانوادگی همراه با دسر رایگان",
-    targetUrl: "https://example.com/restaurant/classic",
-    requestedAt: "هفتهٔ قبل",
-    ts: now - 6 * DAY,
-  },
-  {
-    id: "h2",
-    code: "AD-2430",
-    status: "history",
-    decision: "rejected",
-    decisionReason: "بنر با قوانین گرافیکی منرو هم‌خوانی نداشت.",
-    restaurantName: "کافه شبانه",
-    adType: "banner",
-    reservedAmount: 5000,
-    reservedUnit: "کلیک",
-    paidAmount: 600000,
-    imageUrl: "https://via.placeholder.com/600x300",
-    adText: "تبلیغ با محتوای نامناسب",
-    targetUrl: "https://example.com/cafe/night",
-    requestedAt: "ماه قبل",
-    ts: now - 20 * DAY,
-  },
-];
-
 export default function AdsRequestsSection() {
-  const [requests, setRequests] = useState(INITIAL_AD_REQUESTS);
+  const [requests, setRequests] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [selected, setSelected] = useState(null);
   const [rangeKey, setRangeKey] = useState("today");
 
+  /* ---------- Load from API ---------- */
+  async function loadPending() {
+    try {
+      const res = await adminRestaurantAdAxios.get("/pending");
+      const data = res.data;
+
+      const mapped = data.map((ad) => ({
+        id: ad.id,
+        code: `AD-${ad.id}`,
+        status: "pending",
+        decision: null,
+
+        restaurantName: ad.restaurantName,
+        adType: ad.placement === "MainSlider" ? "slider" : "banner",
+        reservedAmount: ad.purchasedUnits,
+        reservedUnit:
+          ad.billing === "PerDay"
+            ? "روز"
+            : ad.billing === "PerClick"
+            ? "کلیک"
+            : "",
+
+        paidAmount: ad.cost,
+        imageUrl: ad.imageUrl,
+        adText: ad.commercialText,
+        targetUrl: ad.targetUrl,
+
+        requestedAt: new Date(ad.createdAt).toLocaleString("fa-IR"),
+        ts: new Date(ad.createdAt).getTime(),
+      }));
+
+      setRequests((prevHistory) => {
+        const history = prevHistory.filter((x) => x.status === "history");
+        return [...mapped, ...history];
+      });
+    } catch (err) {
+      console.error("Error loading pending ads:", err);
+    }
+  }
+
+  useEffect(() => {
+    loadPending();
+  }, []);
+
+  /* ---------- Filtering Logic (same as before) ---------- */
   const activeRange = useMemo(
     () => ranges.find((r) => r.key === rangeKey) || ranges[0],
     [rangeKey]
@@ -118,39 +95,61 @@ export default function AdsRequestsSection() {
     };
   }, [requests, activeRange, showHistory]);
 
-  const handleApprove = (requestId) => {
-    setRequests((prev) =>
-      prev.map((r) =>
-        r.id === requestId
-          ? {
-              ...r,
-              status: "history",
-              decision: "approved",
-              ts: Date.now(),
-            }
-          : r
-      )
-    );
-    setSelected(null);
+  /* ---------- Approve ---------- */
+  const handleApprove = async (requestId) => {
+    try {
+      await adminRestaurantAdAxios.post(`/${requestId}/approve`);
+
+      setRequests((prev) =>
+        prev.map((r) =>
+          r.id === requestId
+            ? {
+                ...r,
+                status: "history",
+                decision: "approved",
+                ts: Date.now(),
+              }
+            : r
+        )
+      );
+
+      setSelected(null);
+    } catch (err) {
+      console.error("Approve error:", err);
+      alert("خطا در تایید تبلیغ.");
+    }
   };
 
-  const handleReject = (requestId, reason) => {
-    setRequests((prev) =>
-      prev.map((r) =>
-        r.id === requestId
-          ? {
-              ...r,
-              status: "history",
-              decision: "rejected",
-              decisionReason: reason,
-              ts: Date.now(),
-            }
-          : r
-      )
-    );
-    setSelected(null);
+  /* ---------- Reject ---------- */
+  const handleReject = async (requestId, reason) => {
+    try {
+      await adminRestaurantAdAxios.post(`/${requestId}/reject`, {
+        id: requestId,
+        adminNote: reason,
+      });
+
+      setRequests((prev) =>
+        prev.map((r) =>
+          r.id === requestId
+            ? {
+                ...r,
+                status: "history",
+                decision: "rejected",
+                decisionReason: reason,
+                ts: Date.now(),
+              }
+            : r
+        )
+      );
+
+      setSelected(null);
+    } catch (err) {
+      console.error("Reject error:", err);
+      alert("خطا در رد کردن تبلیغ.");
+    }
   };
 
+  /* ---------- Status Pill Text ---------- */
   const getStatusPillText = (req) => {
     if (req.status === "pending") return "در انتظار بررسی";
     if (req.decision === "approved") return "تایید شده";
@@ -158,13 +157,14 @@ export default function AdsRequestsSection() {
     return "در تاریخچه";
   };
 
+  /* ---------- UI ---------- */
   return (
     <div className="panel orders-panel">
       <div className="view-header orders-header">
         <h3>درخواست‌های تبلیغات</h3>
 
         <div className="orders-controls">
-          {/* time filters (for history) */}
+          {/* time filters */}
           <div
             className="orders-filters"
             style={{ visibility: showHistory ? "visible" : "hidden" }}
@@ -174,7 +174,6 @@ export default function AdsRequestsSection() {
                 key={r.key}
                 className={`chip ${rangeKey === r.key ? "chip--active" : ""}`}
                 onClick={() => setRangeKey(r.key)}
-                title={r.label}
               >
                 {r.label}
               </button>
@@ -207,15 +206,11 @@ export default function AdsRequestsSection() {
 
         {list.map((req) => {
           const adTypeLabel =
-            req.adType === "slider"
-              ? "اسلایدر صفحه اصلی"
-              : req.adType === "banner"
-              ? "بنر تمام صفحه"
-              : "نوع نامشخص";
+            req.adType === "slider" ? "اسلایدر صفحه اصلی" : "بنر تمام صفحه";
 
           const reservedLabel = `${req.reservedAmount.toLocaleString(
             "fa-IR"
-          )} ${req.reservedUnit || ""}`;
+          )} ${req.reservedUnit}`;
 
           return (
             <button
@@ -233,6 +228,7 @@ export default function AdsRequestsSection() {
                     — {req.restaurantName}
                   </span>
                 </div>
+
                 <div className="order-bar__meta">
                   <span>{adTypeLabel}</span>
                   <span className="dot-sep">·</span>

@@ -7,7 +7,8 @@ import LikeIcon from "../icons/LikeIcon";
 import MessageIcon from "../icons/MessageIcon";
 import ModalCategoryIcon from "../icons/ModalCategoryIcon";
 import MokhalafatIcon from "../icons/MokhalafatIcon";
-
+import RRestaurantCombosButton from "../common/RestaurantCombosButton";
+import RestaurantCombosButton from "../common/RestaurantCombosButton";
 function ItemDetailModal({ item, onClose }) {
   const cart = useCart();
   const [isActive, setIsActive] = useState(false);
@@ -331,6 +332,7 @@ function ItemDetailModal({ item, onClose }) {
                 );
               })}
             </div>
+            <RestaurantCombosButton />
           </div>
         </div>
       </div>

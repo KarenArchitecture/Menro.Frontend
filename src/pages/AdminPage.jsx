@@ -15,7 +15,7 @@ import OrdersSection from "../components/admin/OrdersSection";
 import CategorySettingsSection from "../components/admin/CategorySettingsSection";
 import AdsSettingsSection from "../components/admin/AdsSettingsSection";
 import AdsRequestsSection from "../components/admin/AdsRequestsSection";
-import RestaurantsAdminSection from "../components/admin/RestaurantsAdminSection";
+import RestaurantsListForAdminSection from "../components/admin/RestaurantsListForAdminSection";
 import RestaurantProfileSection from "../components/admin/RestaurantProfileSection";
 
 export default function AdminPage() {
@@ -71,7 +71,7 @@ export default function AdminPage() {
         return <AdsRequestsSection />;
 
       case "restaurants":
-        return <RestaurantsAdminSection />;
+        return <RestaurantsListForAdminSection />;
 
       case "restaurant-profile":
         return <RestaurantProfileSection />;

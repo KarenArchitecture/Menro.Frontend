@@ -1,4 +1,4 @@
-// src/api/restaurantAxios.js
+// src/api/adminRestaurantAdAxios.js
 import axios from "axios";
 
 const adminRestaurantAdAxios = axios.create({

@@ -652,7 +652,6 @@ h2 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.2rem;
   padding: var(--footer-pad-y) 1.6rem
     calc(var(--footer-pad-y) + var(--footer-safe));
   background: #0c0f14;
@@ -780,8 +779,18 @@ h2 {
   display: flex;
   flex-direction: row-reverse;
   align-items: center;
-  justify-content: space-between;
-  gap: 1.2rem;
+  justify-content: center;
+  gap: 3rem;
+}
+
+#root
+  > div
+  > div.checkout-footer.is-picking-table
+  > div.footer-main
+  > div.footer-action
+  > button {
+  width: 22rem;
+  height: 4.5rem;
 }
 
 /* mobile tweaks – move wrap logic to footer-main */
@@ -872,14 +881,16 @@ h2 {
   font-size: 1.4rem;
   font-weight: 600;
   cursor: pointer;
+  height: 6rem;
 }
 
 .table-chip.is-active {
-  /* outline: 2px solid #ffffff; */
+  background: #ff3c00;
 }
 
 .table-chip.is-wide {
-  grid-column: 1 / -1; /* بیرون‌بر full width */
+  grid-column: 1 / -1;
+  height: 5rem;
 }
 
 .checkout-footer .is-picking-table {

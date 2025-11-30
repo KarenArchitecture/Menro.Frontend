@@ -60,7 +60,7 @@ export default function AdsRequestsSection() {
         adText: ad.commercialText,
         targetUrl: ad.targetUrl,
 
-        requestedAt: new Date(ad.createdAt).toLocaleString("fa-IR"),
+        requestedAt: ad.createdAtShamsi,
         ts: new Date(ad.createdAt).getTime(),
       }));
 

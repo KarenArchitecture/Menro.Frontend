@@ -4,7 +4,8 @@ import usePageStyles from "../hooks/usePageStyles";
 
 import CheckoutHeader from "../components/checkout/CheckoutHeader";
 import CartCard from "../components/checkout/CartCard";
-import PaymentModal from "../components/checkout/PaymentModal";
+// ❌ remove PaymentModal import
+// import PaymentModal from "../components/checkout/PaymentModal";
 import CheckoutFooter from "../components/checkout/CheckoutFooter";
 
 const initialCart = [
@@ -24,7 +25,44 @@ const initialCart = [
       },
       {
         id: "o-2",
-        title: "با شیر و فندق",
+        title: "متوسط",
+        unitPrice: 300000,
+        qty: 1,
+        weight: "250 گرم",
+      },
+      {
+        id: "o-3",
+        title: "بزرگ",
+        unitPrice: 300000,
+        qty: 1,
+        weight: "250 گرم",
+      },
+    ],
+  },
+  {
+    id: "coffee-2",
+    title: "قهوه با اسم خیلی خیلی خیلی طولانی",
+    img: "/images/checkout-pic.png",
+    rating: { score: 4.5, count: 6879 },
+    subtext: "٪99 شیر، ٪1 قهوه",
+    options: [
+      {
+        id: "o-1",
+        title: "کوچک",
+        unitPrice: 300000,
+        qty: 1,
+        weight: "250 گرم",
+      },
+      {
+        id: "o-2",
+        title: "متوسط",
+        unitPrice: 300000,
+        qty: 1,
+        weight: "250 گرم",
+      },
+      {
+        id: "o-3",
+        title: "بزرگ",
         unitPrice: 300000,
         qty: 1,
         weight: "250 گرم",
@@ -37,7 +75,6 @@ export default function CheckoutPage() {
   usePageStyles("/styles-checkout.css");
 
   const [cart, setCart] = useState(initialCart);
-  const [modalOpen, setModalOpen] = useState(false);
 
   const total = useMemo(() => {
     return cart.reduce((sum, item) => {
@@ -45,6 +82,18 @@ export default function CheckoutPage() {
       return sum + opts;
     }, 0);
   }, [cart]);
+
+  // آیتم‌هایی که در مودال موفقیت نمایش داده می‌شوند
+  const successItems = useMemo(
+    () =>
+      cart.map((item) => ({
+        id: item.id,
+        title: item.title,
+        subtitle: item.subtext,
+        price: item.options.reduce((s, o) => s + o.unitPrice * o.qty, 0),
+      })),
+    [cart]
+  );
 
   const changeQty = (itemId, optionId, delta) => {
     setCart((prev) =>
@@ -74,17 +123,7 @@ export default function CheckoutPage() {
 
       <div className="footer-spacer" aria-hidden="true" />
 
-      <CheckoutFooter
-        total={total}
-        modalOpen={modalOpen}
-        onPayClick={() => setModalOpen(true)}
-      />
-
-      <PaymentModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        total={total}
-      />
+      <CheckoutFooter total={total} items={successItems} discount={0} />
     </div>
   );
 }

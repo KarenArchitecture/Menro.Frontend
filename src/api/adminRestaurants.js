@@ -1,3 +1,4 @@
+// src/api/adminRestaurants.js
 import adminRestaurantsAxios from "./adminRestaurantsAxios";
 
 export function getRestaurants(approved) {

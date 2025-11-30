@@ -1,5 +1,10 @@
-import { useState } from "react";
-
+//RestaurantProfileSection.jsx
+import { useState, useEffect } from "react";
+import {
+  getRestaurantProfile,
+  updateRestaurantProfile,
+} from "../../api/ownerRestaurant";
+import restaurantAxios from "../../api/restaurantAxios";
 export default function RestaurantProfileSection() {
   // basic fields
   const [name, setName] = useState("");
@@ -11,6 +16,9 @@ export default function RestaurantProfileSection() {
   const [openTime, setOpenTime] = useState("");
   const [closeTime, setCloseTime] = useState("");
 
+  // categories list
+  const [categories, setCategories] = useState([]);
+  const getRestaurantCategories = () => restaurantAxios.get("/categories");
   // images + previews
   const [homeBannerFile, setHomeBannerFile] = useState(null);
   const [homeBannerPreview, setHomeBannerPreview] = useState(null);
@@ -25,26 +33,84 @@ export default function RestaurantProfileSection() {
   const subscriptionType = "طلایی"; // e.g. طلایی / نقره‌ای / برنزی
   const subscriptionDaysLeft = 23; // e.g. 23 days left
 
-  const handleSubmit = (e) => {
+  // --------------------------------------------
+  // Load categories + restaurant profile together
+  // --------------------------------------------
+  useEffect(() => {
+    async function loadData() {
+      try {
+        // load categories
+        const catRes = await getRestaurantCategories();
+        setCategories(catRes.data);
+
+        // load profile
+        const profileRes = await getRestaurantProfile();
+        const d = profileRes.data;
+
+        // fill basic fields
+        setName(d.name);
+        setType(String(d.restaurantCategoryId)); // important
+        setAddress(d.address);
+        setPhone(d.phoneNumber);
+        setBankAccount(d.bankAccountNumber);
+        setDescription(d.description);
+        setOpenTime(d.openTime);
+        setCloseTime(d.closeTime);
+
+        // images
+        if (d.bannerImageUrl) setHomeBannerPreview(d.bannerImageUrl);
+
+        if (d.shopBannerImageUrl) setShopBannerPreview(d.shopBannerImageUrl);
+
+        if (d.logoImageUrl) setLogoPreview(d.logoImageUrl);
+
+        // subscription
+        setSubscriptionType(d.subscriptionType || "نامشخص");
+        setSubscriptionDaysLeft(d.subscriptionDaysLeft);
+      } catch (err) {
+        console.error("Failed to load profile or categories", err);
+      }
+    }
+
+    loadData();
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const payload = {
-      name,
-      type,
-      address,
-      phone,
-      bankAccount,
-      description,
-      openTime,
-      closeTime,
-      // images: backend can read from FormData instead of this object
-      homeBannerFile,
-      shopBannerFile,
-      logoFile,
-    };
+    try {
+      const formData = new FormData();
 
-    console.log("Restaurant profile submitted:", payload);
-    // TODO: backend dev can replace console.log with real API call
+      // required text fields
+      formData.append("Name", name);
+      formData.append("RestaurantCategoryId", type);
+      formData.append("Address", address);
+      formData.append("Description", description);
+      formData.append("PhoneNumber", phone);
+      formData.append("BankAccountNumber", bankAccount);
+      formData.append("OpenTime", openTime);
+      formData.append("CloseTime", closeTime);
+
+      // files (optional)
+      if (homeBannerFile) {
+        formData.append("HomeBanner", homeBannerFile);
+      }
+      if (shopBannerFile) {
+        formData.append("ShopBanner", shopBannerFile);
+      }
+      if (logoFile) {
+        formData.append("Logo", logoFile);
+      }
+
+      // send to backend
+      const res = await updateRestaurantProfile(formData);
+
+      console.log("Updated:", res.data);
+      alert("پروفایل با موفقیت بروزرسانی شد");
+    } catch (err) {
+      console.error("Update failed:", err);
+      alert("خطا در بروزرسانی پروفایل رستوران");
+    }
   };
 
   return (
@@ -96,20 +162,21 @@ export default function RestaurantProfileSection() {
           {/* Type */}
           <div className="input-group">
             <label htmlFor="restaurant-type">نوع رستوران</label>
+
             <select
               id="restaurant-type"
               name="restaurantType"
-              value={type}
+              value={type} // category id as string
               onChange={(e) => setType(e.target.value)}
               required
             >
               <option value="">انتخاب کنید...</option>
-              <option value="iranian">ایرانی</option>
-              <option value="fast-food">فست‌فود</option>
-              <option value="cafe">کافه</option>
-              <option value="seafood">دریایی</option>
-              <option value="international">بین‌المللی</option>
-              <option value="other">سایر</option>
+
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
             </select>
           </div>
         </div>

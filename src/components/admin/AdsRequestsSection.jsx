@@ -33,7 +33,7 @@ export default function AdsRequestsSection() {
   const [selected, setSelected] = useState(null);
   const [rangeKey, setRangeKey] = useState("today");
 
-  /* ---------- Load from API ---------- */
+  /* ---------- Load Pending Ads ---------- */
   async function loadPending() {
     try {
       const res = await adminRestaurantAdAxios.get("/pending");
@@ -75,7 +75,54 @@ export default function AdsRequestsSection() {
 
   useEffect(() => {
     loadPending();
+    loadHistory();
   }, []);
+
+  /* ---------- Load Ads History ---------- */
+  async function loadHistory() {
+    try {
+      const res = await adminRestaurantAdAxios.get("/history");
+      const data = res.data;
+
+      console.log("RAW HISTORY FROM BACKEND:", data);
+
+      const mapped = data.map((ad) => ({
+        id: ad.id,
+        code: `AD-${ad.id}`,
+        status: "history",
+
+        decision:
+          ad.status === "Approved"
+            ? "approved"
+            : ad.status === "Rejected"
+            ? "rejected"
+            : null,
+
+        decisionReason: ad.adminNotes || null,
+
+        restaurantName: ad.restaurantName,
+        adType: ad.placement === "MainSlider" ? "slider" : "banner",
+
+        reservedAmount: ad.purchasedUnits,
+        reservedUnit: ad.billing === "PerDay" ? "روز" : "کلیک",
+
+        paidAmount: ad.cost,
+        imageUrl: ad.imageUrl,
+        adText: ad.commercialText,
+        targetUrl: ad.targetUrl,
+
+        requestedAt: ad.createdAtShamsi,
+        ts: new Date(ad.createdAt).getTime(),
+      }));
+
+      setRequests((prevPending) => {
+        const pending = prevPending.filter((x) => x.status === "pending");
+        return [...pending, ...mapped];
+      });
+    } catch (err) {
+      console.error("Error loading history ads:", err);
+    }
+  }
 
   /* ---------- Filtering Logic (same as before) ---------- */
   const activeRange = useMemo(

@@ -1,11 +1,14 @@
-// src/api/foodcategories.js
-// import axiosClient from "./publicAxios";
+// src/api/foodCategories.js
+import publicAxios from "./publicAxios";
 
-// 📍 Base route prefix
-const FOOD_CATEGORIES_URL = "/restaurant"; // Your endpoint is like /restaurant/{slug}/foodcategories
-
-// ✅ Get food categories by restaurant slug
-// export const getFoodCategoriesByRestaurantSlug = async (slug) => {
-//     const response = await axiosClient.get(`${FOOD_CATEGORIES_URL}/${slug}/foodcategories`);
-//     return response.data;
-// };
+// Get all food categories (global + restaurant-specific) by restaurant slug
+export const getRestaurantPageFoodCategoriesBySlug = async (slug) => {
+    try {
+        const { data } = await publicAxios.get(`/restaurant/${slug}/foodcategories`);
+        // data is an array of { id, name, svgIcon, globalFoodCategoryId }
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch restaurant food categories:", error);
+        throw error;
+    }
+};

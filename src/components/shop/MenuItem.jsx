@@ -1,27 +1,89 @@
-// src/components/shop/MenuItem.jsx
 import React from "react";
+import { useCart } from "./CartContext";
 
-// 1. The component now accepts 'onSelectItem' as a prop
-function MenuItem({ item, onSelectItem }) {
-  const { name, ingredients, price, imageUrl } = item;
+export default function MenuItem({ item, onOpen }) {
+  const { name, price, imageUrl, rating = 4.5, reviewsCount = 0 } = item || {};
+  const cart = useCart();
+
+  const key = cart.keyOf(item);
+  const qty = cart.getQty(key);
+
+  const formatTomans = (n) => (Number(n) || 0).toLocaleString("fa-IR");
+
+  const addFirst = (e) => {
+    e.stopPropagation();
+    cart.setQty(key, item, 1);
+  };
+  const inc = (e) => {
+    e.stopPropagation();
+    cart.setQty(key, item, Math.min(99, qty + 1));
+  };
+  const dec = (e) => {
+    e.stopPropagation();
+    cart.setQty(key, item, Math.max(0, qty - 1));
+  };
+
+  const openModal = () => onOpen?.(item);
 
   return (
-    <div className="item">
-      <img src={`http://localhost:5096${imageUrl}`} alt={name} className="item-image" />
-      <div className="item-info">
-        <h2 className="item-name">{name}</h2>
-        <p className="item-description">{ingredients}</p>
+    <article className="menu-card" dir="rtl" onClick={openModal}>
+      <div className="menu-card__media">
+        <img
+          src={`http://localhost:5096${imageUrl}`}
+          alt={name}
+          className="menu-card__img"
+          loading="lazy"
+        />
+        <div className="menu-card__imgShade" aria-hidden />
+        <div className="menu-card__rating">
+          <i className="fas fa-star menu-card__star" aria-hidden />
+          <span className="menu-card__ratingValue">{rating}</span>
+          <span className="menu-card__ratingCount">
+            ({reviewsCount.toLocaleString("fa-IR")})
+          </span>
+        </div>
       </div>
-      <div className="add-to-cart">
-        <button className="add-btn" onClick={() => onSelectItem(item)}>
-          +
-        </button>
-        <p className="item-price">
-          {price} <span className="currency">تومان</span>
-        </p>
+
+      <div className="menu-card__body">
+        <h3 className="menu-card__title" title={name}>
+          {name}
+        </h3>
+
+        <div className="menu-card__price">
+          <span className="menu-card__priceNumber">{formatTomans(price)}</span>{" "}
+          <span className="menu-card__currency">تومان</span>
+        </div>
+
+        <div className="menu-card__footer" onClick={(e) => e.stopPropagation()}>
+          {qty <= 0 ? (
+            <button
+              type="button"
+              className="menu-card__addBtn"
+              onClick={addFirst}
+            >
+              +
+            </button>
+          ) : (
+            <div className="menu-card__qtyGroup">
+              <button
+                type="button"
+                className="menu-card__qtyBtn menu-card__qtyBtn--dec"
+                onClick={dec}
+              >
+                −
+              </button>
+              <span className="menu-card__qtyDisplay">{qty}</span>
+              <button
+                type="button"
+                className="menu-card__qtyBtn menu-card__qtyBtn--inc"
+                onClick={inc}
+              >
+                +
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </article>
   );
 }
-
-export default MenuItem;

@@ -1235,6 +1235,10 @@
     font-size: 13px;
 }
 
+.addon-row, .addon-price, .modal-rating, .variant-pill, .subsection-head {
+    font-size: 16px;
+}
+
 .food-card-footer {
     width: 100%;
     text-align: center;

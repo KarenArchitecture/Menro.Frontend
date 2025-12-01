@@ -92,36 +92,52 @@
 //   );
 // }
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useCart } from "./CartContext";
 
 export default function MenuItem({ item, onOpen }) {
   const { name, price, imageUrl, rating = 4.5, voters = 0 } = item || {};
   const cart = useCart();
 
-  const key = cart.keyOf(item);
-  const qty = cart.getQty(key);
-
   const formatTomans = (n) => (Number(n) || 0).toLocaleString("fa-IR");
 
   const apiBase = import.meta.env.VITE_API_URL || "https://localhost:7270/api";
-
   // remove "/api" from the end → we should hit the backend root
   const baseUrl = apiBase.replace(/\/api\/?$/, "");
-
   const fullImageUrl = `${baseUrl}${imageUrl}`;
 
+  // --- cart keys ---
+  const baseKey = cart.keyOf(item);
+
+  // quantity of the "simple" (non-variant) item
+  const baseQty = cart.getQty(baseKey);
+
+  // total quantity of this food = base item + all its variant entries
+  const totalQty = useMemo(() => {
+    let sum = 0;
+    for (const [k, val] of cart.items.entries()) {
+      if (k === baseKey || k.startsWith(`${baseKey}__`)) {
+        sum += val.qty;
+      }
+    }
+    return sum;
+  }, [cart.items, baseKey]);
+
+  // --- handlers ---
   const addFirst = (e) => {
     e.stopPropagation();
-    cart.setQty(key, item, 1);
+    // still adds a simple item (no addons / default price)
+    cart.setQty(baseKey, item, 1);
   };
+
   const inc = (e) => {
     e.stopPropagation();
-    cart.setQty(key, item, Math.min(99, qty + 1));
+    cart.setQty(baseKey, item, Math.min(99, baseQty + 1));
   };
+
   const dec = (e) => {
     e.stopPropagation();
-    cart.setQty(key, item, Math.max(0, qty - 1));
+    cart.setQty(baseKey, item, Math.max(0, baseQty - 1));
   };
 
   const openModal = () => onOpen?.(item);
@@ -152,13 +168,17 @@ export default function MenuItem({ item, onOpen }) {
         </h3>
 
         <div className="menu-card__price">
-          <span className="menu-card__priceNumber">{formatTomans(price)}</span>{" "}
+          <span className="menu-card__priceNumber">
+            {formatTomans(price)}
+          </span>{" "}
           <span className="menu-card__currency">تومان</span>
         </div>
 
         <div className="menu-card__footer" onClick={(e) => e.stopPropagation()}>
-          {qty <= 0 ? (
-            <button className="menu-card__addBtn" onClick={addFirst}>+</button>
+          {totalQty <= 0 ? (
+            <button className="menu-card__addBtn" onClick={addFirst}>
+              +
+            </button>
           ) : (
             <div className="menu-card__qtyGroup">
               <button
@@ -167,7 +187,7 @@ export default function MenuItem({ item, onOpen }) {
               >
                 −
               </button>
-              <span className="menu-card__qtyDisplay">{qty}</span>
+              <span className="menu-card__qtyDisplay">{totalQty}</span>
               <button
                 className="menu-card__qtyBtn menu-card__qtyBtn--inc"
                 onClick={inc}

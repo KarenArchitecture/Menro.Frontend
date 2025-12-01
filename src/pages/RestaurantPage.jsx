@@ -176,11 +176,10 @@ import ProfileIcon from "../components/icons/ProfileIcon";
 import CheckoutBar from "../components/shop/CheckoutBar";
 import { getRestaurantCategoriesBySlug } from "../api/foodCategories";
 
-
-//  shared cart context */
+//  shared cart context
 import { CartProvider, useCart } from "../components/shop/CartContext";
 
-/* -------- content  -------- */
+/* -------- content -------- */
 function RestaurantContent() {
   const navigate = useNavigate();
   const { slug } = useParams();
@@ -189,10 +188,25 @@ function RestaurantContent() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const handleSelectItem = (item) => setSelectedItem(item);
+  /* ---------- OPEN MODAL (store only ID) ---------- */
+  const handleSelectItem = (item) => {
+    setSelectedItem({ id: item.id });
+  };
+
+  /* ---------- FETCH MODAL DETAILS ---------- */
+  const fetchFoodDetails = async (id) => {
+    const apiBase = import.meta.env.VITE_API_URL || "https://localhost:7270/api";
+    const baseUrl = apiBase.replace(/\/api\/?$/, "");
+
+    const res = await fetch(`${baseUrl}/api/public/food/${id}/details`);
+    if (!res.ok) throw new Error("Failed loading details");
+    return res.json();
+  };
+
+  /* ---------- CLOSE MODAL ---------- */
   const handleCloseModal = () => setSelectedItem(null);
 
-  /* ---------- Cart from context  ---------- */
+  /* ---------- CART ---------- */
   const cart = useCart();
 
   useEffect(() => {
@@ -220,7 +234,7 @@ function RestaurantContent() {
     { label: "مقالات", href: "#" },
   ];
 
-  /* ---------- Data queries ---------- */
+  /* ---------- DATA: banner ---------- */
   const {
     data: banner,
     isLoading: bannerLoading,
@@ -233,7 +247,7 @@ function RestaurantContent() {
     refetchOnWindowFocus: false,
   });
 
-  // 🔹 Fetch restaurant categories (custom + global)
+  /* ---------- DATA: restaurant categories ---------- */
   const {
     data: categories = [],
     isLoading: catLoading,
@@ -244,17 +258,29 @@ function RestaurantContent() {
     enabled: !!slug,
   });
 
-
+  /* ---------- BANNER REFRESH ---------- */
   useEffect(() => {
-    refetchBanner(); // refetch banner whenever slug changes
+    refetchBanner();
   }, [slug, refetchBanner]);
 
+  /* ---------- DATA: menu list ---------- */
   const { data: menuData = [], isLoading: menuLoading } = useQuery({
     queryKey: ["restaurantMenu", slug],
     queryFn: () => getRestaurantMenuBySlug(slug),
   });
 
-  /* ---------- Categories  ---------- */
+  /* ---------- DATA: modal food details ---------- */
+  const {
+    data: modalData,
+    isLoading: modalLoading,
+  } = useQuery({
+    queryKey: ["foodDetails", selectedItem?.id],
+    queryFn: () =>
+      selectedItem ? fetchFoodDetails(selectedItem.id) : null,
+    enabled: !!selectedItem,
+  });
+
+  /* ---------- CATEGORIES WITH "ALL" ---------- */
   const categoriesWithAll = useMemo(() => {
     const apiCats = categories.map((c) => ({
       id: String(c.id),
@@ -264,7 +290,7 @@ function RestaurantContent() {
     return [{ id: "all", name: "همه", svgIcon: ALL_CAT_SVG }, ...apiCats];
   }, [categories]);
 
-
+  /* ---------- LOADING ---------- */
   if (bannerLoading) return <div>Loading...</div>;
   if (bannerError) return <div>Error loading restaurant data</div>;
 
@@ -292,18 +318,22 @@ function RestaurantContent() {
         <MenuList
           activeCategory={activeCategory}
           onSelectItem={handleSelectItem}
-          categories={categoriesWithAll} // <-- add
-          setActiveCategory={setActiveCategory} // <-- add
+          categories={categoriesWithAll}
+          setActiveCategory={setActiveCategory}
         />
       </div>
 
-      {selectedItem && (
-        <ItemDetailModal item={selectedItem} onClose={handleCloseModal} />
+      {/* ---------- MODAL ---------- */}
+      {selectedItem && modalLoading && (
+        <div className="modal-loading">در حال بارگذاری...</div>
+      )}
+
+      {selectedItem && modalData && (
+        <ItemDetailModal item={modalData} onClose={handleCloseModal} />
       )}
 
       <MobileNav />
 
-      {/* Shows only when there is something in cart */}
       <CheckoutBar
         count={cart.count}
         total={cart.total}

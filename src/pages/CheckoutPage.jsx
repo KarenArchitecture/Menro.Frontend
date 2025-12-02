@@ -1,80 +1,41 @@
-// src/pages/CheckoutPage.jsx
 import React, { useMemo, useState } from "react";
+import { useLocation } from "react-router-dom"; // ⬅️ add this
 import usePageStyles from "../hooks/usePageStyles";
 
 import CheckoutHeader from "../components/checkout/CheckoutHeader";
 import CartCard from "../components/checkout/CartCard";
-// ❌ remove PaymentModal import
-// import PaymentModal from "../components/checkout/PaymentModal";
 import CheckoutFooter from "../components/checkout/CheckoutFooter";
-
-const initialCart = [
-  {
-    id: "coffee-1",
-    title: "موکا",
-    img: "/images/checkout-pic.png",
-    rating: { score: 4.5, count: 6879 },
-    subtext: "٪99 شیر، ٪1 قهوه",
-    options: [
-      {
-        id: "o-1",
-        title: "کوچک",
-        unitPrice: 300000,
-        qty: 1,
-        weight: "250 گرم",
-      },
-      {
-        id: "o-2",
-        title: "متوسط",
-        unitPrice: 300000,
-        qty: 1,
-        weight: "250 گرم",
-      },
-      {
-        id: "o-3",
-        title: "بزرگ",
-        unitPrice: 300000,
-        qty: 1,
-        weight: "250 گرم",
-      },
-    ],
-  },
-  {
-    id: "coffee-2",
-    title: "قهوه با اسم خیلی خیلی خیلی طولانی",
-    img: "/images/checkout-pic.png",
-    rating: { score: 4.5, count: 6879 },
-    subtext: "٪99 شیر، ٪1 قهوه",
-    options: [
-      {
-        id: "o-1",
-        title: "کوچک",
-        unitPrice: 300000,
-        qty: 1,
-        weight: "250 گرم",
-      },
-      {
-        id: "o-2",
-        title: "متوسط",
-        unitPrice: 300000,
-        qty: 1,
-        weight: "250 گرم",
-      },
-      {
-        id: "o-3",
-        title: "بزرگ",
-        unitPrice: 300000,
-        qty: 1,
-        weight: "250 گرم",
-      },
-    ],
-  },
-];
-
 export default function CheckoutPage() {
   usePageStyles("/styles-checkout.css");
 
-  const [cart, setCart] = useState(initialCart);
+  const location = useLocation();
+  const navState = location.state;
+
+  const [cart, setCart] = useState(() => {
+    if (!navState?.items || !Array.isArray(navState.items)) {
+      return initialCart;
+    }
+
+    return navState.items.map((ci) => ({
+      id: ci.id,
+      title: ci.name, // e.g. "کباب - بزرگ"
+      img: ci.imageUrl
+        ? `https://localhost:7270${ci.imageUrl}`
+        : "/images/checkout-pic.png",
+      rating: { score: 4.5, count: 0 }, // placeholder for now
+      subtext: "",
+      hasAddons: Array.isArray(ci.addons) && ci.addons.length > 0,
+      options: [
+        {
+          id: ci.variantId || "default",
+          title: ci.variantName || "سایز",
+          unitPrice: ci.price,
+          qty: ci.qty ?? 1,
+          weight: "",
+        },
+      ],
+    }));
+  });
 
   const total = useMemo(() => {
     return cart.reduce((sum, item) => {
@@ -83,7 +44,6 @@ export default function CheckoutPage() {
     }, 0);
   }, [cart]);
 
-  // آیتم‌هایی که در مودال موفقیت نمایش داده می‌شوند
   const successItems = useMemo(
     () =>
       cart.map((item) => ({

@@ -8,11 +8,7 @@ export default function CartCard({ item, onChangeQty }) {
     <div className="cart-card-wrap">
       <div className="cart-card">
         <div className="cart-header">
-          <img
-            src="/images/checkout-pic.png"
-            alt={item.title}
-            className="product-img"
-          />
+          <img src={item.img} alt={item.title} className="product-img" />
           <div className="cart-info">
             <div className="product-title rating">
               <h3 className="product-title">{item.title}</h3>
@@ -37,11 +33,12 @@ export default function CartCard({ item, onChangeQty }) {
         </div>
       </div>
 
-      {/* pill is now sibling, not child */}
-      <div className="cart-card-extra">
-        <img src="/images/checkout-extras.svg" alt="food options svg" />
-        با مخلفات
-      </div>
+      {item.hasAddons && (
+        <div className="cart-card-extra">
+          <img src="/images/checkout-extras.svg" alt="food options svg" />
+          با مخلفات
+        </div>
+      )}
     </div>
   );
 }

@@ -184,6 +184,18 @@ function RestaurantContent() {
   const navigate = useNavigate();
   const { slug } = useParams();
 
+  const handleCheckout = () => {
+    const items = Array.from(cart.items.values()); // each variant row from modal
+
+    navigate("/checkout", {
+      state: {
+        items, // full list from CartContext
+        total: cart.total,
+        count: cart.count,
+      },
+    });
+  };
+
   /* ---------- UI state ---------- */
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedItem, setSelectedItem] = useState(null);
@@ -195,7 +207,8 @@ function RestaurantContent() {
 
   /* ---------- FETCH MODAL DETAILS ---------- */
   const fetchFoodDetails = async (id) => {
-    const apiBase = import.meta.env.VITE_API_URL || "https://localhost:7270/api";
+    const apiBase =
+      import.meta.env.VITE_API_URL || "https://localhost:7270/api";
     const baseUrl = apiBase.replace(/\/api\/?$/, "");
 
     const res = await fetch(`${baseUrl}/api/public/food/${id}/details`);
@@ -270,13 +283,9 @@ function RestaurantContent() {
   });
 
   /* ---------- DATA: modal food details ---------- */
-  const {
-    data: modalData,
-    isLoading: modalLoading,
-  } = useQuery({
+  const { data: modalData, isLoading: modalLoading } = useQuery({
     queryKey: ["foodDetails", selectedItem?.id],
-    queryFn: () =>
-      selectedItem ? fetchFoodDetails(selectedItem.id) : null,
+    queryFn: () => (selectedItem ? fetchFoodDetails(selectedItem.id) : null),
     enabled: !!selectedItem,
   });
 
@@ -337,7 +346,7 @@ function RestaurantContent() {
       <CheckoutBar
         count={cart.count}
         total={cart.total}
-        onCheckout={() => navigate("/checkout")}
+        onCheckout={handleCheckout}
       />
     </div>
   );

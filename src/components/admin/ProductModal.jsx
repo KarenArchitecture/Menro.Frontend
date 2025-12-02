@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import adminFoodAxios from "../../api/adminFoodAxios";
 
 function uid() {
@@ -21,39 +21,18 @@ export default function ProductModal({
   const [ingredients, setIngredients] = useState("");
   const [foodCategoryId, setFoodCategoryId] = useState("");
   const [price, setPrice] = useState("");
-  const [hasVariants, setHasVariants] = useState(false);
-  const [variants, setVariants] = useState([
-    {
-      uiId: uid(),
-      dbId: null,
-      name: "",
-      price: "",
-      isDefault: true,
-      addons: [],
-    },
-  ]);
-
-  // UX => close modal on "esc" press
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") {
-        onClose?.();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen, onClose]);
 
   // دسته‌بندی‌ها
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
 
+  // عکس محصول
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [existingImageName, setExistingImageName] = useState(null);
+  const fileInputRef = useRef(null);
+
+  // load categories on open
   useEffect(() => {
     if (!isOpen) return;
 
@@ -75,6 +54,23 @@ export default function ProductModal({
     fetchCategories();
   }, [isOpen]);
 
+  // UX
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        onClose?.(); // مودال را ببند
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   // food details
   useEffect(() => {
     if (!isOpen || mode !== "edit" || !productId) return;
@@ -87,23 +83,24 @@ export default function ProductModal({
         setName(data.name || "");
         setIngredients(data.ingredients || "");
         setFoodCategoryId(data.foodCategoryId ?? ""); // همان عدد یا خالی
-
+        setImagePreview(data.imageUrl);
+        setExistingImageName(data.imageName); // just file name
         if (data.hasVariants && data.variants) {
           setHasVariants(true);
 
           setVariants(
-            (data.variants || []).map((v, index) => ({
-              uiId: uid(),
-              dbId: v.id ?? null,
-              name: v.name ?? "",
-              price: v.price?.toString() ?? "",
+            data.variants.map((v, index) => ({
+              id: uid(),
+              name: v.name,
+              price: v.price?.toString() || "",
               isDefault: v.isDefault ?? index === 0,
-              addons: (v.addons || []).map((a) => ({
-                uiId: uid(),
-                dbId: a.id ?? null,
-                name: a.name ?? "",
-                price: a.extraPrice?.toString() ?? "",
-              })),
+              addons: v.addons
+                ? v.addons.map((a) => ({
+                    id: uid(),
+                    name: a.name,
+                    price: a.extraPrice?.toString() || "",
+                  }))
+                : [],
             }))
           );
         } else {
@@ -118,118 +115,31 @@ export default function ProductModal({
     fetchProduct();
   }, [isOpen, mode, productId]);
 
-  // hasCategory check for food
-  useEffect(() => {
-    if (!isOpen || mode !== "edit") return;
-    if (loadingCategories) return; // صبر کن تا دسته‌ها لود بشن
-
-    if (!foodCategoryId) return; // محصول دسته نداشته
-
-    const exists = categories.some(
-      (c) => Number(c.id) === Number(foodCategoryId)
-    );
-
-    if (!exists) {
-      console.warn("⚠ دسته‌بندی محصول حذف شده → foodCategoryId = ''");
-      setFoodCategoryId(""); // باعث نمایش گزینه "دسته‌بندی پاک شده" می‌شود
-    }
-  }, [isOpen, mode, loadingCategories, categories, foodCategoryId]);
-  // unselect category on create mode
-  useEffect(() => {
-    if (isOpen && mode === "create") {
-      setFoodCategoryId("");
-    }
-  }, [isOpen, mode]);
-
-  //  simple vs variants
-
-  // ---- helpers: variants ----
-  const onToggleHasVariants = (flag) => {
-    setHasVariants(flag);
-    if (flag && variants.length === 0) {
-      setVariants([
-        { id: uid(), name: "", price: "", isDefault: true, addons: [] },
-      ]);
-    }
-  };
-
-  const addVariant = () => {
-    setVariants((prev) => [
-      ...prev,
-      {
-        id: uid(),
-        name: "",
-        price: "",
-        isDefault: prev.length === 0,
-        addons: [],
-      },
-    ]);
-  };
-
-  const removeVariant = (id) => {
-    setVariants((prev) => {
-      const next = prev.filter((v) => v.uiId !== id);
-      if (!next.some((v) => v.isDefault) && next.length > 0) {
-        next[0].isDefault = true;
-      }
-      return next;
-    });
-  };
-
-  const updateVariant = (id, patch) => {
-    setVariants((prev) =>
-      prev.map((v) => (v.uiId === id ? { ...v, ...patch } : v))
-    );
-  };
-
-  const makeDefault = (id) => {
-    setVariants((prev) =>
-      prev.map((v) => ({ ...v, isDefault: v.uiId === id }))
-    );
-  };
-
-  // ---- helpers: addons (per variant) ----
-  const addAddon = (variantId) => {
-    setVariants((prev) =>
-      prev.map((v) =>
-        v.uiId === variantId
-          ? {
-              ...v,
-              addons: [...v.addons, { id: uid(), name: "", price: "" }],
-            }
-          : v
-      )
-    );
-  };
-
-  const updateAddon = (variantId, addonId, patch) => {
-    setVariants((prev) =>
-      prev.map((v) =>
-        v.uiId === variantId
-          ? {
-              ...v,
-              addons: v.addons.map((a) =>
-                a.uiId === addonId ? { ...a, ...patch } : a
-              ),
-            }
-          : v
-      )
-    );
-  };
-
-  const removeAddon = (variantId, addonId) => {
-    setVariants((prev) =>
-      prev.map((v) =>
-        v.uiId === variantId
-          ? { ...v, addons: v.addons.filter((a) => a.uiId !== addonId) }
-          : v
-      )
-    );
-  };
-
   // submit
   const onSubmit = async (e) => {
     e.preventDefault();
+    let uploadedFileName = null;
+
+    if (imageFile) {
+      const formData = new FormData();
+      formData.append("file", imageFile);
+
+      try {
+        const uploadRes = await adminFoodAxios.post(
+          "/upload-food-image",
+          formData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
+
+        uploadedFileName = uploadRes.data;
+      } catch (err) {
+        console.error("خطا در آپلود تصویر:", err);
+        alert("آپلود تصویر ناموفق بود");
+        return;
+      }
+    }
 
     if (hasVariants) {
       if (variants.length === 0) {
@@ -267,16 +177,14 @@ export default function ProductModal({
       ingredients: ingredients.trim(),
       foodCategoryId: Number(foodCategoryId || 0),
       price: basePriceValue ?? 0,
-      imageUrl: "",
+      imageName: uploadedFileName || existingImageName || null,
       hasVariants: hasVariants,
       variants: hasVariants
         ? variants.map((v) => ({
-            id: v.dbId,
             name: v.name.trim(),
             price: Number(String(v.price).replace(/[^\d]/g, "")),
             isDefault: v.isDefault,
             addons: v.addons.map((a) => ({
-              id: a.dbId,
               name: a.name.trim(),
               extraPrice: Number(String(a.price).replace(/[^\d]/g, "")),
             })),
@@ -301,6 +209,117 @@ export default function ProductModal({
       alert("ذخیره محصول ناموفق بود");
     }
   };
+  // hasCategory check for food
+  useEffect(() => {
+    if (!isOpen || mode !== "edit") return;
+    if (loadingCategories) return; // صبر کن تا دسته‌ها لود بشن
+
+    if (!foodCategoryId) return; // محصول دسته نداشته
+
+    const exists = categories.some(
+      (c) => Number(c.id) === Number(foodCategoryId)
+    );
+
+    if (!exists) {
+      console.warn("⚠ دسته‌بندی محصول حذف شده → foodCategoryId = ''");
+      setFoodCategoryId(""); // باعث نمایش گزینه "دسته‌بندی پاک شده" می‌شود
+    }
+  }, [isOpen, mode, loadingCategories, categories, foodCategoryId]);
+  // unselect category on create mode
+  useEffect(() => {
+    if (isOpen && mode === "create") {
+      setFoodCategoryId("");
+    }
+  }, [isOpen, mode]);
+
+  //  simple vs variants
+  const [hasVariants, setHasVariants] = useState(false);
+
+  const [variants, setVariants] = useState([
+    { id: uid(), name: "", price: "", isDefault: true, addons: [] },
+  ]);
+
+  // ---- helpers: variants ----
+  const onToggleHasVariants = (flag) => {
+    setHasVariants(flag);
+    if (flag && variants.length === 0) {
+      setVariants([
+        { id: uid(), name: "", price: "", isDefault: true, addons: [] },
+      ]);
+    }
+  };
+  const addVariant = () => {
+    setVariants((prev) => [
+      ...prev,
+      {
+        id: uid(),
+        name: "",
+        price: "",
+        isDefault: prev.length === 0,
+        addons: [],
+      },
+    ]);
+  };
+
+  const removeVariant = (id) => {
+    setVariants((prev) => {
+      const next = prev.filter((v) => v.id !== id);
+      if (!next.some((v) => v.isDefault) && next.length > 0) {
+        next[0].isDefault = true;
+      }
+      return next;
+    });
+  };
+
+  const updateVariant = (id, patch) => {
+    setVariants((prev) =>
+      prev.map((v) => (v.id === id ? { ...v, ...patch } : v))
+    );
+  };
+
+  const makeDefault = (id) => {
+    setVariants((prev) => prev.map((v) => ({ ...v, isDefault: v.id === id })));
+  };
+
+  // ---- helpers: addons (per variant) ----
+  const addAddon = (variantId) => {
+    setVariants((prev) =>
+      prev.map((v) =>
+        v.id === variantId
+          ? {
+              ...v,
+              addons: [...v.addons, { id: uid(), name: "", price: "" }],
+            }
+          : v
+      )
+    );
+  };
+
+  const updateAddon = (variantId, addonId, patch) => {
+    setVariants((prev) =>
+      prev.map((v) =>
+        v.id === variantId
+          ? {
+              ...v,
+              addons: v.addons.map((a) =>
+                a.id === addonId ? { ...a, ...patch } : a
+              ),
+            }
+          : v
+      )
+    );
+  };
+
+  const removeAddon = (variantId, addonId) => {
+    setVariants((prev) =>
+      prev.map((v) =>
+        v.id === variantId
+          ? { ...v, addons: v.addons.filter((a) => a.id !== addonId) }
+          : v
+      )
+    );
+  };
+
   // reset form after closing it
   const resetForm = () => {
     setName("");
@@ -308,17 +327,14 @@ export default function ProductModal({
     setFoodCategoryId(0);
     setPrice("");
     setHasVariants(false);
+    setImagePreview(null);
+    setImageFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
     setVariants([
       { id: uid(), name: "", price: "", isDefault: true, addons: [] },
     ]);
-
-    // پاک کردن ورودی‌های HTML معمولی (در صورتی که با state کنترل نمی‌کنی)
-    const nameEl = document.getElementById("product-name");
-    if (nameEl) nameEl.value = "";
-    const descEl = document.getElementById("product-description");
-    if (descEl) descEl.value = "";
-    const priceEl = document.getElementById("product-price");
-    if (priceEl) priceEl.value = "";
   };
   useEffect(() => {
     if (!isOpen) {
@@ -410,12 +426,56 @@ export default function ProductModal({
             </div>
 
             <div className="form-column">
+              {/* image preview and input */}
               <div className="input-group">
-                <label>عکس محصول</label>
-                <input type="file" id="product-image" className="file-input" />
+                <label>پیش‌نمایش تصویر محصول</label>
+
+                <div
+                  className="ad-preview"
+                  style={{
+                    width: "100%",
+                    height: 200,
+                    background: "#222",
+                    border: "1px dashed rgba(255,255,255,0.25)",
+                    borderRadius: 10,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                    marginBottom: 10,
+                  }}
+                >
+                  {imagePreview ? (
+                    <img
+                      src={imagePreview}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  ) : (
+                    <span style={{ opacity: 0.5 }}>
+                      عکس محصول نمایش داده می‌شود
+                    </span>
+                  )}
+                </div>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    setImageFile(file);
+
+                    const reader = new FileReader();
+                    reader.onload = (ev) => setImagePreview(ev.target.result);
+                    reader.readAsDataURL(file);
+                  }}
+                />
               </div>
               <span className="input-alert">عکس محصول باید 1 * 1 باشد!</span>
-
               {/* Step 1: simple vs variants */}
               <div className="input-group">
                 <label>آیا محصول تنوع دارد؟</label>
@@ -474,7 +534,7 @@ export default function ProductModal({
 
                   <div id="product-types-container">
                     {variants.map((v) => (
-                      <div key={v.uiId} style={{ marginBottom: 10 }}>
+                      <div key={v.id} style={{ marginBottom: 10 }}>
                         {/* variant row */}
                         <div
                           className="product-type-item"
@@ -491,7 +551,7 @@ export default function ProductModal({
                             placeholder="نام نوع (مثال: ویژه)"
                             value={v.name}
                             onChange={(e) =>
-                              updateVariant(v.uiId, { name: e.target.value })
+                              updateVariant(v.id, { name: e.target.value })
                             }
                           />
 
@@ -503,7 +563,7 @@ export default function ProductModal({
                             value={v.price}
                             onChange={(e) => {
                               const raw = e.target.value.replace(/[^\d]/g, "");
-                              updateVariant(v.uiId, { price: raw });
+                              updateVariant(v.id, { price: raw });
                             }}
                           />
 
@@ -516,7 +576,7 @@ export default function ProductModal({
                               type="radio"
                               name="default_type"
                               checked={v.isDefault}
-                              onChange={() => makeDefault(v.uiId)}
+                              onChange={() => makeDefault(v.id)}
                             />{" "}
                             پیش‌فرض
                           </label>
@@ -525,7 +585,7 @@ export default function ProductModal({
                           <button
                             type="button"
                             className="btn btn-icon btn-danger"
-                            onClick={() => removeVariant(v.uiId)}
+                            onClick={() => removeVariant(v.id)}
                             title="حذف نوع"
                             disabled={variants.length === 1}
                           >
@@ -556,7 +616,7 @@ export default function ProductModal({
 
                           {v.addons.map((a) => (
                             <div
-                              key={a.uiId}
+                              key={a.id}
                               className="addon-item"
                               style={{
                                 display: "grid",
@@ -571,7 +631,7 @@ export default function ProductModal({
                                 placeholder="نام مخلفات"
                                 value={a.name}
                                 onChange={(e) =>
-                                  updateAddon(v.uiId, a.uiId, {
+                                  updateAddon(v.id, a.id, {
                                     name: e.target.value,
                                   })
                                 }
@@ -586,13 +646,13 @@ export default function ProductModal({
                                     /[^\d]/g,
                                     ""
                                   );
-                                  updateAddon(v.uiId, a.uiId, { price: raw });
+                                  updateAddon(v.id, a.id, { price: raw });
                                 }}
                               />
                               <button
                                 type="button"
                                 className="btn btn-icon btn-danger"
-                                onClick={() => removeAddon(v.uiId, a.uiId)}
+                                onClick={() => removeAddon(v.id, a.id)}
                                 title="حذف مخلف"
                               >
                                 <i className="fas fa-trash" />
@@ -604,7 +664,7 @@ export default function ProductModal({
                             type="button"
                             className="btn btn-sm btn-secondary"
                             style={{ marginTop: 6 }}
-                            onClick={() => addAddon(v.uiId)}
+                            onClick={() => addAddon(v.id)}
                           >
                             افزودن مخلفات
                           </button>

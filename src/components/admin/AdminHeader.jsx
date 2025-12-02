@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import SearchBar from "../common/SearchBar";
 import { useAuth } from "../../Context/AuthContext";
 

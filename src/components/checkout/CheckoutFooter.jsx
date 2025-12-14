@@ -12,10 +12,16 @@ const TABLE_OPTIONS = [
   { id: "takeout", label: "بیرون‌بر" },
 ];
 
-export default function CheckoutFooter({ total, items = [], discount = 0 }) {
+export default function CheckoutFooter({
+  total,
+  items = [],
+  discount = 0,
+  onConfirm,
+}) {
   const [isPickingTable, setIsPickingTable] = useState(false);
   const [selectedTable, setSelectedTable] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSuccessContinue = () => {
     setShowSuccess(false);
@@ -24,20 +30,33 @@ export default function CheckoutFooter({ total, items = [], discount = 0 }) {
     setIsPickingTable(false);
   };
 
-  const handlePayClick = () => {
+  const handlePayClick = async () => {
     // first click → open selector
     if (!isPickingTable) {
       setIsPickingTable(true);
       return;
     }
 
-    // selector open but no table → button is disabled, so this
-    // shouldn’t normally run; keep guard anyway
-    if (!selectedTable) return;
+    // no table selected or already submitting → do nothing
+    if (!selectedTable || isSubmitting) return;
 
-    // confirm payment
-    setIsPickingTable(false);
-    setShowSuccess(true);
+    try {
+      setIsSubmitting(true);
+
+      // 🔹 Call parent to actually create the order
+      if (onConfirm) {
+        await onConfirm(selectedTable); // e.g. "t3" or "takeout"
+      }
+
+      // if backend succeeds → show success UI
+      setShowSuccess(true);
+    } catch (err) {
+      console.error("Error while confirming order:", err);
+      // optional: show toast / error UI here
+    } finally {
+      setIsSubmitting(false);
+      setIsPickingTable(false);
+    }
   };
 
   const handleCloseTableSelector = () => {
@@ -50,6 +69,8 @@ export default function CheckoutFooter({ total, items = [], discount = 0 }) {
 
   // button state
   const isChoosingTable = isPickingTable && !selectedTable;
+  const payDisabled = isChoosingTable || isSubmitting;
+
   const payLabel = !isPickingTable
     ? "پرداخت"
     : !selectedTable
@@ -91,10 +112,10 @@ export default function CheckoutFooter({ total, items = [], discount = 0 }) {
           <div className="footer-action">
             <button
               className={
-                "pay-btn" + (isChoosingTable ? " pay-btn--inactive" : "")
+                "pay-btn" + (payDisabled ? " pay-btn--inactive" : "")
               }
               onClick={handlePayClick}
-              disabled={isChoosingTable}
+              disabled={payDisabled}
             >
               {payLabel}
             </button>

@@ -36,7 +36,9 @@ function RestaurantContent() {
 
     navigate("/checkout", {
       state: {
-        restaurantId: banner.id, // banner comes from query below
+        restaurantId: banner.id,
+        restaurantSlug: slug,
+        tableCount: banner.tableCount, // banner comes from query below
         items, // full list from CartContext
         total: cart.total,
         count: cart.count,

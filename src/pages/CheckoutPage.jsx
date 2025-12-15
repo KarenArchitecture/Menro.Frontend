@@ -41,6 +41,8 @@ export default function CheckoutPage() {
     }));
   });
 
+  const tableCount = navState?.tableCount ?? 0;
+
   const total = useMemo(() => {
     return cart.reduce((sum, item) => {
       const opts = item.options.reduce((s, o) => s + o.unitPrice * o.qty, 0);
@@ -146,6 +148,7 @@ export default function CheckoutPage() {
         items={successItems}
         discount={0}
         onConfirm={handleConfirmOrder}
+        tableCount={tableCount}
       />
     </div>
   );

@@ -8,7 +8,7 @@ export default function AdsBookingSection() {
   const [bookingMethod, setBookingMethod] = useState("by_day"); // by_day | by_click
 
   // مقدارهای UI
-  const [days, setDays] = useState(7);
+  const [days, setDays] = useState(7); // for slider: days | for banner: views (units for billingType=1)
   const [clicks, setClicks] = useState(10000);
   const [link, setLink] = useState("");
   const [advertisementText, setAdvertisementText] = useState("");
@@ -18,14 +18,25 @@ export default function AdsBookingSection() {
 
   // نرخ‌ها و محدودیت‌ها (از بک‌اند)
   const [pricing, setPricing] = useState({
-    minDays: 1,
-    maxDays: 30,
-    pricePerDay: 0,
+    minDays: 1, // for banner: minViews (billingType=1)
+    maxDays: 30, // for banner: maxViews (billingType=1)
+    pricePerDay: 0, // for banner: pricePerView (billingType=1)
 
     minClicks: 1000,
     maxClicks: 50000,
     pricePerClick: 0,
   });
+
+  const isBanner = adType === "banner";
+
+  // Labels for billingType=1 based on placement
+  const unit1Label = isBanner ? "بازدید" : "روز";
+  const unit1MethodLabel = isBanner ? "بر حسب بازدید" : "بر حسب روز";
+  const unit1SummaryLabel = isBanner ? "بر اساس بازدید" : "بر اساس روز";
+  const unit1TitleLabel = isBanner
+    ? "تعداد بازدید مورد نظر"
+    : "مدت زمان نمایش (روز)";
+  const unit1Icon = isBanner ? "fas fa-eye" : "fas fa-calendar-alt";
 
   // --- Load Pricing from API ---
   async function loadPricing(typeKey) {
@@ -64,6 +75,8 @@ export default function AdsBookingSection() {
   // --- قیمت نهایی ---
   const totalCost = useMemo(() => {
     if (bookingMethod === "by_day") {
+      // Slider: price per day * days
+      // Banner: price per view * views (stored in days state)
       return pricing.pricePerDay * days;
     } else {
       return pricing.pricePerClick * clicks;
@@ -179,8 +192,15 @@ export default function AdsBookingSection() {
                 onChange={() => setBookingMethod("by_day")}
               />
               <div className="choice-card">
-                <i className="fas fa-calendar-alt"></i>
+                <i className={unit1Icon}></i>
+
+                {/* ✅ New behavior: banner shows "بر حسب بازدید" */}
+                <span>{unit1MethodLabel}</span>
+
+                {/* ❌ Old (kept): always "بر حسب روز" */}
+                {/*
                 <span>بر حسب روز</span>
+                */}
               </div>
             </label>
 
@@ -204,7 +224,14 @@ export default function AdsBookingSection() {
         <div className="config-step">
           {bookingMethod === "by_day" ? (
             <div id="days-slider-group">
+              {/* ✅ New: banner uses views */}
+              <h4>۳. {unit1TitleLabel}</h4>
+
+              {/* Old: always days */}
+              {/*
               <h4>۳. مدت زمان نمایش (روز)</h4>
+              */}
+
               <div className="range-slider-group">
                 <input
                   type="range"
@@ -212,8 +239,16 @@ export default function AdsBookingSection() {
                   max={pricing.maxDays}
                   value={days}
                   onChange={(e) => setDays(Number(e.target.value))}
+                  // ✅ New: banner views can step bigger (optional)
+                  step={isBanner ? 1000 : 1}
                 />
+                {/* ✅ New: show fa-IR formatting, and works for both */}
+                <output>{days.toLocaleString("fa-IR")}</output>
+
+                {/* Old: plain output */}
+                {/*
                 <output>{days}</output>
+                */}
               </div>
             </div>
           ) : (
@@ -228,7 +263,12 @@ export default function AdsBookingSection() {
                   value={clicks}
                   onChange={(e) => setClicks(Number(e.target.value))}
                 />
+                <output>{clicks.toLocaleString("fa-IR")}</output>
+
+                {/* Old: plain output */}
+                {/*
                 <output>{clicks}</output>
+                */}
               </div>
             </div>
           )}
@@ -311,20 +351,45 @@ export default function AdsBookingSection() {
 
             <div className="detail-item">
               <span>روش پرداخت:</span>
+
+              {/* ✅ New: banner shows based on views */}
+              <strong>
+                {bookingMethod === "by_day"
+                  ? unit1SummaryLabel
+                  : "بر اساس کلیک"}
+              </strong>
+
+              {/* Old: always day */}
+              {/*
               <strong>
                 {bookingMethod === "by_day" ? "بر اساس روز" : "بر اساس کلیک"}
               </strong>
+              */}
             </div>
 
             {bookingMethod === "by_day" ? (
               <div className="detail-item">
+                {/* ✅ New */}
+                <span>{isBanner ? "تعداد بازدید:" : "مدت زمان:"}</span>
+                <strong>
+                  {days.toLocaleString("fa-IR")} {unit1Label}
+                </strong>
+
+                {/* Old */}
+                {/*
                 <span>مدت زمان:</span>
                 <strong>{days} روز</strong>
+                */}
               </div>
             ) : (
               <div className="detail-item">
                 <span>تعداد کلیک:</span>
+                <strong>{clicks.toLocaleString("fa-IR")} کلیک</strong>
+
+                {/*Old */}
+                {/*
                 <strong>{clicks} کلیک</strong>
+                */}
               </div>
             )}
           </div>
@@ -348,3 +413,4 @@ export default function AdsBookingSection() {
     </div>
   );
 }
+// ----------------- END OF COMPONENT -----------------

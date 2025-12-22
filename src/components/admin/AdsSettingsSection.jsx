@@ -44,6 +44,20 @@ export default function AdsSettingsSection() {
   const [submitMessage, setSubmitMessage] = useState("");
 
   const current = settings[adType];
+  const isBanner = adType === "banner";
+
+  // ✅ For billingType=1, banner means "views" not "days"
+  const unit1Label = isBanner ? "بازدید" : "روز";
+  const unit1MinLabel = isBanner ? "حداقل بازدید" : "حداقل روز";
+  const unit1MaxLabel = isBanner ? "حداکثر بازدید" : "حداکثر روز";
+  const unit1RangeTitle = isBanner
+    ? "۲. حداقل و حداکثر رزرو بر اساس بازدید"
+    : "۲. حداقل و حداکثر رزرو بر اساس روز";
+  const unit1PriceLabel = isBanner
+    ? "قیمت هر بازدید (تومان)"
+    : "قیمت هر روز (تومان)";
+  const unit1SummaryRangeLabel = isBanner ? "محدوده بازدید:" : "محدوده روز:";
+  const unit1SummaryPriceLabel = isBanner ? "قیمت هر بازدید:" : "قیمت هر روز:";
 
   // fetch settings
   async function loadSettingsFromServer(typeKey) {
@@ -94,7 +108,7 @@ export default function AdsSettingsSection() {
       {
         id: ui.perDayId || null,
         placementType,
-        billingType: 1, // PerDay
+        billingType: 1, // PerDay (✅ for banner, we interpret this as PerView)
         minUnits: ui.minDays,
         maxUnits: ui.maxDays,
         unitPrice: ui.pricePerDay,
@@ -136,9 +150,21 @@ export default function AdsSettingsSection() {
     let hasError = false;
 
     if (minDays < 1 || minDays > maxDays) {
+      // New message: "بازدید"
+      setDayError(
+        isBanner
+          ? "حداقل بازدید باید معتبر باشد."
+          : "حداقل روز باید معتبر باشد."
+      );
+
+      // Old: always day
+      /*
       setDayError("حداقل روز باید معتبر باشد.");
+      */
+
       hasError = true;
     }
+
     if (minClicks < 1000 || minClicks > maxClicks) {
       setClickError("حداقل کلیک باید معتبر باشد.");
       hasError = true;
@@ -194,12 +220,26 @@ export default function AdsSettingsSection() {
             </div>
           </div>
 
-          {/* Step 2: Days */}
+          {/* Step 2: Days (or Views for banner) */}
           <div className="config-step">
+            {/*  New */}
+            <h4>{unit1RangeTitle}</h4>
+
+            {/* Old: always day */}
+            {/*
             <h4>۲. حداقل و حداکثر رزرو بر اساس روز</h4>
+            */}
+
             <div className="input-row">
               <div className="input-group">
+                {/* New */}
+                <label>{unit1MinLabel}</label>
+
+                {/*  Old (kept) */}
+                {/*
                 <label>حداقل روز</label>
+                */}
+
                 <input
                   type="number"
                   min="1"
@@ -207,8 +247,16 @@ export default function AdsSettingsSection() {
                   onChange={updateField("minDays")}
                 />
               </div>
+
               <div className="input-group">
+                {/* New */}
+                <label>{unit1MaxLabel}</label>
+
+                {/* Old */}
+                {/*
                 <label>حداکثر روز</label>
+                */}
+
                 <input
                   type="number"
                   min="1"
@@ -217,6 +265,7 @@ export default function AdsSettingsSection() {
                 />
               </div>
             </div>
+
             {dayError && (
               <p className="field-message field-error">{dayError}</p>
             )}
@@ -255,7 +304,14 @@ export default function AdsSettingsSection() {
             <h4>۴. قیمت‌گذاری</h4>
             <div className="input-row">
               <div className="input-group">
+                {/* ✅ New */}
+                <label>{unit1PriceLabel}</label>
+
+                {/*Old*/}
+                {/*
                 <label>قیمت هر روز (تومان)</label>
+                */}
+
                 <input
                   type="number"
                   min="0"
@@ -263,6 +319,7 @@ export default function AdsSettingsSection() {
                   onChange={updateField("pricePerDay")}
                 />
               </div>
+
               <div className="input-group">
                 <label>قیمت هر کلیک (تومان)</label>
                 <input
@@ -280,6 +337,7 @@ export default function AdsSettingsSection() {
         <div className="booking-summary">
           <div className="panel">
             <h3>خلاصه تنظیمات</h3>
+
             <div className="cost-summary-details">
               <div className="detail-item">
                 <span>نوع تبلیغ:</span>
@@ -287,10 +345,20 @@ export default function AdsSettingsSection() {
               </div>
 
               <div className="detail-item">
+                {/* ✅ New */}
+                <span>{unit1SummaryRangeLabel}</span>
+                <strong>
+                  {current.minDays.toLocaleString("fa-IR")} تا{" "}
+                  {current.maxDays.toLocaleString("fa-IR")} {unit1Label}
+                </strong>
+
+                {/* Old: always day */}
+                {/*
                 <span>محدوده روز:</span>
                 <strong>
                   {current.minDays} تا {current.maxDays} روز
                 </strong>
+                */}
               </div>
 
               <div className="detail-item">
@@ -302,10 +370,19 @@ export default function AdsSettingsSection() {
               </div>
 
               <div className="detail-item">
+                {/* ✅ New */}
+                <span>{unit1SummaryPriceLabel}</span>
+                <strong>
+                  {current.pricePerDay.toLocaleString("fa-IR")} تومان
+                </strong>
+
+                {/*  Old  */}
+                {/*
                 <span>قیمت هر روز:</span>
                 <strong>
                   {current.pricePerDay.toLocaleString("fa-IR")} تومان
                 </strong>
+                */}
               </div>
 
               <div className="detail-item">
@@ -327,11 +404,21 @@ export default function AdsSettingsSection() {
             )}
 
             <div className="total-cost">
+              {/* ✅ New */}
+              <span>قیمت پایه ({unit1Label} / کلیک):</span>
+              <strong>
+                {current.pricePerDay.toLocaleString("fa-IR")} /{" "}
+                {current.pricePerClick.toLocaleString("fa-IR")} تومان
+              </strong>
+
+              {/* Old  */}
+              {/*
               <span>قیمت پایه (روز / کلیک):</span>
               <strong>
                 {current.pricePerDay.toLocaleString("fa-IR")} /{" "}
                 {current.pricePerClick.toLocaleString("fa-IR")} تومان
               </strong>
+              */}
             </div>
 
             <button className="btn btn-primary full-width" type="submit">
@@ -343,3 +430,4 @@ export default function AdsSettingsSection() {
     </div>
   );
 }
+// ----------------- END OF COMPONENT -----------------

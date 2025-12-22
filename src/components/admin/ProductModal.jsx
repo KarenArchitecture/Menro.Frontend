@@ -1,3 +1,4 @@
+// src/components/admin/ProductModal.jsx
 import { useState, useEffect, useRef } from "react";
 import adminFoodAxios from "../../api/adminFoodAxios";
 
@@ -5,6 +6,14 @@ function uid() {
   if (typeof crypto !== "undefined" && crypto.randomUUID)
     return crypto.randomUUID();
   return "id-" + Math.random().toString(36).slice(2, 10);
+}
+
+function toIntDigits(v) {
+  return Number(String(v || "0").replace(/[^\d]/g, ""));
+}
+
+function clamp(n, min, max) {
+  return Math.max(min, Math.min(max, n));
 }
 
 export default function ProductModal({
@@ -22,6 +31,11 @@ export default function ProductModal({
   const [foodCategoryId, setFoodCategoryId] = useState("");
   const [price, setPrice] = useState("");
 
+  // ✅ NEW: discount (%)
+  const [hasDiscount, setHasDiscount] = useState(false);
+  const [discountPercent, setDiscountPercent] = useState(""); // digits-only string
+  const [discountConfirmed, setDiscountConfirmed] = useState(false);
+
   // دسته‌بندی‌ها
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
@@ -31,6 +45,13 @@ export default function ProductModal({
   const [imagePreview, setImagePreview] = useState(null);
   const [existingImageName, setExistingImageName] = useState(null);
   const fileInputRef = useRef(null);
+
+  //  simple vs variants
+  const [hasVariants, setHasVariants] = useState(false);
+
+  const [variants, setVariants] = useState([
+    { id: uid(), name: "", price: "", isDefault: true, addons: [] },
+  ]);
 
   // load categories on open
   useEffect(() => {
@@ -59,16 +80,11 @@ export default function ProductModal({
     if (!isOpen) return;
 
     const handleKeyDown = (e) => {
-      if (e.key === "Escape") {
-        onClose?.(); // مودال را ببند
-      }
+      if (e.key === "Escape") onClose?.();
     };
 
     window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
   // food details
@@ -82,12 +98,30 @@ export default function ProductModal({
 
         setName(data.name || "");
         setIngredients(data.ingredients || "");
-        setFoodCategoryId(data.foodCategoryId ?? ""); // همان عدد یا خالی
+        setFoodCategoryId(data.foodCategoryId ?? "");
         setImagePreview(data.imageUrl);
-        setExistingImageName(data.imageName); // just file name
+        setExistingImageName(data.imageName);
+
+        // ✅ NEW: load discountPercent from server (support multiple field names)
+        const serverPctRaw =
+          data.discountPercent ??
+          data.discountPercentage ??
+          data.discountPct ??
+          0;
+
+        const serverPct = clamp(toIntDigits(serverPctRaw), 0, 99);
+        if (serverPct > 0) {
+          setHasDiscount(true);
+          setDiscountPercent(String(serverPct));
+          setDiscountConfirmed(true); // saved value = confirmed
+        } else {
+          setHasDiscount(false);
+          setDiscountPercent("");
+          setDiscountConfirmed(false);
+        }
+
         if (data.hasVariants && data.variants) {
           setHasVariants(true);
-
           setVariants(
             data.variants.map((v, index) => ({
               id: uid(),
@@ -115,106 +149,11 @@ export default function ProductModal({
     fetchProduct();
   }, [isOpen, mode, productId]);
 
-  // submit
-  const onSubmit = async (e) => {
-    e.preventDefault();
-    let uploadedFileName = null;
-
-    if (imageFile) {
-      const formData = new FormData();
-      formData.append("file", imageFile);
-
-      try {
-        const uploadRes = await adminFoodAxios.post(
-          "/upload-food-image",
-          formData,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-          }
-        );
-
-        uploadedFileName = uploadRes.data;
-      } catch (err) {
-        console.error("خطا در آپلود تصویر:", err);
-        alert("آپلود تصویر ناموفق بود");
-        return;
-      }
-    }
-
-    if (hasVariants) {
-      if (variants.length === 0) {
-        alert("حداقل یک نوع تعریف کنید.");
-        return;
-      }
-      const badVariant = variants.find((v) => !v.name || !v.price);
-      if (badVariant) {
-        alert("برای هر نوع، نام و قیمت را وارد کنید.");
-        return;
-      }
-      for (const v of variants) {
-        for (const a of v.addons) {
-          if (!a.name || !a.price) {
-            alert("لطفاً برای همه مخلفات نام و قیمت وارد کنید.");
-            return;
-          }
-        }
-      }
-    } else {
-      const basePrice = (price || "").trim();
-      if (!basePrice) {
-        alert("قیمت پایه را وارد کنید.");
-        return;
-      }
-    }
-
-    const basePriceValue = !hasVariants
-      ? Number(String(price || "0").replace(/[^\d]/g, ""))
-      : null;
-
-    const payload = {
-      id: productId,
-      name: name.trim(),
-      ingredients: ingredients.trim(),
-      foodCategoryId: Number(foodCategoryId || 0),
-      price: basePriceValue ?? 0,
-      imageName: uploadedFileName || existingImageName || null,
-      hasVariants: hasVariants,
-      variants: hasVariants
-        ? variants.map((v) => ({
-            name: v.name.trim(),
-            price: Number(String(v.price).replace(/[^\d]/g, "")),
-            isDefault: v.isDefault,
-            addons: v.addons.map((a) => ({
-              name: a.name.trim(),
-              extraPrice: Number(String(a.price).replace(/[^\d]/g, "")),
-            })),
-          }))
-        : [],
-    };
-
-    // console.log("payload:", JSON.stringify(payload, null, 2));
-
-    try {
-      if (mode === "create") {
-        await adminFoodAxios.post("/add", payload);
-      } else if (mode === "edit" && productId) {
-        await adminFoodAxios.put("/update", payload);
-      }
-
-      onSaved?.(); // لیست غذاها رو رفرش کن
-      //resetForm(); // فرم ریست بشه
-      onClose?.(); // مودال بسته بشه
-    } catch (err) {
-      console.error("خطا در ذخیره محصول:", err);
-      alert("ذخیره محصول ناموفق بود");
-    }
-  };
   // hasCategory check for food
   useEffect(() => {
     if (!isOpen || mode !== "edit") return;
-    if (loadingCategories) return; // صبر کن تا دسته‌ها لود بشن
-
-    if (!foodCategoryId) return; // محصول دسته نداشته
+    if (loadingCategories) return;
+    if (!foodCategoryId) return;
 
     const exists = categories.some(
       (c) => Number(c.id) === Number(foodCategoryId)
@@ -222,22 +161,14 @@ export default function ProductModal({
 
     if (!exists) {
       console.warn("⚠ دسته‌بندی محصول حذف شده → foodCategoryId = ''");
-      setFoodCategoryId(""); // باعث نمایش گزینه "دسته‌بندی پاک شده" می‌شود
-    }
-  }, [isOpen, mode, loadingCategories, categories, foodCategoryId]);
-  // unselect category on create mode
-  useEffect(() => {
-    if (isOpen && mode === "create") {
       setFoodCategoryId("");
     }
+  }, [isOpen, mode, loadingCategories, categories, foodCategoryId]);
+
+  // unselect category on create mode
+  useEffect(() => {
+    if (isOpen && mode === "create") setFoodCategoryId("");
   }, [isOpen, mode]);
-
-  //  simple vs variants
-  const [hasVariants, setHasVariants] = useState(false);
-
-  const [variants, setVariants] = useState([
-    { id: uid(), name: "", price: "", isDefault: true, addons: [] },
-  ]);
 
   // ---- helpers: variants ----
   const onToggleHasVariants = (flag) => {
@@ -248,6 +179,7 @@ export default function ProductModal({
       ]);
     }
   };
+
   const addVariant = () => {
     setVariants((prev) => [
       ...prev,
@@ -286,10 +218,7 @@ export default function ProductModal({
     setVariants((prev) =>
       prev.map((v) =>
         v.id === variantId
-          ? {
-              ...v,
-              addons: [...v.addons, { id: uid(), name: "", price: "" }],
-            }
+          ? { ...v, addons: [...v.addons, { id: uid(), name: "", price: "" }] }
           : v
       )
     );
@@ -320,27 +249,169 @@ export default function ProductModal({
     );
   };
 
-  // reset form after closing it
+  // ✅ NEW: discount helpers
+  const pctValue = clamp(toIntDigits(discountPercent), 0, 99);
+  const basePriceValue = toIntDigits(price);
+
+  const computedFinalBasePrice = (() => {
+    if (!basePriceValue) return 0;
+    if (!hasDiscount || !pctValue) return basePriceValue;
+    const v = Math.round(basePriceValue * (1 - pctValue / 100));
+    return Math.max(0, v);
+  })();
+
+  const handleToggleDiscount = (checked) => {
+    setHasDiscount(checked);
+    if (!checked) {
+      setDiscountPercent("");
+      setDiscountConfirmed(false);
+    } else {
+      setDiscountConfirmed(false);
+    }
+  };
+
+  const confirmDiscount = () => {
+    const v = clamp(toIntDigits(discountPercent), 0, 99);
+
+    // ✅ anti abuse: no 0, no 100, no negative, no >99
+    if (v <= 0) {
+      alert("درصد تخفیف باید حداقل ۱٪ باشد.");
+      return;
+    }
+    if (v >= 100) {
+      alert("درصد تخفیف نمی‌تواند ۱۰۰٪ یا بیشتر باشد.");
+      return;
+    }
+
+    setDiscountPercent(String(v));
+    setDiscountConfirmed(true);
+  };
+
   const resetForm = () => {
     setName("");
     setIngredients("");
     setFoodCategoryId(0);
     setPrice("");
     setHasVariants(false);
+
+    // ✅ NEW: reset discount
+    setHasDiscount(false);
+    setDiscountPercent("");
+    setDiscountConfirmed(false);
+
     setImagePreview(null);
     setImageFile(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
+
     setVariants([
       { id: uid(), name: "", price: "", isDefault: true, addons: [] },
     ]);
   };
+
   useEffect(() => {
-    if (!isOpen) {
-      resetForm();
-    }
+    if (!isOpen) resetForm();
   }, [isOpen]);
+
+  // submit
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    let uploadedFileName = null;
+
+    // ✅ validate discount (cannot abuse)
+    if (hasDiscount) {
+      const v = clamp(toIntDigits(discountPercent), 0, 99);
+      if (v <= 0 || v >= 100) {
+        alert("درصد تخفیف معتبر نیست (۱ تا ۹۹).");
+        return;
+      }
+      if (!discountConfirmed) {
+        alert("لطفاً تخفیف را تأیید کنید.");
+        return;
+      }
+    }
+
+    if (imageFile) {
+      const formData = new FormData();
+      formData.append("file", imageFile);
+
+      try {
+        const uploadRes = await adminFoodAxios.post(
+          "/upload-food-image",
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+
+        uploadedFileName = uploadRes.data;
+      } catch (err) {
+        console.error("خطا در آپلود تصویر:", err);
+        alert("آپلود تصویر ناموفق بود");
+        return;
+      }
+    }
+
+    if (hasVariants) {
+      if (variants.length === 0) return alert("حداقل یک نوع تعریف کنید.");
+
+      const badVariant = variants.find((v) => !v.name || !v.price);
+      if (badVariant) return alert("برای هر نوع، نام و قیمت را وارد کنید.");
+
+      for (const v of variants) {
+        for (const a of v.addons) {
+          if (!a.name || !a.price)
+            return alert("لطفاً برای همه مخلفات نام و قیمت وارد کنید.");
+        }
+      }
+    } else {
+      const basePrice = (price || "").trim();
+      if (!basePrice) return alert("قیمت پایه را وارد کنید.");
+    }
+
+    const basePriceValuePayload = !hasVariants ? toIntDigits(price) : null;
+
+    const payload = {
+      id: productId,
+      name: name.trim(),
+      ingredients: ingredients.trim(),
+      foodCategoryId: Number(foodCategoryId || 0),
+      price: basePriceValuePayload ?? 0,
+      imageName: uploadedFileName || existingImageName || null,
+      hasVariants: hasVariants,
+
+      // ✅ NEW: discountPercent
+      discountPercent: hasDiscount
+        ? clamp(toIntDigits(discountPercent), 1, 99)
+        : 0,
+
+      // ❌ OLD (kept)
+      // discountAmount: 0,
+
+      variants: hasVariants
+        ? variants.map((v) => ({
+            name: v.name.trim(),
+            price: toIntDigits(v.price),
+            isDefault: v.isDefault,
+            addons: v.addons.map((a) => ({
+              name: a.name.trim(),
+              extraPrice: toIntDigits(a.price),
+            })),
+          }))
+        : [],
+    };
+
+    try {
+      if (mode === "create") {
+        await adminFoodAxios.post("/add", payload);
+      } else if (mode === "edit" && productId) {
+        await adminFoodAxios.put("/update", payload);
+      }
+
+      onSaved?.();
+      onClose?.();
+    } catch (err) {
+      console.error("خطا در ذخیره محصول:", err);
+      alert("ذخیره محصول ناموفق بود");
+    }
+  };
 
   return (
     <div
@@ -356,6 +427,7 @@ export default function ProductModal({
             <i className="fas fa-times" />
           </button>
         </div>
+
         <div className="modal-body">
           <form
             id="product-form"
@@ -383,6 +455,7 @@ export default function ProductModal({
                   onChange={(e) => setIngredients(e.target.value)}
                 />
               </div>
+
               <div className="input-group">
                 <label htmlFor="product-category">دسته‌بندی</label>
                 <select
@@ -391,7 +464,6 @@ export default function ProductModal({
                   value={foodCategoryId}
                   onChange={(e) => setFoodCategoryId(e.target.value)}
                 >
-                  {/* حالت EDIT: اگر دسته‌بندی محصول حذف شده */}
                   {mode === "edit" &&
                     foodCategoryId === "" &&
                     !loadingCategories &&
@@ -401,12 +473,10 @@ export default function ProductModal({
                       </option>
                     )}
 
-                  {/* حالت عمومی: گزینه انتخاب اولیه */}
                   <option value="" disabled>
                     انتخاب دسته‌بندی
                   </option>
 
-                  {/* دسته‌بندی‌های واقعی */}
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
@@ -430,32 +500,15 @@ export default function ProductModal({
               <div className="input-group">
                 <label>پیش‌نمایش تصویر محصول</label>
 
-                <div
-                  className="ad-preview"
-                  style={{
-                    width: "100%",
-                    height: 200,
-                    background: "#222",
-                    border: "1px dashed rgba(255,255,255,0.25)",
-                    borderRadius: 10,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    overflow: "hidden",
-                    marginBottom: 10,
-                  }}
-                >
+                <div className="product-image-preview">
                   {imagePreview ? (
                     <img
                       src={imagePreview}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
+                      alt="preview"
+                      className="product-image-preview__img"
                     />
                   ) : (
-                    <span style={{ opacity: 0.5 }}>
+                    <span className="product-image-preview__placeholder">
                       عکس محصول نمایش داده می‌شود
                     </span>
                   )}
@@ -475,11 +528,13 @@ export default function ProductModal({
                   }}
                 />
               </div>
+
               <span className="input-alert">عکس محصول باید 1 * 1 باشد!</span>
+
               {/* Step 1: simple vs variants */}
               <div className="input-group">
                 <label>آیا محصول تنوع دارد؟</label>
-                <div className="radio-row" style={{ display: "flex", gap: 16 }}>
+                <div className="radio-row">
                   <label className="radio-label">
                     <input
                       type="radio"
@@ -490,6 +545,7 @@ export default function ProductModal({
                     />{" "}
                     خیر، محصول ساده است
                   </label>
+
                   <label className="radio-label">
                     <input
                       type="radio"
@@ -509,25 +565,105 @@ export default function ProductModal({
 
               {/* Base price only when simple */}
               {!hasVariants && (
-                <div className="input-group">
-                  <label htmlFor="product-price">
-                    قیمت پایه (برای محصول ساده)
-                  </label>
-                  <input
-                    type="text"
-                    id="product-price"
-                    placeholder="مثال: ۱۵۰۰۰۰"
-                    value={price}
-                    onChange={
-                      (e) => setPrice(e.target.value.replace(/[^\d]/g, "")) // فقط رقم
-                    }
-                  />
-                </div>
+                <>
+                  <div className="input-group">
+                    <label htmlFor="product-price">
+                      قیمت پایه (برای محصول ساده)
+                    </label>
+                    <input
+                      type="text"
+                      id="product-price"
+                      placeholder="مثال: ۱۵۰۰۰۰"
+                      value={price}
+                      onChange={(e) =>
+                        setPrice(e.target.value.replace(/[^\d]/g, ""))
+                      }
+                    />
+                  </div>
+
+                  {/* ✅ NEW: discount (below price) */}
+                  <div className="input-group">
+                    <label className="discount-toggle">
+                      <input
+                        type="checkbox"
+                        checked={hasDiscount}
+                        onChange={(e) => handleToggleDiscount(e.target.checked)}
+                      />
+                      این محصول تخفیف دارد؟
+                    </label>
+
+                    {hasDiscount && (
+                      <div className="discount-box">
+                        <div className="discount-row">
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            placeholder="درصد تخفیف (۱ تا ۹۹)"
+                            value={discountPercent}
+                            disabled={discountConfirmed}
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/[^\d]/g, "");
+                              const v = clamp(toIntDigits(raw), 0, 99);
+                              setDiscountPercent(raw ? String(v) : "");
+                              setDiscountConfirmed(false);
+                            }}
+                          />
+
+                          {!discountConfirmed ? (
+                            <button
+                              type="button"
+                              className="btn btn-primary"
+                              onClick={confirmDiscount}
+                            >
+                              تأیید تخفیف
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className="btn btn-secondary"
+                              onClick={() => setDiscountConfirmed(false)}
+                            >
+                              ویرایش
+                            </button>
+                          )}
+                        </div>
+
+                        <small className="discount-hint">
+                          تا زمانی که «تأیید تخفیف» را نزنید، ذخیره انجام
+                          نمی‌شود.
+                        </small>
+
+                        {pctValue > 0 && !discountConfirmed && (
+                          <div className="discount-warning">
+                            ⚠️ تخفیف وارد شده اما هنوز تأیید نشده است.
+                          </div>
+                        )}
+
+                        {pctValue > 0 && discountConfirmed && (
+                          <div className="discount-confirmed">
+                            ✅ تخفیف ثبت شد: {pctValue.toLocaleString("fa-IR")}٪
+                          </div>
+                        )}
+
+                        {/* optional price preview (safe + non-abusive) */}
+                        {basePriceValue > 0 && pctValue > 0 && (
+                          <div className="discount-preview">
+                            قیمت نهایی:{" "}
+                            <strong>
+                              {computedFinalBasePrice.toLocaleString("fa-IR")}
+                            </strong>{" "}
+                            تومان
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
 
               <hr className="form-divider" />
 
-              {/* Steps 2 & 3: variants + per-variant addons */}
+              {/* variants */}
               {hasVariants && (
                 <div className="input-group">
                   <label>انواع محصول (دارای تنوع)</label>
@@ -535,17 +671,7 @@ export default function ProductModal({
                   <div id="product-types-container">
                     {variants.map((v) => (
                       <div key={v.id} style={{ marginBottom: 10 }}>
-                        {/* variant row */}
-                        <div
-                          className="product-type-item"
-                          style={{
-                            display: "grid",
-                            gridTemplateColumns: "1fr 140px auto auto",
-                            gap: 8,
-                            alignItems: "center",
-                          }}
-                        >
-                          {/* name */}
+                        <div className="product-type-item">
                           <input
                             type="text"
                             placeholder="نام نوع (مثال: ویژه)"
@@ -555,7 +681,6 @@ export default function ProductModal({
                             }
                           />
 
-                          {/* price (digits only) */}
                           <input
                             type="text"
                             inputMode="numeric"
@@ -567,11 +692,7 @@ export default function ProductModal({
                             }}
                           />
 
-                          {/* default flag */}
-                          <label
-                            className="radio-label"
-                            style={{ whiteSpace: "nowrap" }}
-                          >
+                          <label className="radio-label">
                             <input
                               type="radio"
                               name="default_type"
@@ -581,7 +702,6 @@ export default function ProductModal({
                             پیش‌فرض
                           </label>
 
-                          {/* remove */}
                           <button
                             type="button"
                             className="btn btn-icon btn-danger"
@@ -593,39 +713,17 @@ export default function ProductModal({
                           </button>
                         </div>
 
-                        {/* addons block */}
-                        <div
-                          className="addons-block"
-                          style={{
-                            gridColumn: "1 / -1",
-                            marginTop: 8,
-                            padding: "8px 12px",
-                            border: "1px dashed rgba(255,255,255,0.2)",
-                            borderRadius: 8,
-                          }}
-                        >
-                          <label style={{ fontSize: 13, fontWeight: "bold" }}>
-                            مخلفات
-                          </label>
+                        <div className="addons-block">
+                          <label className="addons-title">مخلفات</label>
 
                           {v.addons.length === 0 && (
-                            <div style={{ fontSize: 12, opacity: 0.7 }}>
+                            <div className="addons-empty">
                               هیچ مخلفی اضافه نشده است
                             </div>
                           )}
 
                           {v.addons.map((a) => (
-                            <div
-                              key={a.id}
-                              className="addon-item"
-                              style={{
-                                display: "grid",
-                                gridTemplateColumns: "1fr 120px auto",
-                                gap: 8,
-                                alignItems: "center",
-                                marginTop: 6,
-                              }}
-                            >
+                            <div key={a.id} className="addon-item">
                               <input
                                 type="text"
                                 placeholder="نام مخلفات"
@@ -663,7 +761,6 @@ export default function ProductModal({
                           <button
                             type="button"
                             className="btn btn-sm btn-secondary"
-                            style={{ marginTop: 6 }}
                             onClick={() => addAddon(v.id)}
                           >
                             افزودن مخلفات
@@ -673,23 +770,85 @@ export default function ProductModal({
                     ))}
                   </div>
 
-                  <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                    <button
-                      type="button"
-                      id="add-type-btn"
-                      className="btn btn-secondary full-width"
-                      onClick={addVariant}
-                    >
-                      + افزودن نوع جدید
-                    </button>
-                  </div>
-
-                  <small
-                    style={{ display: "block", marginTop: 8, opacity: 0.8 }}
+                  <button
+                    type="button"
+                    id="add-type-btn"
+                    className="btn btn-secondary full-width"
+                    onClick={addVariant}
                   >
-                    یکی از انواع باید «پیش‌فرض» باشد. قیمت نهایی بر اساس نوع
-                    انتخاب‌شده و مجموع قیمت مخلفات تعیین می‌شود.
+                    + افزودن نوع جدید
+                  </button>
+
+                  <small className="variants-note">
+                    یکی از انواع باید «پیش‌فرض» باشد.
                   </small>
+
+                  {/* ✅ NEW: discount for variant-products too */}
+                  <div className="input-group">
+                    <label className="discount-toggle">
+                      <input
+                        type="checkbox"
+                        checked={hasDiscount}
+                        onChange={(e) => handleToggleDiscount(e.target.checked)}
+                      />
+                      این محصول تخفیف دارد؟
+                    </label>
+
+                    {hasDiscount && (
+                      <div className="discount-box">
+                        <div className="discount-row">
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            placeholder="درصد تخفیف (۱ تا ۹۹)"
+                            value={discountPercent}
+                            disabled={discountConfirmed}
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/[^\d]/g, "");
+                              const v = clamp(toIntDigits(raw), 0, 99);
+                              setDiscountPercent(raw ? String(v) : "");
+                              setDiscountConfirmed(false);
+                            }}
+                          />
+
+                          {!discountConfirmed ? (
+                            <button
+                              type="button"
+                              className="btn btn-primary"
+                              onClick={confirmDiscount}
+                            >
+                              تأیید تخفیف
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className="btn btn-secondary"
+                              onClick={() => setDiscountConfirmed(false)}
+                            >
+                              ویرایش
+                            </button>
+                          )}
+                        </div>
+
+                        <small className="discount-hint">
+                          تا زمانی که «تأیید تخفیف» را نزنید، ذخیره انجام
+                          نمی‌شود.
+                        </small>
+
+                        {pctValue > 0 && !discountConfirmed && (
+                          <div className="discount-warning">
+                            ⚠️ تخفیف وارد شده اما هنوز تأیید نشده است.
+                          </div>
+                        )}
+
+                        {pctValue > 0 && discountConfirmed && (
+                          <div className="discount-confirmed">
+                            ✅ تخفیف ثبت شد: {pctValue.toLocaleString("fa-IR")}٪
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

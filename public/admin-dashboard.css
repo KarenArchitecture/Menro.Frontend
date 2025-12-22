@@ -2434,6 +2434,26 @@ textarea {
   animation: flash-attention 1s infinite;
 }
 
+/* ✅ NEW: Stage 2 (Delivery) — blue/cyan */
+.status-delivery {
+  color: #38bdf8; /* sky */
+  background: rgba(56, 189, 248, 0.16);
+  border-color: rgba(56, 189, 248, 0.35);
+}
+.order-bar.status-delivery {
+  border-color: rgba(56, 189, 248, 0.22);
+}
+
+/* ✅ NEW: Stage 3 (Payment) — violet */
+.status-payment {
+  color: #a78bfa; /* violet */
+  background: rgba(167, 139, 250, 0.16);
+  border-color: rgba(167, 139, 250, 0.35);
+}
+.order-bar.status-payment {
+  border-color: rgba(167, 139, 250, 0.22);
+}
+
 .status-archived {
   color: #94a3b8; /* slate */
   background: rgba(148, 163, 184, 0.15);

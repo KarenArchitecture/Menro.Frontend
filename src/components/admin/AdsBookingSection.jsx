@@ -46,13 +46,14 @@ export default function AdsBookingSection() {
       const res = await adSettingsAxios.get("", { params: { placement } });
       const list = res.data;
 
-      const perDay = list.find((x) => x.billingType === 1);
+      const unit1BillingType = typeKey === "slider" ? 1 : 3; // slider=PerDay, banner=PerView
+      const unit1 = list.find((x) => x.billingType === unit1BillingType);
       const perClick = list.find((x) => x.billingType === 2);
 
       setPricing({
-        minDays: perDay?.minUnits ?? 1,
-        maxDays: perDay?.maxUnits ?? 30,
-        pricePerDay: perDay?.unitPrice ?? 0,
+        minDays: unit1?.minUnits ?? 1,
+        maxDays: unit1?.maxUnits ?? 30,
+        pricePerDay: unit1?.unitPrice ?? 0,
 
         minClicks: perClick?.minUnits ?? 1000,
         maxClicks: perClick?.maxUnits ?? 50000,
@@ -96,30 +97,44 @@ export default function AdsBookingSection() {
     if (!imageFile) return alert("لطفاً تصویر تبلیغ را آپلود کنید.");
 
     try {
-      // 1. Upload Image
+      // 1) Upload Image
       const fd = new FormData();
       fd.append("file", imageFile);
 
       const uploadRes = await adminRestaurantAdAxios.post(
         "/upload-ad-image",
         fd,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
       );
 
       const fileName = uploadRes.data;
 
-      // 2. Create DTO
+      // 2) Placement + Billing (NEW LOGIC)
+      const placementType = adType === "slider" ? 1 : 2;
+
+      const billingType =
+        bookingMethod === "by_click"
+          ? 2 // PerClick
+          : placementType === 1
+          ? 1 // Slider -> PerDay
+          : 3; // Banner -> PerView
+
+      const purchasedUnits = bookingMethod === "by_click" ? clicks : days;
+
+      // 3) Create DTO
       const dto = {
-        placementType: adType === "slider" ? 1 : 2,
-        billingType: bookingMethod === "by_day" ? 1 : 2,
+        placementType,
+        billingType,
         cost: totalCost,
         imageFileName: fileName,
         targetUrl: link,
         commercialText: advertisementText,
-        purchasedUnits: bookingMethod === "by_day" ? days : clicks,
+        purchasedUnits,
       };
 
-      // 3. Submit Ad
+      // 4) Submit Ad
       await adminRestaurantAdAxios.post("/addAd", dto);
 
       alert("تبلیغ با موفقیت ثبت شد!");
@@ -131,7 +146,7 @@ export default function AdsBookingSection() {
       setClicks(pricing.minClicks);
       setLink("");
       setAdvertisementText("");
-      fileInputRef.current.value = "";
+      if (fileInputRef.current) fileInputRef.current.value = "";
       setImageFile(null);
       setImagePreview(null);
     } catch (err) {

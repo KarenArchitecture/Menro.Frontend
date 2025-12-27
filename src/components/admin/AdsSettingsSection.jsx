@@ -72,22 +72,23 @@ export default function AdsSettingsSection() {
         return;
       }
 
-      const perDay = list.find((x) => x.billingType === 1);
+      const unit1BillingType = typeKey === "slider" ? 1 : 3; // slider=PerDay, banner=PerView
+      const unit1 = list.find((x) => x.billingType === unit1BillingType);
       const perClick = list.find((x) => x.billingType === 2);
 
       setSettings((prev) => ({
         ...prev,
         [typeKey]: {
-          perDayId: perDay?.id ?? null,
+          perDayId: unit1?.id ?? null,
           perClickId: perClick?.id ?? null,
 
-          minDays: perDay?.minUnits ?? 1,
-          maxDays: perDay?.maxUnits ?? 30,
+          minDays: unit1?.minUnits ?? 1,
+          maxDays: unit1?.maxUnits ?? 30,
 
           minClicks: perClick?.minUnits ?? 1000,
           maxClicks: perClick?.maxUnits ?? 50000,
 
-          pricePerDay: perDay?.unitPrice ?? 0,
+          pricePerDay: unit1?.unitPrice ?? 0,
           pricePerClick: perClick?.unitPrice ?? 0,
         },
       }));
@@ -103,12 +104,13 @@ export default function AdsSettingsSection() {
   // تبدیل UI → DTO برای POST
   function convertUiToDtos(adTypeKey, ui) {
     const placementType = adTypeKey === "slider" ? 1 : 2;
+    const unit1BillingType = adTypeKey === "slider" ? 1 : 3; // ✅ slider=PerDay, banner=PerView
 
     return [
       {
-        id: ui.perDayId || null,
+        id: ui.perDayId || null, // اسم رو فعلاً نگه داشتیم
         placementType,
-        billingType: 1, // PerDay (✅ for banner, we interpret this as PerView)
+        billingType: unit1BillingType,
         minUnits: ui.minDays,
         maxUnits: ui.maxDays,
         unitPrice: ui.pricePerDay,

@@ -191,13 +191,14 @@ ul {
 
 .main-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   padding: 15px 30px;
   background-color: var(--bg-light);
   border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
   min-height: 64px;
+  gap: 2rem;
 }
 
 .search-bar input {
@@ -1404,6 +1405,24 @@ textarea {
   font-weight: 500;
 }
 
+.admin-subscribe-btn {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #f59e0b;
+  color: #000;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  width: 12rem;
+  font-size: 1.3rem;
+}
+
+.admin-subscribe-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
 /* Custom Range Slider */
 .range-slider-group {
   display: flex;
@@ -2287,6 +2306,120 @@ textarea {
     font-size: 1.1rem;
   }
 }
+/* =======================================================
+   PRODUCT MODAL — Discount (%)
+   ======================================================= */
+
+.discount-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  user-select: none;
+}
+
+.discount-box {
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.discount-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.discount-hint {
+  display: block;
+  margin-top: 8px;
+  opacity: 0.8;
+}
+
+.discount-warning {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #f87171;
+}
+
+.discount-confirmed {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #22c55e;
+  font-weight: 700;
+}
+
+.discount-preview {
+  margin-top: 8px;
+  font-size: 0.92rem;
+  opacity: 0.9;
+}
+
+/* image preview classes used in JSX (replacing inline style) */
+.product-image-preview {
+  width: 100%;
+  height: 200px;
+  background: #222;
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.product-image-preview__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-image-preview__placeholder {
+  opacity: 0.5;
+}
+
+/* addons classes used in JSX (replacing inline style) */
+.addons-block {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+}
+
+.addons-title {
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.addons-empty {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-top: 6px;
+}
+
+.addon-item {
+  display: grid;
+  grid-template-columns: 1fr 120px auto;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.variants-note {
+  display: block;
+  margin-top: 8px;
+  opacity: 0.8;
+}
+
+/* mobile */
+@media (max-width: 768px) {
+  .discount-row {
+    grid-template-columns: 1fr;
+  }
+}
 
 /* ========== Orders: layout ========== */
 .orders-controls {
@@ -2413,6 +2546,26 @@ textarea {
 }
 .order-bar.status-pending .status-pill {
   animation: flash-attention 1s infinite;
+}
+
+/* ✅ NEW: Stage 2 (Delivery) — blue/cyan */
+.status-delivery {
+  color: #38bdf8; /* sky */
+  background: rgba(56, 189, 248, 0.16);
+  border-color: rgba(56, 189, 248, 0.35);
+}
+.order-bar.status-delivery {
+  border-color: rgba(56, 189, 248, 0.22);
+}
+
+/* ✅ NEW: Stage 3 (Payment) — violet */
+.status-payment {
+  color: #a78bfa; /* violet */
+  background: rgba(167, 139, 250, 0.16);
+  border-color: rgba(167, 139, 250, 0.35);
+}
+.order-bar.status-payment {
+  border-color: rgba(167, 139, 250, 0.22);
 }
 
 .status-archived {

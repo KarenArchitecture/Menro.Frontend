@@ -27,6 +27,23 @@ const ranges = [
   { key: "all", label: "همه", test: () => true },
 ];
 
+// ✅ maps backend billing unit to Persian label,
+// with the new rule: banner "PerDay" => "بازدید"
+function getReservedUnitLabel({ billing, adType }) {
+  const isBanner = adType === "banner";
+
+  // ✅ NEW behavior
+  if (billing === "PerDay") return isBanner ? "بازدید" : "روز";
+  if (billing === "PerView") return "بازدید"; // future-proof
+  if (billing === "PerClick") return "کلیک";
+  return "";
+
+  // OLD behavior
+  /*
+  return billing === "PerDay" ? "روز" : billing === "PerClick" ? "کلیک" : "";
+  */
+}
+
 export default function AdsRequestsSection() {
   const [requests, setRequests] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
@@ -39,30 +56,41 @@ export default function AdsRequestsSection() {
       const res = await adminRestaurantAdAxios.get("/pending");
       const data = res.data;
 
-      const mapped = data.map((ad) => ({
-        id: ad.id,
-        code: `AD-${ad.id}`,
-        status: "pending",
-        decision: null,
+      const mapped = data.map((ad) => {
+        const adType = ad.placement === "MainSlider" ? "slider" : "banner";
 
-        restaurantName: ad.restaurantName,
-        adType: ad.placement === "MainSlider" ? "slider" : "banner",
-        reservedAmount: ad.purchasedUnits,
-        reservedUnit:
-          ad.billing === "PerDay"
-            ? "روز"
-            : ad.billing === "PerClick"
-            ? "کلیک"
-            : "",
+        return {
+          id: ad.id,
+          code: `AD-${ad.id}`,
+          status: "pending",
+          decision: null,
 
-        paidAmount: ad.cost,
-        imageUrl: ad.imageUrl,
-        adText: ad.commercialText,
-        targetUrl: ad.targetUrl,
+          restaurantName: ad.restaurantName,
+          adType,
+          reservedAmount: ad.purchasedUnits,
 
-        requestedAt: ad.createdAtShamsi,
-        ts: new Date(ad.createdAt).getTime(),
-      }));
+          // ✅ NEW: banner PerDay => بازدید
+          reservedUnit: getReservedUnitLabel({ billing: ad.billing, adType }),
+
+          // ❌ OLD (kept): always day for PerDay
+          /*
+          reservedUnit:
+            ad.billing === "PerDay"
+              ? "روز"
+              : ad.billing === "PerClick"
+              ? "کلیک"
+              : "",
+          */
+
+          paidAmount: ad.cost,
+          imageUrl: ad.imageUrl,
+          adText: ad.commercialText,
+          targetUrl: ad.targetUrl,
+
+          requestedAt: ad.createdAtShamsi,
+          ts: new Date(ad.createdAt).getTime(),
+        };
+      });
 
       setRequests((prevHistory) => {
         const history = prevHistory.filter((x) => x.status === "history");
@@ -86,34 +114,45 @@ export default function AdsRequestsSection() {
 
       console.log("RAW HISTORY FROM BACKEND:", data);
 
-      const mapped = data.map((ad) => ({
-        id: ad.id,
-        code: `AD-${ad.id}`,
-        status: "history",
+      const mapped = data.map((ad) => {
+        const adType = ad.placement === "MainSlider" ? "slider" : "banner";
 
-        decision:
-          ad.status === "Approved"
-            ? "approved"
-            : ad.status === "Rejected"
-            ? "rejected"
-            : null,
+        return {
+          id: ad.id,
+          code: `AD-${ad.id}`,
+          status: "history",
 
-        decisionReason: ad.adminNotes || null,
+          decision:
+            ad.status === "Approved"
+              ? "approved"
+              : ad.status === "Rejected"
+              ? "rejected"
+              : null,
 
-        restaurantName: ad.restaurantName,
-        adType: ad.placement === "MainSlider" ? "slider" : "banner",
+          decisionReason: ad.adminNotes || null,
 
-        reservedAmount: ad.purchasedUnits,
-        reservedUnit: ad.billing === "PerDay" ? "روز" : "کلیک",
+          restaurantName: ad.restaurantName,
+          adType,
 
-        paidAmount: ad.cost,
-        imageUrl: ad.imageUrl,
-        adText: ad.commercialText,
-        targetUrl: ad.targetUrl,
+          reservedAmount: ad.purchasedUnits,
 
-        requestedAt: ad.createdAtShamsi,
-        ts: new Date(ad.createdAt).getTime(),
-      }));
+          // ✅ NEW: banner PerDay => بازدید
+          reservedUnit: getReservedUnitLabel({ billing: ad.billing, adType }),
+
+          // ❌ OLD (kept): PerDay => روز, else کلیک
+          /*
+          reservedUnit: ad.billing === "PerDay" ? "روز" : "کلیک",
+          */
+
+          paidAmount: ad.cost,
+          imageUrl: ad.imageUrl,
+          adText: ad.commercialText,
+          targetUrl: ad.targetUrl,
+
+          requestedAt: ad.createdAtShamsi,
+          ts: new Date(ad.createdAt).getTime(),
+        };
+      });
 
       setRequests((prevPending) => {
         const pending = prevPending.filter((x) => x.status === "pending");
@@ -316,3 +355,4 @@ export default function AdsRequestsSection() {
     </div>
   );
 }
+// ----------------- END OF COMPONENT -----------------

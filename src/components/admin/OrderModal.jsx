@@ -4,7 +4,32 @@ import React from "react";
 export default function OrderModal({ open, order, onClose, onApprove }) {
   if (!open || !order) return null;
 
+  // ✅ New stages
+  const status = order.status;
+  const isHistory = status === "history";
+
+  const statusLabel =
+    status === "pending_confirm"
+      ? "در انتظار تأیید"
+      : status === "pending_delivery"
+      ? "در انتظار تحویل"
+      : status === "pending_payment"
+      ? "در انتظار پرداخت"
+      : "در تاریخچه";
+
+  const primaryActionLabel =
+    status === "pending_confirm"
+      ? "تأیید"
+      : status === "pending_delivery"
+      ? "تأیید تحویل"
+      : status === "pending_payment"
+      ? "تأیید پرداخت"
+      : null;
+
+  // ❌ Old (kept): only pending/history
+  /*
   const isPending = order.status === "pending";
+  */
 
   return (
     <div
@@ -34,12 +59,18 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
             }}
           >
             <div>
+              <strong>وضعیت:</strong> {statusLabel}
+              {/* ❌ Old (kept) */}
+              {/*
               <strong>وضعیت:</strong>{" "}
               {isPending ? "در انتظار تأیید" : "در تاریخچه"}
+              */}
             </div>
+
             <div>
               <strong>زمان:</strong> {order.time}
             </div>
+
             <div>
               <strong>مشتری:</strong> {order.customer || "حضوری"}
             </div>
@@ -105,6 +136,18 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
         </div>
 
         <div className="modal-footer" style={{ display: "flex", gap: 8 }}>
+          {/* ✅ show action button for any active stage */}
+          {!isHistory && onApprove && primaryActionLabel && (
+            <button
+              className="btn btn-primary"
+              onClick={() => onApprove?.(order.id)}
+            >
+              {primaryActionLabel}
+            </button>
+          )}
+
+          {/* ❌ Old (kept): only pending showed approve */}
+          {/*
           {isPending && (
             <button
               className="btn btn-primary"
@@ -113,6 +156,8 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
               تأیید
             </button>
           )}
+          */}
+
           <button className="btn btn-secondary" onClick={onClose}>
             بستن
           </button>

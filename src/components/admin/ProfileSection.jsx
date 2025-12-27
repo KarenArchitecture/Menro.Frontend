@@ -104,6 +104,9 @@ export default function ProfileSection() {
                   objectFit: "cover",
                   margin: "15px auto",
                 }}
+                onError={(e) => {
+                  e.currentTarget.src = "/images/profile-default.jpg";
+                }}
               />
             )}
           </div>

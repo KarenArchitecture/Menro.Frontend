@@ -1,9 +1,6 @@
 // src/api/foodCategories.js
 import publicAxios from "./publicAxios";
 
-
-
-/* ───────────────  🍽 Shop Page ─────────────── */
-
+/* ───────────────  🍽 Shop Page: Restaurant Categories ─────────────── */
 export const getRestaurantCategoriesBySlug = (slug) =>
-    publicAxios.get(`foodcategory/${slug}`).then(r => r.data);
+    publicAxios.get(`/restaurant/${slug}/categories`).then((r) => r.data);

@@ -26,13 +26,21 @@ const ranges = [
   { key: "all", label: "همه", test: () => true },
 ];
 
+/*
+  ✅ New order stages:
+  1) pending_confirm  => در انتظار تأیید
+  2) pending_delivery => در انتظار تحویل
+  3) pending_payment  => در انتظار پرداخت
+  4) history          => تاریخچه (بعد از تایید پرداخت)
+*/
+
 /* ---------- mock data with timestamps (ts) ---------- */
 const INITIAL_ORDERS = [
-  // pending
+  // active (pending_confirm)
   {
     id: "o0",
     code: "2452",
-    status: "pending",
+    status: "pending_confirm", // ✅ new
     table: 5,
     time: "امروز، 12:40",
     ts: now - 2 * 60 * 60 * 1000,
@@ -43,7 +51,7 @@ const INITIAL_ORDERS = [
   {
     id: "o1",
     code: "2451",
-    status: "pending",
+    status: "pending_confirm", // ✅ new
     table: 7,
     time: "امروز، 12:35",
     ts: now - 3 * 60 * 60 * 1000,
@@ -67,6 +75,7 @@ const INITIAL_ORDERS = [
     ],
     total: 700000,
   },
+
   // history
   {
     id: "h1",
@@ -122,6 +131,21 @@ const INITIAL_ORDERS = [
   },
 ];
 
+/* ---------- helpers for UI ---------- */
+function getStatusMeta(status) {
+  if (status === "pending_confirm")
+    return { pill: "در انتظار تأیید", cls: "status-pending" };
+  if (status === "pending_delivery")
+    return { pill: "در انتظار تحویل", cls: "status-delivery" };
+  if (status === "pending_payment")
+    return { pill: "در انتظار پرداخت", cls: "status-payment" };
+  return { pill: "در تاریخچه", cls: "status-archived" };
+}
+
+function isHistoryStatus(status) {
+  return status === "history";
+}
+
 export default function OrdersSection() {
   const [orders, setOrders] = useState(INITIAL_ORDERS);
   const [showHistory, setShowHistory] = useState(false);
@@ -135,24 +159,64 @@ export default function OrdersSection() {
 
   // Apply time filter ONLY to history
   const { list, counts } = useMemo(() => {
-    const pendingAll = orders.filter((o) => o.status === "pending");
+    // ✅ New: "active" = everything that's NOT history
+    const pendingAll = orders.filter((o) => !isHistoryStatus(o.status));
+
+    // ✅ History stays the same: filter by time range
     const historyFiltered = orders.filter(
-      (o) => o.status === "history" && activeRange.test(o.ts)
+      (o) => isHistoryStatus(o.status) && activeRange.test(o.ts)
     );
 
     return {
       list: showHistory ? historyFiltered : pendingAll,
       counts: { pending: pendingAll.length, history: historyFiltered.length },
     };
+
+    // ❌ Old (kept): only "pending" vs "history"
+    /*
+    const pendingAll = orders.filter((o) => o.status === "pending");
+    const historyFiltered = orders.filter(
+      (o) => o.status === "history" && activeRange.test(o.ts)
+    );
+    return {
+      list: showHistory ? historyFiltered : pendingAll,
+      counts: { pending: pendingAll.length, history: historyFiltered.length },
+    };
+    */
   }, [orders, activeRange, showHistory]);
 
-  const handleApprove = (orderId) => {
+  // ✅ Advance order stage (confirm -> delivery -> payment -> history)
+  const handleAdvance = (orderId) => {
+    setOrders((prev) =>
+      prev.map((o) => {
+        if (o.id !== orderId) return o;
+
+        if (o.status === "pending_confirm") {
+          return { ...o, status: "pending_delivery" };
+        }
+        if (o.status === "pending_delivery") {
+          return { ...o, status: "pending_payment" };
+        }
+        if (o.status === "pending_payment") {
+          // ✅ Only after payment confirmation → move to history
+          return { ...o, status: "history", ts: Date.now() };
+        }
+
+        return o;
+      })
+    );
+
+    setSelected(null);
+
+    // ❌ Old (kept): confirm moved directly to history
+    /*
     setOrders((prev) =>
       prev.map((o) =>
         o.id === orderId ? { ...o, status: "history", ts: Date.now() } : o
       )
     );
     setSelected(null);
+    */
   };
 
   return (
@@ -203,41 +267,49 @@ export default function OrdersSection() {
       <div className="orders-list orders-list--vertical">
         {list.length === 0 && <div className="empty-hint">موردی یافت نشد.</div>}
 
-        {list.map((o) => (
-          <button
-            key={o.id}
-            className={`order-bar ${
-              o.status === "pending" ? "status-pending" : "status-archived"
-            }`}
-            onClick={() => setSelected(o)}
-          >
-            <div className="order-bar__info">
-              <div className="order-bar__title">
-                <span className="order-code">سفارش #{o.code}</span>
-                <span className="order-customer"> — {o.customer}</span>
-              </div>
-              <div className="order-bar__meta">
-                <span>میز {o.table ?? "—"}</span>
-                <span className="dot-sep">·</span>
-                <span>{o.time}</span>
-              </div>
-            </div>
+        {list.map((o) => {
+          const meta = getStatusMeta(o.status);
 
-            <div className="order-bar__side">
-              <div className="order-price">
-                {o.total.toLocaleString()}{" "}
-                <span className="currency">تومان</span>
+          return (
+            <button
+              key={o.id}
+              className={`order-bar ${meta.cls}`}
+              onClick={() => setSelected(o)}
+            >
+              <div className="order-bar__info">
+                <div className="order-bar__title">
+                  <span className="order-code">سفارش #{o.code}</span>
+                  <span className="order-customer"> — {o.customer}</span>
+                </div>
+                <div className="order-bar__meta">
+                  <span>میز {o.table ?? "—"}</span>
+                  <span className="dot-sep">·</span>
+                  <span>{o.time}</span>
+                </div>
               </div>
-              <span
-                className={`status-pill ${
-                  o.status === "pending" ? "status-pending" : "status-archived"
-                }`}
-              >
-                {o.status === "pending" ? "در انتظار تأیید" : "در تاریخچه"}
-              </span>
-            </div>
-          </button>
-        ))}
+
+              <div className="order-bar__side">
+                <div className="order-price">
+                  {o.total.toLocaleString()}{" "}
+                  <span className="currency">تومان</span>
+                </div>
+
+                <span className={`status-pill ${meta.cls}`}>{meta.pill}</span>
+
+                {/* ❌ Old (kept): pending/history only */}
+                {/*
+                <span
+                  className={`status-pill ${
+                    o.status === "pending" ? "status-pending" : "status-archived"
+                  }`}
+                >
+                  {o.status === "pending" ? "در انتظار تأیید" : "در تاریخچه"}
+                </span>
+                */}
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       {/* Modal */}
@@ -245,7 +317,16 @@ export default function OrdersSection() {
         open={Boolean(selected)}
         order={selected}
         onClose={() => setSelected(null)}
+        onApprove={
+          selected && !isHistoryStatus(selected.status)
+            ? handleAdvance
+            : undefined
+        }
+
+        /* Old: only pending could approve */
+        /*
         onApprove={selected?.status === "pending" ? handleApprove : undefined}
+        */
       />
     </div>
   );

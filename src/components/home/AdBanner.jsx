@@ -165,12 +165,15 @@
 //   );
 // }
 
-
 // src/components/home/AdBanner.jsx
 import React, { useEffect, useMemo, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import publicAxios from "../../api/publicAxios";
-import { getRandomAdBanner, postAdImpression } from "../../api/restaurants";
+import {
+  getRandomAdBanner,
+  postAdImpression,
+  postAdClick,
+} from "../../api/restaurantAds";
 import StateMessage from "../common/StateMessage";
 import { Link } from "react-router-dom";
 import ShimmerRow from "../common/ShimmerRow";
@@ -196,7 +199,11 @@ export default function AdBanner({
 
   // For dynamic mode (random ad)
   const excludes = useMemo(() => [...window.__menroAdExcludes], []);
-  const { data: ad, isLoading, isError, error } = useQuery({
+  const {
+    data: ad,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["adBannerRandom", excludes],
     queryFn: () => getRandomAdBanner(excludes),
     enabled: !isStatic, // only fetch when no static content was provided
@@ -216,37 +223,74 @@ export default function AdBanner({
     if (!url) return undefined;
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
     const withSlash = url.startsWith("/") ? url : `/${url}`;
-    if (withSlash.startsWith("/img/")) return `${apiOrigin}${withSlash}`;     // backend wwwroot/img
-    if (withSlash.startsWith("/images/")) return `${appOrigin}${withSlash}`;  // frontend public/images
+    if (withSlash.startsWith("/img/")) return `${apiOrigin}${withSlash}`; // backend wwwroot/img
+    if (withSlash.startsWith("/images/")) return `${appOrigin}${withSlash}`; // frontend public/images
     return `${appOrigin}${withSlash}`;
   };
 
-  // Impression tracking (only for dynamic banners)
+  // Tracking refs (only for dynamic banners)
   const rootRef = useRef(null);
   const firedRef = useRef(false);
+
   const { mutate: sendImpression } = useMutation({
     mutationFn: (id) => postAdImpression(id),
   });
 
+  const { mutate: sendClick } = useMutation({
+    mutationFn: (id) => postAdClick(id),
+  });
+
+  // Impression tracking (VIEWABLE impression):
+  // must be >= 60% visible for >= 1000ms, fire once
   useEffect(() => {
     if (isStatic || !ad?.id) return;
     const el = rootRef.current;
     if (!el) return;
 
+    const VIEW_RATIO = 0.6;
+    const VIEW_MS = 1000;
+
+    let timer = null;
+
+    const clearTimer = () => {
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+    };
+
     const io = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (!firedRef.current && entry.isIntersecting && entry.intersectionRatio >= 0.6) {
-            firedRef.current = true;
-            sendImpression(ad.id); // fire once when ≥60% visible
+        if (firedRef.current) return;
+
+        const entry = entries[0];
+        const viewable =
+          entry.isIntersecting &&
+          entry.intersectionRatio >= VIEW_RATIO &&
+          document.visibilityState === "visible";
+
+        if (viewable) {
+          if (!timer) {
+            timer = setTimeout(() => {
+              if (!firedRef.current && document.visibilityState === "visible") {
+                firedRef.current = true;
+                sendImpression(ad.id);
+              }
+            }, VIEW_MS);
           }
-        });
+        } else {
+          clearTimer();
+        }
       },
-      { threshold: [0.6] }
+      { threshold: [VIEW_RATIO] }
     );
 
     io.observe(el);
-    return () => io.disconnect();
+
+    return () => {
+      clearTimer();
+      io.disconnect();
+    };
   }, [isStatic, ad?.id, sendImpression]);
 
   // ---- Loading / Error / Empty states for dynamic banners ----
@@ -280,15 +324,10 @@ export default function AdBanner({
     );
   }
 
-
   // Compute final content:
-  const finalImg = isStatic
-    ? imageSrc
-    : resolveImg(ad?.imageUrl) || fallbackImage;
+  const finalImg = isStatic ? imageSrc : resolveImg(ad?.imageUrl) || fallbackImage;
 
-  const finalTitle = isStatic
-    ? title ?? ""
-    : ad?.restaurantName ?? "";
+  const finalTitle = isStatic ? title ?? "" : ad?.restaurantName ?? "";
 
   const finalSubtitle = isStatic
     ? subtitle ?? "ماکتیل‌هامون رو از دست ندید!"
@@ -344,12 +383,19 @@ export default function AdBanner({
       style={styleVars}
     >
       {finalHref ? (
-  <Wrapper to={finalHref} className="banner-link">
-      {ImgWrapper}
-    </Wrapper>
-  ) : (
-    ImgWrapper
-  )}
+        <Wrapper
+          to={finalHref}
+          className="banner-link"
+          onClick={() => {
+            // For dynamic banners, count click (backend only consumes if BillingType == PerClick)
+            if (!isStatic && ad?.id) sendClick(ad.id);
+          }}
+        >
+          {ImgWrapper}
+        </Wrapper>
+      ) : (
+        ImgWrapper
+      )}
     </section>
   );
 }

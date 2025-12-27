@@ -9,37 +9,21 @@ const RESTAURANT_URL = "/restaurant";
 ──────────────────────────────── */
 
 /* ───────────────  🏠 Home Page  ─────────────── */
-export const getFeaturedRestaurants = () =>
-  publicAxios.get(`${RESTAURANT_URL}/featured`).then((r) => r.data);
 
+// ── Random Restaurant Cards ──
 export const getRandomRestaurants = () =>
   publicAxios.get(`${RESTAURANT_URL}/random`).then((r) => r.data);
 
-// ── 🎯 Ad Banners ──
-// export const getAdBanner = () =>
-//   publicAxios.get(`${RESTAURANT_URL}/ad-banner`).then(r => r.data);
-
-export const getRandomAdBanner = (excludeIds = []) =>
-  publicAxios
-    .get(`${RESTAURANT_URL}/ad-banner/random`, {
-      params: {
-        exclude: excludeIds.length ? excludeIds.join(",") : undefined,
-      },
-    })
-    .then((r) => r.data);
-
-export const postAdImpression = (bannerId) =>
-  publicAxios.post(`${RESTAURANT_URL}/ad-banner/${bannerId}/impression`);
 
 /* ───────────────  🛍 Shop Page  ─────────────── */
 export const getRestaurantBannerBySlug = (slug) =>
-  publicAxios.get(`${RESTAURANT_URL}/banner/${slug}`).then((r) => r.data);
+  publicAxios.get(`${RESTAURANT_URL}/${slug}/banner`).then((r) => r.data);
 
 /* ───────────────  🍴 Restaurant Page (Dynamic Menu & Item Detail) ─────────────── */
 
 export const getRestaurantMenuBySlug = (restaurantSlug) =>
   publicAxios
-    .get(`${RESTAURANT_URL}/menu/${restaurantSlug}`)
+    .get(`${RESTAURANT_URL}/${restaurantSlug}/menu`)
     .then((r) => r.data);
 
 export const getFoodDetail = (foodId) =>

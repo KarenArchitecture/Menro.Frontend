@@ -79,7 +79,7 @@ export default function CheckoutPage() {
 
   const restaurantId = navState?.restaurantId;
 
-  const handleConfirmOrder = async (tableCode) => {
+  const handleConfirmOrder = async (tableNumber) => {
     if (!restaurantId) {
       throw new Error("Missing restaurantId in checkout state");
     }
@@ -117,7 +117,7 @@ export default function CheckoutPage() {
 
     const payload = {
       restaurantId,
-      tableCode, // "t1", "t2", ..., "takeout"
+      tableNumber, // "t1", "t2", ..., "takeout"
       items: itemsDto,
     };
 

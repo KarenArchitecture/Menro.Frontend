@@ -132,6 +132,8 @@ const INITIAL_ORDERS = [
 ];
 
 /* ---------- helpers for UI ---------- */
+
+// order status
 function getStatusMeta(status) {
   if (status === "pending_confirm")
     return { pill: "در انتظار تأیید", cls: "status-pending" };

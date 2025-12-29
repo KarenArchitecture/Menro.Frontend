@@ -11,7 +11,7 @@ export default function CheckoutFooter({
   tableCount = 0,
 }) {
   const [isPickingTable, setIsPickingTable] = useState(false);
-  const [selectedTable, setSelectedTable] = useState(null);
+  const [selectedTable, setSelectedTable] = useState(undefined);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -25,14 +25,14 @@ export default function CheckoutFooter({
     // add numbered tables 1..N
     for (let i = 1; i <= numericTableCount; i += 1) {
       opts.push({
-        id: String(i),        // "1", "2", ...
+        id: i,
         label: `میز ${i}`,
       });
     }
 
     // always add بیرون‌بر at the end
     opts.push({
-      id: "takeout",
+      id: null,
       label: "بیرون‌بر",
     });
 
@@ -47,28 +47,24 @@ export default function CheckoutFooter({
   };
 
   const handlePayClick = async () => {
-    // first click → open selector
     if (!isPickingTable) {
+      setSelectedTable(undefined);
       setIsPickingTable(true);
       return;
     }
 
-    // nothing selected or already submitting
-    if (!selectedTable || isSubmitting) return;
+    if (isSubmitting) return;
 
     try {
       setIsSubmitting(true);
 
       if (onConfirm) {
-        // pass selectedTable like "1", "2", ..., or "takeout"
         await onConfirm(selectedTable);
       }
 
-      // show success UI
       setShowSuccess(true);
     } catch (err) {
       console.error("Error while confirming order:", err);
-      // optional: show toast or error message
     } finally {
       setIsSubmitting(false);
       setIsPickingTable(false);
@@ -84,12 +80,12 @@ export default function CheckoutFooter({
   };
 
   /* ------------------------ UI state ------------------------ */
-  const isChoosingTable = isPickingTable && !selectedTable;
+  const isChoosingTable = isPickingTable && selectedTable === undefined;
   const payDisabled = isChoosingTable || isSubmitting;
 
   const payLabel = !isPickingTable
     ? "پرداخت"
-    : !selectedTable
+    : selectedTable === undefined
     ? "میز خود را انتخاب کنید"
     : "تایید و پرداخت";
 
@@ -128,9 +124,7 @@ export default function CheckoutFooter({
 
           <div className="footer-action">
             <button
-              className={
-                "pay-btn" + (payDisabled ? " pay-btn--inactive" : "")
-              }
+              className={"pay-btn" + (payDisabled ? " pay-btn--inactive" : "")}
               onClick={handlePayClick}
               disabled={payDisabled}
             >
@@ -148,14 +142,14 @@ export default function CheckoutFooter({
           <div className="table-grid">
             {tableOptions.map((opt) => (
               <button
-                key={opt.id}
+                key={opt.id ?? "takeout"}
                 type="button"
                 className={
                   "table-chip" +
                   (selectedTable === opt.id ? " is-active" : "") +
-                  (opt.id === "takeout" ? " is-wide" : "")
+                  (opt.id === null ? " is-wide" : "")
                 }
-                onClick={() => handleTableClick(opt.id)}
+                onClick={() => setSelectedTable(opt.id)}
               >
                 {opt.label}
               </button>

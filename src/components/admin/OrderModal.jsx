@@ -7,7 +7,10 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // همیشه hookها بالا اجرا میشن (هیچ hook بعد از return نداریم)
+  // ✅ برای تست فرانت (تا وقتی بک‌اند آماده نیست):
+  // وضعیت "نمایشی" داخل مودال
+  const [uiStatus, setUiStatus] = useState(null);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -18,9 +21,9 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
         setLoading(true);
         setError("");
         setDetails(null);
+        setUiStatus(null); // هر بار باز میشه، از وضعیت واقعی شروع کن
 
         const res = await adminOrderAxios.get(`/${order.id}`);
-
         if (!cancelled) setDetails(res.data);
       } catch (e) {
         if (!cancelled) setError("خطا در دریافت جزئیات سفارش");
@@ -36,44 +39,47 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
     };
   }, [open, order?.id]);
 
-  // بعد از اجرای hookها می‌تونیم return کنیم
   if (!open || !order) return null;
 
-  // اگر details اومد از اون استفاده می‌کنیم وگرنه از order لیست
   const dto = details || order;
 
-  // status: enum بک‌اند
-  const status = dto.status;
+  // ✅ status واقعی (از dto) + override تستی (uiStatus)
+  const status = uiStatus ?? dto.status;
 
-  const isHistory =
-    status === "Cancelled" || status === "Delivered" || status === "Completed";
+  const isHistory = status === "Cancelled" || status === "Completed";
 
+  // ✅ Label وضعیت (طبق enum واقعی)
   const statusLabel =
     status === "Pending"
       ? "در انتظار تأیید"
       : status === "Confirmed"
       ? "در انتظار تحویل"
+      : status === "Delivered"
+      ? "تحویل شده"
       : status === "Paid"
-      ? "در انتظار پرداخت"
+      ? "پرداخت شده"
       : "در تاریخچه";
 
+  // ✅ متن دکمه اصلی طبق خواسته شما
   const primaryActionLabel =
     status === "Pending"
       ? "تأیید"
       : status === "Confirmed"
-      ? "تأیید تحویل"
+      ? "تحویل شد"
+      : status === "Delivered"
+      ? "پرداخت شد"
       : status === "Paid"
-      ? "تأیید پرداخت"
+      ? "پایان سفارش"
       : null;
 
-  // میز/بیرون‌بر
+  // ✅ میز/بیرون‌بر
   const tableLabel =
     dto.tableNumber === null ? "بیرون‌بر" : `میز ${dto.tableNumber}`;
 
   const customerLabel =
-    dto.tableNumber === null ? "بیرون‌بر" : `میز شماره ${dto.tableNumber}`;
+    dto.tableNumber === null ? "حضوری" : `میز شماره ${dto.tableNumber}`;
 
-  // زمان
+  // ✅ زمان
   const created = dto.createdAt ? new Date(dto.createdAt) : null;
   const timeLabel = created
     ? `${created.toLocaleDateString("fa-IR", {
@@ -85,9 +91,60 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
       })}`
     : "—";
 
-  // آیتم‌ها فقط تو details هست؛ اگر هنوز نیومده خالی
   const items = details?.items || [];
   const totalPrice = dto.totalPrice ?? 0;
+
+  // ✅ منطق مرحله بعد (فعلاً فقط فرانت برای تست)
+  function getNextStatus(current) {
+    if (current === "Pending") return "Confirmed";
+    if (current === "Confirmed") return "Delivered";
+    if (current === "Delivered") return "Paid";
+    if (current === "Paid") return "Completed";
+    return current;
+  }
+
+  // advance order status
+  const handleAdvanceClick = async () => {
+    if (loading || error || !details) return;
+
+    try {
+      setLoading(true);
+
+      const res = await adminOrderAxios.put(`/${dto.id}/advance`);
+
+      const newStatus = res.data.status;
+
+      // لیست والد آپدیت بشه
+      onApprove?.(dto.id, newStatus);
+
+      // مودال بسته شه
+      onClose?.();
+    } catch (e) {
+      setError("خطا در تغییر وضعیت سفارش");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // cancel order status
+  const handleCancelClick = async () => {
+    if (loading || error || !details) return;
+
+    try {
+      setLoading(true);
+
+      const res = await adminOrderAxios.put(`/${dto.id}/cancel`);
+
+      const newStatus = res.data.status;
+
+      onApprove?.(dto.id, newStatus);
+      onClose?.();
+    } catch (e) {
+      setError("خطا در لغو سفارش");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div
@@ -204,13 +261,30 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
         </div>
 
         <div className="modal-footer" style={{ display: "flex", gap: 8 }}>
-          {!isHistory && onApprove && primaryActionLabel && (
+          {/* ✅ دکمه اصلی مرحله‌ای */}
+          {!isHistory && primaryActionLabel && (
             <button
               className="btn btn-primary"
-              onClick={() => onApprove?.(dto.id)}
-              disabled={loading || !!error || !details} // تا جزئیات نیومده اکشن نزن
+              onClick={handleAdvanceClick}
+              disabled={loading || !!error || !details}
             >
               {primaryActionLabel}
+            </button>
+          )}
+
+          {/* ✅ دکمه لغو سفارش (قرمز) */}
+          {!isHistory && (
+            <button
+              className="btn"
+              onClick={handleCancelClick}
+              disabled={loading || !!error || !details}
+              style={{
+                background: "#d32f2f",
+                borderColor: "#d32f2f",
+                color: "white",
+              }}
+            >
+              لغو سفارش
             </button>
           )}
 

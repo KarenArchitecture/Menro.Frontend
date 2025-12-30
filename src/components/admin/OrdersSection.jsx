@@ -50,17 +50,30 @@ const ranges = [
 // order status
 function getStatusMeta(status) {
   switch (status) {
+    // Active - مرحله فعلی/بعدی برای UI لیست
     case "Pending":
       return { pill: "در انتظار تأیید", cls: "status-pending" };
 
     case "Confirmed":
       return { pill: "در انتظار تحویل", cls: "status-delivery" };
 
-    case "Paid":
+    // ✅ اگر تحویل شده، مرحله بعدی رو نشون بده: در انتظار پرداخت
+    case "Delivered":
       return { pill: "در انتظار پرداخت", cls: "status-payment" };
 
+    // ✅ اگر پرداخت شده، مرحله بعدی رو نشون بده: پایان سفارش
+    case "Paid":
+      return { pill: "پایان سفارش", cls: "status-payment" };
+
+    // History
+    case "Completed":
+      return { pill: "تکمیل شده", cls: "status-archived" };
+
+    case "Cancelled":
+      return { pill: "لغو شده", cls: "status-archived" };
+
     default:
-      return { pill: "در تاریخچه", cls: "status-archived" };
+      return { pill: "—", cls: "status-archived" };
   }
 }
 
@@ -96,7 +109,18 @@ export default function OrdersSection() {
   }, [orders, activeRange, showHistory]);
 
   // ✅ Advance order stage (confirm -> delivery -> payment -> history)
-  const handleAdvance = () => {
+  const handleAdvance = (orderId, nextStatus) => {
+    // 1) لیست را آپدیت کن
+    setOrders((prev) =>
+      prev.map((o) => (o.id === orderId ? { ...o, status: nextStatus } : o))
+    );
+
+    // 2) اگر همون سفارش داخل selected بازه، اون رو هم آپدیت کن
+    setSelected((prev) =>
+      prev && prev.id === orderId ? { ...prev, status: nextStatus } : prev
+    );
+
+    // 3) مودال بسته شود
     setSelected(null);
   };
 

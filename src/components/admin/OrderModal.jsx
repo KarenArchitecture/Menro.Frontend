@@ -1,35 +1,93 @@
 // src/components/admin/orders/OrderModal.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
+import adminOrderAxios from "../../api/adminOrderAxios";
 
 export default function OrderModal({ open, order, onClose, onApprove }) {
+  const [details, setDetails] = useState(null); // AdminOrderDetailsDto
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // همیشه hookها بالا اجرا میشن (هیچ hook بعد از return نداریم)
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      if (!open || !order?.id) return;
+
+      try {
+        setLoading(true);
+        setError("");
+        setDetails(null);
+
+        const res = await adminOrderAxios.get(`/${order.id}`);
+
+        if (!cancelled) setDetails(res.data);
+      } catch (e) {
+        if (!cancelled) setError("خطا در دریافت جزئیات سفارش");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    loadDetails();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, order?.id]);
+
+  // بعد از اجرای hookها می‌تونیم return کنیم
   if (!open || !order) return null;
 
-  // ✅ New stages
-  const status = order.status;
-  const isHistory = status === "history";
+  // اگر details اومد از اون استفاده می‌کنیم وگرنه از order لیست
+  const dto = details || order;
+
+  // status: enum بک‌اند
+  const status = dto.status;
+
+  const isHistory =
+    status === "Cancelled" || status === "Delivered" || status === "Completed";
 
   const statusLabel =
-    status === "pending_confirm"
+    status === "Pending"
       ? "در انتظار تأیید"
-      : status === "pending_delivery"
+      : status === "Confirmed"
       ? "در انتظار تحویل"
-      : status === "pending_payment"
+      : status === "Paid"
       ? "در انتظار پرداخت"
       : "در تاریخچه";
 
   const primaryActionLabel =
-    status === "pending_confirm"
+    status === "Pending"
       ? "تأیید"
-      : status === "pending_delivery"
+      : status === "Confirmed"
       ? "تأیید تحویل"
-      : status === "pending_payment"
+      : status === "Paid"
       ? "تأیید پرداخت"
       : null;
 
-  // ❌ Old (kept): only pending/history
-  /*
-  const isPending = order.status === "pending";
-  */
+  // میز/بیرون‌بر
+  const tableLabel =
+    dto.tableNumber === null ? "بیرون‌بر" : `میز ${dto.tableNumber}`;
+
+  const customerLabel =
+    dto.tableNumber === null ? "بیرون‌بر" : `میز شماره ${dto.tableNumber}`;
+
+  // زمان
+  const created = dto.createdAt ? new Date(dto.createdAt) : null;
+  const timeLabel = created
+    ? `${created.toLocaleDateString("fa-IR", {
+        month: "short",
+        day: "numeric",
+      })} ${created.toLocaleTimeString("fa-IR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })}`
+    : "—";
+
+  // آیتم‌ها فقط تو details هست؛ اگر هنوز نیومده خالی
+  const items = details?.items || [];
+  const totalPrice = dto.totalPrice ?? 0;
 
   return (
     <div
@@ -41,7 +99,7 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
       <div className="modal-content" style={{ maxWidth: 800 }}>
         <div className="modal-header">
           <h3>
-            سفارش #{order.code} — میز {order.table ?? "—"}
+            سفارش #{dto.restaurantOrderNumber} — {tableLabel}
           </h3>
           <button className="btn btn-icon" onClick={onClose}>
             <i className="fas fa-times" />
@@ -60,24 +118,34 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
           >
             <div>
               <strong>وضعیت:</strong> {statusLabel}
-              {/* ❌ Old (kept) */}
-              {/*
-              <strong>وضعیت:</strong>{" "}
-              {isPending ? "در انتظار تأیید" : "در تاریخچه"}
-              */}
             </div>
 
             <div>
-              <strong>زمان:</strong> {order.time}
+              <strong>زمان:</strong> {timeLabel}
             </div>
 
             <div>
-              <strong>مشتری:</strong> {order.customer || "حضوری"}
+              <strong>مشتری:</strong> {customerLabel}
             </div>
           </div>
 
+          {loading && (
+            <div className="empty-hint" style={{ marginBottom: 10 }}>
+              در حال دریافت جزئیات...
+            </div>
+          )}
+          {!loading && error && (
+            <div className="empty-hint" style={{ marginBottom: 10 }}>
+              {error}
+            </div>
+          )}
+
           <div className="order-items">
-            {order.items.map((it) => (
+            {!loading && !error && details && items.length === 0 && (
+              <div className="empty-hint">آیتمی برای نمایش وجود ندارد.</div>
+            )}
+
+            {items.map((it) => (
               <div
                 key={it.id}
                 className="order-item-row"
@@ -91,7 +159,7 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
                 }}
               >
                 <img
-                  src={it.image}
+                  src={it.image || "https://via.placeholder.com/96"}
                   alt={it.name}
                   style={{
                     width: 64,
@@ -112,7 +180,7 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
                 <div style={{ textAlign: "end" }}>
                   <div>×{it.qty}</div>
                   <div style={{ opacity: 0.8 }}>
-                    {it.price.toLocaleString()} تومان
+                    {Number(it.price).toLocaleString("fa-IR")} تومان
                   </div>
                 </div>
               </div>
@@ -130,33 +198,21 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
           >
             <div style={{ opacity: 0.8 }}>مبلغ کل</div>
             <div style={{ fontWeight: 900 }}>
-              {order.total.toLocaleString()} تومان
+              {Number(totalPrice).toLocaleString("fa-IR")} تومان
             </div>
           </div>
         </div>
 
         <div className="modal-footer" style={{ display: "flex", gap: 8 }}>
-          {/* ✅ show action button for any active stage */}
           {!isHistory && onApprove && primaryActionLabel && (
             <button
               className="btn btn-primary"
-              onClick={() => onApprove?.(order.id)}
+              onClick={() => onApprove?.(dto.id)}
+              disabled={loading || !!error || !details} // تا جزئیات نیومده اکشن نزن
             >
               {primaryActionLabel}
             </button>
           )}
-
-          {/* ❌ Old (kept): only pending showed approve */}
-          {/*
-          {isPending && (
-            <button
-              className="btn btn-primary"
-              onClick={() => onApprove?.(order.id)}
-            >
-              تأیید
-            </button>
-          )}
-          */}
 
           <button className="btn btn-secondary" onClick={onClose}>
             بستن

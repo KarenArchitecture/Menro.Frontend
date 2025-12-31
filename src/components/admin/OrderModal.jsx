@@ -216,8 +216,11 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
                 }}
               >
                 <img
-                  src={it.image || "https://via.placeholder.com/96"}
+                  src={it.imageUrl || "https://via.placeholder.com/96"}
                   alt={it.name}
+                  onError={(e) => {
+                    e.currentTarget.src = "https://via.placeholder.com/96";
+                  }}
                   style={{
                     width: 64,
                     height: 64,
@@ -226,6 +229,7 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
                     background: "rgba(255,255,255,.06)",
                   }}
                 />
+
                 <div>
                   <div style={{ fontWeight: 700 }}>{it.name}</div>
                   <div style={{ opacity: 0.75, fontSize: 13 }}>

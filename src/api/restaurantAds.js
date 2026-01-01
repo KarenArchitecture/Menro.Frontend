@@ -5,12 +5,10 @@ const RESTAURANT_URL = "/restaurant";
 export const getFeaturedRestaurants = () =>
     publicAxios.get(`${RESTAURANT_URL}/featured`).then((r) => r.data);
 
-export const getRandomAdBanner = (excludeIds = []) =>
-    publicAxios
-        .get(`${RESTAURANT_URL}/ad-banner/random`, {
-        params: { exclude: excludeIds.length ? excludeIds.join(",") : undefined },
-        })
-        .then((r) => r.data);
+export const getRandomAdBanner = (excludeRestaurantIds = []) =>
+    publicAxios.get(`/restaurant/ad-banner/random`, {
+        params: { exclude: excludeRestaurantIds.length ? excludeRestaurantIds.join(",") : undefined },
+    }).then(r => r.data);
 
 export const postAdImpression = (bannerId) =>
     publicAxios.post(`${RESTAURANT_URL}/ad-banner/${bannerId}/impression`);

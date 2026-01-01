@@ -166,29 +166,33 @@
 // }
 
 // src/components/home/AdBanner.jsx
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import publicAxios from "../../api/publicAxios";
-import {
-  getRandomAdBanner,
-  postAdImpression,
-  postAdClick,
-} from "../../api/restaurantAds";
+import { getRandomAdBanner, postAdImpression, postAdClick } from "../../api/restaurantAds";
 import StateMessage from "../common/StateMessage";
 import { Link } from "react-router-dom";
 import ShimmerRow from "../common/ShimmerRow";
 
-// page-scope memory so multiple AdBanner instances don't repeat
+// restaurantIds excludes (page-scope memory)
 if (!window.__menroAdExcludes) window.__menroAdExcludes = [];
 
+// Simple lock/queue to prevent concurrent banners from picking same restaurant
+let _bannerQueue = Promise.resolve();
+function withBannerLock(fn) {
+  const run = _bannerQueue.then(fn, fn);
+  _bannerQueue = run.then(() => {}, () => {});
+  return run;
+}
+
 export default function AdBanner({
-  // Presentational props (if provided => render static)
+  // Static mode (if any provided => no backend call)
   imageSrc,
   title,
   subtitle,
   href,
 
-  // Style knobs
+  // Style
   overlay = 0.45,
   height = 260,
   objectPosition = "center",
@@ -196,41 +200,6 @@ export default function AdBanner({
   fallbackImage = "/images/ad-banner-1.jpg",
 }) {
   const isStatic = !!imageSrc || !!title || !!subtitle || !!href;
-
-  // For dynamic mode (random ad)
-  const excludes = useMemo(() => [...window.__menroAdExcludes], []);
-  const {
-    data: ad,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["adBannerRandom", excludes],
-    queryFn: () => getRandomAdBanner(excludes),
-    enabled: !isStatic, // only fetch when no static content was provided
-  });
-
-  // Remember the chosen banner id to avoid duplicates on the same page
-  useEffect(() => {
-    if (!isStatic && ad?.id && !window.__menroAdExcludes.includes(ad.id)) {
-      window.__menroAdExcludes.push(ad.id);
-    }
-  }, [ad, isStatic]);
-
-  // Resolve image url from backend (/img/...) vs frontend (/images/...) vs absolute
-  const apiOrigin = new URL(publicAxios.defaults.baseURL).origin;
-  const appOrigin = window.location.origin;
-  const resolveImg = (url) => {
-    if (!url) return undefined;
-    if (url.startsWith("http://") || url.startsWith("https://")) return url;
-    const withSlash = url.startsWith("/") ? url : `/${url}`;
-    if (withSlash.startsWith("/img/")) return `${apiOrigin}${withSlash}`; // backend wwwroot/img
-    if (withSlash.startsWith("/images/")) return `${appOrigin}${withSlash}`; // frontend public/images
-    return `${appOrigin}${withSlash}`;
-  };
-
-  // Tracking refs (only for dynamic banners)
-  const rootRef = useRef(null);
-  const firedRef = useRef(false);
 
   const { mutate: sendImpression } = useMutation({
     mutationFn: (id) => postAdImpression(id),
@@ -240,8 +209,43 @@ export default function AdBanner({
     mutationFn: (id) => postAdClick(id),
   });
 
-  // Impression tracking (VIEWABLE impression):
-  // must be >= 60% visible for >= 1000ms, fire once
+  const {
+    data: ad,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: ["adBannerRandom"],
+    enabled: !isStatic,
+    queryFn: () =>
+      withBannerLock(async () => {
+        const excludes = window.__menroAdExcludes || []; // restaurantIds
+        const res = await getRandomAdBanner(excludes);
+
+        // Save restaurantId immediately to prevent duplicates
+        if (res?.restaurantId && !window.__menroAdExcludes.includes(res.restaurantId)) {
+          window.__menroAdExcludes.push(res.restaurantId);
+        }
+        return res;
+      }),
+  });
+
+  // Resolve image url from backend (/img/...) vs frontend (/images/...) vs absolute
+  const apiOrigin = new URL(publicAxios.defaults.baseURL).origin;
+  const appOrigin = window.location.origin;
+  const resolveImg = (url) => {
+    if (!url) return undefined;
+    if (url.startsWith("http://") || url.startsWith("https://")) return url;
+    const withSlash = url.startsWith("/") ? url : `/${url}`;
+    if (withSlash.startsWith("/img/")) return `${apiOrigin}${withSlash}`;
+    if (withSlash.startsWith("/images/")) return `${appOrigin}${withSlash}`;
+    return `${appOrigin}${withSlash}`;
+  };
+
+  // Impression tracking
+  const rootRef = useRef(null);
+  const firedRef = useRef(false);
+
   useEffect(() => {
     if (isStatic || !ad?.id) return;
     const el = rootRef.current;
@@ -249,7 +253,6 @@ export default function AdBanner({
 
     const VIEW_RATIO = 0.6;
     const VIEW_MS = 1000;
-
     let timer = null;
 
     const clearTimer = () => {
@@ -274,7 +277,7 @@ export default function AdBanner({
             timer = setTimeout(() => {
               if (!firedRef.current && document.visibilityState === "visible") {
                 firedRef.current = true;
-                sendImpression(ad.id);
+                sendImpression(ad.id); // PerView id
               }
             }, VIEW_MS);
           }
@@ -293,10 +296,8 @@ export default function AdBanner({
     };
   }, [isStatic, ad?.id, sendImpression]);
 
-  // ---- Loading / Error / Empty states for dynamic banners ----
-  if (!isStatic && isLoading) {
-    return <ShimmerRow height={220} />;
-  }
+  // ---- UI states ----
+  if (!isStatic && isLoading) return <ShimmerRow height={220} />;
 
   if (!isStatic && isError) {
     return (
@@ -304,9 +305,7 @@ export default function AdBanner({
         <StateMessage kind="error" title="خطا در دریافت بنر">
           خطایی در دریافت بنر رخ داده است.
           <div className="state-message__action">
-            <button onClick={() => window.location.reload()}>
-              دوباره تلاش کنید
-            </button>
+            <button onClick={() => refetch()}>دوباره تلاش کنید</button>
           </div>
         </StateMessage>
       </section>
@@ -314,7 +313,7 @@ export default function AdBanner({
   }
 
   if (!isStatic && !ad) {
-    // API may return 204 (no eligible banners)
+    // API returns 204 -> react-query will give undefined data
     return (
       <section className="single-banner">
         <StateMessage kind="empty" title="موردی یافت نشد">
@@ -324,29 +323,14 @@ export default function AdBanner({
     );
   }
 
-  // Compute final content:
+  // Final computed content
   const finalImg = isStatic ? imageSrc : resolveImg(ad?.imageUrl) || fallbackImage;
-
   const finalTitle = isStatic ? title ?? "" : ad?.restaurantName ?? "";
-
-  const finalSubtitle = isStatic
-    ? subtitle ?? "ماکتیل‌هامون رو از دست ندید!"
-    : ad?.commercialText ?? "";
-
-  const finalHref = isStatic
-    ? href
-    : ad?.slug
-    ? `/restaurant/${ad.slug}`
-    : undefined;
-
-  // If nothing to show at all (very unlikely), bail out gracefully
-  if (!finalImg && !finalTitle && !finalSubtitle) {
-    return <StateMessage kind="empty">اطلاعات بنر یافت نشد.</StateMessage>;
-  }
+  const finalSubtitle = isStatic ? subtitle ?? "" : ad?.commercialText ?? "";
+  const finalHref = isStatic ? href : ad?.slug ? `/restaurant/${ad.slug}` : undefined;
 
   const Wrapper = finalHref ? Link : "div";
 
-  // Inline CSS variables for easy theming from props
   const styleVars = {
     "--overlay-opacity": overlay,
     "--banner-height": typeof height === "number" ? `${height}px` : height || "auto",
@@ -387,8 +371,7 @@ export default function AdBanner({
           to={finalHref}
           className="banner-link"
           onClick={() => {
-            // For dynamic banners, count click (backend only consumes if BillingType == PerClick)
-            if (!isStatic && ad?.id) sendClick(ad.id);
+            if (!isStatic && ad?.id) sendClick(ad.id); // PerView id -> backend finds paired PerClick
           }}
         >
           {ImgWrapper}

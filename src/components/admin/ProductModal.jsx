@@ -50,7 +50,14 @@ export default function ProductModal({
   const [hasVariants, setHasVariants] = useState(false);
 
   const [variants, setVariants] = useState([
-    { id: uid(), name: "", price: "", isDefault: true, addons: [] },
+    {
+      id: null,
+      clientId: uid(),
+      name: "",
+      price: "",
+      isDefault: true,
+      addons: [],
+    },
   ]);
 
   // load categories on open
@@ -124,17 +131,17 @@ export default function ProductModal({
           setHasVariants(true);
           setVariants(
             data.variants.map((v, index) => ({
-              id: uid(),
-              name: v.name,
+              id: v.id ?? v.Id ?? null, // ✅ db id
+              clientId: uid(), // ✅ ui id
+              name: v.name || "",
               price: v.price?.toString() || "",
               isDefault: v.isDefault ?? index === 0,
-              addons: v.addons
-                ? v.addons.map((a) => ({
-                    id: uid(),
-                    name: a.name,
-                    price: a.extraPrice?.toString() || "",
-                  }))
-                : [],
+              addons: (v.addons || []).map((a) => ({
+                id: a.id ?? a.Id ?? null, // ✅ db id
+                clientId: uid(), // ✅ ui id
+                name: a.name || "",
+                price: a.extraPrice?.toString() || "",
+              })),
             }))
           );
         } else {
@@ -175,7 +182,14 @@ export default function ProductModal({
     setHasVariants(flag);
     if (flag && variants.length === 0) {
       setVariants([
-        { id: uid(), name: "", price: "", isDefault: true, addons: [] },
+        {
+          id: null,
+          clientId: uid(),
+          name: "",
+          price: "",
+          isDefault: true,
+          addons: [],
+        },
       ]);
     }
   };
@@ -184,7 +198,8 @@ export default function ProductModal({
     setVariants((prev) => [
       ...prev,
       {
-        id: uid(),
+        id: null,
+        clientId: uid(),
         name: "",
         price: "",
         isDefault: prev.length === 0,
@@ -193,45 +208,52 @@ export default function ProductModal({
     ]);
   };
 
-  const removeVariant = (id) => {
+  const removeVariant = (clientId) => {
     setVariants((prev) => {
-      const next = prev.filter((v) => v.id !== id);
-      if (!next.some((v) => v.isDefault) && next.length > 0) {
+      const next = prev.filter((v) => v.clientId !== clientId);
+      if (!next.some((v) => v.isDefault) && next.length > 0)
         next[0].isDefault = true;
-      }
       return next;
     });
   };
 
-  const updateVariant = (id, patch) => {
+  const updateVariant = (clientId, patch) => {
     setVariants((prev) =>
-      prev.map((v) => (v.id === id ? { ...v, ...patch } : v))
+      prev.map((v) => (v.clientId === clientId ? { ...v, ...patch } : v))
     );
   };
 
-  const makeDefault = (id) => {
-    setVariants((prev) => prev.map((v) => ({ ...v, isDefault: v.id === id })));
+  const makeDefault = (clientId) => {
+    setVariants((prev) =>
+      prev.map((v) => ({ ...v, isDefault: v.clientId === clientId }))
+    );
   };
 
   // ---- helpers: addons (per variant) ----
-  const addAddon = (variantId) => {
+  const addAddon = (variantClientId) => {
     setVariants((prev) =>
       prev.map((v) =>
-        v.id === variantId
-          ? { ...v, addons: [...v.addons, { id: uid(), name: "", price: "" }] }
+        v.clientId === variantClientId
+          ? {
+              ...v,
+              addons: [
+                ...v.addons,
+                { id: null, clientId: uid(), name: "", price: "" },
+              ],
+            }
           : v
       )
     );
   };
 
-  const updateAddon = (variantId, addonId, patch) => {
+  const updateAddon = (variantClientId, addonClientId, patch) => {
     setVariants((prev) =>
       prev.map((v) =>
-        v.id === variantId
+        v.clientId === variantClientId
           ? {
               ...v,
               addons: v.addons.map((a) =>
-                a.id === addonId ? { ...a, ...patch } : a
+                a.clientId === addonClientId ? { ...a, ...patch } : a
               ),
             }
           : v
@@ -239,11 +261,14 @@ export default function ProductModal({
     );
   };
 
-  const removeAddon = (variantId, addonId) => {
+  const removeAddon = (variantClientId, addonClientId) => {
     setVariants((prev) =>
       prev.map((v) =>
-        v.id === variantId
-          ? { ...v, addons: v.addons.filter((a) => a.id !== addonId) }
+        v.clientId === variantClientId
+          ? {
+              ...v,
+              addons: v.addons.filter((a) => a.clientId !== addonClientId),
+            }
           : v
       )
     );
@@ -387,10 +412,12 @@ export default function ProductModal({
 
       variants: hasVariants
         ? variants.map((v) => ({
+            id: v.id, // ✅ db id
             name: v.name.trim(),
             price: toIntDigits(v.price),
             isDefault: v.isDefault,
             addons: v.addons.map((a) => ({
+              id: a.id, // ✅ db id
               name: a.name.trim(),
               extraPrice: toIntDigits(a.price),
             })),
@@ -670,14 +697,16 @@ export default function ProductModal({
 
                   <div id="product-types-container">
                     {variants.map((v) => (
-                      <div key={v.id} style={{ marginBottom: 10 }}>
+                      <div key={v.clientId} style={{ marginBottom: 10 }}>
                         <div className="product-type-item">
                           <input
                             type="text"
                             placeholder="نام نوع (مثال: ویژه)"
                             value={v.name}
                             onChange={(e) =>
-                              updateVariant(v.id, { name: e.target.value })
+                              updateVariant(v.clientId, {
+                                name: e.target.value,
+                              })
                             }
                           />
 
@@ -688,7 +717,7 @@ export default function ProductModal({
                             value={v.price}
                             onChange={(e) => {
                               const raw = e.target.value.replace(/[^\d]/g, "");
-                              updateVariant(v.id, { price: raw });
+                              updateVariant(v.clientId, { price: raw });
                             }}
                           />
 
@@ -697,7 +726,7 @@ export default function ProductModal({
                               type="radio"
                               name="default_type"
                               checked={v.isDefault}
-                              onChange={() => makeDefault(v.id)}
+                              onChange={() => makeDefault(v.clientId)}
                             />{" "}
                             پیش‌فرض
                           </label>
@@ -705,7 +734,7 @@ export default function ProductModal({
                           <button
                             type="button"
                             className="btn btn-icon btn-danger"
-                            onClick={() => removeVariant(v.id)}
+                            onClick={() => removeVariant(v.clientId)}
                             title="حذف نوع"
                             disabled={variants.length === 1}
                           >
@@ -723,13 +752,13 @@ export default function ProductModal({
                           )}
 
                           {v.addons.map((a) => (
-                            <div key={a.id} className="addon-item">
+                            <div key={a.clientId} className="addon-item">
                               <input
                                 type="text"
                                 placeholder="نام مخلفات"
                                 value={a.name}
                                 onChange={(e) =>
-                                  updateAddon(v.id, a.id, {
+                                  updateAddon(v.clientId, a.clientId, {
                                     name: e.target.value,
                                   })
                                 }
@@ -744,13 +773,17 @@ export default function ProductModal({
                                     /[^\d]/g,
                                     ""
                                   );
-                                  updateAddon(v.id, a.id, { price: raw });
+                                  updateAddon(v.clientId, a.clientId, {
+                                    price: raw,
+                                  });
                                 }}
                               />
                               <button
                                 type="button"
                                 className="btn btn-icon btn-danger"
-                                onClick={() => removeAddon(v.id, a.id)}
+                                onClick={() =>
+                                  removeAddon(v.clientId, a.clientId)
+                                }
                                 title="حذف مخلف"
                               >
                                 <i className="fas fa-trash" />
@@ -761,7 +794,7 @@ export default function ProductModal({
                           <button
                             type="button"
                             className="btn btn-sm btn-secondary"
-                            onClick={() => addAddon(v.id)}
+                            onClick={() => addAddon(v.clientId)}
                           >
                             افزودن مخلفات
                           </button>
@@ -783,7 +816,7 @@ export default function ProductModal({
                     یکی از انواع باید «پیش‌فرض» باشد.
                   </small>
 
-                  {/* ✅ NEW: discount for variant-products too */}
+                  {/* discount */}
                   <div className="input-group">
                     <label className="discount-toggle">
                       <input

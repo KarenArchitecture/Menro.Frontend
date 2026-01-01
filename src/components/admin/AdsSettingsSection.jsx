@@ -67,14 +67,28 @@ export default function AdsSettingsSection() {
       const response = await adSettingsAxios.get("", { params: { placement } });
       const list = response.data;
 
+      // 👇👇 همین‌جا بذار
+      console.log("RAW LIST:", list);
+      console.log(
+        "billingType types:",
+        Array.isArray(list)
+          ? list.map((x) => [x.billingType, typeof x.billingType])
+          : list
+      );
+      console.log(
+        "keys:",
+        Array.isArray(list) && list[0] ? Object.keys(list[0]) : null
+      );
+      // 👆👆
+
       if (!Array.isArray(list) || list.length === 0) {
         console.warn("No settings found for this placement.");
         return;
       }
 
-      const unit1BillingType = typeKey === "slider" ? 1 : 3; // slider=PerDay, banner=PerView
+      const unit1BillingType = typeKey === "slider" ? "PerDay" : "PerView";
       const unit1 = list.find((x) => x.billingType === unit1BillingType);
-      const perClick = list.find((x) => x.billingType === 2);
+      const perClick = list.find((x) => x.billingType === "PerClick");
 
       setSettings((prev) => ({
         ...prev,
@@ -194,7 +208,6 @@ export default function AdsSettingsSection() {
   const adTypeLabel =
     adType === "slider" ? "اسلایدر صفحه اصلی" : "بنر تمام صفحه";
 
-  // UI — بدون تغییر ساختار
   return (
     <div id="ads-settings-view">
       <form className="booking-layout" onSubmit={handleSave}>
@@ -377,14 +390,6 @@ export default function AdsSettingsSection() {
                 <strong>
                   {current.pricePerDay.toLocaleString("fa-IR")} تومان
                 </strong>
-
-                {/*  Old  */}
-                {/*
-                <span>قیمت هر روز:</span>
-                <strong>
-                  {current.pricePerDay.toLocaleString("fa-IR")} تومان
-                </strong>
-                */}
               </div>
 
               <div className="detail-item">

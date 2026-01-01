@@ -10,7 +10,6 @@ export default function AdsBookingSection() {
   // مقدارهای UI
   const [days, setDays] = useState(7); // for slider: days | for banner: views (units for billingType=1)
   const [clicks, setClicks] = useState(10000);
-  const [link, setLink] = useState("");
   const [advertisementText, setAdvertisementText] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -91,16 +90,8 @@ export default function AdsBookingSection() {
     }
   }, [pricing, bookingMethod, days, clicks]);
 
-  // --- Validate URL ---
-  const isValidUrl = (url) => {
-    const pattern = /^(https?:\/\/)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/;
-    return pattern.test(url);
-  };
-
   // --- Submit Handler ---
   const handleSubmit = async () => {
-    if (!link.trim()) return alert("لینک نباید خالی باشد.");
-    if (!isValidUrl(link)) return alert("لینک معتبر نیست.");
     if (!imageFile) return alert("لطفاً تصویر تبلیغ را آپلود کنید.");
 
     try {
@@ -136,7 +127,7 @@ export default function AdsBookingSection() {
         billingType,
         cost: totalCost,
         imageFileName: fileName,
-        targetUrl: link,
+        //targetUrl: link,
         commercialText: advertisementText,
         purchasedUnits,
       };
@@ -159,7 +150,6 @@ export default function AdsBookingSection() {
       setBookingMethod("by_day");
       setDays(pricing.minDays);
       setClicks(pricing.minClicks);
-      setLink("");
       setAdvertisementText("");
       if (fileInputRef.current) fileInputRef.current.value = "";
       setImageFile(null);
@@ -310,16 +300,6 @@ export default function AdsBookingSection() {
         </div>
         {/* Step 4 */}
         <div className="config-step">
-          <h4>۴. لینک مرتبط را مشخص کنید</h4>
-          <div className="input-group">
-            <input
-              type="text"
-              placeholder="https://example.com"
-              value={link}
-              onChange={(e) => setLink(e.target.value)}
-            />
-          </div>
-
           <h4>متن نمایشی تبلیغاتی</h4>
           <div className="input-group">
             <input

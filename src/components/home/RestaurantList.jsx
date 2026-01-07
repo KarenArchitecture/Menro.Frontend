@@ -63,10 +63,6 @@
 
 // export default RestaurantList;
 
-
-
-
-
 // src/components/home/RestaurantList.jsx
 import React from "react";
 import SectionHeader from "../common/SectionHeader";
@@ -79,7 +75,11 @@ import publicAxios from "../../api/publicAxios";
 import ShimmerRow from "../common/ShimmerRow";
 
 function RestaurantList() {
-  const { data: restaurants, isLoading, isError } = useQuery({
+  const {
+    data: restaurants,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["randomRestaurants"],
     queryFn: getRandomRestaurants,
   });
@@ -89,7 +89,8 @@ function RestaurantList() {
   const toAssetUrl = (url, fallback) => {
     const candidate = url || fallback;
     if (!candidate) return undefined;
-    if (candidate.startsWith("http://") || candidate.startsWith("https://")) return candidate;
+    if (candidate.startsWith("http://") || candidate.startsWith("https://"))
+      return candidate;
     const withSlash = candidate.startsWith("/") ? candidate : `/${candidate}`;
     if (withSlash.startsWith("/img/")) return `${apiOrigin}${withSlash}`;
     if (withSlash.startsWith("/images/")) return `${appOrigin}${withSlash}`;
@@ -100,7 +101,11 @@ function RestaurantList() {
   if (isLoading) {
     return (
       <section className="restaurants">
-        <SectionHeader icon={<StarIcon2 />} title="رستوران‌ و کافه‌ها" style={{ margin: "2rem 0" }}/>
+        <SectionHeader
+          icon={<StarIcon2 />}
+          title="رستوران‌ و کافه‌ها"
+          style={{ margin: "2rem 0" }}
+        />
         <ShimmerRow height={200} style={{ margin: "1.6rem 0" }} />
       </section>
     );
@@ -112,7 +117,9 @@ function RestaurantList() {
       <StateMessage kind="error" title="خطا در دریافت رستوران‌ها">
         مشکلی در دریافت اطلاعات رستوران‌ها رخ داده است.
         <div className="state-message__action">
-          <button onClick={() => window.location.reload()}>دوباره تلاش کنید</button>
+          <button onClick={() => window.location.reload()}>
+            دوباره تلاش کنید
+          </button>
         </div>
       </StateMessage>
     );
@@ -155,5 +162,3 @@ function RestaurantList() {
 }
 
 export default RestaurantList;
-
-

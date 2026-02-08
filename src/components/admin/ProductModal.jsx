@@ -31,7 +31,7 @@ export default function ProductModal({
   const [foodCategoryId, setFoodCategoryId] = useState("");
   const [price, setPrice] = useState("");
 
-  // ✅ NEW: discount (%)
+  // discount (%)
   const [hasDiscount, setHasDiscount] = useState(false);
   const [discountPercent, setDiscountPercent] = useState(""); // digits-only string
   const [discountConfirmed, setDiscountConfirmed] = useState(false);
@@ -109,12 +109,8 @@ export default function ProductModal({
         setImagePreview(data.imageUrl);
         setExistingImageName(data.imageName);
 
-        // ✅ NEW: load discountPercent from server (support multiple field names)
-        const serverPctRaw =
-          data.discountPercent ??
-          data.discountPercentage ??
-          data.discountPct ??
-          0;
+        // load discount percentage
+        const serverPctRaw = data.discount ?? 0;
 
         const serverPct = clamp(toIntDigits(serverPctRaw), 0, 99);
         if (serverPct > 0) {
@@ -274,7 +270,7 @@ export default function ProductModal({
     );
   };
 
-  // ✅ NEW: discount helpers
+  // discount helpers
   const pctValue = clamp(toIntDigits(discountPercent), 0, 99);
   const basePriceValue = toIntDigits(price);
 
@@ -318,8 +314,6 @@ export default function ProductModal({
     setFoodCategoryId(0);
     setPrice("");
     setHasVariants(false);
-
-    // ✅ NEW: reset discount
     setHasDiscount(false);
     setDiscountPercent("");
     setDiscountConfirmed(false);
@@ -396,28 +390,25 @@ export default function ProductModal({
     const payload = {
       id: productId,
       name: name.trim(),
-      ingredients: ingredients.trim(),
+      ingredients: ingredients.trim() || null, // ✅ بهتر از رشته خالی
       foodCategoryId: Number(foodCategoryId || 0),
       price: basePriceValuePayload ?? 0,
       imageName: uploadedFileName || existingImageName || null,
       hasVariants: hasVariants,
 
-      // ✅ NEW: discountPercent
+      // ✅ بهتر: null وقتی تخفیف نداریم
       discountPercent: hasDiscount
         ? clamp(toIntDigits(discountPercent), 1, 99)
-        : 0,
-
-      // ❌ OLD (kept)
-      // discountAmount: 0,
+        : null,
 
       variants: hasVariants
         ? variants.map((v) => ({
-            id: v.id, // ✅ db id
+            id: v.id,
             name: v.name.trim(),
             price: toIntDigits(v.price),
             isDefault: v.isDefault,
             addons: v.addons.map((a) => ({
-              id: a.id, // ✅ db id
+              id: a.id,
               name: a.name.trim(),
               extraPrice: toIntDigits(a.price),
             })),

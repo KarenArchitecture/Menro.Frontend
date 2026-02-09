@@ -96,11 +96,13 @@
 //   );
 // }
 
-
 // src/components/home/PopularFoodAndAdBannerLazyList.jsx
 import React, { useEffect, useRef } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { getPopularFoodByRandomCategory, getPopularFoodByRandomCategoryExcluding } from "../../api/foods";
+import {
+  getPopularFoodByRandomCategory,
+  getPopularFoodByRandomCategoryExcluding,
+} from "../../api/foods";
 import PopularFoodRow from "./PopularFoodRow";
 import AdBanner from "./AdBanner";
 import LoadingSpinner from "../common/LoadingSpinner";
@@ -115,7 +117,6 @@ export default function PopularFoodAndAdBannerLazyList() {
     isFetchingNextPage,
     isLoading,
     isError,
-    error,
     hasNextPage,
   } = useInfiniteQuery({
     queryKey: ["popularFoodLazyLoad"],
@@ -139,16 +140,16 @@ export default function PopularFoodAndAdBannerLazyList() {
           fetchNextPage();
         }
       },
-      { threshold: 1.0 }
+      { threshold: 0.1, rootMargin: "300px" }
     );
     io.observe(loadMoreRef.current);
     return () => io.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  // ───────────── Initial Loading ─────────────
+  // Initial Loading
   if (isLoading) return <LoadingSpinner />;
 
-  // ───────────── Error ─────────────
+  // Error
   if (isError) {
     return (
       <StateMessage kind="error" title="خطا در بارگذاری آیتم‌های پرطرفدار">
@@ -160,10 +161,10 @@ export default function PopularFoodAndAdBannerLazyList() {
     );
   }
 
-  // ───────────── Empty ─────────────
-  const pages = (data?.pages ?? [])
-  .flat()
-  .filter(Boolean);
+  // Flatten pages
+  const pages = (data?.pages ?? []).flat().filter(Boolean);
+
+  // Empty
   if (!pages || pages.length === 0) {
     return (
       <StateMessage kind="empty" title="موردی یافت نشد">
@@ -172,7 +173,7 @@ export default function PopularFoodAndAdBannerLazyList() {
     );
   }
 
-  // ───────────── Deduplicate categories ─────────────
+  // Deduplicate categories
   const uniquePages = [];
   const seen = new Set();
   for (const p of pages) {
@@ -182,9 +183,10 @@ export default function PopularFoodAndAdBannerLazyList() {
     }
   }
 
-  // ───────────── Interleave AdBanners ─────────────
+  // Interleave: ad, 2 popular, ad, 2 popular, ...
   const feed = [];
-  feed.push({ type: "ad", key: `ad-start` });
+  feed.push({ type: "ad", key: "ad-start" });
+
   uniquePages.forEach((page, idx) => {
     feed.push({ type: "popular", payload: page, key: `cat-${page.categoryTitle}` });
     if ((idx + 1) % 2 === 0) feed.push({ type: "ad", key: `ad-${idx}` });
@@ -196,11 +198,16 @@ export default function PopularFoodAndAdBannerLazyList() {
         block.type === "popular" ? (
           <PopularFoodRow key={block.key} data={block.payload} />
         ) : (
-          <AdBanner key={block.key} height={260} overlay={0.5} objectPosition="center" />
+          <AdBanner
+            key={block.key}
+            slotKey={block.key}     // ✅ IMPORTANT: unique query cache per slot
+            height={260}
+            overlay={0.5}
+            objectPosition="center"
+          />
         )
       )}
 
-      {/* ───────────── Lazy Load Spinner ───────────── */}
       {isFetchingNextPage && <LoadingSpinner />}
 
       {hasNextPage && (

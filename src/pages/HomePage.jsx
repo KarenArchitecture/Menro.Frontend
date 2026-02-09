@@ -41,7 +41,7 @@ export default function HomePage() {
     return () => console.log("🔸 Home unmounted");
   }, []);
   useEffect(() => {
-    window.__menroAdExcludes = [];
+    window.__menroBannerExcludeAdIds = [];
   }, []);
 
   return (

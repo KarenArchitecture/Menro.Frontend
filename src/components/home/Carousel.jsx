@@ -226,10 +226,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import {
-  getFeaturedRestaurants,
-  postCarouselClick,
-} from "../../api/restaurantAds";
+import { getFeaturedRestaurants, postCarouselClick } from "../../api/restaurantAds";
 import publicAxios from "../../api/publicAxios";
 import StateMessage from "../common/StateMessage";
 import ShimmerRow from "../common/ShimmerRow";
@@ -241,7 +238,6 @@ function clamp(n, min, max) {
 function Carousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Drag state
   const [isDragging, setIsDragging] = useState(false);
   const [dragX, setDragX] = useState(0);
   const [dragStartX, setDragStartX] = useState(0);
@@ -252,13 +248,10 @@ function Carousel() {
 
   const navigate = useNavigate();
 
-  const {
-    data: slides,
-    isLoading,
-    isError,
-  } = useQuery({
+  const { data: slides, isLoading, isError } = useQuery({
     queryKey: ["featuredRestaurants"],
-    queryFn: getFeaturedRestaurants, // returns data directly
+    queryFn: () => getFeaturedRestaurants(10),
+    refetchOnWindowFocus: false,
   });
 
   const { mutate: sendCarouselClick } = useMutation({
@@ -271,8 +264,8 @@ function Carousel() {
     if (!url) return `${appOrigin}/images/res-slider.jpg`;
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
     const withSlash = url.startsWith("/") ? url : `/${url}`;
-    if (withSlash.startsWith("/img/")) return `${apiOrigin}${withSlash}`; // backend wwwroot/img
-    if (withSlash.startsWith("/images/")) return `${appOrigin}${withSlash}`; // frontend public/images
+    if (withSlash.startsWith("/img/")) return `${apiOrigin}${withSlash}`;
+    if (withSlash.startsWith("/images/")) return `${appOrigin}${withSlash}`;
     return `${appOrigin}${withSlash}`;
   };
 
@@ -280,19 +273,16 @@ function Carousel() {
     if (!slides || slides.length === 0 || isDragging) return;
 
     const goToNext = () => {
-      const isLastSlide = currentIndex === slides.length - 1;
-      const newIndex = isLastSlide ? 0 : currentIndex + 1;
-      setCurrentIndex(newIndex);
+      const isLast = currentIndex === slides.length - 1;
+      setCurrentIndex(isLast ? 0 : currentIndex + 1);
     };
 
-    const slideInterval = setInterval(goToNext, 3000);
-    return () => clearInterval(slideInterval);
+    const t = setInterval(goToNext, 3000);
+    return () => clearInterval(t);
   }, [currentIndex, slides, isDragging]);
 
-  const goToSlide = (slideIndex) =>
-    setCurrentIndex(clamp(slideIndex, 0, (slides?.length ?? 1) - 1));
+  const goToSlide = (i) => setCurrentIndex(clamp(i, 0, (slides?.length ?? 1) - 1));
 
-  // Drag handlers
   const onPointerDown = (e) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
     e.currentTarget.setPointerCapture?.(e.pointerId);
@@ -304,7 +294,7 @@ function Carousel() {
 
   const onPointerMove = (e) => {
     if (!isDragging) return;
-    e.preventDefault(); // keep horizontal drag from scrolling the page
+    e.preventDefault();
     setDragX(e.clientX - dragStartX);
   };
 
@@ -321,7 +311,6 @@ function Carousel() {
 
     let next = currentIndex;
 
-    // drag RIGHT => next (index+1), drag LEFT => prev (index-1)
     if (Math.abs(delta) > thresholdPx || velocity > velocityThresh) {
       const goingRight = delta > 0;
       next = goingRight ? currentIndex + 1 : currentIndex - 1;
@@ -332,14 +321,7 @@ function Carousel() {
     setDragX(0);
   };
 
-  const onPointerUp = finishDrag;
-  const onPointerCancel = finishDrag;
-  const onPointerLeave = finishDrag;
-
-  // ---- early returns for state handling ----
-  if (isLoading) {
-    return <ShimmerRow height={220} />;
-  }
+  if (isLoading) return <ShimmerRow height={220} />;
 
   if (isError)
     return (
@@ -347,9 +329,7 @@ function Carousel() {
         <StateMessage kind="error" title="خطا در دریافت اطلاعات">
           خطایی در دریافت اسلایدها رخ داده است.
           <div className="state-message__action">
-            <button onClick={() => window.location.reload()}>
-              دوباره تلاش کنید
-            </button>
+            <button onClick={() => window.location.reload()}>دوباره تلاش کنید</button>
           </div>
         </StateMessage>
       </section>
@@ -364,11 +344,8 @@ function Carousel() {
       </section>
     );
 
-  // Direction-aware transform (no CSS changes)
   const containerWidth = containerRef.current?.clientWidth || 0;
-  const dir =
-    (sliderRef.current && getComputedStyle(sliderRef.current).direction) ||
-    "ltr";
+  const dir = (sliderRef.current && getComputedStyle(sliderRef.current).direction) || "ltr";
   const sign = dir === "rtl" ? +1 : -1;
 
   const trackTransform = `translate3d(${
@@ -376,11 +353,16 @@ function Carousel() {
   }px, 0, 0)`;
 
   const handleSlideClick = (slide) => {
-    // ignore click if it was a drag
     if (Math.abs(dragX) >= 5) return;
 
-    // If backend provided adId, track click (backend only consumes if BillingType == PerClick)
     if (slide?.adId) sendCarouselClick(slide.adId);
+
+    // targetUrl optional; otherwise slug route
+    const t = slide?.targetUrl?.trim();
+      if (t && (/^https?:\/\//i.test(t) || t.startsWith("/"))) {
+        window.location.href = t;
+        return;
+      }
 
     navigate(`/restaurant/${slide.slug}`);
   };
@@ -393,9 +375,9 @@ function Carousel() {
         ref={containerRef}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerCancel}
-        onPointerLeave={onPointerLeave}
+        onPointerUp={finishDrag}
+        onPointerCancel={finishDrag}
+        onPointerLeave={finishDrag}
       >
         <div
           className="carousel-slider"
@@ -410,12 +392,12 @@ function Carousel() {
           {slides.map((slide, idx) => (
             <div
               className="carousel-slide"
-              key={`slide-${slide.slug || slide.id || idx}`}
+              key={`slide-${slide.adId ?? slide.slug ?? idx}`}
               style={{ flex: "0 0 100%" }}
             >
               <img
-                src={toAssetUrl(slide.carouselImageUrl)}
-                alt={slide.name}
+                src={toAssetUrl(slide.imageUrl)}
+                alt={slide.restaurantName || "slide"}
                 onClick={() => handleSlideClick(slide)}
                 draggable={false}
                 onError={(e) => {
@@ -441,14 +423,14 @@ function Carousel() {
         aria-label="Slides"
         style={{ display: "flex", justifyContent: "center", gap: 8 }}
       >
-        {slides.map((_, slideIndex) => (
+        {slides.map((_, i) => (
           <button
-            key={slideIndex}
-            className={currentIndex === slideIndex ? "indicator active" : "indicator"}
-            onClick={() => goToSlide(slideIndex)}
-            data-index={slideIndex}
-            aria-label={`Go to slide ${slideIndex + 1}`}
-            aria-current={currentIndex === slideIndex ? "true" : undefined}
+            key={i}
+            className={currentIndex === i ? "indicator active" : "indicator"}
+            onClick={() => goToSlide(i)}
+            data-index={i}
+            aria-label={`Go to slide ${i + 1}`}
+            aria-current={currentIndex === i ? "true" : undefined}
           />
         ))}
         <img src="/images/curve.png" className="left-curve" />

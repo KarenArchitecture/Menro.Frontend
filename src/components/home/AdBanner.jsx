@@ -174,10 +174,41 @@ import StateMessage from "../common/StateMessage";
 import { Link } from "react-router-dom";
 import ShimmerRow from "../common/ShimmerRow";
 
-// restaurantIds excludes (page-scope memory)
-if (!window.__menroAdExcludes) window.__menroAdExcludes = [];
+// Exclude list for banners (page-scope memory) -> AdIds
+if (!window.__menroBannerExcludeAdIds) window.__menroBannerExcludeAdIds = [];
 
-// Simple lock/queue to prevent concurrent banners from picking same restaurant
+// ✅ GLOBAL DEDUPE (AdId) - survives remounts in this tab
+const IMPRESSION_STORE_KEY = "__menro_impressed_adIds_v1";
+
+// init global Set from sessionStorage once
+if (!window.__menroImpressedAdIds) {
+  let seed = [];
+  try {
+    seed = JSON.parse(sessionStorage.getItem(IMPRESSION_STORE_KEY) || "[]");
+    if (!Array.isArray(seed)) seed = [];
+  } catch {
+    seed = [];
+  }
+  window.__menroImpressedAdIds = new Set(seed);
+}
+
+function markImpressed(adId) {
+  window.__menroImpressedAdIds.add(adId);
+  try {
+    sessionStorage.setItem(
+      IMPRESSION_STORE_KEY,
+      JSON.stringify(Array.from(window.__menroImpressedAdIds))
+    );
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function hasImpressed(adId) {
+  return window.__menroImpressedAdIds.has(adId);
+}
+
+// Simple lock/queue to prevent concurrent banners from picking same AdId
 let _bannerQueue = Promise.resolve();
 function withBannerLock(fn) {
   const run = _bannerQueue.then(fn, fn);
@@ -185,8 +216,20 @@ function withBannerLock(fn) {
   return run;
 }
 
+// Only allow absolute URLs (http/https) or absolute paths (/...)
+// Everything else (like "namakdoon") is ignored to prevent wrong routing.
+function normalizeTargetUrl(raw) {
+  const t = raw?.trim();
+  if (!t) return null;
+  if (/^https?:\/\//i.test(t)) return t;
+  if (t.startsWith("/")) return t;
+  return null;
+}
+
 export default function AdBanner({
-  // Static mode (if any provided => no backend call)
+  slotKey, // unique per banner slot
+
+  // Static mode
   imageSrc,
   title,
   subtitle,
@@ -202,11 +245,11 @@ export default function AdBanner({
   const isStatic = !!imageSrc || !!title || !!subtitle || !!href;
 
   const { mutate: sendImpression } = useMutation({
-    mutationFn: (id) => postAdImpression(id),
+    mutationFn: (adId) => postAdImpression(adId),
   });
 
   const { mutate: sendClick } = useMutation({
-    mutationFn: (id) => postAdClick(id),
+    mutationFn: (adId) => postAdClick(adId),
   });
 
   const {
@@ -215,27 +258,35 @@ export default function AdBanner({
     isError,
     refetch,
   } = useQuery({
-    queryKey: ["adBannerRandom"],
-    enabled: !isStatic,
+    queryKey: ["adBannerRandom", slotKey ?? "default"],
+    enabled: !isStatic && !!slotKey,
+
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+    staleTime: Infinity,
+
     queryFn: () =>
       withBannerLock(async () => {
-        const excludes = window.__menroAdExcludes || []; // restaurantIds
+        const excludes = window.__menroBannerExcludeAdIds || [];
         const res = await getRandomAdBanner(excludes);
 
-        // Save restaurantId immediately to prevent duplicates
-        if (res?.restaurantId && !window.__menroAdExcludes.includes(res.restaurantId)) {
-          window.__menroAdExcludes.push(res.restaurantId);
+        // res can be null (204)
+        if (res?.adId && !window.__menroBannerExcludeAdIds.includes(res.adId)) {
+          window.__menroBannerExcludeAdIds.push(res.adId);
         }
         return res;
       }),
   });
 
-  // Resolve image url from backend (/img/...) vs frontend (/images/...) vs absolute
+  // Resolve image url
   const apiOrigin = new URL(publicAxios.defaults.baseURL).origin;
   const appOrigin = window.location.origin;
+
   const resolveImg = (url) => {
     if (!url) return undefined;
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
+
     const withSlash = url.startsWith("/") ? url : `/${url}`;
     if (withSlash.startsWith("/img/")) return `${apiOrigin}${withSlash}`;
     if (withSlash.startsWith("/images/")) return `${appOrigin}${withSlash}`;
@@ -247,7 +298,19 @@ export default function AdBanner({
   const firedRef = useRef(false);
 
   useEffect(() => {
-    if (isStatic || !ad?.id) return;
+    firedRef.current = false;
+  }, [ad?.adId]);
+
+  useEffect(() => {
+    if (isStatic) return;
+    if (!ad?.adId) return;
+
+    // ✅ GLOBAL DEDUPE per AdId
+    if (hasImpressed(ad.adId)) {
+      firedRef.current = true;
+      return;
+    }
+
     const el = rootRef.current;
     if (!el) return;
 
@@ -277,7 +340,8 @@ export default function AdBanner({
             timer = setTimeout(() => {
               if (!firedRef.current && document.visibilityState === "visible") {
                 firedRef.current = true;
-                sendImpression(ad.id); // PerView id
+                markImpressed(ad.adId);
+                sendImpression(ad.adId);
               }
             }, VIEW_MS);
           }
@@ -294,7 +358,7 @@ export default function AdBanner({
       clearTimer();
       io.disconnect();
     };
-  }, [isStatic, ad?.id, sendImpression]);
+  }, [isStatic, ad?.adId, sendImpression]);
 
   // ---- UI states ----
   if (!isStatic && isLoading) return <ShimmerRow height={220} />;
@@ -312,22 +376,27 @@ export default function AdBanner({
     );
   }
 
-  if (!isStatic && !ad) {
-    // API returns 204 -> react-query will give undefined data
-    return (
-      <section className="single-banner">
-        <StateMessage kind="empty" title="موردی یافت نشد">
-          هیچ بنری برای نمایش وجود ندارد.
-        </StateMessage>
-      </section>
-    );
-  }
+  // if (!isStatic && !ad) {
+  //   return (
+  //     <section className="single-banner">
+  //       <StateMessage kind="empty" title="موردی یافت نشد">
+  //         هیچ بنری برای نمایش وجود ندارد.
+  //       </StateMessage>
+  //     </section>
+  //   );
+  // }
+  // ✅ If no ad exists, render nothing (no ugly empty state in feed)
+  if (!isStatic && !ad) return null;
 
   // Final computed content
   const finalImg = isStatic ? imageSrc : resolveImg(ad?.imageUrl) || fallbackImage;
   const finalTitle = isStatic ? title ?? "" : ad?.restaurantName ?? "";
   const finalSubtitle = isStatic ? subtitle ?? "" : ad?.commercialText ?? "";
-  const finalHref = isStatic ? href : ad?.slug ? `/restaurant/${ad.slug}` : undefined;
+
+  const safeTarget = isStatic ? href : normalizeTargetUrl(ad?.targetUrl);
+  const finalHref = isStatic
+    ? href
+    : safeTarget ?? (ad?.slug ? `/restaurant/${ad.slug}` : undefined);
 
   const Wrapper = finalHref ? Link : "div";
 
@@ -342,7 +411,7 @@ export default function AdBanner({
     <div className="banner-content">
       <img
         src={finalImg}
-        alt={finalTitle || "بنر تبلیغاتی"}
+        alt={finalTitle || "Ad banner"}
         className="single-banner-img"
         onError={(e) => {
           e.currentTarget.onerror = null;
@@ -363,7 +432,7 @@ export default function AdBanner({
     <section
       ref={isStatic ? undefined : rootRef}
       className="single-banner"
-      aria-label={finalTitle || "بنر تبلیغاتی"}
+      aria-label={finalTitle || "Ad banner"}
       style={styleVars}
     >
       {finalHref ? (
@@ -371,7 +440,7 @@ export default function AdBanner({
           to={finalHref}
           className="banner-link"
           onClick={() => {
-            if (!isStatic && ad?.id) sendClick(ad.id); // PerView id -> backend finds paired PerClick
+            if (!isStatic && ad?.adId) sendClick(ad.adId);
           }}
         >
           {ImgWrapper}

@@ -569,7 +569,7 @@ export default function PopularFoodAndAdBannerLazyList({
           fetchNextPage();
         }
       },
-      { threshold: 1.0 }
+      { threshold: 1.0 },
     );
 
     io.observe(loadMoreRef.current);
@@ -640,7 +640,7 @@ export default function PopularFoodAndAdBannerLazyList({
             overlay={0.5}
             objectPosition="center"
           />
-        )
+        ),
       )}
 
       {isFetchingNextPage && <LoadingSpinner />}

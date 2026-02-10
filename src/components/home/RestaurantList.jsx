@@ -198,7 +198,7 @@ function RestaurantList({ searchQuery = "", onSearchCount }) {
 
   const apiOrigin = useMemo(
     () => new URL(publicAxios.defaults.baseURL).origin,
-    []
+    [],
   );
   const appOrigin = useMemo(() => window.location.origin, []);
 

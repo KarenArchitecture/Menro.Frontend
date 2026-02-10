@@ -89,6 +89,10 @@
   color: #a5adc0;
   color: #a5adc0;
 }
+
+.search-bar input {
+  color: white;
+}
 /* ===== Main Content Area ===== */
 /* ===== Carousel (layout + visuals only) ===== */
 
@@ -899,13 +903,15 @@
   margin: 24px 0;
 }
 .unauth-cta__inner {
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.35)),
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.35)),
     url("/images/ad-banner-1.jpg") center/cover no-repeat;
   border-radius: 16px;
   padding: 28px 20px;
   text-align: center;
   color: #fff;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.35)),
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.35)),
     url("/images/ad-banner-1.jpg") center/cover no-repeat;
   border-radius: 16px;
   padding: 28px 20px;
@@ -1663,8 +1669,11 @@
   cursor: pointer;
   outline: none;
   gap: 16px;
-  transition: transform 0.15s ease, box-shadow 0.15s ease,
-    border-color 0.15s ease, background 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
   flex-direction: row-reverse;
   background: linear-gradient(158.84deg, #262b33 4%, #161b20 91.93%);
   height: 73px;
@@ -1705,7 +1714,6 @@
   color: #a5adc0;
 }
 
-/* SEARCH MODE LIST */
 /* ===== Search results layout (ONLY in search mode) ===== */
 .food-cards-container--search {
   display: grid;

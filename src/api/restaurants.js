@@ -14,6 +14,7 @@ const RESTAURANT_URL = "/restaurant";
 export const getRandomRestaurants = () =>
   publicAxios.get(`${RESTAURANT_URL}/random`).then((r) => r.data);
 
+
 /* ───────────────  🛍 Shop Page  ─────────────── */
 export const getRestaurantBannerBySlug = (slug) =>
   publicAxios.get(`${RESTAURANT_URL}/${slug}/banner`).then((r) => r.data);

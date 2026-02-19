@@ -88,10 +88,12 @@ export default function HomePage() {
   const [foodCount, setFoodCount] = useState(null);
 
   useEffect(() => {
+    // reset banner/page memory on each visit
     window.__menroAdExcludes = [];
+    window.__menroBannerExcludeAdIds = [];
   }, []);
 
-  // reset counts whenever a new search is submitted
+  // reset counts whenever search mode toggles
   useEffect(() => {
     if (!isSearchActive) {
       setRestaurantCount(null);
@@ -100,7 +102,7 @@ export default function HomePage() {
     }
     setRestaurantCount(null);
     setFoodCount(null);
-  }, [isSearchActive, searchQuery]);
+  }, [isSearchActive]);
 
   const totalResults = (restaurantCount ?? 0) + (foodCount ?? 0);
   const bothKnown = restaurantCount !== null && foodCount !== null;
@@ -111,45 +113,39 @@ export default function HomePage() {
       <Header onSearchSubmit={setSearchQuery} />
 
       <main className="content">
+        {/* ✅ Normal mode top hero */}
+        {!isSearchActive && <Carousel />}
+
         {/* ✅ Search label */}
         {isSearchActive && (
-          <SectionHeader
-            title={`نتایج جستجو (${totalResults.toLocaleString("fa-IR")})`}
-          />
+          <SectionHeader title={`نتایج جستجو (${totalResults.toLocaleString("fa-IR")})`} />
         )}
 
-        {/* ✅ Only show section if it has results (or still loading/unknown) */}
-        {(!isSearchActive ||
-          restaurantCount === null ||
-          restaurantCount > 0) && (
-          <RestaurantList
-            searchQuery={searchQuery}
-            onSearchCount={setRestaurantCount}
-          />
+        {/* ✅ Random restaurants (also supports search mode) */}
+        {(!isSearchActive || restaurantCount === null || restaurantCount > 0) && (
+          <RestaurantList searchQuery={searchQuery} onSearchCount={setRestaurantCount} />
         )}
 
+        {/* ✅ Latest orders only in normal mode */}
+        {!isSearchActive && <PreviousOrders />}
+
+        {/* ✅ Popular foods (and ads only in normal mode) */}
         {(!isSearchActive || foodCount === null || foodCount > 0) && (
           <PopularFoodAndAdBannerLazyList
             searchQuery={searchQuery}
+            showAds={!isSearchActive}
             onSearchCount={setFoodCount}
           />
         )}
 
-        {/* ✅ If BOTH are empty, show ONE global empty message */}
+        {/* ✅ One global empty message if BOTH sections are empty */}
         {showGlobalEmpty && (
           <StateMessage kind="empty" title="موردی یافت نشد">
             نتیجه‌ای برای جستجوی شما پیدا نشد.
           </StateMessage>
         )}
-
-        {/* Normal mode components */}
-        {!isSearchActive && (
-          <>
-            <Carousel />
-            <PreviousOrders />
-          </>
-        )}
       </main>
     </>
   );
 }
+

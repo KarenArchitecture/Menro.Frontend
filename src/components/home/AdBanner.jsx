@@ -169,7 +169,11 @@
 import React, { useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import publicAxios from "../../api/publicAxios";
-import { getRandomAdBanner, postAdImpression, postAdClick } from "../../api/restaurantAds";
+import {
+  getRandomAdBanner,
+  postAdImpression,
+  postAdClick,
+} from "../../api/restaurantAds";
 import StateMessage from "../common/StateMessage";
 import { Link } from "react-router-dom";
 import ShimmerRow from "../common/ShimmerRow";
@@ -197,7 +201,7 @@ function markImpressed(adId) {
   try {
     sessionStorage.setItem(
       IMPRESSION_STORE_KEY,
-      JSON.stringify(Array.from(window.__menroImpressedAdIds))
+      JSON.stringify(Array.from(window.__menroImpressedAdIds)),
     );
   } catch {
     // ignore storage errors
@@ -212,7 +216,10 @@ function hasImpressed(adId) {
 let _bannerQueue = Promise.resolve();
 function withBannerLock(fn) {
   const run = _bannerQueue.then(fn, fn);
-  _bannerQueue = run.then(() => {}, () => {});
+  _bannerQueue = run.then(
+    () => {},
+    () => {},
+  );
   return run;
 }
 
@@ -349,7 +356,7 @@ export default function AdBanner({
           clearTimer();
         }
       },
-      { threshold: [VIEW_RATIO] }
+      { threshold: [VIEW_RATIO] },
     );
 
     io.observe(el);
@@ -389,21 +396,27 @@ export default function AdBanner({
   if (!isStatic && !ad) return null;
 
   // Final computed content
-  const finalImg = isStatic ? imageSrc : resolveImg(ad?.imageUrl) || fallbackImage;
-  const finalTitle = isStatic ? title ?? "" : ad?.restaurantName ?? "";
-  const finalSubtitle = isStatic ? subtitle ?? "" : ad?.commercialText ?? "";
+  const finalImg = isStatic
+    ? imageSrc
+    : resolveImg(ad?.imageUrl) || fallbackImage;
+  const finalTitle = isStatic ? (title ?? "") : (ad?.restaurantName ?? "");
+  const finalSubtitle = isStatic
+    ? (subtitle ?? "")
+    : (ad?.commercialText ?? "");
 
   const safeTarget = isStatic ? href : normalizeTargetUrl(ad?.targetUrl);
   const finalHref = isStatic
     ? href
-    : safeTarget ?? (ad?.slug ? `/restaurant/${ad.slug}` : undefined);
+    : (safeTarget ?? (ad?.slug ? `/restaurant/${ad.slug}` : undefined));
 
   const Wrapper = finalHref ? Link : "div";
 
   const styleVars = {
     "--overlay-opacity": overlay,
-    "--banner-height": typeof height === "number" ? `${height}px` : height || "auto",
-    "--banner-max-w": typeof maxWidth === "number" ? `${maxWidth}px` : maxWidth || "100%",
+    "--banner-height":
+      typeof height === "number" ? `${height}px` : height || "auto",
+    "--banner-max-w":
+      typeof maxWidth === "number" ? `${maxWidth}px` : maxWidth || "100%",
     "--object-position": objectPosition,
   };
 

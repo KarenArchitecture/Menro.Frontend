@@ -297,7 +297,12 @@ function RestaurantList({ searchQuery = "", onSearchCount }) {
 
   return (
     <section className="restaurants">
-      <SectionHeader icon={<StarIcon2 />} title="رستوران‌ و کافه‌ها" />
+      <SectionHeader
+        icon={<StarIcon2 />}
+        title="رستوران‌ و کافه‌ها"
+        linkText="مشاهده همه"
+        to="/restaurants"
+      />
       <div className="cards-container">
         {list.map((r) => (
           <RestaurantCard

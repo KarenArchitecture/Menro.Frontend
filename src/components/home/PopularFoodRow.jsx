@@ -46,7 +46,7 @@ import SectionHeader from "../common/SectionHeader";
 import FoodCard from "./FoodCard";
 import StateMessage from "../common/StateMessage";
 import ShimmerRow from "../common/ShimmerRow";
-
+import { useNavigate } from "react-router-dom";
 function PopularFoodRow({
   data,
   isLoading,
@@ -57,6 +57,14 @@ function PopularFoodRow({
   title, // optional override
   linkText, // optional override
 }) {
+  const navigate = useNavigate();
+  const handleClick = () => {
+    navigate("/category", {
+      state: {
+        category: category,
+      },
+    });
+  };
   // ───────────── Loading ─────────────
   if (isLoading) {
     return (
@@ -113,6 +121,7 @@ function PopularFoodRow({
           icon={<SvgIcon />}
           title={computedTitle}
           linkText={linkText ?? "مشاهده همه"}
+          to={`/category/${data.categorySlug}`}
         />
       )}
 

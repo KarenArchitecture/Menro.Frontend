@@ -13,13 +13,14 @@ import LandingPage from "./pages/LandingPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import ChangePhone from "./pages/ChangePhone";
 import AdminPage from "./pages/AdminPage";
+import ShowAllFoodsPage from "./pages/ShowAllFoodsPage";
 
 export default function App() {
   const { pathname } = useLocation();
   const NAV_HIDE_PREFIXES = ["/admin", "/checkout"];
 
   const hideMobileNav = NAV_HIDE_PREFIXES.some((prefix) =>
-    pathname.startsWith(prefix)
+    pathname.startsWith(prefix),
   );
 
   return (
@@ -28,6 +29,8 @@ export default function App() {
         {/* <Route path="/" element={<LandingPage />} /> */}
         <Route path="/" element={<HomePage />} />
         <Route path="/restaurant/:slug" element={<RestaurantPage />} />
+        <Route path="/category/:slug" element={<ShowAllFoodsPage />} />
+        <Route path="/restaurants" element={<ShowAllFoodsPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />

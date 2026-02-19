@@ -1742,3 +1742,11 @@
   width: 100%;
   flex: initial;
 }
+
+/* 2 ستون برای رستوران ها داخل مشاهده همه */
+.cards-container--grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  overflow: visible; /* prevents horizontal scroll behavior */
+}

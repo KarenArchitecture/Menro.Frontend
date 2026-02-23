@@ -7,7 +7,7 @@ export default function Hero() {
       <div className="hero__overlay">
         <div className="hero__content">
           <h1 className="hero__title">
-            <span>منرو</span> بهترین همیار رستورانِ تو
+            <span>منرو</span> بهترین همیار رستوران تو
           </h1>
 
           {/* سرچ‌بار آمادهٔ خودمون */}

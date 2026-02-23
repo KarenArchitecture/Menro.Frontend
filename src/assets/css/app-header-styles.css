@@ -17,10 +17,10 @@
 
   .app-header__pill {
     margin: 0 auto;
-    width: 520px;
+    width: 670px;
     overflow: hidden;
     padding: 22px 28px;
-    height: 80px;
+    height: 100px;
     border-radius: 20px;
     background: rgba(17, 20, 26, 0.62);
     backdrop-filter: blur(18px) saturate(135%);
@@ -54,8 +54,8 @@
 
   .app-header__link {
     color: #d0d4db;
-    font-weight: 700;
-    font-size: 1.8rem;
+    font-weight: 200;
+    font-size: 1.4rem;
     text-decoration: none;
   }
   .app-header__link.is-active {
@@ -113,7 +113,10 @@
     height: 22px;
     display: block;
     opacity: 0.85;
-    transition: filter 0.15s ease, opacity 0.15s ease, transform 0.08s ease;
+    transition:
+      filter 0.15s ease,
+      opacity 0.15s ease,
+      transform 0.08s ease;
   }
 
   .icon-btn:hover .icon,
@@ -147,8 +150,8 @@
   }
 }
 .brand-logo {
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   margin-top: 10px;
 }
 .app-header,
@@ -161,4 +164,31 @@
 .app-header.is-dim .app-header__pill {
   opacity: 0; /* or .25 if you prefer */
   pointer-events: none; /* <-- stops the pill from catching clicks */
+}
+
+.app-header__nav {
+  direction: rtl;
+}
+
+.app-header__right {
+  display: flex;
+  flex-direction: row;
+}
+.app-header__left {
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+/* bigger click target */
+.icon-btn {
+  width: 44px;
+  height: 44px;
+}
+
+/* bigger icon */
+.icon-btn .icon,
+.icon-btn > img,
+.icon-btn > svg {
+  width: 28px;
+  height: 28px;
 }

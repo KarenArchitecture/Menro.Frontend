@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import usePageStyles from "../hooks/usePageStyles";
 
 import Hero from "../components/landing/Hero";
@@ -11,7 +12,7 @@ import BurgerPanelSection from "../components/landing/BurgerPanelSection";
 import FAQSection from "../components/landing/FAQSection";
 import BlogSection from "../components/landing/BlogSection";
 import GlassFooter from "../components/common/GlassFooter";
-import FooterFruitsScene from "../components/landing/FooterFruitsScene"; // ⬅️ NEW
+import FooterFruitsScene from "../components/landing/FooterFruitsScene";
 
 export default function LandingPage() {
   const leftIcons = [
@@ -44,18 +45,35 @@ export default function LandingPage() {
     },
   ];
 
-  usePageStyles("/styles-landing.css");
+  // ✅ NEW: usePageStyles now returns "ready"
+  const stylesReady = usePageStyles("/styles-landing.css");
+
+  // ✅ After styles load, force a layout re-measure for scroll/pin animations
+  useEffect(() => {
+    if (!stylesReady) return;
+    requestAnimationFrame(() => {
+      window.dispatchEvent(new Event("resize"));
+    });
+  }, [stylesReady]);
+
+  // ✅ Prevent FOUC + wrong initial measurements
+  if (!stylesReady) {
+    return <div dir="rtl" style={{ minHeight: "100dvh" }} />;
+  }
+
   return (
-    <div dir="rtl">
+    <div dir="rtl" style={{ minHeight: "100dvh", overflowX: "hidden" }}>
       <AppHeader
         leftIcons={leftIcons}
         position="fixed"
         top={12}
         maxWidth={1140}
       />
+
       <Hero />
       <WhyMenroSection />
       <StatsSection />
+
       <InstallPhonesBanner
         bgSrc="/images/phone-background.png"
         phoneFrontSrc="/images/phone-right.png"
@@ -64,14 +82,17 @@ export default function LandingPage() {
         <h2 className="hero__title">نرم‌افزار و پنل پیشرفته منرو</h2>
         <h3 className="hero__description">همین حالا نصب کنید</h3>
       </InstallPhonesBanner>
+
       <PlansSection
         meshCardSrc="/images/phone-background.png"
         checkIconSrc="/images/icons/check-circle.svg"
       />
+
       <BurgerPanelSection
         title="با منرو تو چشم باش"
         burgerSrc="/images/burger-landing.png"
       />
+
       <FAQSection />
       <BlogSection />
 

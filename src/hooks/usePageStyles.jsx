@@ -1,38 +1,38 @@
 // src/hooks/usePageStyles.js
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-/**
- * Dynamically fetches a CSS file, injects it into <head>,
- * and tells the caller when it's ready.
- *
- * @param {string} stylesheetUrl absolute or public-folder URL
- * @return {boolean} ready  – true once styles are in the DOM
- */
 export default function usePageStyles(stylesheetUrl) {
   const [ready, setReady] = useState(false);
+  const linkRef = useRef(null);
 
   useEffect(() => {
-    let mounted = true;
+    setReady(false);
 
-    fetch(stylesheetUrl)
-      .then((res) => {
-        if (!res.ok) throw new Error("CSS fetch failed");
-        return res.text();
-      })
-      .then((css) => {
-        if (!mounted) return;
-        const styleEl = document.createElement("style");
-        styleEl.id = "page-specific-style";
-        styleEl.textContent = css;
-        document.head.appendChild(styleEl);
-        setReady(true); // ← signal up
-      })
-      .catch((err) => console.error("usePageStyles:", err));
+    // remove any previous element we created
+    if (linkRef.current) {
+      linkRef.current.remove();
+      linkRef.current = null;
+    }
+
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = stylesheetUrl;
+    link.dataset.pageStyle = "true";
+
+    link.onload = () => setReady(true);
+    link.onerror = (err) => {
+      console.error("usePageStyles link load failed:", err);
+      setReady(true); // fail-open so page still renders
+    };
+
+    document.head.appendChild(link);
+    linkRef.current = link;
 
     return () => {
-      mounted = false;
-      const styleEl = document.getElementById("page-specific-style");
-      if (styleEl) document.head.removeChild(styleEl);
+      if (linkRef.current) {
+        linkRef.current.remove();
+        linkRef.current = null;
+      }
     };
   }, [stylesheetUrl]);
 

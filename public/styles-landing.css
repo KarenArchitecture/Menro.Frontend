@@ -249,16 +249,19 @@ body {
   width: min(1200px, 92vw);
   height: 100%;
   min-height: 90vh;
+  margin-inline: auto;
 }
 
 .why-static__titles {
   position: fixed;
   top: 50%;
-  transform: translate(-50%, -50%); /* GSAP will add translateY (%) on top */
+  left: 50%;
+  width: min(1200px, 92vw);
   text-align: center;
+  transform: translate(-50%, -50%);
   pointer-events: none;
-  /* opacity: 0;  <-- remove this line */
   will-change: transform;
+  z-index: 0;
 }
 .hero {
   position: relative;
@@ -527,6 +530,29 @@ body {
     width: 100%;
     margin: 10px 0;
   }
+}
+/* Card SIZE ADJUSTMENT */
+/* base size bump without wrecking inner layout */
+.why-card {
+  padding: 20px 22px;
+  border-radius: 18px;
+}
+
+/* large cards (b/c/d/e) */
+.pos-b,
+.pos-c,
+.pos-d,
+.pos-e {
+  width: clamp(360px, 30vw, 440px);
+  height: clamp(300px, 26vw, 360px);
+}
+
+/* small square cards */
+.pos-f,
+.pos-g,
+.pos-i {
+  width: clamp(110px, 10vw, 150px);
+  height: clamp(110px, 10vw, 150px);
 }
 
 /*  info cards (general)  */
@@ -1001,7 +1027,9 @@ body {
   background: #0b0f13;
   margin-top: 30rem;
 }
-
+.plans-pin {
+  overscroll-behavior: contain;
+}
 .plans-pin__sticky {
   position: sticky;
   top: var(--nav-h); /* <- critical with your header */
@@ -1157,7 +1185,10 @@ body {
   gap: 2rem;
   padding: 3.2rem 2.4rem;
 }
-
+.plan-card__features {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
 /* Info (right) */
 .plan-card__info {
   display: flex;
@@ -1313,7 +1344,7 @@ body {
 /* Make PlanCard fill the deck slot */
 .plans__deck-card .plan-card {
   width: 100%;
-  height: 100%;
+  height: 36rem;
   margin: 0;
 }
 

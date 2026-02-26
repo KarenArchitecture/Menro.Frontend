@@ -1,6 +1,8 @@
+// src/components/landing/InstallPhonesBanner.jsx
 import React, { useRef, useLayoutEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+
 gsap.registerPlugin(ScrollTrigger);
 
 export default function InstallPhonesBanner({
@@ -20,82 +22,100 @@ export default function InstallPhonesBanner({
     if (mql.matches) return;
 
     const ctx = gsap.context(() => {
-      // Final positions (unchanged)
+      const backEl = backRef.current;
+      const frontEl = frontRef.current;
+      const sectionEl = sectionRef.current;
+      if (!backEl || !frontEl || !sectionEl) return;
+
       const REST = {
         back: { x: -185, y: -179 },
         front: { x: 16, y: -239 },
       };
 
-      // Start positions (below final)
       const START = {
         backY: REST.back.y + 500,
         frontY: REST.front.y + 520,
       };
 
-      // Constant velocity (px/sec)
-      const SPEED = 400;
+      // slower pace => lower speed
+      const SPEED = 500; // px/sec
       const backDur = Math.abs(START.backY - REST.back.y) / SPEED;
       const frontDur = Math.abs(START.frontY - REST.front.y) / SPEED;
 
-      // Pin to final x/y first; animate only 'y' to avoid end-pop
-      gsap.set(backRef.current, {
-        x: REST.back.x,
-        y: REST.back.y,
-        autoAlpha: 0,
-        transformPerspective: 1000,
-        z: 0.01,
-        willChange: "transform, opacity",
-      });
-      gsap.set(frontRef.current, {
-        x: REST.front.x,
-        y: REST.front.y,
-        autoAlpha: 0,
-        transformPerspective: 1000,
-        z: 0.01,
-        willChange: "transform, opacity",
-      });
-
       const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 80%",
-          toggleActions: "play none none none",
-          once: true,
-        },
+        paused: true,
+        defaults: { ease: "none" }, // flat pace
       });
 
-      // Back phone — linear, uniform speed, animate only 'y'
-      tl.fromTo(
-        backRef.current,
-        { y: START.backY, autoAlpha: 0, immediateRender: false },
+      tl.to(backEl, {
+        y: REST.back.y,
+        autoAlpha: 1,
+        duration: backDur,
+        overwrite: "auto",
+      }).to(
+        frontEl,
         {
-          y: REST.back.y,
+          y: REST.front.y,
           autoAlpha: 1,
-          duration: backDur,
-          ease: "none",
+          duration: frontDur,
           overwrite: "auto",
-        }
-      )
-        // Front phone — overlap slightly
-        .fromTo(
-          frontRef.current,
-          { y: START.frontY, autoAlpha: 0, immediateRender: false },
-          {
-            y: REST.front.y,
-            autoAlpha: 1,
-            duration: frontDur,
-            ease: "none",
-            overwrite: "auto",
-          },
-          "-=0.20"
-        )
-        // Optional: release heavy hints after animation
-        .add(() =>
-          gsap.set([backRef.current, frontRef.current], { willChange: "auto" })
-        );
+        },
+        "-=0.2",
+      );
 
-      // Keep trigger correct after images load
-      const imgs = sectionRef.current.querySelectorAll("img");
+      const resetPhones = () => {
+        // ✅ don't kill tweens-of (it can kill tl's own child tweens)
+        tl.pause(0); // stop + rewind safely
+
+        gsap.set(backEl, {
+          x: REST.back.x,
+          y: START.backY,
+          autoAlpha: 0,
+          transformPerspective: 1000,
+          z: 0.01,
+          willChange: "transform, opacity",
+        });
+
+        gsap.set(frontEl, {
+          x: REST.front.x,
+          y: START.frontY,
+          autoAlpha: 0,
+          transformPerspective: 1000,
+          z: 0.01,
+          willChange: "transform, opacity",
+        });
+      };
+
+      const play = () => {
+        resetPhones();
+        tl.play(0); // ✅ guaranteed to play
+      };
+
+      tl.eventCallback("onComplete", () => {
+        gsap.set([backEl, frontEl], { willChange: "auto" });
+      });
+
+      // initial state
+      resetPhones();
+
+      ScrollTrigger.create({
+        id: "installPhones",
+        trigger: sectionEl,
+        start: "center center",
+        // markers: true,
+        onEnter: () => {
+          console.log("enter");
+          play();
+        },
+        onEnterBack: () => {
+          console.log("enterBack");
+          play();
+        },
+        invalidateOnRefresh: true,
+      });
+
+      // refresh after images load
+      const imgs = sectionEl.querySelectorAll("img");
       const onLoad = () => ScrollTrigger.refresh();
       imgs.forEach((img) => {
         if (!img.complete) img.addEventListener("load", onLoad, { once: true });

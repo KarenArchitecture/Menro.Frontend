@@ -1025,7 +1025,7 @@ body {
   position: relative;
   height: 100vh; /* how long the “scroll jail” lasts */
   background: #0b0f13;
-  margin-top: 30rem;
+  margin: 30rem 0;
 }
 .plans-pin {
   overscroll-behavior: contain;
@@ -1435,18 +1435,19 @@ body {
   font-size: clamp(2.5rem, 8vw, 6rem);
   font-weight: 800;
   color: #fff;
-  z-index: 100;
+  z-index: 50;
   opacity: 0;
 }
+
 /* --- Burger (independent of scene) --- */
 .bp__burger {
   position: absolute;
-  left: 30rem;
+  left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%);
+  translate: -50% -50%;
   pointer-events: none;
-  opacity: 0; /* your animation will bring this to 1 */
-  z-index: 100; /* above panel/title */
+  opacity: 0;
+  z-index: 100;
 }
 .bp__panel {
   z-index: 1;

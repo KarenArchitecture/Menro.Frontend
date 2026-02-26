@@ -71,8 +71,8 @@ export default function StatsSection() {
         el.textContent = plusStart
           ? `+${pretty}`
           : plusEnd
-          ? `${pretty}+`
-          : pretty;
+            ? `${pretty}+`
+            : pretty;
         if (t < 1) requestAnimationFrame(tick);
       };
 

@@ -104,7 +104,7 @@ export default function LoginPage() {
         const expiresAt = Date.now() + 60_000;
         localStorage.setItem(
           "userPhone",
-          JSON.stringify({ value: phone, expiresAt })
+          JSON.stringify({ value: phone, expiresAt }),
         );
         navigate("/register");
       } else if (data.verified) {
@@ -248,8 +248,8 @@ export default function LoginPage() {
               {sendOtp.isPending || verifyUser.isPending
                 ? "در حال ارسال…"
                 : otpSent
-                ? "تأیید کد"
-                : "ادامه"}
+                  ? "تأیید کد"
+                  : "ادامه"}
             </button>
 
             {otpSent && (

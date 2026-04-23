@@ -899,6 +899,7 @@ import { publicSearch } from "../../api/search";
 import PopularFoodRow from "./PopularFoodRow";
 import AdBanner from "./AdBanner";
 import LoadingSpinner from "../common/LoadingSpinner";
+import ShimmerRow from "../common/ShimmerRow";
 import StateMessage from "../common/StateMessage";
 
 const normalizeFa = (s = "") =>
@@ -1039,7 +1040,7 @@ function NormalModeFeed({ showAds }) {
       (entries) => {
         if (entries[0].isIntersecting && !isFetchingNextPage) fetchNextPage();
       },
-      { threshold: 0.1, rootMargin: "300px" }
+      { threshold: 0, rootMargin: "800px 0px" }
     );
 
     io.observe(loadMoreRef.current);
@@ -1071,19 +1072,27 @@ function NormalModeFeed({ showAds }) {
     <>
       {feed.map((block) =>
         block.type === "popular" ? (
-          <PopularFoodRow key={block.key} data={block.payload} />
+          <div key={block.key} className="fade-in">
+            <PopularFoodRow data={block.payload} />
+          </div>
         ) : (
-          <AdBanner
-            key={block.key}
-            slotKey={block.key}
-            height={260}
-            overlay={0.5}
-            objectPosition="center"
-          />
+          <div key={block.key} className="fade-in">
+            <AdBanner
+              slotKey={block.key}
+              height={260}
+              overlay={0.5}
+              objectPosition="center"
+            />
+          </div>
         )
       )}
 
-      {isFetchingNextPage && <LoadingSpinner />}
+      {isFetchingNextPage && (
+        <>
+          <PopularFoodRow isLoading />
+          {showAds && <ShimmerRow height={260} style={{ margin: "16px 0" }} />}
+        </>
+      )}
 
       {hasNextPage && (
         <div ref={loadMoreRef} style={{ height: 1, marginTop: -1 }} aria-hidden="true" />

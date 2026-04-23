@@ -5,10 +5,15 @@ import restaurantAxios from "./restaurantAxios";
 const RESTAURANT_URL = "/restaurant";
 
 /* ────────────────────────────────
- 🍽 PUBLIC RESTAURANT DATA
+  🍽 PUBLIC RESTAURANT DATA
 ──────────────────────────────── */
 
 /* ───────────────  🏠 Home Page  ─────────────── */
+
+export const getRestaurantsPage = ({ take = 20, cursor = null }) =>
+  publicAxios
+    .get(`${RESTAURANT_URL}`, { params: { take, cursor } })
+    .then((r) => r.data);
 
 // ── Random Restaurant Cards ──
 export const getRandomRestaurants = () =>

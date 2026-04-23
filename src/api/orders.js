@@ -1,29 +1,36 @@
 import userAxios from "./userAxios";
 import publicAxios from "./publicAxios";
 
-// Logged-in only: /api/user/orders/recent-foods
+const getAuthToken = () =>
+  localStorage.getItem("token") || localStorage.getItem("accessToken");
+
+// ✅ Home
 export const getUserRecentOrders = (count = 8) =>
+  userAxios.get("/orders/recent-foods", { params: { count } }).then((r) => r.data);
+
+// ✅ View All: cursor-based lazy loading
+// Backend: GET /api/user/orders/recent-foods/browse?take=6&cursor=...
+export const browseUserRecentOrders = ({ take = 6, cursor = null } = {}) =>
   userAxios
-    .get("/orders/recent-foods", { params: { count } })
+    .get("/orders/recent-foods/browse", {
+      params: {
+        take,
+        cursor: cursor || undefined,
+      },
+    })
     .then((r) => r.data);
 
 // 🛒 Create a new order (guest OR logged-in)
-// Calls: POST /api/public/orders/create
-// If accessToken exists, sends Authorization header; otherwise sends as guest.
 export const createOrder = async (orderPayload) => {
   try {
-    const token = localStorage.getItem("accessToken");
+    const token = getAuthToken();
 
     const config = token
       ? { headers: { Authorization: `Bearer ${token}` } }
       : undefined;
 
-    const response = await publicAxios.post(
-      "/orders/create",
-      orderPayload,
-      config
-    );
-    return response.data; // { orderId: ... }
+    const response = await publicAxios.post("/orders/create", orderPayload, config);
+    return response.data;
   } catch (err) {
     console.error("Failed to create order:", err);
     if (err?.response) {

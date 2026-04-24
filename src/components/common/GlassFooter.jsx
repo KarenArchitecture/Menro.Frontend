@@ -17,11 +17,13 @@ export default function GlassFooter() {
       <div className="footer-glass__inner">
         {/* Row 1: logo + nav */}
         <div className="footer-glass__top">
-          <img
-            src="/images/menroLogo.png"
-            alt="منرو"
-            className="footer-glass__brand"
-          />
+          <div className="footer-glass__brand">
+            <img
+              src="/images/menro-landing-footer-icon.svg"
+              alt="منرو"
+              className="footer-glass__brandImg"
+            />
+          </div>
           <nav className="footer-glass__nav" aria-label="لینک‌های فوتر">
             <a href="#">وب اپ</a>
             <a href="#">درباره ما</a>
@@ -54,13 +56,15 @@ export default function GlassFooter() {
       </div>
 
       {/* Back to top pill */}
-      <button
-        className="footer-glass__backtotop"
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        aria-label="بازگشت به بالا"
-      >
-        <span className="footer-glass__chevron" />
-      </button>
+      <div className="footer-glass__button-wrapper">
+        <button
+          className="footer-glass__backtotop"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          aria-label="بازگشت به بالا"
+        >
+          <span className="footer-glass__chevron" />
+        </button>
+      </div>
     </footer>
   );
 }

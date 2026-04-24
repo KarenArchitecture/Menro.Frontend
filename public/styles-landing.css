@@ -441,8 +441,8 @@ body {
 .pos-f {
   top: 22rem;
   left: 20rem;
-  width: 130px;
-  height: 130px;
+  width: 12rem;
+  height: 12rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -452,8 +452,8 @@ body {
 .pos-i {
   left: 15rem;
   top: 92rem;
-  width: 100px;
-  height: 100px;
+  width: 12rem;
+  height: 12rem;
   background: linear-gradient(246.95deg, #111b2f 0.52%, #111b2f 98.07%);
 }
 #why-menro
@@ -461,7 +461,7 @@ body {
   > div
   > div.icon-card__title {
   color: #ff683c;
-  font-size: 28px;
+  font-size: 2.5rem;
   font-weight: 800;
 }
 #why-menro > div.why-card.icon-card.why-card.why-card--small.pos-f > div {
@@ -474,7 +474,7 @@ body {
   > div.why-card.icon-card.why-card.why-card--small.pos-f
   > div
   > div.icon-card__title {
-  font-size: 8px;
+  font-size: 1rem;
   font-weight: 600;
 }
 #why-menro
@@ -482,14 +482,14 @@ body {
   > div
   > div.big-icon
   > svg {
-  width: 30px;
-  height: 30px;
+  width: 55px;
+  height: 55px;
 }
 .pos-g {
-  bottom: 10rem;
-  right: 26rem;
-  width: 100px;
-  height: 100px;
+  bottom: 32rem;
+  right: 51rem;
+  width: 12rem;
+  height: 12rem;
   background: linear-gradient(246.95deg, #192422 0.52%, #192422 98.07%);
   text-align: center;
   padding: 8px 0;
@@ -531,34 +531,11 @@ body {
     margin: 10px 0;
   }
 }
-/* Card SIZE ADJUSTMENT */
-/* base size bump without wrecking inner layout */
-.why-card {
-  padding: 20px 22px;
-  border-radius: 18px;
-}
-
-/* large cards (b/c/d/e) */
-.pos-b,
-.pos-c,
-.pos-d,
-.pos-e {
-  width: clamp(360px, 30vw, 440px);
-  height: clamp(300px, 26vw, 360px);
-}
-
-/* small square cards */
-.pos-f,
-.pos-g,
-.pos-i {
-  width: clamp(110px, 10vw, 150px);
-  height: clamp(110px, 10vw, 150px);
-}
 
 /*  info cards (general)  */
 .info-card {
-  width: 250px;
-  height: 250px;
+  width: 310px;
+  height: 310px;
 }
 .info-card__header {
   display: flex;
@@ -590,8 +567,8 @@ body {
 
 /* --- Sales Boost Card --- */
 .sales-boost {
-  width: 220px;
-  height: 220px;
+  width: 320px;
+  height: 320px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -602,7 +579,8 @@ body {
   position: relative;
   width: 180px;
   height: 180px;
-  margin-bottom: 36px;
+  margin-bottom: 9rem;
+  margin-left: 2.2rem;
 }
 .sales-boost__ring svg {
   display: block;
@@ -628,28 +606,30 @@ body {
 }
 /* centered content inside the ring */
 .sales-boost__content {
+  margin-right: 3.4rem;
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  margin-top: 22px;
+  margin-top: 6rem;
+  margin-bottom: -3rem;
 }
 
 #why-menro > div.why-card.sales-boost.why-card.pos-a > div > svg {
   margin: 3rem auto;
-  width: 130px;
-  height: 130px;
+  width: 220px;
+  height: 220px;
 }
 
 .sales-boost__value {
-  font-size: 18px;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #fff;
 }
 .sales-boost__subtitle {
-  font-size: 8px;
+  font-size: 0.9rem;
   font-weight: 600;
   color: #999fa8;
 }
@@ -676,8 +656,8 @@ body {
   width: 250px;
   height: 250px;
   padding: 18px;
-  left: 47rem;
-  top: 105rem;
+  left: 39rem;
+  top: 76rem;
   position: absolute;
   overflow: visible;
   background: linear-gradient(246.95deg, #1c2128 0.52%, #201924 98.07%);
@@ -2060,7 +2040,7 @@ body {
 
 /* Juice glass at the very bottom (this one looked correct) */
 .footer-bg__item--juice {
-  bottom: -18rem; /* sticks out from under the card */
+  bottom: -10rem; /* sticks out from under the card */
   left: 50%;
   transform: translateX(-50%);
 }
@@ -2080,7 +2060,7 @@ body {
   position: relative;
   width: 1200px;
   height: 250px;
-  margin: 20rem auto -8rem 0;
+  margin: 17rem auto -6rem 0;
   background: #0c0f1499;
   border: 1px solid #394350;
   border-radius: 20px;
@@ -2094,12 +2074,11 @@ body {
   align-items: center;
   justify-content: center;
 }
-
 /* Inner layout */
 .footer-glass__inner {
   display: flex;
   flex-direction: column;
-  gap: 6rem;
+  gap: 4rem;
 }
 
 .footer-glass__top {
@@ -2107,26 +2086,43 @@ body {
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 5rem;
+  gap: 9rem;
+  display: flex;
+  margin: 3rem 1.5rem 0 0;
 }
 
 .footer-glass__brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100px;
   height: 40px;
 }
 
+.footer-glass__brand img,
+.footer-glass__brand svg {
+  display: block; /* removes the inline baseline whitespace */
+  height: 100%;
+  width: auto;
+  height: 4rem;
+}
+
 .footer-glass__nav {
-  gap: 4rem;
-  padding-left: 6rem;
+  gap: 3rem;
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
 }
 .footer-glass__nav a {
   color: var(--text);
   text-decoration: none;
-  font-size: 25px;
-  font-weight: 400;
   opacity: 0.9;
+  line-height: 1; /* or 1.1 if you prefer */
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  font-size: 1.6rem;
+  font-weight: 700;
 }
 .footer-glass__nav a:hover {
   color: var(--accent);
@@ -2134,10 +2130,9 @@ body {
 
 /* Bottom row */
 .footer-glass__bottom {
-  padding-left: 6rem;
   flex-direction: row-reverse;
   justify-content: flex-start;
-  gap: 28rem;
+  gap: 16rem;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -2191,25 +2186,12 @@ body {
   place-items: center;
   z-index: 6; /* above footer */
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  width: 100%;
+  height: 100%;
 }
 
 .footer-glass__backtotop:hover {
   background: rgba(15, 15, 16, 0.65);
-}
-
-.footer-glass__backtotop::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  top: -22px; /* how far it dips into footer */
-  width: 128px; /* socket width */
-  height: 64px; /* socket height */
-  border-radius: 18px;
-  border: 1px solid #394350; /* match footer border */
-  background: transparent;
-  pointer-events: none;
-  z-index: -1; /* sits behind the button, above footer */
 }
 
 .footer-glass__chevron {
@@ -2218,4 +2200,43 @@ body {
   border-right: 2px solid #fff;
   border-bottom: 2px solid #fff;
   transform: rotate(225deg);
+}
+
+/* the “row height” */
+.footer-glass__brand {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+/* the actual svg image */
+.footer-glass__brandImg {
+  height: 40px;
+  width: auto;
+  display: block;
+
+  /* OPTICAL ALIGNMENT (this is what you need) */
+  translate: 0 4px; /* try 2px–8px */
+}
+.footer-glass__button-wrapper {
+  height: 4rem;
+  width: 7rem;
+  bottom: 1%;
+  position: absolute;
+  right: 7%;
+}
+.footer-glass__button-wrapper::before {
+  border-radius: 1rem;
+  content: "";
+  background-color: #000;
+  height: 4.5rem;
+  width: 9rem;
+  bottom: -20%;
+  position: absolute;
+  right: -14%;
+  border-top: 1px solid #394350;
+  border-right: 1px solid #394350;
+  border-left: 1px solid #394350;
+  border-bottom: none;
 }

@@ -124,26 +124,33 @@ import StateMessage from "../common/StateMessage";
 import { getUserRecentOrders } from "../../api/orders";
 import ShimmerRow from "../common/ShimmerRow";
 
-
 function PreviousOrders() {
-  const token = localStorage.getItem("token");
+  const token =
+    localStorage.getItem("token") || localStorage.getItem("accessToken");
   const hasToken = !!token;
 
+  const PREVIEW_COUNT = 8;
+  const PROBE_COUNT = PREVIEW_COUNT + 1; // 9 (to detect "has more")
+
   const { data = [], isLoading, isError, error } = useQuery({
-    queryKey: ["userRecentOrders", token, 8],
-    queryFn: () => getUserRecentOrders(8),
-    enabled: hasToken, // only run when token exists
+    queryKey: ["userRecentOrders", token, PROBE_COUNT],
+    queryFn: () => getUserRecentOrders(PROBE_COUNT),
+    enabled: hasToken,
     refetchOnMount: "always",
     staleTime: 60 * 1000,
-    retry: (tries, err) => (err?.response?.status === 401 ? false : tries < 2),
+    retry: (tries, err) =>
+      err?.response?.status === 401 ? false : tries < 2,
   });
+
+  const hasMore = data.length > PREVIEW_COUNT;
+  const items = data.slice(0, PREVIEW_COUNT);
 
   const header = (
     <SectionHeader
       icon={<ReceiptIcon />}
       title="سفارش‌های پیشین"
       linkText="مشاهده همه"
-      linkHref={hasToken ? "/orders" : "/login"}
+      to={hasToken && hasMore ? "/orders" : undefined}
     />
   );
 
@@ -151,7 +158,13 @@ function PreviousOrders() {
   if (!hasToken) {
     return (
       <section className="previous-orders unauth-cta">
-        {header}
+        <SectionHeader
+          icon={<ReceiptIcon />}
+          title="سفارش‌های پیشین"
+          linkText="ورود"
+          to="/login"
+        />
+
         <div className="unauth-cta__inner">
           <p className="unauth-cta__title">
             لطفاً برای مشاهده این بخش به حساب کاربری خود وارد شوید
@@ -165,17 +178,6 @@ function PreviousOrders() {
   }
 
   // ───────────── Loading state ─────────────
-  // if (isLoading) {
-  //   return (
-  //     <section className="previous-orders">
-  //       {header}
-  //       <StateMessage kind="info" title="در حال بارگذاری">
-  //         در حال بارگذاری سفارش‌های پیشین شما...
-  //       </StateMessage>
-  //     </section>
-  //   );
-  // }
-
   if (isLoading) {
     return (
       <section className="previous-orders">
@@ -193,7 +195,12 @@ function PreviousOrders() {
     if (status === 401) {
       return (
         <section className="previous-orders unauth-cta">
-          {header}
+          <SectionHeader
+            icon={<ReceiptIcon />}
+            title="سفارش‌های پیشین"
+            linkText="ورود"
+            to="/login"
+          />
           <div className="unauth-cta__inner">
             <p className="unauth-cta__title">
               لطفاً برای مشاهده این بخش به حساب کاربری خود وارد شوید
@@ -209,7 +216,7 @@ function PreviousOrders() {
     // Other errors → professional error message
     return (
       <section className="previous-orders">
-        {header}
+        <SectionHeader icon={<ReceiptIcon />} title="سفارش‌های پیشین" />
         <StateMessage kind="error" title="خطا در دریافت سفارش‌ها">
           خطایی در دریافت سفارش‌های پیشین رخ داده است.
           <div className="state-message__action">
@@ -223,10 +230,10 @@ function PreviousOrders() {
   }
 
   // ───────────── Empty state ─────────────
-  if (data.length === 0) {
+  if (items.length === 0) {
     return (
       <section className="previous-orders">
-        {header}
+        <SectionHeader icon={<ReceiptIcon />} title="سفارش‌های پیشین" />
         <StateMessage kind="empty" title="سفارشی یافت نشد">
           شما هنوز هیچ سفارشی ثبت نکرده‌اید.
         </StateMessage>
@@ -239,7 +246,7 @@ function PreviousOrders() {
     <section className="previous-orders">
       {header}
       <div className="food-cards-container">
-        {data.map((item) => (
+        {items.map((item) => (
           <FoodCard key={item.id} item={item} />
         ))}
       </div>

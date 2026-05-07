@@ -1,5 +1,5 @@
 // src/components/admin/AdRequestModal.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 export default function AdRequestModal({
   open,
@@ -8,11 +8,36 @@ export default function AdRequestModal({
   onApprove,
   onReject,
 }) {
+  // ✅ Hooks must be called unconditionally (React rules)
+  const [showRejectInput, setShowRejectInput] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [rejectError, setRejectError] = useState("");
+
+  //  Old: hooks were after conditional return (can break hooks rules)
+  /*
   if (!open || !request) return null;
 
   const [showRejectInput, setShowRejectInput] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [rejectError, setRejectError] = useState("");
+  */
+
+  // ✅ Reset reject UI when opening a new request / closing
+  useEffect(() => {
+    if (!open) {
+      setShowRejectInput(false);
+      setRejectReason("");
+      setRejectError("");
+    } else {
+      // when request changes while modal open
+      setShowRejectInput(false);
+      setRejectReason("");
+      setRejectError("");
+    }
+  }, [open, request?.id]);
+
+  // ✅ Now safe to return null after hooks
+  if (!open || !request) return null;
 
   const adTypeLabel =
     request.adType === "slider"
@@ -21,9 +46,22 @@ export default function AdRequestModal({
       ? "بنر تمام صفحه"
       : request.adType || "نامشخص";
 
+  // ✅ New: normalize reserved unit for banner
+  // Rule: banner + "روز" should display as "بازدید"
+  const rawUnit = request.reservedUnit || "";
+  const normalizedUnit =
+    request.adType === "banner" && rawUnit === "روز" ? "بازدید" : rawUnit;
+
+  const reservedLabel = `${
+    request.reservedAmount?.toLocaleString("fa-IR") || 0
+  } ${normalizedUnit}`;
+
+  // ❌ Old (kept): used unit as-is
+  /*
   const reservedLabel = `${
     request.reservedAmount?.toLocaleString("fa-IR") || 0
   } ${request.reservedUnit || ""}`;
+  */
 
   const handleRejectClick = () => {
     // اولین بار: فقط فیلد رو باز کن
@@ -89,19 +127,24 @@ export default function AdRequestModal({
               <strong>نام رستوران متقاضی:</strong>{" "}
               {request.restaurantName || "نامشخص"}
             </div>
+
             <div>
               <strong>نوع تبلیغات:</strong> {adTypeLabel}
             </div>
+
             <div>
               <strong>مقدار رزرو شده:</strong> {reservedLabel}
             </div>
+
             <div>
               <strong>هزینه پرداخت شده:</strong>{" "}
               {request.paidAmount?.toLocaleString("fa-IR")} تومان
             </div>
+
             <div>
               <strong>تاریخ تقاضا:</strong> {request.requestedAt}
             </div>
+
             <div>
               <strong>لینک تبلیغ:</strong>{" "}
               {request.targetUrl ? (
@@ -245,3 +288,4 @@ export default function AdRequestModal({
     </div>
   );
 }
+// ----------------- END OF COMPONENT -----------------

@@ -1,43 +1,74 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 
 const formatIR = (n) => Number(n || 0).toLocaleString("fa-IR");
 
-const TABLE_OPTIONS = [
-  { id: "t1", label: "میز 1" },
-  { id: "t2", label: "میز 2" },
-  { id: "t3", label: "میز 3" },
-  { id: "t4", label: "میز 4" },
-  { id: "t5", label: "میز 5" },
-  { id: "t6", label: "میز 6" },
-  { id: "takeout", label: "بیرون‌بر" },
-];
-
-export default function CheckoutFooter({ total, items = [], discount = 0 }) {
+export default function CheckoutFooter({
+  total,
+  items = [],
+  discount = 0,
+  onConfirm,
+  // new prop
+  tableCount = 0,
+}) {
   const [isPickingTable, setIsPickingTable] = useState(false);
-  const [selectedTable, setSelectedTable] = useState(null);
+  const [selectedTable, setSelectedTable] = useState(undefined);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  /* ------------------------ dynamic table options ------------------------ */
+  // ensure tableCount is a number >= 0
+  const numericTableCount = Number(tableCount) || 0;
+
+  const tableOptions = useMemo(() => {
+    const opts = [];
+
+    // add numbered tables 1..N
+    for (let i = 1; i <= numericTableCount; i += 1) {
+      opts.push({
+        id: i,
+        label: `میز ${i}`,
+      });
+    }
+
+    // always add بیرون‌بر at the end
+    opts.push({
+      id: null,
+      label: "بیرون‌بر",
+    });
+
+    return opts;
+  }, [numericTableCount]);
+
+  /* ------------------------ handlers ------------------------ */
   const handleSuccessContinue = () => {
     setShowSuccess(false);
-    // optional: reset table for next order
     setSelectedTable(null);
     setIsPickingTable(false);
   };
 
-  const handlePayClick = () => {
-    // first click → open selector
+  const handlePayClick = async () => {
     if (!isPickingTable) {
+      setSelectedTable(undefined);
       setIsPickingTable(true);
       return;
     }
 
-    // selector open but no table → button is disabled, so this
-    // shouldn’t normally run; keep guard anyway
-    if (!selectedTable) return;
+    if (isSubmitting) return;
 
-    // confirm payment
-    setIsPickingTable(false);
-    setShowSuccess(true);
+    try {
+      setIsSubmitting(true);
+
+      if (onConfirm) {
+        await onConfirm(selectedTable);
+      }
+
+      setShowSuccess(true);
+    } catch (err) {
+      console.error("Error while confirming order:", err);
+    } finally {
+      setIsSubmitting(false);
+      setIsPickingTable(false);
+    }
   };
 
   const handleCloseTableSelector = () => {
@@ -48,28 +79,31 @@ export default function CheckoutFooter({ total, items = [], discount = 0 }) {
     setSelectedTable(id);
   };
 
-  // button state
-  const isChoosingTable = isPickingTable && !selectedTable;
+  /* ------------------------ UI state ------------------------ */
+  const isChoosingTable = isPickingTable && selectedTable === undefined;
+  const payDisabled = isChoosingTable || isSubmitting;
+
   const payLabel = !isPickingTable
     ? "پرداخت"
-    : !selectedTable
+    : selectedTable === undefined
     ? "میز خود را انتخاب کنید"
     : "تایید و پرداخت";
 
+  /* ------------------------ render ------------------------ */
   return (
     <>
-      {/* CLICK-OUTSIDE OVERLAY (behind footer) */}
+      {/* overlay behind footer when picking table */}
       {isPickingTable && (
         <div className="table-overlay" onClick={handleCloseTableSelector} />
       )}
 
-      {/* SINGLE fixed footer */}
+      {/* fixed footer */}
       <div
         className={`checkout-footer ${
           isPickingTable ? "is-picking-table" : ""
         }`}
       >
-        {/* discount code field */}
+        {/* discount input */}
         <div className="discount-wrapper">
           <input
             type="text"
@@ -78,7 +112,7 @@ export default function CheckoutFooter({ total, items = [], discount = 0 }) {
           />
         </div>
 
-        {/* price + button row */}
+        {/* total + pay button */}
         <div className="footer-main">
           <div className="footer-total">
             <div className="footer-total-label">قیمت کل</div>
@@ -90,34 +124,32 @@ export default function CheckoutFooter({ total, items = [], discount = 0 }) {
 
           <div className="footer-action">
             <button
-              className={
-                "pay-btn" + (isChoosingTable ? " pay-btn--inactive" : "")
-              }
+              className={"pay-btn" + (payDisabled ? " pay-btn--inactive" : "")}
               onClick={handlePayClick}
-              disabled={isChoosingTable}
+              disabled={payDisabled}
             >
               {payLabel}
             </button>
           </div>
         </div>
 
-        {/* INLINE TABLE SELECTOR (part of the footer) */}
+        {/* inline table selector */}
         <div
           className={
             "table-selector-inline" + (isPickingTable ? " is-open" : "")
           }
         >
           <div className="table-grid">
-            {TABLE_OPTIONS.map((opt) => (
+            {tableOptions.map((opt) => (
               <button
-                key={opt.id}
+                key={opt.id ?? "takeout"}
                 type="button"
                 className={
                   "table-chip" +
                   (selectedTable === opt.id ? " is-active" : "") +
-                  (opt.id === "takeout" ? " is-wide" : "")
+                  (opt.id === null ? " is-wide" : "")
                 }
-                onClick={() => handleTableClick(opt.id)}
+                onClick={() => setSelectedTable(opt.id)}
               >
                 {opt.label}
               </button>
@@ -126,7 +158,7 @@ export default function CheckoutFooter({ total, items = [], discount = 0 }) {
         </div>
       </div>
 
-      {/* SUCCESS MODAL */}
+      {/* success modal */}
       {showSuccess && (
         <div className="order-success-backdrop">
           <div className="order-success-modal">

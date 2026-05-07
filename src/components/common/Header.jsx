@@ -1,13 +1,14 @@
+// src/components/common/Header.jsx
 import React from "react";
 import SearchBar from "./SearchBar";
 import MobileNav from "./MobileNav";
 
-function Header() {
+function Header({ onSearchSubmit }) {
   return (
     <header className="header">
       <MobileNav />
       <div className="header__bar">
-        <SearchBar className="header__search" />
+        <SearchBar className="header__search" onSubmit={onSearchSubmit} />
         <button
           type="button"
           className="header__hamburger"

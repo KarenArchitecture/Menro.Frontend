@@ -222,12 +222,11 @@
 
 // export default Carousel;
 
-
+// src/components/home/Carousel.jsx
 import React, { useState, useEffect, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { getFeaturedRestaurants } from "../../api/restaurants";
-import LoadingSpinner from "../common/LoadingSpinner";
+import { getFeaturedRestaurants, postCarouselClick } from "../../api/restaurantAds";
 import publicAxios from "../../api/publicAxios";
 import StateMessage from "../common/StateMessage";
 import ShimmerRow from "../common/ShimmerRow";
@@ -239,7 +238,6 @@ function clamp(n, min, max) {
 function Carousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Drag state
   const [isDragging, setIsDragging] = useState(false);
   const [dragX, setDragX] = useState(0);
   const [dragStartX, setDragStartX] = useState(0);
@@ -250,14 +248,14 @@ function Carousel() {
 
   const navigate = useNavigate();
 
-  const {
-    data: slides,
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
+  const { data: slides, isLoading, isError } = useQuery({
     queryKey: ["featuredRestaurants"],
-    queryFn: getFeaturedRestaurants, // returns data directly
+    queryFn: () => getFeaturedRestaurants(10),
+    refetchOnWindowFocus: false,
+  });
+
+  const { mutate: sendCarouselClick } = useMutation({
+    mutationFn: (adId) => postCarouselClick(adId),
   });
 
   const apiOrigin = new URL(publicAxios.defaults.baseURL).origin;
@@ -266,29 +264,25 @@ function Carousel() {
     if (!url) return `${appOrigin}/images/res-slider.jpg`;
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
     const withSlash = url.startsWith("/") ? url : `/${url}`;
-    if (withSlash.startsWith("/img/"))    return `${apiOrigin}${withSlash}`;   // backend wwwroot/img
-    if (withSlash.startsWith("/images/")) return `${appOrigin}${withSlash}`;   // frontend public/images
+    if (withSlash.startsWith("/img/")) return `${apiOrigin}${withSlash}`;
+    if (withSlash.startsWith("/images/")) return `${appOrigin}${withSlash}`;
     return `${appOrigin}${withSlash}`;
   };
-
 
   useEffect(() => {
     if (!slides || slides.length === 0 || isDragging) return;
 
     const goToNext = () => {
-      const isLastSlide = currentIndex === slides.length - 1;
-      const newIndex = isLastSlide ? 0 : currentIndex + 1;
-      setCurrentIndex(newIndex);
+      const isLast = currentIndex === slides.length - 1;
+      setCurrentIndex(isLast ? 0 : currentIndex + 1);
     };
 
-    const slideInterval = setInterval(goToNext, 3000);
-    return () => clearInterval(slideInterval);
+    const t = setInterval(goToNext, 3000);
+    return () => clearInterval(t);
   }, [currentIndex, slides, isDragging]);
 
-  const goToSlide = (slideIndex) =>
-    setCurrentIndex(clamp(slideIndex, 0, (slides?.length ?? 1) - 1));
+  const goToSlide = (i) => setCurrentIndex(clamp(i, 0, (slides?.length ?? 1) - 1));
 
-  // Drag handlers
   const onPointerDown = (e) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
     e.currentTarget.setPointerCapture?.(e.pointerId);
@@ -300,7 +294,7 @@ function Carousel() {
 
   const onPointerMove = (e) => {
     if (!isDragging) return;
-    e.preventDefault(); // keep horizontal drag from scrolling the page
+    e.preventDefault();
     setDragX(e.clientX - dragStartX);
   };
 
@@ -315,10 +309,8 @@ function Carousel() {
     const thresholdPx = width * 0.18;
     const velocityThresh = 0.8 / 1000;
 
-    // Start from current
     let next = currentIndex;
 
-    // drag RIGHT => next (index+1), drag LEFT => prev (index-1)
     if (Math.abs(delta) > thresholdPx || velocity > velocityThresh) {
       const goingRight = delta > 0;
       next = goingRight ? currentIndex + 1 : currentIndex - 1;
@@ -329,64 +321,63 @@ function Carousel() {
     setDragX(0);
   };
 
-  const onPointerUp = finishDrag;
-  const onPointerCancel = finishDrag;
-  const onPointerLeave = finishDrag;
-
-  // ---- early returns for state handling ----
-
-  if (isLoading) {
-    return <ShimmerRow height={220} />;
-  }
+  if (isLoading) return <ShimmerRow height={220} />;
 
   if (isError)
-  return (
-    <section className="carousel">
-      <StateMessage kind="error" title="خطا در دریافت اطلاعات">
-        خطایی در دریافت اسلایدها رخ داده است.
-        <div className="state-message__action">
-          <button onClick={() => window.location.reload()}>دوباره تلاش کنید</button>
-        </div>
-      </StateMessage>
-    </section>
-  );
+    return (
+      <section className="carousel">
+        <StateMessage kind="error" title="خطا در دریافت اطلاعات">
+          خطایی در دریافت اسلایدها رخ داده است.
+          <div className="state-message__action">
+            <button onClick={() => window.location.reload()}>دوباره تلاش کنید</button>
+          </div>
+        </StateMessage>
+      </section>
+    );
 
   if (!slides || slides.length === 0)
-  return (
-    <section className="carousel">
-      <StateMessage kind="empty" title="موردی یافت نشد">
-        هیچ اسلایدی برای نمایش وجود ندارد.
-      </StateMessage>
-    </section>
-  );
+    return (
+      <section className="carousel">
+        <StateMessage kind="empty" title="موردی یافت نشد">
+          هیچ اسلایدی برای نمایش وجود ندارد.
+        </StateMessage>
+      </section>
+    );
 
-
-  // Direction-aware transform (no CSS changes)
   const containerWidth = containerRef.current?.clientWidth || 0;
-  const dir =
-    (sliderRef.current && getComputedStyle(sliderRef.current).direction) ||
-    "ltr";
+  const dir = (sliderRef.current && getComputedStyle(sliderRef.current).direction) || "ltr";
   const sign = dir === "rtl" ? +1 : -1;
 
   const trackTransform = `translate3d(${
     sign * currentIndex * containerWidth + (isDragging ? dragX : 0)
   }px, 0, 0)`;
 
+  const handleSlideClick = (slide) => {
+    if (Math.abs(dragX) >= 5) return;
+
+    if (slide?.adId) sendCarouselClick(slide.adId);
+
+    // targetUrl optional; otherwise slug route
+    const t = slide?.targetUrl?.trim();
+      if (t && (/^https?:\/\//i.test(t) || t.startsWith("/"))) {
+        window.location.href = t;
+        return;
+      }
+
+    navigate(`/restaurant/${slide.slug}`);
+  };
+
   return (
-    <section
-      className="carousel"
-      aria-live="polite"
-      aria-label="Carousel navigation"
-    >
+    <section className="carousel" aria-live="polite" aria-label="Carousel navigation">
       <div
         className="carousel-container"
         style={{ overflow: "hidden" }}
         ref={containerRef}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerCancel}
-        onPointerLeave={onPointerLeave}
+        onPointerUp={finishDrag}
+        onPointerCancel={finishDrag}
+        onPointerLeave={finishDrag}
       >
         <div
           className="carousel-slider"
@@ -401,22 +392,17 @@ function Carousel() {
           {slides.map((slide, idx) => (
             <div
               className="carousel-slide"
-              // ensure this key is UNIQUE even if slide.id isn't
-              key={`slide-${slide.slug || slide.id || idx}`}
+              key={`slide-${slide.adId ?? slide.slug ?? idx}`}
               style={{ flex: "0 0 100%" }}
             >
               <img
-                // src={`http://localhost:5096${slide.carouselImageUrl}`}
-                src={toAssetUrl(slide.carouselImageUrl)}
-                alt={slide.name}
-                onClick={() => {
-                  if (Math.abs(dragX) < 5)
-                    navigate(`/restaurant/${slide.slug}`);
-                }}
+                src={toAssetUrl(slide.imageUrl)}
+                alt={slide.restaurantName || "slide"}
+                onClick={() => handleSlideClick(slide)}
                 draggable={false}
                 onError={(e) => {
                   e.currentTarget.onerror = null;
-                  e.currentTarget.src = "/images/res-slider.jpg"; // fallback you have in public/images
+                  e.currentTarget.src = "/images/res-slider.jpg";
                 }}
                 style={{
                   display: "block",
@@ -437,16 +423,14 @@ function Carousel() {
         aria-label="Slides"
         style={{ display: "flex", justifyContent: "center", gap: 8 }}
       >
-        {slides.map((_, slideIndex) => (
+        {slides.map((_, i) => (
           <button
-            key={slideIndex}
-            className={
-              currentIndex === slideIndex ? "indicator active" : "indicator"
-            }
-            onClick={() => goToSlide(slideIndex)}
-            data-index={slideIndex}
-            aria-label={`Go to slide ${slideIndex + 1}`}
-            aria-current={currentIndex === slideIndex ? "true" : undefined}
+            key={i}
+            className={currentIndex === i ? "indicator active" : "indicator"}
+            onClick={() => goToSlide(i)}
+            data-index={i}
+            aria-label={`Go to slide ${i + 1}`}
+            aria-current={currentIndex === i ? "true" : undefined}
           />
         ))}
         <img src="/images/curve.png" className="left-curve" />
@@ -457,5 +441,3 @@ function Carousel() {
 }
 
 export default Carousel;
-
-

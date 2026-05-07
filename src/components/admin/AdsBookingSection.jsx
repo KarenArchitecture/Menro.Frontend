@@ -8,9 +8,8 @@ export default function AdsBookingSection() {
   const [bookingMethod, setBookingMethod] = useState("by_day"); // by_day | by_click
 
   // مقدارهای UI
-  const [days, setDays] = useState(7);
+  const [days, setDays] = useState(7); // for slider: days | for banner: views (units for billingType=1)
   const [clicks, setClicks] = useState(10000);
-  const [link, setLink] = useState("");
   const [advertisementText, setAdvertisementText] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -18,14 +17,26 @@ export default function AdsBookingSection() {
 
   // نرخ‌ها و محدودیت‌ها (از بک‌اند)
   const [pricing, setPricing] = useState({
-    minDays: 1,
-    maxDays: 30,
-    pricePerDay: 0,
+    minDays: 1, // for banner: minViews (billingType=1)
+    maxDays: 30, // for banner: maxViews (billingType=1)
+    pricePerDay: 0, // for banner: pricePerView (billingType=1)
 
     minClicks: 1000,
     maxClicks: 50000,
     pricePerClick: 0,
   });
+
+  const isBanner = adType === "banner";
+
+  // Labels for billingType=1 based on placement
+  const unit1Label = isBanner ? "بازدید" : "روز";
+  //const UNIT1_STEP = isBanner ? 100 : 1;
+  const unit1MethodLabel = isBanner ? "بر حسب بازدید" : "بر حسب روز";
+  const unit1SummaryLabel = isBanner ? "بر اساس بازدید" : "بر اساس روز";
+  const unit1TitleLabel = isBanner
+    ? "تعداد بازدید مورد نظر"
+    : "مدت زمان نمایش (روز)";
+  const unit1Icon = isBanner ? "fas fa-eye" : "fas fa-calendar-alt";
 
   // --- Load Pricing from API ---
   async function loadPricing(typeKey) {
@@ -34,14 +45,18 @@ export default function AdsBookingSection() {
     try {
       const res = await adSettingsAxios.get("", { params: { placement } });
       const list = res.data;
-
-      const perDay = list.find((x) => x.billingType === 1);
-      const perClick = list.find((x) => x.billingType === 2);
+      const snapToStep = (val, min, step) => {
+        const n = Math.round((val - min) / step);
+        return min + n * step;
+      };
+      const unit1BillingType = typeKey === "slider" ? "PerDay" : "PerView";
+      const unit1 = list.find((x) => x.billingType === unit1BillingType);
+      const perClick = list.find((x) => x.billingType === "PerClick");
 
       setPricing({
-        minDays: perDay?.minUnits ?? 1,
-        maxDays: perDay?.maxUnits ?? 30,
-        pricePerDay: perDay?.unitPrice ?? 0,
+        minDays: unit1?.minUnits ?? 1,
+        maxDays: unit1?.maxUnits ?? 30,
+        pricePerDay: unit1?.unitPrice ?? 0,
 
         minClicks: perClick?.minUnits ?? 1000,
         maxClicks: perClick?.maxUnits ?? 50000,
@@ -49,7 +64,9 @@ export default function AdsBookingSection() {
       });
 
       // اسلایدرها را با حداقل مقدار تنظیم می‌کنیم
-      setDays(perDay?.minUnits ?? 1);
+      setDays(
+        snapToStep(unit1?.minUnits ?? 1, unit1?.minUnits ?? 1, UNIT1_STEP)
+      );
       setClicks(perClick?.minUnits ?? 1000);
     } catch (err) {
       console.error("خطا در لود نرخ تبلیغات:", err);
@@ -59,54 +76,71 @@ export default function AdsBookingSection() {
   // Load pricing when adType changes
   useEffect(() => {
     loadPricing(adType);
+    setBookingMethod("by_day");
   }, [adType]);
 
   // --- قیمت نهایی ---
   const totalCost = useMemo(() => {
     if (bookingMethod === "by_day") {
+      // Slider: price per day * days
+      // Banner: price per view * views (stored in days state)
       return pricing.pricePerDay * days;
     } else {
       return pricing.pricePerClick * clicks;
     }
   }, [pricing, bookingMethod, days, clicks]);
 
-  // --- Validate URL ---
-  const isValidUrl = (url) => {
-    const pattern = /^(https?:\/\/)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/;
-    return pattern.test(url);
-  };
-
   // --- Submit Handler ---
   const handleSubmit = async () => {
-    if (!link.trim()) return alert("لینک نباید خالی باشد.");
-    if (!isValidUrl(link)) return alert("لینک معتبر نیست.");
     if (!imageFile) return alert("لطفاً تصویر تبلیغ را آپلود کنید.");
 
     try {
-      // 1. Upload Image
+      // 1) Upload Image
       const fd = new FormData();
       fd.append("file", imageFile);
 
       const uploadRes = await adminRestaurantAdAxios.post(
         "/upload-ad-image",
         fd,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
       );
 
       const fileName = uploadRes.data;
 
-      // 2. Create DTO
+      // 2) Placement + Billing (NEW LOGIC)
+      const placementType = adType === "slider" ? 1 : 2;
+
+      const billingType =
+        bookingMethod === "by_click"
+          ? 2 // PerClick
+          : placementType === 1
+          ? 1 // Slider -> PerDay
+          : 3; // Banner -> PerView
+
+      const purchasedUnits = bookingMethod === "by_click" ? clicks : days;
+
+      // 3) Create DTO
       const dto = {
-        placementType: adType === "slider" ? 1 : 2,
-        billingType: bookingMethod === "by_day" ? 1 : 2,
+        placementType,
+        billingType,
         cost: totalCost,
         imageFileName: fileName,
-        targetUrl: link,
+        //targetUrl: link,
         commercialText: advertisementText,
-        purchasedUnits: bookingMethod === "by_day" ? days : clicks,
+        purchasedUnits,
       };
+      console.log("DEBUG SUBMIT:", {
+        adType,
+        bookingMethod,
+        pricing,
+        days,
+        clicks,
+        totalCost,
+      });
 
-      // 3. Submit Ad
+      // 4) Submit Ad
       await adminRestaurantAdAxios.post("/addAd", dto);
 
       alert("تبلیغ با موفقیت ثبت شد!");
@@ -116,16 +150,44 @@ export default function AdsBookingSection() {
       setBookingMethod("by_day");
       setDays(pricing.minDays);
       setClicks(pricing.minClicks);
-      setLink("");
       setAdvertisementText("");
-      fileInputRef.current.value = "";
+      if (fileInputRef.current) fileInputRef.current.value = "";
       setImageFile(null);
       setImagePreview(null);
     } catch (err) {
-      console.error(err);
-      alert("خطایی رخ داد.");
+      console.error("ADD AD ERROR:", {
+        status: err?.response?.status,
+        data: err?.response?.data,
+        errors: err?.response?.data?.errors,
+      });
+
+      alert(
+        err?.response?.data?.title ||
+          err?.response?.data?.error ||
+          JSON.stringify(err?.response?.data || {}, null, 2) ||
+          "خطایی رخ داد."
+      );
     }
   };
+
+  // unit steps fix
+
+  const UNIT1_STEP = isBanner ? 100 : 1;
+  const CLICK_STEP = 500;
+
+  const maxAlignedUnit1 = useMemo(() => {
+    const min = pricing.minDays;
+    const max = pricing.maxDays;
+    const step = UNIT1_STEP;
+    return min + Math.floor((max - min) / step) * step;
+  }, [pricing.minDays, pricing.maxDays, UNIT1_STEP]);
+
+  const maxAlignedClicks = useMemo(() => {
+    const min = pricing.minClicks;
+    const max = pricing.maxClicks;
+    const step = CLICK_STEP;
+    return min + Math.floor((max - min) / step) * step;
+  }, [pricing.minClicks, pricing.maxClicks]);
 
   // ----------------- UI -----------------
   return (
@@ -179,8 +241,8 @@ export default function AdsBookingSection() {
                 onChange={() => setBookingMethod("by_day")}
               />
               <div className="choice-card">
-                <i className="fas fa-calendar-alt"></i>
-                <span>بر حسب روز</span>
+                <i className={unit1Icon}></i>
+                <span>{unit1MethodLabel}</span>
               </div>
             </label>
 
@@ -204,48 +266,40 @@ export default function AdsBookingSection() {
         <div className="config-step">
           {bookingMethod === "by_day" ? (
             <div id="days-slider-group">
-              <h4>۳. مدت زمان نمایش (روز)</h4>
+              <h4>۳. {unit1TitleLabel}</h4>
+
               <div className="range-slider-group">
                 <input
                   type="range"
                   min={pricing.minDays}
-                  max={pricing.maxDays}
+                  max={maxAlignedUnit1} // ✅ جلوگیری از گیر کردن ته اسلایدر
+                  step={UNIT1_STEP} // ✅ banner=100 | slider=1
                   value={days}
                   onChange={(e) => setDays(Number(e.target.value))}
                 />
-                <output>{days}</output>
+                <output>{days.toLocaleString("fa-IR")}</output>
               </div>
             </div>
           ) : (
             <div id="clicks-slider-group">
               <h4>۳. تعداد کلیک مورد نظر</h4>
+
               <div className="range-slider-group">
                 <input
                   type="range"
                   min={pricing.minClicks}
-                  max={pricing.maxClicks}
-                  step="1000"
+                  max={maxAlignedClicks} // ✅ جلوگیری از گیر کردن ته اسلایدر
+                  step={CLICK_STEP} // ✅ 500
                   value={clicks}
                   onChange={(e) => setClicks(Number(e.target.value))}
                 />
-                <output>{clicks}</output>
+                <output>{clicks.toLocaleString("fa-IR")}</output>
               </div>
             </div>
           )}
         </div>
-
         {/* Step 4 */}
         <div className="config-step">
-          <h4>۴. لینک مرتبط را مشخص کنید</h4>
-          <div className="input-group">
-            <input
-              type="text"
-              placeholder="https://example.com"
-              value={link}
-              onChange={(e) => setLink(e.target.value)}
-            />
-          </div>
-
           <h4>متن نمایشی تبلیغاتی</h4>
           <div className="input-group">
             <input
@@ -311,20 +365,45 @@ export default function AdsBookingSection() {
 
             <div className="detail-item">
               <span>روش پرداخت:</span>
+
+              {/* ✅ New: banner shows based on views */}
+              <strong>
+                {bookingMethod === "by_day"
+                  ? unit1SummaryLabel
+                  : "بر اساس کلیک"}
+              </strong>
+
+              {/* Old: always day */}
+              {/*
               <strong>
                 {bookingMethod === "by_day" ? "بر اساس روز" : "بر اساس کلیک"}
               </strong>
+              */}
             </div>
 
             {bookingMethod === "by_day" ? (
               <div className="detail-item">
+                {/* ✅ New */}
+                <span>{isBanner ? "تعداد بازدید:" : "مدت زمان:"}</span>
+                <strong>
+                  {days.toLocaleString("fa-IR")} {unit1Label}
+                </strong>
+
+                {/* Old */}
+                {/*
                 <span>مدت زمان:</span>
                 <strong>{days} روز</strong>
+                */}
               </div>
             ) : (
               <div className="detail-item">
                 <span>تعداد کلیک:</span>
+                <strong>{clicks.toLocaleString("fa-IR")} کلیک</strong>
+
+                {/*Old */}
+                {/*
                 <strong>{clicks} کلیک</strong>
+                */}
               </div>
             )}
           </div>
@@ -348,3 +427,4 @@ export default function AdsBookingSection() {
     </div>
   );
 }
+// ----------------- END OF COMPONENT -----------------

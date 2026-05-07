@@ -5,31 +5,20 @@ import restaurantAxios from "./restaurantAxios";
 const RESTAURANT_URL = "/restaurant";
 
 /* ────────────────────────────────
- 🍽 PUBLIC RESTAURANT DATA
+  🍽 PUBLIC RESTAURANT DATA
 ──────────────────────────────── */
 
 /* ───────────────  🏠 Home Page  ─────────────── */
-export const getFeaturedRestaurants = () =>
-  publicAxios.get(`${RESTAURANT_URL}/featured`).then((r) => r.data);
 
+export const getRestaurantsPage = ({ take = 20, cursor = null }) =>
+  publicAxios
+    .get(`${RESTAURANT_URL}`, { params: { take, cursor } })
+    .then((r) => r.data);
+
+// ── Random Restaurant Cards ──
 export const getRandomRestaurants = () =>
   publicAxios.get(`${RESTAURANT_URL}/random`).then((r) => r.data);
 
-// ── 🎯 Ad Banners ──
-// export const getAdBanner = () =>
-//   publicAxios.get(`${RESTAURANT_URL}/ad-banner`).then(r => r.data);
-
-export const getRandomAdBanner = (excludeIds = []) =>
-  publicAxios
-    .get(`${RESTAURANT_URL}/ad-banner/random`, {
-      params: {
-        exclude: excludeIds.length ? excludeIds.join(",") : undefined,
-      },
-    })
-    .then((r) => r.data);
-
-export const postAdImpression = (bannerId) =>
-  publicAxios.post(`${RESTAURANT_URL}/ad-banner/${bannerId}/impression`);
 
 /* ───────────────  🛍 Shop Page  ─────────────── */
 export const getRestaurantBannerBySlug = (slug) =>

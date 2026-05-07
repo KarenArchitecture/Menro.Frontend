@@ -172,8 +172,8 @@ export default function AdsBookingSection() {
 
   // unit steps fix
 
-  const UNIT1_STEP = isBanner ? 100 : 1; // ✅ بازدید: گام 100تایی | روز: 1
-  const CLICK_STEP = 500; // ✅ کلیک: گام 500تایی
+  const UNIT1_STEP = isBanner ? 100 : 1;
+  const CLICK_STEP = 500;
 
   const maxAlignedUnit1 = useMemo(() => {
     const min = pricing.minDays;

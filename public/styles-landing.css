@@ -2428,7 +2428,7 @@ body {
   }
 
   .hero__content {
-    margin-bottom: 2.8rem;
+    margin-bottom: 7rem;
     gap: 1.6rem;
   }
 
@@ -4092,5 +4092,21 @@ body {
 @media (max-width: 768px) {
   .why-menro-logo-icon {
     width: 5.4rem;
+  }
+
+  .bp__glow {
+    position: absolute;
+    left: 50%;
+    top: 15rem;
+    transform: translate(-50%, -50%);
+    width: 65rem;
+    height: 65rem;
+    border-radius: 999px;
+    filter: blur(1px);
+    object-fit: cover;
+    opacity: 0.9;
+    overflow: initial;
+    width: 800px;
+    z-index: -1;
   }
 }

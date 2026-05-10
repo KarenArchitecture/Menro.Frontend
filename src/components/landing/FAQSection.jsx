@@ -26,34 +26,35 @@ const DEFAULT_FAQ = [
 export default function FAQSection({
   items = DEFAULT_FAQ,
   initialOpenId = DEFAULT_FAQ[0]?.id ?? null,
+  allQuestionsHref = "#",
   className = "",
 }) {
   const [openId, setOpenId] = useState(initialOpenId);
 
-  // Map of panel refs (plain JS, no types)
   const panelsRef = useRef({});
   const setPanelRef = (id) => (el) => {
     panelsRef.current[id] = el;
   };
 
-  // Track previously-open id
   const prevOpenRef = useRef(openId ?? null);
-
-  // Respect reduced motion
   const prefersReduce = useRef(false);
+  const isMobile = useRef(false);
+
   useLayoutEffect(() => {
     prefersReduce.current = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
+      "(prefers-reduced-motion: reduce)",
     ).matches;
+
+    isMobile.current = window.matchMedia("(max-width: 768px)").matches;
   }, []);
 
-  // Initial setup: stable layout; open initial without anim
   useLayoutEffect(() => {
+    if (isMobile.current) return;
+
     const ctx = gsap.context(() => {
       Object.values(panelsRef.current).forEach((p) => {
         if (!p) return;
 
-        // Keep layout stable (no display flip)
         gsap.set(p, {
           display: "flex",
           flexDirection: "column",
@@ -75,27 +76,34 @@ export default function FAQSection({
       if (initialOpenId && panelsRef.current[initialOpenId]) {
         const p = panelsRef.current[initialOpenId];
         const bubbles = p.querySelectorAll(".faq__bubble");
+
         gsap.set(p, {
           height: "auto",
           opacity: 1,
           clipPath: "inset(0 0 0% 0 round 14px)",
           pointerEvents: "auto",
         });
+
         gsap.set(bubbles, { opacity: 1, y: 0 });
       }
     });
-    return () => ctx.revert();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
-  // Animate on openId change
+    return () => ctx.revert();
+  }, [initialOpenId]);
+
   useEffect(() => {
+    if (isMobile.current) {
+      prevOpenRef.current = openId ?? null;
+      return;
+    }
+
     const newId = openId;
     const oldId = prevOpenRef.current;
     if (newId === oldId) return;
 
     const closePanel = (id) => {
       if (!id) return;
+
       const p = panelsRef.current[id];
       if (!p) return;
 
@@ -113,7 +121,6 @@ export default function FAQSection({
         return;
       }
 
-      // Fade bubbles first (reverse stagger), then curl-close
       gsap.to(bubbles, {
         opacity: 0,
         y: 6,
@@ -135,6 +142,7 @@ export default function FAQSection({
 
     const openPanel = (id) => {
       if (!id) return;
+
       const p = panelsRef.current[id];
       if (!p) return;
 
@@ -157,7 +165,6 @@ export default function FAQSection({
 
       const natural = p.scrollHeight;
 
-      // Curl-open (height + clipPath)
       gsap.fromTo(
         p,
         { height: 0, opacity: 0, clipPath: "inset(0 0 100% 0 round 14px)" },
@@ -168,10 +175,9 @@ export default function FAQSection({
           duration: 0.65,
           ease: "power3.out",
           onComplete: () => gsap.set(p, { height: "auto" }),
-        }
+        },
       );
 
-      // Stagger in bubbles
       gsap.to(bubbles, {
         opacity: 1,
         y: 0,
@@ -237,6 +243,15 @@ export default function FAQSection({
             </div>
           );
         })}
+
+        <div className="faq__all">
+          <a href={allQuestionsHref} className="faq__all-link">
+            <span>مشاهده همه سوالات</span>
+            <span className="faq__all-arrow" aria-hidden="true">
+              ↖
+            </span>
+          </a>
+        </div>
       </div>
     </section>
   );

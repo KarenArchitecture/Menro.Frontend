@@ -31,6 +31,7 @@ export default function BurgerPanelSection({
     [0.0, 0.06, 0.85, 0.95],
     [0, 1, 1, 0],
   );
+
   const burgerY = useTransform(
     scrollYProgress,
     [0.06, 0.55],
@@ -61,28 +62,26 @@ export default function BurgerPanelSection({
 
   // Mount into portal slightly before/after to avoid mount pop
   const [active, setActive] = useState(false);
+
   useMotionValueEvent(sectionProg, "change", (v) => {
     const on = v > -0.02 && v < 1.02;
     setActive((prev) => (prev !== on ? on : prev));
   });
 
-  // ===== Title: "from behind burger" + settle on panel =====
-  // Fade in shortly after burger appears (tied to burger progress)
-  const titleOpacityIn = useTransform(scrollYProgress, [0.06, 0.14], [0, 1]);
+  // ===== Title animation =====
+  // Starts above the panel/frame and settles into exact center.
+  // Burger remains in front and moves upward with its existing animation.
 
-  // Start higher and settle down as burger goes up (tied to burger travel window)
-  const titleYPercentIn = useTransform(scrollYProgress, [0.06, 0.55], [-60, 0]);
+  const titleOpacityIn = useTransform(scrollYProgress, [0.04, 0.12], [0, 1]);
 
-  // Fade out near end of section (keep your original section-based exit)
+  const titleY = useTransform(scrollYProgress, [0.06, 0.55], ["-42vh", "0vh"]);
+
   const titleOpacityOut = useTransform(sectionProg, [0.85, 0.95], [1, 0]);
 
-  // Combine opacities so it must be "in" AND not yet "out"
   const titleOpacity = useTransform(
     [titleOpacityIn, titleOpacityOut],
     ([a, b]) => a * b,
   );
-
-  const titleTransform = useMotionTemplate`translateY(${titleYPercentIn}%)`;
 
   const PanelOverlay = (
     <motion.div
@@ -107,10 +106,13 @@ export default function BurgerPanelSection({
         />
       )}
 
-      {/* Title is behind burger via CSS z-index tweak (bp__title lower than bp__burger) */}
       <motion.h2
         className="bp__title"
-        style={{ opacity: titleOpacity, transform: titleTransform }}
+        style={{
+          opacity: titleOpacity,
+          y: titleY,
+          zIndex: 2,
+        }}
       >
         {title}
       </motion.h2>
@@ -121,11 +123,13 @@ export default function BurgerPanelSection({
     <section ref={sectionRef} className="bp">
       <div ref={sceneRef} className="bp__scene">
         <div className="bp__stage">
-          {/* Burger */}
           <motion.div
             ref={burgerRef}
             className="bp__burger"
-            style={{ opacity: burgerOpacity, y: burgerY }}
+            style={{
+              opacity: burgerOpacity,
+              y: burgerY,
+            }}
           >
             {haloSrc ? (
               <img
@@ -137,10 +141,10 @@ export default function BurgerPanelSection({
             ) : (
               <div className="bp__glow" aria-hidden="true" />
             )}
+
             <img className="bp__burgerImg" src={burgerSrc} alt={burgerAlt} />
           </motion.div>
 
-          {/* Portal the panel so it's truly fixed to the viewport */}
           {active &&
             typeof document !== "undefined" &&
             createPortal(PanelOverlay, document.body)}

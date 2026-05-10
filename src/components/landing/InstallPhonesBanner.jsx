@@ -18,8 +18,11 @@ export default function InstallPhonesBanner({
   const frontRef = useRef(null);
 
   useLayoutEffect(() => {
-    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (mql.matches) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const isMobile = window.matchMedia("(max-width: 768px)");
+
+    // Disable animation on mobile, keep desktop behavior intact
+    if (reducedMotion.matches || isMobile.matches) return;
 
     const ctx = gsap.context(() => {
       const backEl = backRef.current;
@@ -37,14 +40,13 @@ export default function InstallPhonesBanner({
         frontY: REST.front.y + 520,
       };
 
-      // slower pace => lower speed
       const SPEED = 500; // px/sec
       const backDur = Math.abs(START.backY - REST.back.y) / SPEED;
       const frontDur = Math.abs(START.frontY - REST.front.y) / SPEED;
 
       const tl = gsap.timeline({
         paused: true,
-        defaults: { ease: "none" }, // flat pace
+        defaults: { ease: "none" },
       });
 
       tl.to(backEl, {
@@ -64,8 +66,7 @@ export default function InstallPhonesBanner({
       );
 
       const resetPhones = () => {
-        // ✅ don't kill tweens-of (it can kill tl's own child tweens)
-        tl.pause(0); // stop + rewind safely
+        tl.pause(0);
 
         gsap.set(backEl, {
           x: REST.back.x,
@@ -88,37 +89,31 @@ export default function InstallPhonesBanner({
 
       const play = () => {
         resetPhones();
-        tl.play(0); // ✅ guaranteed to play
+        tl.play(0);
       };
 
       tl.eventCallback("onComplete", () => {
         gsap.set([backEl, frontEl], { willChange: "auto" });
       });
 
-      // initial state
       resetPhones();
 
       ScrollTrigger.create({
         id: "installPhones",
         trigger: sectionEl,
         start: "center center",
-        // markers: true,
-        onEnter: () => {
-          console.log("enter");
-          play();
-        },
-        onEnterBack: () => {
-          console.log("enterBack");
-          play();
-        },
+        onEnter: play,
+        onEnterBack: play,
         invalidateOnRefresh: true,
       });
 
-      // refresh after images load
       const imgs = sectionEl.querySelectorAll("img");
       const onLoad = () => ScrollTrigger.refresh();
+
       imgs.forEach((img) => {
-        if (!img.complete) img.addEventListener("load", onLoad, { once: true });
+        if (!img.complete) {
+          img.addEventListener("load", onLoad, { once: true });
+        }
       });
     }, sectionRef);
 
@@ -139,6 +134,8 @@ export default function InstallPhonesBanner({
           loading="lazy"
           decoding="async"
         />
+
+        {/* Desktop content remains here */}
         {children && (
           <div className="install-banner__card-content">{children}</div>
         )}
@@ -158,9 +155,15 @@ export default function InstallPhonesBanner({
           className="install-banner__phone install-banner__phone--front"
           src={phoneFrontSrc}
           alt={altFront}
+          loading="lazy"
           decoding="async"
         />
       </div>
+
+      {/* Mobile-only content block; show via CSS only on mobile */}
+      {children && (
+        <div className="install-banner__mobile-content">{children}</div>
+      )}
     </section>
   );
 }

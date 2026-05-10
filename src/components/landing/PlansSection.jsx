@@ -8,17 +8,21 @@ const SCROLL_FACTOR = 3000;
 const EPS = 0.001;
 
 // smoother start tuning
-const START_LOCK_TOL = 24; // lock only when section top is near nav line
-const MIN_VISIBLE_BELOW_NAV = 160; // require some section content under nav
-const SMOOTH_SNAP_DIST = 140; // if snap distance is large, use smooth
+const START_LOCK_TOL = 24;
+const MIN_VISIBLE_BELOW_NAV = 160;
+const SMOOTH_SNAP_DIST = 140;
 
 export default function PlansSection({ plans = plansData }) {
   const sectionRef = useRef(null);
 
   const [activeStep, setActiveStep] = useState(0);
   const [viewportH, setViewportH] = useState(900);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 768px)").matches;
+  });
 
-  // 0..1 drives the whole deck
+  // 0..1 drives the desktop deck
   const progress = useMotionValue(0);
 
   // lock refs
@@ -30,12 +34,39 @@ export default function PlansSection({ plans = plansData }) {
   const lastScrollYRef = useRef(0);
   const lastTouchYRef = useRef(null);
 
-  const lastOutsideRef = useRef("above"); // 'above' | 'below'
-  const cooldownRef = useRef(null); // 'down' | 'up' | null
+  const lastOutsideRef = useRef("above");
+  const cooldownRef = useRef(null);
+
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 768px)");
+
+    const update = () => {
+      setIsMobile(mql.matches);
+
+      if (mql.matches) {
+        lockedRef.current = false;
+        snappingRef.current = false;
+        justLockedRef.current = false;
+        cooldownRef.current = null;
+        progress.set(0);
+      }
+    };
+
+    update();
+
+    if (mql.addEventListener) {
+      mql.addEventListener("change", update);
+      return () => mql.removeEventListener("change", update);
+    }
+
+    mql.addListener(update);
+    return () => mql.removeListener(update);
+  }, [progress]);
 
   useEffect(() => {
     const onResize = () => setViewportH(window.innerHeight || 900);
     onResize();
+
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
@@ -56,7 +87,6 @@ export default function PlansSection({ plans = plansData }) {
     const navH = getNavH();
     const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
 
-    // lock so section sits right under the nav
     return scrollY + rect.top - navH;
   }, [getNavH]);
 
@@ -92,7 +122,6 @@ export default function PlansSection({ plans = plansData }) {
     return "inside";
   }, [getNavH]);
 
-  // lock only when section is basically aligned under nav
   const nearLockLine = useCallback(() => {
     const el = sectionRef.current;
     if (!el) return false;
@@ -106,13 +135,9 @@ export default function PlansSection({ plans = plansData }) {
     );
   }, [getNavH]);
 
-  // -----------------------------
-  // INNER SCROLL (features list)
-  // -----------------------------
   const getInnerScroller = useCallback((target) => {
     if (!(target instanceof Element)) return null;
 
-    // Add more selectors if you have other scrollable areas inside cards
     const el = target.closest(".plan-card__features");
     if (!el) return null;
 
@@ -131,7 +156,6 @@ export default function PlansSection({ plans = plansData }) {
     const atTop = el.scrollTop <= 0;
     const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
 
-    // deltaY > 0 = scroll down (forward)
     return deltaY > 0 ? !atBottom : !atTop;
   }, []);
 
@@ -146,7 +170,6 @@ export default function PlansSection({ plans = plansData }) {
       lockedRef.current = true;
       justLockedRef.current = true;
 
-      // set correct start only when entering from outside
       const from = lastOutsideRef.current;
       if (forward && from === "above") progress.set(0);
       if (!forward && from === "below") progress.set(1);
@@ -160,12 +183,16 @@ export default function PlansSection({ plans = plansData }) {
   const disengageLock = useCallback((dir) => {
     lockedRef.current = false;
     justLockedRef.current = false;
-    cooldownRef.current = dir; // 'down' or 'up'
+    cooldownRef.current = dir;
   }, []);
 
-  // click tab -> lock and animate progress to that card
   const focusTab = useCallback(
     (index) => {
+      if (isMobile) {
+        setActiveStep(index);
+        return;
+      }
+
       lockedRef.current = true;
       cooldownRef.current = null;
       justLockedRef.current = false;
@@ -179,14 +206,12 @@ export default function PlansSection({ plans = plansData }) {
         ease: [0.22, 0.68, 0.2, 0.99],
       });
     },
-    [plans.length, progress, snapToLockTop],
+    [isMobile, plans.length, progress, snapToLockTop],
   );
 
-  // -----------------------------
-  // WHEEL + TOUCH (deck scrub)
-  // with inner-scroll priority
-  // -----------------------------
   useEffect(() => {
+    if (isMobile) return;
+
     const el = sectionRef.current;
     if (!el) return;
 
@@ -197,8 +222,6 @@ export default function PlansSection({ plans = plansData }) {
 
       const forward = e.deltaY > 0;
 
-      // If we're locked and the user is scrolling inside the features list,
-      // and it can scroll further, consume it there (do NOT animate deck).
       const inner = getInnerScroller(e.target);
       if (lockedRef.current && inner && canConsumeScroll(inner, e.deltaY)) {
         e.preventDefault();
@@ -207,8 +230,6 @@ export default function PlansSection({ plans = plansData }) {
         return;
       }
 
-      // Not locked yet: lock only near the lock line (smooth start).
-      // Also: if the event is on a scrollable inner list, let native scrolling happen.
       if (!lockedRef.current) {
         if (inner && canConsumeScroll(inner, e.deltaY)) return;
         if (!nearLockLine()) return;
@@ -219,7 +240,6 @@ export default function PlansSection({ plans = plansData }) {
         return;
       }
 
-      // First tick after lock: keep pinned but don't scrub yet.
       if (justLockedRef.current) {
         justLockedRef.current = false;
         e.preventDefault();
@@ -231,7 +251,6 @@ export default function PlansSection({ plans = plansData }) {
       const atStart = v <= EPS;
       const atEnd = v >= 1 - EPS;
 
-      // allow leaving once animation is done in that direction
       if (atEnd && forward) return disengageLock("down");
       if (atStart && !forward) return disengageLock("up");
 
@@ -251,12 +270,11 @@ export default function PlansSection({ plans = plansData }) {
 
       const y = e.touches[0].clientY;
       const last = lastTouchYRef.current;
-      const dy = last == null ? 0 : last - y; // swipe up => forward
+      const dy = last == null ? 0 : last - y;
       lastTouchYRef.current = y;
 
       const forward = dy > 0;
 
-      // Inner-scroll priority while locked
       const inner = getInnerScroller(e.target);
       if (lockedRef.current && inner && canConsumeScroll(inner, dy)) {
         e.preventDefault();
@@ -265,7 +283,6 @@ export default function PlansSection({ plans = plansData }) {
         return;
       }
 
-      // Not locked yet: if user is scrolling inside inner list, let it scroll naturally
       if (!lockedRef.current) {
         if (inner && canConsumeScroll(inner, dy)) return;
         if (!nearLockLine()) return;
@@ -312,6 +329,7 @@ export default function PlansSection({ plans = plansData }) {
       window.removeEventListener("touchend", onTouchEnd, opts);
     };
   }, [
+    isMobile,
     progress,
     nearLockLine,
     shouldEngage,
@@ -321,8 +339,9 @@ export default function PlansSection({ plans = plansData }) {
     canConsumeScroll,
   ]);
 
-  // momentum safety net (fast flick skip + keep pin)
   useEffect(() => {
+    if (isMobile) return;
+
     lastScrollYRef.current =
       window.scrollY || document.documentElement.scrollTop || 0;
 
@@ -337,14 +356,12 @@ export default function PlansSection({ plans = plansData }) {
       const goingDown = curY > prevY;
       lastScrollYRef.current = curY;
 
-      // update outside side + clear cooldown once we truly leave
       const region = computeRegion();
       if (region !== "inside") {
-        lastOutsideRef.current = region; // 'above' | 'below'
+        lastOutsideRef.current = region;
         cooldownRef.current = null;
       }
 
-      // while locked: keep pinned (no drift)
       if (lockedRef.current) {
         const lockTop = computeLockTop();
         lockTopRef.current = lockTop;
@@ -352,7 +369,6 @@ export default function PlansSection({ plans = plansData }) {
         return;
       }
 
-      // if momentum crosses the lock line, engage (smooth snap if big correction)
       const lockTop = computeLockTop();
       const crossed =
         (prevY < lockTop && curY >= lockTop) ||
@@ -369,21 +385,35 @@ export default function PlansSection({ plans = plansData }) {
 
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [computeRegion, computeLockTop, snapTo, shouldEngage, engageLock]);
+  }, [
+    isMobile,
+    computeRegion,
+    computeLockTop,
+    snapTo,
+    shouldEngage,
+    engageLock,
+  ]);
 
-  // active tab highlight driven by progress (kept as-is)
   useEffect(() => {
+    if (isMobile) return;
+
     const total = plans.length || 1;
+
     return progress.on("change", (v) => {
       const seg = 1 / (total + 1);
       let cur = 0;
-      for (let i = 0; i < total; i++) if (v >= (i + 0.5) * seg) cur = i;
+
+      for (let i = 0; i < total; i++) {
+        if (v >= (i + 0.5) * seg) cur = i;
+      }
+
       setActiveStep(cur);
     });
-  }, [plans, progress]);
+  }, [isMobile, plans, progress]);
 
-  // fade header + disable its clicks only while interacting with the deck
   useEffect(() => {
+    if (isMobile) return;
+
     const header = document.querySelector(".app-header");
     if (!header) return;
 
@@ -393,7 +423,72 @@ export default function PlansSection({ plans = plansData }) {
     });
 
     return () => off();
-  }, [progress]);
+  }, [isMobile, progress]);
+
+  const activePlan = plans[activeStep] ?? plans[0];
+
+  if (isMobile) {
+    return (
+      <section
+        ref={sectionRef}
+        className="plans-pin plans-pin--mobile"
+        aria-labelledby="plans-title"
+      >
+        <div className="plans-pin__sticky plans-pin__sticky--mobile">
+          <div className="plans__tabs" role="tablist" aria-label="انتخاب پلن">
+            {plans.map((p, i) => (
+              <button
+                key={p.id}
+                role="tab"
+                aria-selected={i === activeStep}
+                className={`plans__tab ${i === activeStep ? "is-active" : ""}`}
+                type="button"
+                onClick={() => setActiveStep(i)}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          <h2 id="plans-title" className="sr-only">
+            پلن‌های منرو
+          </h2>
+
+          <div className="plans__deck plans__deck--mobile">
+            <div
+              className="plans__mobile-stack plans__mobile-stack--1"
+              aria-hidden="true"
+              style={{
+                backgroundImage: activePlan?.bgSrc
+                  ? `url(${activePlan.bgSrc})`
+                  : undefined,
+              }}
+            />
+            <div
+              className="plans__mobile-stack plans__mobile-stack--2"
+              aria-hidden="true"
+              style={{
+                backgroundImage: activePlan?.bgSrc
+                  ? `url(${activePlan.bgSrc})`
+                  : undefined,
+              }}
+            />
+            <div
+              className="plans__mobile-stack plans__mobile-stack--3"
+              aria-hidden="true"
+              style={{
+                backgroundImage: activePlan?.bgSrc
+                  ? `url(${activePlan.bgSrc})`
+                  : undefined,
+              }}
+            />
+
+            <PlanCard plan={activePlan} />
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section
@@ -454,11 +549,13 @@ function PlanMotionCard({ index, total, plan, progress, viewportH }) {
     [0, start, mid, end, 1],
     [baseY, baseY, 0, outY, outY],
   );
+
   const scale = useTransform(
     progress,
     [0, start, mid, end, 1],
     [baseScale, baseScale, 1, 1, 1],
   );
+
   const zIndex = useTransform(
     progress,
     [0, start, mid, end, 1],

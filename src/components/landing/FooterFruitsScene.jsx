@@ -46,8 +46,10 @@ export default function FooterFruitsScene() {
     const root = sceneRef.current;
     if (!root) return;
 
-    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (mql.matches) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const isMobile = window.matchMedia("(max-width: 768px)");
+
+    if (reducedMotion.matches || isMobile.matches) return;
 
     const imgs = Array.from(root.querySelectorAll(".footer-bg__item img"));
     if (!imgs.length) return;
@@ -70,7 +72,7 @@ export default function FooterFruitsScene() {
           io.disconnect();
         });
       },
-      { threshold: 0.2 }
+      { threshold: 0.2 },
     );
 
     io.observe(root);
@@ -89,8 +91,10 @@ export default function FooterFruitsScene() {
     if (root.__fruitsHoverInit) return;
     root.__fruitsHoverInit = true;
 
-    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (mql.matches) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const isMobile = window.matchMedia("(max-width: 768px)");
+
+    if (reducedMotion.matches || isMobile.matches) return;
 
     const items = Array.from(root.querySelectorAll(".footer-bg__item"));
     if (!items.length) return;

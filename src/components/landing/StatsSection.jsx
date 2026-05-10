@@ -85,9 +85,10 @@ export default function StatsSection() {
     const root = sectionRef.current;
     if (!root) return;
 
-    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (mql.matches) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const isMobile = window.matchMedia("(max-width: 768px)");
 
+    if (reducedMotion.matches || isMobile.matches) return;
     const ICON_SEL = ".stat-icon";
     const icons = Array.from(root.querySelectorAll(ICON_SEL));
 

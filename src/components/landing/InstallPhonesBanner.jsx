@@ -21,7 +21,7 @@ export default function InstallPhonesBanner({
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const isMobile = window.matchMedia("(max-width: 768px)");
 
-    // Disable animation on mobile, keep desktop behavior intact
+    // Desktop animation only
     if (reducedMotion.matches || isMobile.matches) return;
 
     const ctx = gsap.context(() => {
@@ -40,7 +40,7 @@ export default function InstallPhonesBanner({
         frontY: REST.front.y + 520,
       };
 
-      const SPEED = 500; // px/sec
+      const SPEED = 500;
       const backDur = Math.abs(START.backY - REST.back.y) / SPEED;
       const frontDur = Math.abs(START.frontY - REST.front.y) / SPEED;
 
@@ -126,41 +126,43 @@ export default function InstallPhonesBanner({
       className="install-banner"
       aria-label="بخش نصب اپلیکیشن"
     >
-      <div className="install-banner__card">
-        <img
-          className="install-banner__card-img"
-          src={bgSrc}
-          alt=""
-          loading="lazy"
-          decoding="async"
-        />
+      <div className="install-banner__visual">
+        <div className="install-banner__card">
+          <img
+            className="install-banner__card-img"
+            src={bgSrc}
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
 
-        {/* Desktop content remains here */}
-        {children && (
-          <div className="install-banner__card-content">{children}</div>
-        )}
+          {/* Desktop content only */}
+          {children && (
+            <div className="install-banner__card-content">{children}</div>
+          )}
+        </div>
+
+        <div className="install-banner__phones" aria-hidden="true">
+          <img
+            ref={backRef}
+            className="install-banner__phone install-banner__phone--back"
+            src={phoneBackSrc}
+            alt={altBack}
+            loading="lazy"
+            decoding="async"
+          />
+          <img
+            ref={frontRef}
+            className="install-banner__phone install-banner__phone--front"
+            src={phoneFrontSrc}
+            alt={altFront}
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
       </div>
 
-      <div className="install-banner__phones" aria-hidden="true">
-        <img
-          ref={backRef}
-          className="install-banner__phone install-banner__phone--back"
-          src={phoneBackSrc}
-          alt={altBack}
-          loading="lazy"
-          decoding="async"
-        />
-        <img
-          ref={frontRef}
-          className="install-banner__phone install-banner__phone--front"
-          src={phoneFrontSrc}
-          alt={altFront}
-          loading="lazy"
-          decoding="async"
-        />
-      </div>
-
-      {/* Mobile-only content block; show via CSS only on mobile */}
+      {/* Mobile content only */}
       {children && (
         <div className="install-banner__mobile-content">{children}</div>
       )}

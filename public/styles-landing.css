@@ -2521,12 +2521,6 @@ body {
     order: 2;
   }
 
-  .pos-i {
-    order: 3;
-    grid-column: 1 / 2;
-    justify-self: center;
-  }
-
   .pos-f {
     order: 4;
     grid-column: 2 / 3;
@@ -2564,7 +2558,7 @@ body {
   }
 
   .info-card__header {
-    justify-content: flex-start;
+    flex-direction: row-reverse;
     gap: 1rem;
   }
 
@@ -2640,13 +2634,16 @@ body {
     min-height: 14rem;
     padding: 1rem;
     overflow: visible;
+    border: none;
   }
 
   .cost-reduction__icon {
-    width: 3rem;
-    height: 3rem;
+    width: 4rem;
+    height: 4rem;
     top: 1rem;
     left: 1rem;
+    align-items: center;
+    border-radius: 5px;
   }
 
   .cost-reduction .kpi {
@@ -2669,7 +2666,7 @@ body {
   #why-menro
     > div.why-card.cost-reduction.why-card.why-card--chart.pos-h
     > svg {
-    width: 13rem;
+    width: 15rem;
     height: 10rem;
   }
 }
@@ -2677,7 +2674,8 @@ body {
 @media (max-width: 420px) {
   .why-static {
     padding-inline: 2.2rem;
-    gap: 2.4rem 1.8rem;
+    gap: 7rem 2rem;
+    direction: ltr;
   }
 
   .pos-b,
@@ -2700,9 +2698,52 @@ body {
   }
 
   .cost-reduction {
-    width: 13.5rem !important;
-    height: 13.5rem !important;
+    width: 16.5rem !important;
+    height: 16.5rem !important;
     min-height: 13.5rem;
+  }
+
+  .cost-reduction .cost-chart {
+    position: absolute;
+    inset: 25px -2px 52px 5px;
+    overflow: hidden;
+  }
+
+  .pos-f {
+    align-content: center;
+    border: none;
+    top: -3rem !important; /* optical alignment */
+    width: 10rem !important;
+    height: 10rem !important;
+  }
+
+  .pos-g {
+    align-content: center;
+    border: none;
+    top: -6rem !important; /* optical alignment */
+    width: 10rem !important;
+    height: 10rem !important;
+  }
+
+  #why-menro
+    > div.why-card.icon-card.why-card.why-card--small.pos-f
+    > div
+    > div.big-icon
+    > svg {
+    width: 4rem !important;
+  }
+
+  .pos-i {
+    border: none;
+    order: 3;
+    grid-column: 1 / 2;
+    justify-self: center;
+    top: 2rem !important; /* optical alignment */
+    width: 14rem !important;
+    height: 14rem !important;
+  }
+  .pos-i img {
+    width: 4rem;
   }
 }
 
@@ -2751,7 +2792,7 @@ body {
   }
 
   .stat-number {
-    font-size: clamp(3.2rem, 10vw, 4.6rem);
+    font-size: 3rem;
     font-weight: 900;
     line-height: 1;
     color: #ff7a59;
@@ -2784,7 +2825,7 @@ body {
   }
 
   .stat-number {
-    font-size: clamp(3rem, 10.5vw, 4.2rem);
+    font-size: 3rem;
   }
 
   .stat-text {
@@ -2795,6 +2836,10 @@ body {
  * Mobile Install Phones Banner Only
  ***************************************/
 
+.install-banner__visual {
+  display: contents;
+}
+
 .install-banner__mobile-content {
   display: none;
 }
@@ -2804,6 +2849,7 @@ body {
     width: 100%;
     height: auto;
     min-height: auto;
+
     padding: 4.8rem 2.2rem 5.6rem;
     background: #0b0f13;
 
@@ -2812,22 +2858,36 @@ body {
     align-items: center;
     justify-content: flex-start;
 
+    overflow: visible;
+  }
+
+  .install-banner__visual {
+    position: relative;
+    display: block;
+
+    width: 100%;
+    max-width: 58rem;
+    height: 40rem;
+
+    margin: 0 auto;
+
     overflow: hidden;
+    border-radius: 2rem;
   }
 
   .install-banner__card {
-    position: relative;
-    left: auto;
-    bottom: auto;
-    transform: none;
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
 
-    width: 100%;
-    max-width: 48rem;
-    height: 27.5rem;
-    margin: 0 auto;
+    width: 88%;
+    height: 30rem;
+    margin: 0;
 
-    border-radius: 2rem;
+    border-radius: 1.8rem;
     overflow: hidden;
+
     z-index: 1;
   }
 
@@ -2844,11 +2904,12 @@ body {
 
   .install-banner__phones {
     position: absolute;
-    top: 0;
-    left: 50%;
-    width: min(100%, 48rem);
-    height: 33rem;
-    transform: translateX(-50%);
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    transform: none;
     z-index: 3;
     pointer-events: none;
   }
@@ -2856,34 +2917,41 @@ body {
   .install-banner__phone {
     position: absolute;
     display: block;
+
     height: auto;
     opacity: 1 !important;
     visibility: visible !important;
     will-change: auto !important;
+
     filter: drop-shadow(0 1.8rem 3.2rem rgba(0, 0, 0, 0.48));
   }
 
   .install-banner__phone--back {
-    width: clamp(18rem, 47vw, 24rem);
+    width: clamp(22rem, 52vw, 29rem);
+
     right: auto;
-    left: 7%;
-    top: 2.8rem;
+    left: 14%;
+    top: 2.4rem;
+
     transform: rotate(-5deg) translate3d(0, 0, 0) !important;
     z-index: 3;
   }
 
   .install-banner__phone--front {
-    width: clamp(21rem, 55vw, 29rem);
-    right: 1%;
-    top: -0.8rem;
+    width: clamp(27rem, 64vw, 36rem);
+
+    right: 6%;
+    top: -0.4rem;
+
     transform: rotate(5deg) translate3d(0, 0, 0) !important;
     z-index: 4;
   }
 
   .install-banner__mobile-content {
     width: 100%;
-    max-width: 48rem;
-    margin: 3.6rem auto 0;
+    max-width: 58rem;
+
+    margin: 3.8rem auto 0;
 
     display: flex;
     flex-direction: column;
@@ -2896,8 +2964,9 @@ body {
 
   .install-banner__mobile-content .hero__title {
     margin: 0;
+
     color: #ffffff;
-    font-size: clamp(3.2rem, 8.7vw, 4.8rem);
+    font-size: 3rem;
     line-height: 1.45;
     font-weight: 900;
     text-align: center;
@@ -2906,8 +2975,9 @@ body {
 
   .install-banner__mobile-content .hero__description {
     margin: 0.8rem 0 0;
+
     color: #ffffff;
-    font-size: clamp(2.4rem, 7vw, 3.8rem);
+    font-size: 2rem;
     line-height: 1.45;
     font-weight: 400;
     text-align: center;
@@ -2919,25 +2989,26 @@ body {
     padding: 4.4rem 2rem 5.2rem;
   }
 
-  .install-banner__card {
-    height: 26rem;
+  .install-banner__visual {
+    height: 38rem;
     border-radius: 1.8rem;
   }
 
-  .install-banner__phones {
-    height: 31rem;
+  .install-banner__card {
+    width: 90%;
+    height: 28rem;
   }
 
   .install-banner__phone--back {
-    width: clamp(17rem, 49vw, 21rem);
-    left: 5%;
-    top: 3.2rem;
+    width: 18rem;
+    left: 12%;
+    top: 7.2rem;
   }
 
   .install-banner__phone--front {
-    width: clamp(20rem, 58vw, 26rem);
-    right: -1%;
-    top: -0.4rem;
+    width: 21rem;
+    right: 8%;
+    top: 53px;
   }
 
   .install-banner__mobile-content {
@@ -2945,11 +3016,11 @@ body {
   }
 
   .install-banner__mobile-content .hero__title {
-    font-size: clamp(3rem, 9vw, 4rem);
+    font-size: 3rem;
   }
 
   .install-banner__mobile-content .hero__description {
-    font-size: clamp(2.3rem, 7.4vw, 3.2rem);
+    font-size: 2rem;
   }
 }
 /***************************************
@@ -4003,5 +4074,23 @@ body {
 
   .footer-bg__item--juice img {
     width: 33rem;
+  }
+}
+.pos-i--menro-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.why-menro-logo-icon {
+  width: 7rem;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+@media (max-width: 768px) {
+  .why-menro-logo-icon {
+    width: 5.4rem;
   }
 }

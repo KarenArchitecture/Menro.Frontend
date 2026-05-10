@@ -1,6 +1,8 @@
+// src/components/landing/InstallPhonesBanner.jsx
 import React, { useRef, useLayoutEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+
 gsap.registerPlugin(ScrollTrigger);
 
 export default function InstallPhonesBanner({
@@ -16,49 +18,102 @@ export default function InstallPhonesBanner({
   const frontRef = useRef(null);
 
   useLayoutEffect(() => {
-    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (mql.matches) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const isMobile = window.matchMedia("(max-width: 768px)");
+
+    // Disable animation on mobile, keep desktop behavior intact
+    if (reducedMotion.matches || isMobile.matches) return;
 
     const ctx = gsap.context(() => {
-      // Keep phones hidden/off-screen until we play the animation
-      gsap.set([backRef.current, frontRef.current], {
-        autoAlpha: 0,
-        y: -500,
-      });
+      const backEl = backRef.current;
+      const frontEl = frontRef.current;
+      const sectionEl = sectionRef.current;
+      if (!backEl || !frontEl || !sectionEl) return;
+
+      const REST = {
+        back: { x: -185, y: -179 },
+        front: { x: 16, y: -239 },
+      };
+
+      const START = {
+        backY: REST.back.y + 500,
+        frontY: REST.front.y + 520,
+      };
+
+      const SPEED = 500; // px/sec
+      const backDur = Math.abs(START.backY - REST.back.y) / SPEED;
+      const frontDur = Math.abs(START.frontY - REST.front.y) / SPEED;
 
       const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 80%", // fire when section top hits 80% viewport
-          toggleActions: "play none none none", // one-shot
-          once: true, // don’t re-trigger on scroll back
-          // markers: true,                 // <- uncomment to debug
-        },
-        defaults: { ease: "power3.out" },
+        paused: true,
+        defaults: { ease: "none" },
       });
 
-      // Fade/slide to final positions
-      tl.to(backRef.current, {
+      tl.to(backEl, {
+        y: REST.back.y,
         autoAlpha: 1,
-        x: -185,
-        y: -179,
-        duration: 1.2, // edit to change speed
+        duration: backDur,
+        overwrite: "auto",
       }).to(
-        frontRef.current,
+        frontEl,
         {
+          y: REST.front.y,
           autoAlpha: 1,
-          x: 59,
-          y: -295,
-          duration: 1.2, // edit to change speed
+          duration: frontDur,
+          overwrite: "auto",
         },
-        "-=0.25"
+        "-=0.2",
       );
 
-      // Refresh after images load to ensure correct trigger position
-      const imgs = sectionRef.current.querySelectorAll("img");
+      const resetPhones = () => {
+        tl.pause(0);
+
+        gsap.set(backEl, {
+          x: REST.back.x,
+          y: START.backY,
+          autoAlpha: 0,
+          transformPerspective: 1000,
+          z: 0.01,
+          willChange: "transform, opacity",
+        });
+
+        gsap.set(frontEl, {
+          x: REST.front.x,
+          y: START.frontY,
+          autoAlpha: 0,
+          transformPerspective: 1000,
+          z: 0.01,
+          willChange: "transform, opacity",
+        });
+      };
+
+      const play = () => {
+        resetPhones();
+        tl.play(0);
+      };
+
+      tl.eventCallback("onComplete", () => {
+        gsap.set([backEl, frontEl], { willChange: "auto" });
+      });
+
+      resetPhones();
+
+      ScrollTrigger.create({
+        id: "installPhones",
+        trigger: sectionEl,
+        start: "center center",
+        onEnter: play,
+        onEnterBack: play,
+        invalidateOnRefresh: true,
+      });
+
+      const imgs = sectionEl.querySelectorAll("img");
       const onLoad = () => ScrollTrigger.refresh();
+
       imgs.forEach((img) => {
-        if (!img.complete) img.addEventListener("load", onLoad, { once: true });
+        if (!img.complete) {
+          img.addEventListener("load", onLoad, { once: true });
+        }
       });
     }, sectionRef);
 
@@ -79,6 +134,8 @@ export default function InstallPhonesBanner({
           loading="lazy"
           decoding="async"
         />
+
+        {/* Desktop content remains here */}
         {children && (
           <div className="install-banner__card-content">{children}</div>
         )}
@@ -98,9 +155,15 @@ export default function InstallPhonesBanner({
           className="install-banner__phone install-banner__phone--front"
           src={phoneFrontSrc}
           alt={altFront}
+          loading="lazy"
           decoding="async"
         />
       </div>
+
+      {/* Mobile-only content block; show via CSS only on mobile */}
+      {children && (
+        <div className="install-banner__mobile-content">{children}</div>
+      )}
     </section>
   );
 }

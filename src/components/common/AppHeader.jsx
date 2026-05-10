@@ -13,10 +13,20 @@ import "../../assets/css/app-header-styles.css";
  */
 export default function AppHeader({
   rightLinks = [
-    { label: "منرو", href: "#", active: true },
-    { label: "خانه", href: "#" },
-    { label: "نقشه", href: "#" },
-    { label: "مقالات", href: "#" },
+    {
+      label: (
+        <img
+          src="/images/menro-header-logo.png"
+          alt="منرو"
+          className="brand-logo"
+        />
+      ),
+      href: "#",
+      active: true,
+    },
+    { label: "وب‌اپ", href: "#" },
+    { label: "اشتراک‌ها", href: "#" },
+    { label: "درباره‌ما", href: "#" },
   ],
   leftIcons = [],
   position = "fixed",

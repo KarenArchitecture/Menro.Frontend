@@ -1,8 +1,8 @@
 export default function PrevIcon() {
   return (
     <svg
-      width="17"
-      height="29"
+      width="13"
+      height="13"
       viewBox="0 0 17 29"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

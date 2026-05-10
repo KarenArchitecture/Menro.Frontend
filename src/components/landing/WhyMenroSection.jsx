@@ -26,24 +26,25 @@ export default function WhyMenroSection() {
       const titles = titlesRef.current;
       const cards = gsap.utils.toArray(".why-card");
 
-      // --- Title fade in/out control
-      gsap
-        .timeline({
+      // --- Title: slow vertical slide across the whole section
+      // Starts when Why section top touches bottom of viewport (still under hero),
+      // ends when Why section bottom reaches top of viewport (fully settled).
+      gsap.fromTo(
+        titles,
+        { yPercent: 70 }, // start well below (feels like coming from behind hero)
+        {
+          yPercent: -270, // gently overshoot upward feel
+          ease: "none",
           scrollTrigger: {
             trigger: section,
-            start: "top center",
-            end: "bottom 50%",
+            start: "top bottom",
+            end: "bottom top",
             scrub: true,
           },
-        })
-        .fromTo(
-          titles,
-          { autoAlpha: 0 },
-          { autoAlpha: 1, ease: "power2.out", duration: 0.5 }
-        )
-        .to(titles, { autoAlpha: 0, ease: "power2.in", duration: 0.5 });
+        }
+      );
 
-      // --- Cards scroll upward behind title
+      // --- Cards: keep your existing upward drift
       gsap.to(cards, {
         yPercent: -200,
         ease: "none",

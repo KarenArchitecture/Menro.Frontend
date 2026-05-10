@@ -20,7 +20,7 @@ export default function BurgerPanelSection({
   const sceneRef = useRef(null);
   const burgerRef = useRef(null);
 
-  // ===== Burger animation (unchanged) =====
+  // ===== Burger animation =====
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start 90%", "end 10%"],
@@ -29,50 +29,59 @@ export default function BurgerPanelSection({
   const burgerOpacity = useTransform(
     scrollYProgress,
     [0.0, 0.06, 0.85, 0.95],
-    [0, 1, 1, 0]
+    [0, 1, 1, 0],
   );
+
   const burgerY = useTransform(
     scrollYProgress,
     [0.06, 0.55],
-    ["0vh", "-120vh"]
+    ["0vh", "-120vh"],
   );
 
   // ===== Panel: portal + fixed + smooth fade + de-tilt =====
   const { scrollYProgress: sectionProg } = useScroll({
     target: sectionRef,
-    offset: ["start start", "end end"], // 0 at section top, 1 at section bottom
+    offset: ["start start", "end end"],
   });
 
-  // soft fade edges to avoid pop
   const panelOpacity = useTransform(
     sectionProg,
     [0.0, 0.04, 0.96, 1.0],
-    [0, 1, 1, 0]
+    [0, 1, 1, 0],
   );
 
-  // de-tilt across most of the section
   const panelRotateX = useTransform(
     sectionProg,
     [0, 0.15, 0.55, 0.9, 1],
-    ["20deg", "10deg", "0deg", "0deg", "0deg"]
+    ["20deg", "10deg", "0deg", "0deg", "0deg"],
   );
+
   const panelTransform = useMotionTemplate`
-  perspective(700px) translate3d(-50%, -50%, 0) rotateX(${panelRotateX})
-`;
-  // mount into portal slightly before/after to avoid mount pop
+    perspective(700px) translate3d(-50%, -50%, 0) rotateX(${panelRotateX})
+  `;
+
+  // Mount into portal slightly before/after to avoid mount pop
   const [active, setActive] = useState(false);
+
   useMotionValueEvent(sectionProg, "change", (v) => {
     const on = v > -0.02 && v < 1.02;
     setActive((prev) => (prev !== on ? on : prev));
   });
-  // ===== Title animation (fade + slide down) =====
+
+  // ===== Title animation =====
+  // Starts above the panel/frame and settles into exact center.
+  // Burger remains in front and moves upward with its existing animation.
+
+  const titleOpacityIn = useTransform(scrollYProgress, [0.04, 0.12], [0, 1]);
+
+  const titleY = useTransform(scrollYProgress, [0.06, 0.55], ["-42vh", "0vh"]);
+
+  const titleOpacityOut = useTransform(sectionProg, [0.85, 0.95], [1, 0]);
+
   const titleOpacity = useTransform(
-    sectionProg,
-    [0.1, 0.25, 0.85, 0.95],
-    [0, 1, 1, 0]
+    [titleOpacityIn, titleOpacityOut],
+    ([a, b]) => a * b,
   );
-  const titleYPercent = useTransform(sectionProg, [0.3, 1], [-30, 0]);
-  const titleTransform = useMotionTemplate`translateY(${titleYPercent}%)`;
 
   const PanelOverlay = (
     <motion.div
@@ -84,7 +93,7 @@ export default function BurgerPanelSection({
         transform: panelTransform,
         transformOrigin: "0 100%",
         willChange: "transform, opacity",
-        opacity: panelOpacity, // <-- use the correct var
+        opacity: panelOpacity,
         zIndex: 10,
         pointerEvents: "none",
       }}
@@ -96,9 +105,14 @@ export default function BurgerPanelSection({
           aria-hidden="true"
         />
       )}
+
       <motion.h2
         className="bp__title"
-        style={{ opacity: titleOpacity, transform: titleTransform }}
+        style={{
+          opacity: titleOpacity,
+          y: titleY,
+          zIndex: 2,
+        }}
       >
         {title}
       </motion.h2>
@@ -109,11 +123,13 @@ export default function BurgerPanelSection({
     <section ref={sectionRef} className="bp">
       <div ref={sceneRef} className="bp__scene">
         <div className="bp__stage">
-          {/* Burger */}
           <motion.div
             ref={burgerRef}
             className="bp__burger"
-            style={{ opacity: burgerOpacity, y: burgerY }}
+            style={{
+              opacity: burgerOpacity,
+              y: burgerY,
+            }}
           >
             {haloSrc ? (
               <img
@@ -125,10 +141,10 @@ export default function BurgerPanelSection({
             ) : (
               <div className="bp__glow" aria-hidden="true" />
             )}
+
             <img className="bp__burgerImg" src={burgerSrc} alt={burgerAlt} />
           </motion.div>
 
-          {/* Portal the panel so it's truly fixed to the viewport */}
           {active &&
             typeof document !== "undefined" &&
             createPortal(PanelOverlay, document.body)}

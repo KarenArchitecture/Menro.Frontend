@@ -1,11 +1,31 @@
-:root {
-    /* font tokens so you can swap easily later */
+/* src/assets/css/fonts.css */
+@font-face {
+    font-family: "Estedad";
+    src:
+        url("../fonts/Estedad-VF.woff2") format("woff2"),
+        url("../fonts/Estedad-VF.woff") format("woff");
+    font-weight: 100 900; /* variable font range */
+    font-style: normal;
+    font-display: swap;
+}
+
+* {
+    font-family: "Estedad" !important;
+}
+/* @font-face {
+    font-family: "Vazirmatn";
+    src: url("../fonts/Vazirmatn-VariableFont_wght.ttf") format("truetype");
+    font-weight: 100 900; /* variable font range 
+    font-style: normal;
+    font-display: swap;
+}
+
+/* :root {
     --font-sans:
         "Vazirmatn", system-ui, -apple-system, "Segoe UI", Roboto,
         "Helvetica Neue", Arial, "Noto Sans", sans-serif;
     --font-alt: ui-rounded, "SF Pro Rounded", "Vazirmatn", sans-serif;
 }
-
 * {
     box-sizing: border-box;
     font-family: "Vazirmatn", sans-serif;
@@ -13,6 +33,7 @@
     padding: 0;
     transition: 0.3s ease;
 }
+ */
 
 *,
 *::before,

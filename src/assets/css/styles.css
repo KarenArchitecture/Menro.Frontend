@@ -340,10 +340,7 @@
 }
 
 .section-title {
-    display: flex;
-    align-items: center;
-    font-size: 1.5rem;
-    font-weight: 900;
+    font-family: "Estedad", system-ui, sans-serif;
     display: flex;
     align-items: center;
     font-size: 1.5rem;
@@ -1413,10 +1410,10 @@
 
 /* View All */
 .previous-orders .food-cards-container--search {
-  max-height: none !important;
+    max-height: none !important;
 }
 
-  @keyframes spin {
+@keyframes spin {
     0% {
         transform: rotate(0deg);
     }

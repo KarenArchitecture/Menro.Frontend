@@ -1,0 +1,9 @@
+@font-face {
+    font-family: 'Estedad VF';
+    src: url('Estedad-VF.woff2') format('woff2'),
+        url('Estedad-VF.woff') format('woff');
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+}
+

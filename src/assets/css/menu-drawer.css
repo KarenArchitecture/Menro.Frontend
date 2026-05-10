@@ -259,3 +259,24 @@
     width: 68px;
   }
 }
+.menu-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.menu-drawer--open {
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.menu-drawer__backdrop {
+  touch-action: none;
+}
+
+.menu-drawer__panel {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: auto;
+}

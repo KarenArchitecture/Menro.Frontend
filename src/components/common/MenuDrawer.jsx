@@ -1,5 +1,11 @@
 // src/components/common/MenuDrawer.jsx
-import React, { cloneElement, useEffect, useMemo, useState } from "react";
+import React, {
+  cloneElement,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { createPortal } from "react-dom";
 import "../../assets/css/menu-drawer.css";
 
@@ -28,6 +34,15 @@ const DEFAULT_ITEMS = [
   },
 ];
 
+const FOCUSABLE_SELECTOR = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "textarea:not([disabled])",
+  "select:not([disabled])",
+  "[tabindex]:not([tabindex='-1'])",
+].join(",");
+
 function DrawerIcon({ src, alt = "" }) {
   return <img src={src} alt={alt} draggable="false" />;
 }
@@ -47,6 +62,10 @@ export default function MenuDrawer({
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [mounted, setMounted] = useState(false);
 
+  const panelRef = useRef(null);
+  const closeButtonRef = useRef(null);
+  const lastFocusedElementRef = useRef(null);
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -54,22 +73,106 @@ export default function MenuDrawer({
   useEffect(() => {
     if (!isOpen) return;
 
-    const previousOverflow = document.body.style.overflow;
+    lastFocusedElementRef.current = document.activeElement;
+
+    const scrollY = window.scrollY;
+
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousBodyPosition = document.body.style.position;
+    const previousBodyTop = document.body.style.top;
+    const previousBodyLeft = document.body.style.left;
+    const previousBodyRight = document.body.style.right;
+    const previousBodyWidth = document.body.style.width;
+
+    const appRoot =
+      document.getElementById("root") || document.getElementById("app");
+
+    const previousRootInert = appRoot?.inert;
+
+    document.documentElement.style.overflow = "hidden";
+
     document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.width = "100%";
+
+    if (appRoot && "inert" in appRoot) {
+      appRoot.inert = true;
+    }
+
+    lastFocusedElementRef.current?.blur?.();
+
+    window.requestAnimationFrame(() => {
+      closeButtonRef.current?.focus();
+    });
 
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
         setIsOpen(false);
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+
+      const panel = panelRef.current;
+      if (!panel) return;
+
+      const focusableElements = Array.from(
+        panel.querySelectorAll(FOCUSABLE_SELECTOR),
+      ).filter((element) => element.offsetParent !== null);
+
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        panel.focus();
+        return;
+      }
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      }
+
+      if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.body.style.overflow = previousOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+
+      document.body.style.overflow = previousBodyOverflow;
+      document.body.style.position = previousBodyPosition;
+      document.body.style.top = previousBodyTop;
+      document.body.style.left = previousBodyLeft;
+      document.body.style.right = previousBodyRight;
+      document.body.style.width = previousBodyWidth;
+
+      if (appRoot && "inert" in appRoot) {
+        appRoot.inert = previousRootInert;
+      }
+
       window.removeEventListener("keydown", handleKeyDown);
+
+      window.scrollTo(0, scrollY);
+
+      window.requestAnimationFrame(() => {
+        lastFocusedElementRef.current?.focus?.();
+      });
     };
   }, [isOpen]);
+
+  const closeDrawer = () => {
+    setIsOpen(false);
+  };
 
   const triggerElement = useMemo(() => {
     const openMenu = (event) => {
@@ -111,7 +214,7 @@ export default function MenuDrawer({
     onItemClick?.(item, event);
 
     if (!event.defaultPrevented) {
-      setIsOpen(false);
+      closeDrawer();
     }
   };
 
@@ -124,15 +227,18 @@ export default function MenuDrawer({
         className="menu-drawer__backdrop"
         type="button"
         aria-label="بستن منو"
-        onClick={() => setIsOpen(false)}
+        tabIndex={isOpen ? 0 : -1}
+        onClick={closeDrawer}
       />
 
       <aside
+        ref={panelRef}
         className="menu-drawer__panel"
         role="dialog"
         aria-modal="true"
         aria-label="منوی منرو"
         dir="rtl"
+        tabIndex={-1}
       >
         <div className="menu-drawer__top">
           {showSearch && (
@@ -147,16 +253,19 @@ export default function MenuDrawer({
                 type="search"
                 value={query}
                 placeholder={searchPlaceholder}
+                tabIndex={isOpen ? 0 : -1}
                 onChange={(event) => setQuery(event.target.value)}
               />
             </form>
           )}
 
           <button
+            ref={closeButtonRef}
             className="menu-drawer__close"
             type="button"
             aria-label="بستن منو"
-            onClick={() => setIsOpen(false)}
+            tabIndex={isOpen ? 0 : -1}
+            onClick={closeDrawer}
           >
             ×
           </button>
@@ -168,6 +277,7 @@ export default function MenuDrawer({
               key={`${item.label}-${item.href}`}
               className="menu-drawer__item"
               href={item.href}
+              tabIndex={isOpen ? 0 : -1}
               onClick={(event) => handleItemClick(item, event)}
             >
               <span className="menu-drawer__item-icon">
@@ -186,6 +296,7 @@ export default function MenuDrawer({
                 themeMode === "light" ? "menu-drawer__setting--active" : ""
               }`}
               type="button"
+              tabIndex={isOpen ? 0 : -1}
               onClick={() => setThemeMode("light")}
             >
               <span className="menu-drawer__setting-switch" />
@@ -201,6 +312,7 @@ export default function MenuDrawer({
                 themeMode === "dark" ? "menu-drawer__setting--active" : ""
               }`}
               type="button"
+              tabIndex={isOpen ? 0 : -1}
               onClick={() => setThemeMode("dark")}
             >
               <span className="menu-drawer__setting-switch" />
@@ -216,6 +328,7 @@ export default function MenuDrawer({
                 notificationsEnabled ? "menu-drawer__setting--active" : ""
               }`}
               type="button"
+              tabIndex={isOpen ? 0 : -1}
               onClick={() => setNotificationsEnabled(true)}
             >
               <span className="menu-drawer__setting-switch" />
@@ -231,6 +344,7 @@ export default function MenuDrawer({
                 !notificationsEnabled ? "menu-drawer__setting--active" : ""
               }`}
               type="button"
+              tabIndex={isOpen ? 0 : -1}
               onClick={() => setNotificationsEnabled(false)}
             >
               <span className="menu-drawer__setting-switch" />

@@ -58,6 +58,7 @@
 
 
 import { Routes, Route, useLocation } from "react-router-dom";
+import LandingPage from "./pages/LandingPage";
 import HomePage from "./pages/HomePage";
 import RestaurantPage from "./pages/RestaurantPage";
 import RestaurantsBrowsePage from "./pages/RestaurantsBrowsePage";
@@ -87,8 +88,8 @@ export default function App() {
   return (
     <>
       <Routes>
-        {/* <Route path="/" element={<LandingPage />} /> */}
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/home" element={<HomePage />} />
 
         <Route path="/restaurants" element={<RestaurantsBrowsePage />} />
         <Route path="/orders" element={<RecentOrdersBrowsePage />} />

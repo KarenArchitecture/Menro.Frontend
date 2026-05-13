@@ -41,7 +41,7 @@ export default function WhyMenroSection() {
             end: "bottom top",
             scrub: true,
           },
-        }
+        },
       );
 
       // --- Cards: keep your existing upward drift
@@ -113,7 +113,17 @@ export default function WhyMenroSection() {
         icon={<LandingWalletIcon />}
         title="مدیریت مالی"
       />
-      <IconCard className="why-card why-card--panel pos-i" title="منرو" />
+      <IconCard
+        className="why-card why-card--panel pos-i pos-i--menro-logo"
+        icon={
+          <img
+            src="/images/menro-logo-landing.svg"
+            alt="منرو"
+            className="why-menro-logo-icon"
+            draggable="false"
+          />
+        }
+      />
     </section>
   );
 }

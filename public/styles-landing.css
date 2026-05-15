@@ -1012,14 +1012,14 @@ body {
 }
 .plans-pin__sticky {
   position: sticky;
-  top: var(--nav-h); /* <- critical with your header */
+  top: var(--nav-h);
   height: calc(100vh - var(--nav-h));
   z-index: 10;
   display: flex;
   flex-direction: column;
-  gap: 3rem;
-  padding: 2rem 2rem 4rem;
-  background: #0b0f13; /* avoid seeing content below while pinned */
+  /* gap: 3rem; */
+  padding: 2rem 2rem 0rem;
+  background: #0b0f13;
 }
 
 .plans.plans--pin {
@@ -3338,6 +3338,7 @@ body {
     font-size: 1.18rem;
   }
 }
+
 /***************************************
  * Mobile FAQ Only
  ***************************************/
@@ -4109,4 +4110,17 @@ body {
     width: 800px;
     z-index: -1;
   }
+}
+/* Hide page scrollbar but keep scrolling */
+html,
+body {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Old Edge / IE */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none; /* Chrome / Safari / Edge */
 }

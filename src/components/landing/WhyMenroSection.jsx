@@ -21,19 +21,31 @@ export default function WhyMenroSection() {
   const titlesRef = useRef(null);
 
   useLayoutEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const isMobile = window.matchMedia("(max-width: 768px)");
+
+    // No animation on mobile
+    if (reducedMotion.matches || isMobile.matches) return;
+
     const ctx = gsap.context(() => {
       const section = sectionRef.current;
       const titles = titlesRef.current;
       const cards = gsap.utils.toArray(".why-card");
 
-      // --- Title: slow vertical slide across the whole section
-      // Starts when Why section top touches bottom of viewport (still under hero),
-      // ends when Why section bottom reaches top of viewport (fully settled).
+      if (!section || !titles) return;
+
+      // Important:
+      // GSAP overrides CSS transform, so we must keep xPercent: -50
+      // to preserve horizontal centering.
       gsap.fromTo(
         titles,
-        { yPercent: 70 }, // start well below (feels like coming from behind hero)
         {
-          yPercent: -270, // gently overshoot upward feel
+          xPercent: -50,
+          yPercent: 70,
+        },
+        {
+          xPercent: -50,
+          yPercent: -270,
           ease: "none",
           scrollTrigger: {
             trigger: section,
@@ -41,10 +53,9 @@ export default function WhyMenroSection() {
             end: "bottom top",
             scrub: true,
           },
-        }
+        },
       );
 
-      // --- Cards: keep your existing upward drift
       gsap.to(cards, {
         yPercent: -200,
         ease: "none",
@@ -113,7 +124,17 @@ export default function WhyMenroSection() {
         icon={<LandingWalletIcon />}
         title="مدیریت مالی"
       />
-      <IconCard className="why-card why-card--panel pos-i" title="منرو" />
+      <IconCard
+        className="why-card why-card--panel pos-i pos-i--menro-logo"
+        icon={
+          <img
+            src="/images/menro-logo-landing.svg"
+            alt="منرو"
+            className="why-menro-logo-icon"
+            draggable="false"
+          />
+        }
+      />
     </section>
   );
 }

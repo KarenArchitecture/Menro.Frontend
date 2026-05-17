@@ -4,13 +4,17 @@ import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import PlanCard from "./PlanCard";
 import plansData from "./plans";
 
-const SCROLL_FACTOR = 3000;
+const SCROLL_FACTOR = 4200;
+const SCROLLBAR_FACTOR = 9000;
 const EPS = 0.001;
 
 // smoother start tuning
 const START_LOCK_TOL = 24;
 const MIN_VISIBLE_BELOW_NAV = 160;
-const SMOOTH_SNAP_DIST = 140;
+
+function clamp01(v) {
+  return Math.max(0, Math.min(1, v));
+}
 
 export default function PlansSection({ plans = plansData }) {
   const sectionRef = useRef(null);
@@ -75,6 +79,7 @@ export default function PlansSection({ plans = plansData }) {
     const v = getComputedStyle(document.documentElement).getPropertyValue(
       "--nav-h",
     );
+
     const n = parseInt(v || "96", 10);
     return Number.isFinite(n) ? n : 96;
   }, []);
@@ -94,7 +99,10 @@ export default function PlansSection({ plans = plansData }) {
     lockTopRef.current = top;
     snappingRef.current = true;
 
-    window.scrollTo({ top, behavior: smooth ? "smooth" : "auto" });
+    window.scrollTo({
+      top,
+      behavior: smooth ? "smooth" : "auto",
+    });
 
     requestAnimationFrame(() => {
       snappingRef.current = false;
@@ -119,6 +127,7 @@ export default function PlansSection({ plans = plansData }) {
 
     if (rect.top >= vpH) return "above";
     if (rect.bottom <= navH) return "below";
+
     return "inside";
   }, [getNavH]);
 
@@ -143,6 +152,7 @@ export default function PlansSection({ plans = plansData }) {
 
     const cs = window.getComputedStyle(el);
     const overflowY = cs.overflowY;
+
     const scrollable =
       (overflowY === "auto" || overflowY === "scroll") &&
       el.scrollHeight > el.clientHeight + 1;
@@ -162,6 +172,7 @@ export default function PlansSection({ plans = plansData }) {
   const shouldEngage = useCallback((forward) => {
     if (forward && cooldownRef.current === "down") return false;
     if (!forward && cooldownRef.current === "up") return false;
+
     return true;
   }, []);
 
@@ -171,6 +182,7 @@ export default function PlansSection({ plans = plansData }) {
       justLockedRef.current = true;
 
       const from = lastOutsideRef.current;
+
       if (forward && from === "above") progress.set(0);
       if (!forward && from === "below") progress.set(1);
 
@@ -196,6 +208,7 @@ export default function PlansSection({ plans = plansData }) {
       lockedRef.current = true;
       cooldownRef.current = null;
       justLockedRef.current = false;
+
       snapToLockTop(true);
 
       const seg = 1 / (plans.length + 1);
@@ -215,14 +228,13 @@ export default function PlansSection({ plans = plansData }) {
     const el = sectionRef.current;
     if (!el) return;
 
-    const clamp01 = (v) => Math.max(0, Math.min(1, v));
-
     const onWheel = (e) => {
       if (!sectionRef.current) return;
 
       const forward = e.deltaY > 0;
 
       const inner = getInnerScroller(e.target);
+
       if (lockedRef.current && inner && canConsumeScroll(inner, e.deltaY)) {
         e.preventDefault();
         inner.scrollTop += e.deltaY;
@@ -251,13 +263,21 @@ export default function PlansSection({ plans = plansData }) {
       const atStart = v <= EPS;
       const atEnd = v >= 1 - EPS;
 
-      if (atEnd && forward) return disengageLock("down");
-      if (atStart && !forward) return disengageLock("up");
+      if (atEnd && forward) {
+        disengageLock("down");
+        return;
+      }
+
+      if (atStart && !forward) {
+        disengageLock("up");
+        return;
+      }
 
       e.preventDefault();
 
       const delta = Math.max(-80, Math.min(80, e.deltaY));
       progress.set(clamp01(v + delta / SCROLL_FACTOR));
+
       window.scrollTo({ top: lockTopRef.current, behavior: "auto" });
     };
 
@@ -271,11 +291,13 @@ export default function PlansSection({ plans = plansData }) {
       const y = e.touches[0].clientY;
       const last = lastTouchYRef.current;
       const dy = last == null ? 0 : last - y;
+
       lastTouchYRef.current = y;
 
       const forward = dy > 0;
 
       const inner = getInnerScroller(e.target);
+
       if (lockedRef.current && inner && canConsumeScroll(inner, dy)) {
         e.preventDefault();
         inner.scrollTop += dy;
@@ -304,11 +326,20 @@ export default function PlansSection({ plans = plansData }) {
       const atStart = v <= EPS;
       const atEnd = v >= 1 - EPS;
 
-      if (atEnd && forward) return disengageLock("down");
-      if (atStart && !forward) return disengageLock("up");
+      if (atEnd && forward) {
+        disengageLock("down");
+        return;
+      }
+
+      if (atStart && !forward) {
+        disengageLock("up");
+        return;
+      }
 
       e.preventDefault();
+
       progress.set(clamp01(v + dy / (SCROLL_FACTOR * 0.9)));
+
       window.scrollTo({ top: lockTopRef.current, behavior: "auto" });
     };
 
@@ -317,6 +348,7 @@ export default function PlansSection({ plans = plansData }) {
     };
 
     const opts = { passive: false };
+
     window.addEventListener("wheel", onWheel, opts);
     window.addEventListener("touchstart", onTouchStart, opts);
     window.addEventListener("touchmove", onTouchMove, opts);
@@ -354,44 +386,110 @@ export default function PlansSection({ plans = plansData }) {
       const curY = window.scrollY || document.documentElement.scrollTop || 0;
       const prevY = lastScrollYRef.current;
       const goingDown = curY > prevY;
+
+      const lockTop = computeLockTop();
+
+      /**
+       * Keep this before updating lastScrollYRef.
+       * This lets scrollbar dragging trigger the lock even if it jumps.
+       */
+      const crossedLockLine =
+        (prevY < lockTop && curY >= lockTop) ||
+        (prevY > lockTop && curY <= lockTop);
+
       lastScrollYRef.current = curY;
 
       const region = computeRegion();
+
       if (region !== "inside") {
         lastOutsideRef.current = region;
         cooldownRef.current = null;
       }
 
+      /**
+       * CASE 1:
+       * Already locked.
+       * Scrollbar drag tries to move the page away from lockTop.
+       * Convert that attempted movement into animation progress.
+       */
       if (lockedRef.current) {
-        const lockTop = computeLockTop();
         lockTopRef.current = lockTop;
-        if (Math.abs(curY - lockTop) > 1) snapTo(lockTop, false);
+
+        const attemptedDelta = curY - lockTop;
+
+        if (Math.abs(attemptedDelta) > 1) {
+          const forward = attemptedDelta > 0;
+
+          const v = progress.get();
+          const atStart = v <= EPS;
+          const atEnd = v >= 1 - EPS;
+
+          if (atEnd && forward) {
+            disengageLock("down");
+            return;
+          }
+
+          if (atStart && !forward) {
+            disengageLock("up");
+            return;
+          }
+
+          const delta = Math.max(-120, Math.min(120, attemptedDelta));
+
+          progress.set(clamp01(v + delta / SCROLLBAR_FACTOR));
+
+          lastScrollYRef.current = lockTop;
+          snapTo(lockTop, false);
+        }
+
         return;
       }
 
-      const lockTop = computeLockTop();
-      const crossed =
-        (prevY < lockTop && curY >= lockTop) ||
-        (prevY > lockTop && curY <= lockTop);
+      /**
+       * CASE 2:
+       * Not locked yet.
+       * Mouse wheel enters through the wheel handler.
+       * Scrollbar dragging enters through this scroll handler.
+       */
+      const shouldStartFromScrollbar = crossedLockLine || nearLockLine();
 
-      if (!crossed) return;
+      if (!shouldStartFromScrollbar) return;
       if (!shouldEngage(goingDown)) return;
 
-      const dist = Math.abs(curY - lockTop);
-      const smooth = dist > SMOOTH_SNAP_DIST;
+      lockedRef.current = true;
+      justLockedRef.current = true;
+      cooldownRef.current = null;
 
-      engageLock(goingDown, smooth);
+      if (goingDown) {
+        progress.set(0);
+      } else {
+        progress.set(1);
+      }
+
+      lockTopRef.current = lockTop;
+      lastScrollYRef.current = lockTop;
+
+      /**
+       * Do not smooth snap here.
+       * Smooth snap can let the scrollbar skip the locked state.
+       */
+      snapTo(lockTop, false);
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+    };
   }, [
     isMobile,
+    progress,
     computeRegion,
     computeLockTop,
+    nearLockLine,
     snapTo,
     shouldEngage,
-    engageLock,
+    disengageLock,
   ]);
 
   useEffect(() => {
@@ -424,6 +522,13 @@ export default function PlansSection({ plans = plansData }) {
 
     return () => off();
   }, [isMobile, progress]);
+
+  useEffect(() => {
+    return () => {
+      const header = document.querySelector(".app-header");
+      if (header) header.classList.remove("is-dim");
+    };
+  }, []);
 
   const activePlan = plans[activeStep] ?? plans[0];
 
@@ -535,6 +640,7 @@ export default function PlansSection({ plans = plansData }) {
 
 function PlanMotionCard({ index, total, plan, progress, viewportH }) {
   const seg = 1 / (total + 1);
+
   const start = index * seg;
   const mid = (index + 0.5) * seg;
   const end = (index + 1) * seg;

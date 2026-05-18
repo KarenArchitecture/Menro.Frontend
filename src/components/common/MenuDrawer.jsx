@@ -1,93 +1,167 @@
 // src/components/common/MenuDrawer.jsx
 import React, { cloneElement, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
+import { useDrawerState } from "../../Context/DrawerStateContext";
 import "../../assets/css/menu-drawer.css";
 
-const DRAWER_ICON_PATH = "/images/drawer-menu";
+// --- Imported SVGs as Module URLs ---
+// These imports will be processed by your build tool (Webpack/Vite)
+// and resolve to accessible URLs when the app is built.
 
-const DEFAULT_ITEMS = [
-  {
-    label: "علاقه‌مندی ها",
-    href: "/favorites",
-    iconSrc: `${DRAWER_ICON_PATH}/heart.svg`,
-  },
-  {
-    label: "پشتیبانی",
-    href: "/support",
-    iconSrc: `${DRAWER_ICON_PATH}/sms-tracking.svg`,
-  },
-  {
-    label: "سوالات متداول",
-    href: "#faq",
-    iconSrc: `${DRAWER_ICON_PATH}/Circle_Help.svg`,
-  },
-  {
-    label: "درباره ما",
-    href: "#about",
-    iconSrc: `${DRAWER_ICON_PATH}/lamp-on.svg`,
-  },
-];
+// Menu items icons
+import heartSvg from "../../assets/icons/drawer-menu/heart.svg";
+import smsSvg from "../../assets/icons/drawer-menu/sms-tracking.svg";
+import helpSvg from "../../assets/icons/drawer-menu/Circle_Help.svg";
+import lampSvg from "../../assets/icons/drawer-menu/lamp-on.svg";
 
-function DrawerIcon({ src, alt = "" }) {
-  return <img src={src} alt={alt} draggable="false" />;
+// Setting icons
+import themeSvg from "../../assets/icons/drawer-menu/theme.svg";
+import notificationSvg from "../../assets/icons/drawer-menu/notification.svg";
+import sunSvg from "../../assets/icons/drawer-menu/sun.svg";
+import moonSvg from "../../assets/icons/drawer-menu/moon.svg";
+import notificationOnSvg from "../../assets/icons/drawer-menu/notification-on.svg";
+import notificationOffSvg from "../../assets/icons/drawer-menu/notification-off.svg";
+// --- End of Imports ---
+
+
+
+// Helper component to render an image from a given src prop
+function DrawerIcon({ src, alt = "", className = "" }) {
+  return <img className={className} src={src} alt={alt} draggable="false" />;
 }
 
+// Settings Row Component
+function SettingRow({
+  title,
+  value,
+  iconSrc, // This now expects a URL from the import
+  activeIconSrc, // This now expects a URL from the import
+  inactiveIconSrc, // This now expects a URL from the import
+  isActive,
+  onClick,
+  ariaPressed,
+}) {
+  // You can define stroke and strokeWidth here if needed, but since you manually edited SVGs,
+  // they should render correctly without these props on the DrawerIcon component.
+  // If you need to override them, you'd apply them to DrawerIcon.
+  return (
+    <button
+      className={`menu-drawer__setting ${
+        isActive
+          ? "menu-drawer__setting--active"
+          : "menu-drawer__setting--inactive"
+      }`}
+      type="button"
+      onClick={onClick}
+      aria-pressed={ariaPressed}
+    >
+      <span className="menu-drawer__setting-main">
+        <span className="menu-drawer__setting-icon">
+          <DrawerIcon src={iconSrc} />
+        </span>
+
+        <span className="menu-drawer__setting-title">{title}</span>
+      </span>
+
+      <span className="menu-drawer__setting-control">
+        <span className="menu-drawer__setting-value">
+          <span key={value} className="menu-drawer__setting-value-text">
+            {value}
+          </span>
+        </span>
+
+        <span className="menu-drawer__setting-switch" aria-hidden="true">
+          <DrawerIcon
+            src={activeIconSrc}
+            className="menu-drawer__setting-switch-icon menu-drawer__setting-switch-icon--active"
+          />
+
+          <DrawerIcon
+            src={inactiveIconSrc}
+            className="menu-drawer__setting-switch-icon menu-drawer__setting-switch-icon--inactive"
+          />
+        </span>
+      </span>
+    </button>
+  );
+}
+
+// Main MenuDrawer Component
 export default function MenuDrawer({
   trigger,
-  items = DEFAULT_ITEMS,
+  items = [], // Default to empty array, will be populated by DEFAULT_ITEMS if not provided
   searchPlaceholder = "جستجو رستوران، نوشیدنی، غذا...",
   showSearch = true,
   showSettings = true,
   onSearch,
   onItemClick,
 }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const { isDrawerOpen, setDrawerOpen } = useDrawerState();
+  const isOpen = isDrawerOpen;
   const [query, setQuery] = useState("");
-  const [themeMode, setThemeMode] = useState("dark");
+  const [themeMode, setThemeMode] = useState("dark"); // 'dark' or 'light'
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(false); // Used to prevent SSR issues with createPortal
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  // Define default items using the imported SVGs
+  const DEFAULT_MENU_ITEMS = useMemo(() => [
+    { label: "علاقه‌مندی ها", href: "/favorites", iconSrc: heartSvg },
+    { label: "پشتیبانی", href: "/support", iconSrc: smsSvg },
+    { label: "سوالات متداول", href: "#faq", iconSrc: helpSvg },
+    { label: "درباره ما", href: "#about", iconSrc: lampSvg },
+  ], []);
 
+  // Use provided items or default if none are passed
+  const menuItems = items.length > 0 ? items : DEFAULT_MENU_ITEMS;
+
+
+  const isLightMode = themeMode === "light";
+
+  // Effect for managing body overflow and escape key listener
   useEffect(() => {
+    setMounted(true); // Mark as mounted for portal
     if (!isOpen) return;
 
     const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = "hidden"; // Prevent background scrolling
 
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
-        setIsOpen(false);
+        setDrawerOpen(false); // Close drawer on Escape key
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
 
+    // Cleanup function
     return () => {
-      document.body.style.overflow = previousOverflow;
+      document.body.style.overflow = previousOverflow; // Restore original overflow
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen]);
+  }, [isOpen]); // Rerun effect when isOpen changes
 
+  // Memoize the trigger element to avoid unnecessary re-renders
   const triggerElement = useMemo(() => {
     const openMenu = (event) => {
+      // Call the original onClick if provided by the trigger element
       trigger?.props?.onClick?.(event);
 
+      // Only open the drawer if the event was not default-prevented
       if (!event.defaultPrevented) {
-        setIsOpen(true);
+        setDrawerOpen(true)
       }
     };
 
     if (React.isValidElement(trigger)) {
+      // If a valid React element is passed as trigger, clone it and add necessary props
       return cloneElement(trigger, {
         onClick: openMenu,
-        "aria-haspopup": "dialog",
-        "aria-expanded": isOpen,
+        "aria-haspopup": "dialog", // Accessibility: indicates it's a dialog
+        "aria-expanded": isOpen,   // Accessibility: indicates if the controlled element is expanded
       });
     }
 
+    // If no trigger element is provided, render a default button
     return (
       <button
         className="menu-drawer__default-trigger"
@@ -100,155 +174,157 @@ export default function MenuDrawer({
         منو
       </button>
     );
-  }, [trigger, isOpen]);
+  }, [trigger, isOpen]); // Dependencies: trigger element and open state
 
+  // Handler for search form submission
   const handleSearchSubmit = (event) => {
     event.preventDefault();
-    onSearch?.(query.trim());
+    const trimmedQuery = query.trim();
+    if (trimmedQuery) {
+      onSearch?.(trimmedQuery); // Call the search handler with the query
+    }
+    setDrawerOpen(false); // Close drawer after search
   };
 
+  // Handler for menu item clicks
   const handleItemClick = (item, event) => {
-    onItemClick?.(item, event);
-
+    onItemClick?.(item, event); // Call the item click handler
     if (!event.defaultPrevented) {
-      setIsOpen(false);
+      setDrawerOpen(false); // Close drawer if event was not prevented
     }
   };
 
+  // Toggle function for theme mode
+  const toggleThemeMode = () => {
+    setThemeMode((current) => (current === "light" ? "dark" : "light"));
+  };
+
+  // Toggle function for notifications
+  const toggleNotifications = () => {
+    setNotificationsEnabled((current) => !current);
+  };
+
+  // The actual drawer UI structure
   const drawer = (
-    <div
-      className={`menu-drawer ${isOpen ? "menu-drawer--open" : ""}`}
-      aria-hidden={!isOpen}
-    >
+    <div className={`menu-drawer ${isOpen ? "menu-drawer--open" : ""}`}>
       <button
         className="menu-drawer__backdrop"
         type="button"
         aria-label="بستن منو"
-        onClick={() => setIsOpen(false)}
+        tabIndex={isOpen ? 0 : -1} // Only focusable when open
+        onClick={() => setDrawerOpen(false)} // Close on backdrop click
       />
 
       <aside
         className="menu-drawer__panel"
         role="dialog"
-        aria-modal="true"
+        aria-modal="true" // Important for accessibility: this is a modal dialog
         aria-label="منوی منرو"
-        dir="rtl"
+        dir="rtl" // Set text direction to RTL
       >
         <div className="menu-drawer__top">
+          {/* Search Form */}
           {showSearch && (
             <form className="menu-drawer__search" onSubmit={handleSearchSubmit}>
-              <img
-                src="/images/app-header-search.svg"
-                alt=""
-                draggable="false"
-              />
-
               <input
                 type="search"
                 value={query}
                 placeholder={searchPlaceholder}
                 onChange={(event) => setQuery(event.target.value)}
+                aria-label="جستجو"
               />
+              {/* Search icon - assuming this is a static asset in public */}
+              <DrawerIcon src="/images/app-header-search.svg" alt="جستجو" />
             </form>
           )}
 
+          {/* Close Button */}
           <button
             className="menu-drawer__close"
             type="button"
             aria-label="بستن منو"
-            onClick={() => setIsOpen(false)}
+            onClick={() => setDrawerOpen(false)}
           >
-            ×
+            {/* Close Icon SVG */}
+            <svg
+              width="19"
+              height="19"
+              viewBox="0 0 19 19"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M1.34998 1.34998L9.34998 9.34998L17.35 1.34998"
+                stroke="#F0F0F0" // White-like color
+                strokeWidth="2.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M17.35 17.35L9.34998 9.34998L1.34997 17.35"
+                stroke="#F0F0F0" // White-like color
+                strokeWidth="2.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
         </div>
 
+        {/* Navigation Menu Items */}
         <nav className="menu-drawer__nav" aria-label="لینک‌های منو">
-          {items.map((item) => (
+          {menuItems.map((item) => (
             <a
-              key={`${item.label}-${item.href}`}
+              key={`${item.label}-${item.href}`} // Unique key for each item
               className="menu-drawer__item"
               href={item.href}
               onClick={(event) => handleItemClick(item, event)}
             >
-              <span className="menu-drawer__item-icon">
-                <DrawerIcon src={item.iconSrc} />
-              </span>
-
               <span className="menu-drawer__item-label">{item.label}</span>
+              <span className="menu-drawer__item-icon">
+                <DrawerIcon src={item.iconSrc} alt={`${item.label} icon`} />
+              </span>
             </a>
           ))}
         </nav>
 
+        {/* Settings Section */}
         {showSettings && (
           <div className="menu-drawer__settings" aria-label="تنظیمات سریع">
-            <button
-              className={`menu-drawer__setting ${
-                themeMode === "light" ? "menu-drawer__setting--active" : ""
-              }`}
-              type="button"
-              onClick={() => setThemeMode("light")}
-            >
-              <span className="menu-drawer__setting-switch" />
-              <span className="menu-drawer__setting-value">روشن</span>
-              <span className="menu-drawer__setting-title">تم منرو</span>
-              <span className="menu-drawer__setting-icon">
-                <DrawerIcon src={`${DRAWER_ICON_PATH}/moon.svg`} />
-              </span>
-            </button>
+            {/* Theme Setting Row */}
+            <SettingRow
+              title="تم منرو"
+              value={isLightMode ? "روشن" : "تاریک"}
+              iconSrc={themeSvg} // Imported URL
+              activeIconSrc={sunSvg} // Imported URL
+              inactiveIconSrc={moonSvg} // Imported URL
+              isActive={isLightMode}
+              onClick={toggleThemeMode}
+              ariaPressed={isLightMode}
+            />
 
-            <button
-              className={`menu-drawer__setting ${
-                themeMode === "dark" ? "menu-drawer__setting--active" : ""
-              }`}
-              type="button"
-              onClick={() => setThemeMode("dark")}
-            >
-              <span className="menu-drawer__setting-switch" />
-              <span className="menu-drawer__setting-value">تاریک</span>
-              <span className="menu-drawer__setting-title">تم منرو</span>
-              <span className="menu-drawer__setting-icon">
-                <DrawerIcon src={`${DRAWER_ICON_PATH}/moon.svg`} />
-              </span>
-            </button>
-
-            <button
-              className={`menu-drawer__setting ${
-                notificationsEnabled ? "menu-drawer__setting--active" : ""
-              }`}
-              type="button"
-              onClick={() => setNotificationsEnabled(true)}
-            >
-              <span className="menu-drawer__setting-switch" />
-              <span className="menu-drawer__setting-value">فعال</span>
-              <span className="menu-drawer__setting-title">اعلانات</span>
-              <span className="menu-drawer__setting-icon">
-                <DrawerIcon src={`${DRAWER_ICON_PATH}/notification.svg`} />
-              </span>
-            </button>
-
-            <button
-              className={`menu-drawer__setting ${
-                !notificationsEnabled ? "menu-drawer__setting--active" : ""
-              }`}
-              type="button"
-              onClick={() => setNotificationsEnabled(false)}
-            >
-              <span className="menu-drawer__setting-switch" />
-              <span className="menu-drawer__setting-value">غیرفعال</span>
-              <span className="menu-drawer__setting-title">اعلانات</span>
-              <span className="menu-drawer__setting-icon">
-                <DrawerIcon src={`${DRAWER_ICON_PATH}/notification.svg`} />
-              </span>
-            </button>
+            {/* Notifications Setting Row */}
+            <SettingRow
+              title="اعلانات"
+              value={notificationsEnabled ? "فعال" : "غیرفعال"}
+              iconSrc={notificationSvg} // Imported URL
+              activeIconSrc={notificationOnSvg} // Imported URL
+              inactiveIconSrc={notificationOffSvg} // Imported URL
+              isActive={notificationsEnabled}
+              onClick={toggleNotifications}
+              ariaPressed={notificationsEnabled}
+            />
           </div>
         )}
       </aside>
     </div>
   );
 
+  // Render the trigger and the drawer portal
   return (
     <>
       {triggerElement}
+      {/* Use createPortal to render the drawer outside of its parent's DOM hierarchy */}
       {mounted ? createPortal(drawer, document.body) : null}
     </>
   );

@@ -4,13 +4,10 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: 2rem 1.5rem;
+    padding: 2rem 2.5rem;
     border-radius: 1rem;
-    background-color: #1a1d25; /* dark background for Menro */
+    background-color: #1a1d25;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
 }
 
 .restaurants .state-message {
@@ -19,11 +16,6 @@
 
 .state-message-subject {
     color: #ff683c;
-}
-
-.state-message:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
 }
 
 .state-message.compact {
@@ -108,6 +100,12 @@
         rgba(255, 255, 255, 0) 100%
     );
     animation: shimmer 1.2s infinite;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .state-message:hover {
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+    }
 }
 
 @keyframes shimmer {

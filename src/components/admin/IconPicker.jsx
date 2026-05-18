@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import iconAxios from "../../api/iconAxios.js";
-import { useAuth } from "../../Context/AuthContext";
+import { useAuth } from "../../Context/AuthContext.jsx";
 export const ICON_BY_KEY = {};
 
 function DefaultIcon() {

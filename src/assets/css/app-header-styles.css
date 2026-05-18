@@ -1,194 +1,194 @@
 @media (min-width: 768px) {
-  .app-header {
-    position: sticky;
-    top: 16px;
-    left: 0;
-    right: 0;
-    z-index: 60;
-    padding: 0 32px;
-    pointer-events: none;
-    display: block;
-    transition: opacity 0.25s ease;
-  }
+    .app-header {
+        position: sticky;
+        top: 16px;
+        left: 0;
+        right: 0;
+        z-index: 60;
+        padding: 0 32px;
+        pointer-events: none;
+        display: block;
+        transition: opacity 0.25s ease;
+    }
 
-  .app-header.is-dim {
-    opacity: 0;
-  }
+    .app-header.is-dim {
+        opacity: 0;
+    }
 
-  .app-header__pill {
-    margin: 0 auto;
-    width: 670px;
-    overflow: hidden;
-    padding: 22px 28px;
-    height: 100px;
-    border-radius: 20px;
-    background: rgba(17, 20, 26, 0.62);
-    backdrop-filter: blur(18px) saturate(135%);
-    -webkit-backdrop-filter: blur(18px) saturate(135%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
-    pointer-events: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .app-header__nav {
-    gap: 7rem;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    direction: rtl;
-  }
-
-  .app-header__right,
-  .app-header__left {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .app-header__link {
-    color: #d0d4db;
-    font-weight: 200;
-    font-size: 1.4rem;
-    text-decoration: none;
-  }
-  .app-header__link.is-active {
-    color: #d17842;
-  }
-
-  .icon-btn {
-    width: 3rem;
-    height: 3rem;
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    background: rgba(255, 255, 255, 0.06);
-    border-radius: 999px;
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-    outline: none;
-  }
-
-  .icon-wrap {
-    position: relative;
-  }
-
-  .icon-wrap .badge {
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    width: 18px;
-    height: 18px;
-    border-radius: 999px;
-    background: #e53935;
-    color: #fff;
-    font-size: 10px;
-    font-weight: 800;
-    display: grid;
-    place-items: center;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-  }
-  .icon-btn {
-    border: 0; /* no border */
-    background: transparent; /* no background */
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-    border-radius: 6px; /* just for subtle focus ring shape */
-    outline: none; /* we'll control focus-visible below */
-  }
-
-  .icon-btn .icon,
-  .icon-btn > img,
-  .icon-btn > svg {
-    width: 22px;
-    height: 22px;
-    display: block;
-    opacity: 0.85;
-    transition:
-      filter 0.15s ease,
-      opacity 0.15s ease,
-      transform 0.08s ease;
-  }
-
-  .icon-btn:hover .icon,
-  .icon-btn:hover > img,
-  .icon-btn:hover > svg {
-    opacity: 1;
-    filter: brightness(1.25);
-  }
-
-  .icon-btn:active .icon,
-  .icon-btn:active > img,
-  .icon-btn:active > svg {
-    transform: scale(0.96);
-    filter: brightness(1.4);
-  }
-
-  .icon-btn:focus {
-    outline: none;
-  }
-  .icon-btn:focus-visible {
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.14) inset;
-  }
-
-  @media (max-width: 1024px) {
     .app-header__pill {
-      width: min(94vw, 1100px);
+        margin: 0 auto;
+        width: 670px;
+        overflow: hidden;
+        padding: 22px 28px;
+        height: 100px;
+        border-radius: 20px;
+        background: rgba(17, 20, 26, 0.62);
+        backdrop-filter: blur(18px) saturate(135%);
+        -webkit-backdrop-filter: blur(18px) saturate(135%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+        pointer-events: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
+
     .app-header__nav {
-      column-gap: 48px;
+        gap: 7rem;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        direction: rtl;
     }
-  }
+
+    .app-header__right,
+    .app-header__left {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .app-header__link {
+        color: #d0d4db;
+        font-weight: 200;
+        font-size: 1.4rem;
+        text-decoration: none;
+    }
+    .app-header__link.is-active {
+        color: #d17842;
+    }
+
+    .icon-btn {
+        width: 3rem;
+        height: 3rem;
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        outline: none;
+    }
+
+    .icon-wrap {
+        position: relative;
+    }
+
+    .icon-wrap .badge {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        background: #e53935;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 800;
+        display: grid;
+        place-items: center;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    }
+    .icon-btn {
+        border: 0; /* no border */
+        background: transparent; /* no background */
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        border-radius: 6px; /* just for subtle focus ring shape */
+        outline: none; /* we'll control focus-visible below */
+    }
+
+    .icon-btn .icon,
+    .icon-btn > img,
+    .icon-btn > svg {
+        width: 22px;
+        height: 22px;
+        display: block;
+        opacity: 0.85;
+        transition:
+            filter 0.15s ease,
+            opacity 0.15s ease,
+            transform 0.08s ease;
+    }
+
+    .icon-btn:hover .icon,
+    .icon-btn:hover > img,
+    .icon-btn:hover > svg {
+        opacity: 1;
+        filter: brightness(1.25);
+    }
+
+    .icon-btn:active .icon,
+    .icon-btn:active > img,
+    .icon-btn:active > svg {
+        transform: scale(0.96);
+        filter: brightness(1.4);
+    }
+
+    .icon-btn:focus {
+        outline: none;
+    }
+    .icon-btn:focus-visible {
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.14) inset;
+    }
+
+    @media (max-width: 1024px) {
+        .app-header__pill {
+            width: min(94vw, 1100px);
+        }
+        .app-header__nav {
+            column-gap: 48px;
+        }
+    }
 }
 .brand-logo {
-  width: 50px;
-  height: 50px;
-  margin-top: 10px;
+    width: 50px;
+    height: 50px;
+    margin-top: 10px;
 }
 .app-header,
 .app-header .app-header__pill {
-  transition: opacity 0.25s ease;
+    transition: opacity 0.25s ease;
 }
 
 /* when dimmed: fade + 100% click-through */
 .app-header.is-dim,
 .app-header.is-dim .app-header__pill {
-  opacity: 0; /* or .25 if you prefer */
-  pointer-events: none; /* <-- stops the pill from catching clicks */
+    opacity: 0; /* or .25 if you prefer */
+    pointer-events: none; /* <-- stops the pill from catching clicks */
 }
 
 .app-header__nav {
-  direction: rtl;
+    direction: rtl;
 }
 
 .app-header__right {
-  display: flex;
-  flex-direction: row;
+    display: flex;
+    flex-direction: row;
 }
 .app-header__left {
-  display: flex;
-  flex-direction: row-reverse;
+    display: flex;
+    flex-direction: row-reverse;
 }
 
 /* bigger click target */
 .icon-btn {
-  width: 44px;
-  height: 44px;
+    width: 44px;
+    height: 44px;
 }
 
 /* bigger icon */
 .icon-btn .icon,
 .icon-btn > img,
 .icon-btn > svg {
-  width: 28px;
-  height: 28px;
+    width: 28px;
+    height: 28px;
 }

@@ -167,7 +167,7 @@ function PreviousOrders() {
 
         <div className="unauth-cta__inner">
           <p className="unauth-cta__title">
-            لطفاً برای مشاهده این بخش به حساب کاربری خود وارد شوید
+            برای مشاهده این بخش به حساب کاربری خود وارد شوید
           </p>
           <a className="unauth-cta__button" href="/login">
             ورود / عضویت
@@ -203,7 +203,7 @@ function PreviousOrders() {
           />
           <div className="unauth-cta__inner">
             <p className="unauth-cta__title">
-              لطفاً برای مشاهده این بخش به حساب کاربری خود وارد شوید
+              برای مشاهده این بخش به حساب کاربری خود وارد شوید
             </p>
             <a className="unauth-cta__button" href="/login">
               ورود / عضویت

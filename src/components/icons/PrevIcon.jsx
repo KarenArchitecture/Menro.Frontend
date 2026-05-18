@@ -10,9 +10,9 @@ export default function PrevIcon() {
       <path
         d="M14.375 2.875L2.75 14.5L14.375 26.125"
         stroke="white"
-        stroke-width="4"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );

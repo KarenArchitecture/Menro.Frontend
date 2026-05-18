@@ -144,7 +144,11 @@ function Carousel() {
   };
 
   return (
-    <section className="carousel" aria-live="polite" aria-label="Carousel navigation">
+    <section
+      className={`carousel ${isDragging ? "carousel--dragging" : ""}`}
+      aria-live="polite"
+      aria-label="Carousel navigation"
+    >
       <div
         className="carousel-container"
         style={{ overflow: "hidden" }}
@@ -197,7 +201,6 @@ function Carousel() {
         className="indicators-container"
         role="navigation"
         aria-label="Slides"
-        style={{ display: "flex", justifyContent: "center", gap: 8 }}
       >
         {slides.map((_, i) => (
           <button
@@ -209,8 +212,6 @@ function Carousel() {
             aria-current={currentIndex === i ? "true" : undefined}
           />
         ))}
-        <img src="/images/curve.png" className="left-curve" />
-        <img src="/images/curve.png" className="top-curve" />
       </div>
     </section>
   );

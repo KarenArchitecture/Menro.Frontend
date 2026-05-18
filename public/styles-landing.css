@@ -756,11 +756,17 @@ body {
 
 .stats-container {
   width: 100%;
-  max-width: 1200px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 4rem;
+  grid-template-columns: repeat(4, 1fr); /* Keep 4 columns */
+  gap: 2rem; /* Reduced from 4rem to give items more room */
   justify-items: center;
+}
+
+.stat-number {
+  /* Keep your existing font sizes */
+  font-variant-numeric: tabular-nums;
+  min-width: 8ch; /* Reduced from 10ch to stop artificial stretching */
+  text-align: center;
 }
 
 .stat-item {
@@ -798,6 +804,9 @@ body {
   color: var(--accent);
   line-height: 1;
   text-shadow: 0 2px 8px rgba(255, 157, 16, 0.3);
+  font-variant-numeric: tabular-nums;
+  min-width: 8ch; /* Reduced from 10ch to stop artificial stretching */
+  text-align: center;
 }
 
 .stat-text {
@@ -1355,7 +1364,7 @@ body {
   opacity: 0.85;
 }
 
-/* --- Container --- */
+/* --- Burger Container --- */
 .bp {
   position: relative;
   background: #0b0f13;
@@ -1403,20 +1412,19 @@ body {
   pointer-events: none;
 }
 
-/* --- Title (starts slightly above center, hidden) --- */
 .bp__title {
-  position: absolute;
+  position: fixed; /* Change back to absolute */
   inset: 0;
   margin: 0;
-  display: grid;
-  place-items: center;
-  text-align: center;
-  padding: 2rem;
+  display: flex; /* Flex is better for centering here */
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 10vh;
   font-size: clamp(2.5rem, 8vw, 6rem);
   font-weight: 800;
   color: #fff;
-  z-index: 50;
-  opacity: 0;
+  z-index: 20;
+  pointer-events: none;
 }
 
 /* --- Burger (independent of scene) --- */
@@ -1937,6 +1945,26 @@ body {
 .blogs__arrow:disabled {
   cursor: not-allowed;
   transform: none;
+}
+.cursor-svg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.cursor-svg-animate {
+  animation: slide-left-right 3s ease-in-out infinite;
+  position: absolute;
+}
+
+@keyframes slide-left-right {
+  0%,
+  100% {
+    transform: translateX(10px);
+  }
+  50% {
+    transform: translateX(-10px); /* Changed to a negative value to move LEFT */
+  }
 }
 
 /* ----- Responsive ----- */

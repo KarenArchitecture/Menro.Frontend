@@ -74,15 +74,14 @@ export default function BurgerPanelSection({
 
   const titleOpacityIn = useTransform(scrollYProgress, [0.04, 0.12], [0, 1]);
 
-  const titleY = useTransform(scrollYProgress, [0.06, 0.55], ["-42vh", "0vh"]);
+  // const titleY = useTransform(scrollYProgress, [0.06, 0.55], ["-42vh", "0vh"]);
 
   const titleOpacityOut = useTransform(sectionProg, [0.85, 0.95], [1, 0]);
-
   const titleOpacity = useTransform(
-    [titleOpacityIn, titleOpacityOut],
-    ([a, b]) => a * b,
+    scrollYProgress,
+    [0, 0.04, 0.12, 0.75, 0.8, 1],
+    [0, 0, 1, 1, 0, 0],
   );
-
   const PanelOverlay = (
     <motion.div
       className="bp__panel"
@@ -105,17 +104,6 @@ export default function BurgerPanelSection({
           aria-hidden="true"
         />
       )}
-
-      <motion.h2
-        className="bp__title"
-        style={{
-          opacity: titleOpacity,
-          y: titleY,
-          zIndex: 2,
-        }}
-      >
-        {title}
-      </motion.h2>
     </motion.div>
   );
 
@@ -150,6 +138,16 @@ export default function BurgerPanelSection({
             createPortal(PanelOverlay, document.body)}
         </div>
       </div>
+      <motion.h2
+        className="bp__title"
+        style={{
+          opacity: titleOpacity,
+          // y: titleY,
+          zIndex: 2,
+        }}
+      >
+        {title}
+      </motion.h2>
     </section>
   );
 }

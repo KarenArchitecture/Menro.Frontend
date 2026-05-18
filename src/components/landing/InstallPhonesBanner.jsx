@@ -1,9 +1,48 @@
-// src/components/landing/InstallPhonesBanner.jsx
 import React, { useRef, useLayoutEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
+
+// Helper function to wrap text nodes in spans for word-by-word animation
+function splitTextToWords(element) {
+  if (!element || element.hasAttribute("data-split")) return;
+
+  const walker = document.createTreeWalker(
+    element,
+    NodeFilter.SHOW_TEXT,
+    null,
+    false,
+  );
+  const textNodes = [];
+  let node;
+
+  while ((node = walker.nextNode())) {
+    if (node.nodeValue.trim() !== "") textNodes.push(node);
+  }
+
+  textNodes.forEach((textNode) => {
+    // Split by whitespace but keep the whitespace tokens
+    const words = textNode.nodeValue.split(/(\s+)/);
+    const fragment = document.createDocumentFragment();
+
+    words.forEach((word) => {
+      if (word.trim() === "") {
+        fragment.appendChild(document.createTextNode(word));
+      } else {
+        const span = document.createElement("span");
+        span.style.display = "inline-block";
+        span.className = "animated-word";
+        span.textContent = word;
+        fragment.appendChild(span);
+      }
+    });
+
+    textNode.parentNode.replaceChild(fragment, textNode);
+  });
+
+  element.setAttribute("data-split", "true");
+}
 
 export default function InstallPhonesBanner({
   bgSrc = "/images/app/mesh-card.png",
@@ -16,19 +55,30 @@ export default function InstallPhonesBanner({
   const sectionRef = useRef(null);
   const backRef = useRef(null);
   const frontRef = useRef(null);
+  const contentRef = useRef(null); // Ref for desktop content
 
   useLayoutEffect(() => {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const isMobile = window.matchMedia("(max-width: 768px)");
 
-    // Desktop animation only
     if (reducedMotion.matches || isMobile.matches) return;
 
     const ctx = gsap.context(() => {
       const backEl = backRef.current;
       const frontEl = frontRef.current;
       const sectionEl = sectionRef.current;
+      const contentEl = contentRef.current;
+
       if (!backEl || !frontEl || !sectionEl) return;
+
+      // Split text into words if content exists
+      if (contentEl) {
+        splitTextToWords(contentEl);
+      }
+
+      const words = contentEl
+        ? contentEl.querySelectorAll(".animated-word")
+        : [];
 
       const REST = {
         back: { x: -185, y: -179 },
@@ -49,21 +99,43 @@ export default function InstallPhonesBanner({
         defaults: { ease: "none" },
       });
 
-      tl.to(backEl, {
-        y: REST.back.y,
-        autoAlpha: 1,
-        duration: backDur,
-        overwrite: "auto",
-      }).to(
-        frontEl,
+      // Phones animation
+      tl.to(
+        backEl,
         {
-          y: REST.front.y,
+          y: REST.back.y,
           autoAlpha: 1,
-          duration: frontDur,
+          duration: backDur,
           overwrite: "auto",
         },
-        "-=0.2",
-      );
+        0,
+      ) // <--- Starts at 0
+        .to(
+          frontEl,
+          {
+            y: REST.front.y,
+            autoAlpha: 1,
+            duration: frontDur,
+            overwrite: "auto",
+          },
+          "-=0.2",
+        );
+
+      // Text word-by-word animation
+      if (words.length > 0) {
+        tl.fromTo(
+          words,
+          { autoAlpha: 0, y: 15 },
+          {
+            autoAlpha: 1,
+            y: 0,
+            duration: 0.8, // Increased from 0.4
+            stagger: 0.08, // Increased from 0.05
+            ease: "power2.out",
+          },
+          0, // <--- Starts at 0 (same time as phones)
+        );
+      }
 
       const resetPhones = () => {
         tl.pause(0);
@@ -85,6 +157,14 @@ export default function InstallPhonesBanner({
           z: 0.01,
           willChange: "transform, opacity",
         });
+
+        if (words.length > 0) {
+          gsap.set(words, {
+            autoAlpha: 0,
+            y: 15,
+            willChange: "transform, opacity",
+          });
+        }
       };
 
       const play = () => {
@@ -93,7 +173,7 @@ export default function InstallPhonesBanner({
       };
 
       tl.eventCallback("onComplete", () => {
-        gsap.set([backEl, frontEl], { willChange: "auto" });
+        gsap.set([backEl, frontEl, ...words], { willChange: "auto" });
       });
 
       resetPhones();
@@ -136,9 +216,10 @@ export default function InstallPhonesBanner({
             decoding="async"
           />
 
-          {/* Desktop content only */}
           {children && (
-            <div className="install-banner__card-content">{children}</div>
+            <div ref={contentRef} className="install-banner__card-content">
+              {children}
+            </div>
           )}
         </div>
 
@@ -162,7 +243,6 @@ export default function InstallPhonesBanner({
         </div>
       </div>
 
-      {/* Mobile content only */}
       {children && (
         <div className="install-banner__mobile-content">{children}</div>
       )}

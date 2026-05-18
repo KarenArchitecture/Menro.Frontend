@@ -1,7 +1,6 @@
 // components/landing/BlogsSection.jsx
 import React, { useRef, useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
-import Marquee from "react-fast-marquee";
 
 import ClockIcon from "../icons/ClockIcon";
 import ArrowUpIcon from "../icons/ArrowUpIcon";
@@ -87,7 +86,7 @@ function BlogCursorFollower({ targetEl, offsetY = -5 }) {
     if (!host || !section) return;
 
     const prefersReduced = window.matchMedia?.(
-      "(prefers-reduced-motion: reduce)"
+      "(prefers-reduced-motion: reduce)",
     )?.matches;
     const hasFinePointer =
       window.matchMedia?.("(pointer: fine)")?.matches ?? true;
@@ -137,7 +136,6 @@ function BlogCursorFollower({ targetEl, offsetY = -5 }) {
       className="blog-cursor-follower"
       aria-hidden="true"
       role="presentation"
-      /* fallback inline styles so it works even before CSS lands */
       style={{
         position: "fixed",
         top: 0,
@@ -167,25 +165,43 @@ function BlogCursorFollower({ targetEl, offsetY = -5 }) {
         }}
       >
         <span className="label">برای اسکرول بکشید</span>
-        <img
-          src="/images/landing-blog-scroll.svg"
-          alt="scroll indicator for blogs"
-        />
+        <div className="cursor-svg">
+          <img
+            className="cursor-svg-animate" // <-- Add this class
+            src="/images/landing-blog-scroll-ball.svg"
+            alt="scroll indicator for blogs"
+          />
+          <img
+            // <-- Add this class
+            src="/images/landing-blog-scroll-bar.svg"
+            alt="scroll indicator for blogs"
+          />
+        </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
 
 /** Card */
 function BlogCard({ post }) {
   const { title, href, coverSrc, readingMins } = post;
+
+  // Prevent click navigation if the user was just dragging
+  const handleClick = (e) => {
+    // If you need strict click prevention after dragging, you can check drag distance here.
+    // For now, dragging is mostly handled, but we prevent default image dragging below.
+  };
+
   return (
     <li className="blogs__card" role="listitem">
       <a
         className="blogs__card-link"
         href={href}
         aria-label={`خواندن: ${title}`}
+        onClick={handleClick}
+        style={{ userSelect: "none" }} // Prevent text selection
+        draggable={false}
       >
         <img
           className="blogs__card-img"
@@ -195,6 +211,7 @@ function BlogCard({ post }) {
           width="360"
           height="450"
           decoding="async"
+          draggable={false} // Important to prevent native ghost image drag
         />
         <div className="blogs__card-overlay" />
         <div className="blogs__card-meta">
@@ -241,6 +258,11 @@ export default function BlogSection({
   const [canNext, setCanNext] = useState(true);
   const [playMarquee, setPlayMarquee] = useState(true);
 
+  // Drag-to-scroll state
+  const [isDragging, setIsDragging] = useState(false);
+  const startX = useRef(0);
+  const scrollLeftRef = useRef(0);
+
   useEffect(() => {
     const mql = window.matchMedia?.("(prefers-reduced-motion: reduce)");
     if (mql?.matches) setPlayMarquee(false);
@@ -248,7 +270,7 @@ export default function BlogSection({
 
   const marqueeChunk = useMemo(
     () => <HighlightedChunk text={sectionTitle} token={highlightWord} />,
-    [sectionTitle, highlightWord]
+    [sectionTitle, highlightWord],
   );
 
   /** ------- Rail controls (step = card width + CSS gap) ------- */
@@ -266,13 +288,19 @@ export default function BlogSection({
     const el = railRef.current;
     if (!el) return;
     const max = el.scrollWidth - el.clientWidth;
-    const sl = el.scrollLeft;
+    const sl = Math.abs(el.scrollLeft); // Use abs because RTL scrollLeft can be negative in some browsers
+
+    // Simplistic check for RTL/LTR. You might need to adjust based on exact CSS direction implementation.
     setCanPrev(sl > 0);
     setCanNext(sl < max - 1);
   };
 
-  const scrollByAmount = (delta) =>
+  const scrollByAmount = (delta) => {
+    // In RTL, depending on the browser, scrolling right might be negative or positive.
+    // Assuming standard modern browser RTL:
     railRef.current?.scrollBy({ left: delta, behavior: "smooth" });
+  };
+
   const onPrev = () => scrollByAmount(-(getStep() || 0));
   const onNext = () => scrollByAmount(getStep() || 0);
 
@@ -294,13 +322,39 @@ export default function BlogSection({
     };
   }, []);
 
+  // --- Drag Handlers ---
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    // Force auto instantly
+    railRef.current.style.scrollBehavior = "auto";
+    startX.current = e.pageX - railRef.current.offsetLeft;
+    scrollLeftRef.current = railRef.current.scrollLeft;
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+    railRef.current.style.scrollBehavior = ""; // Reset
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    railRef.current.style.scrollBehavior = ""; // Reset
+  };
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    e.preventDefault(); // Prevents highlight selection
+    const x = e.pageX - railRef.current.offsetLeft;
+    const walk = (x - startX.current) * 2; // Multiply by 2 for faster scrolling
+    railRef.current.scrollLeft = scrollLeftRef.current - walk;
+  };
+
   return (
     <section
       className="blogs"
       dir="rtl"
       aria-labelledby="blogs-title"
       ref={sectionRef}
-      style={{ cursor: "pointer" }} // pointer cursor inside section
+      style={{ cursor: "pointer" }}
     >
       {/* Cursor follower (portal) */}
       <BlogCursorFollower targetEl={sectionRef} />
@@ -315,20 +369,14 @@ export default function BlogSection({
           <div className="marquee__row" dir="rtl">
             {Array.from({ length: 8 }).map((_, i) => (
               <span className="marquee__item" key={`A-${i}`}>
-                <span className="blogs__marquee-chunk">
-                  {sectionTitle.replace(highlightWord, "")}
-                  <span className="blogs__marquee-accent">{highlightWord}</span>
-                </span>
+                {marqueeChunk}
               </span>
             ))}
           </div>
           <div className="marquee__row" dir="rtl" aria-hidden="true">
             {Array.from({ length: 8 }).map((_, i) => (
               <span className="marquee__item" key={`B-${i}`}>
-                <span className="blogs__marquee-chunk">
-                  {sectionTitle.replace(highlightWord, "")}
-                  <span className="blogs__marquee-accent">{highlightWord}</span>
-                </span>
+                {marqueeChunk}
               </span>
             ))}
           </div>
@@ -342,6 +390,16 @@ export default function BlogSection({
           ref={railRef}
           role="list"
           onScroll={updateButtons}
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseLeave}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
+          style={{
+            userSelect: "none",
+            cursor: isDragging ? "grabbing" : "grab",
+            // Disable smooth scrolling while dragging to stop the jitter
+            scrollBehavior: isDragging ? "auto" : "smooth",
+          }}
         >
           {posts.map((p) => (
             <BlogCard key={p.id} post={p} />

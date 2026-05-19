@@ -1,262 +1,321 @@
 .menu-drawer__default-trigger {
-  border: 0;
-  background: transparent;
-  color: #ffffff;
-  cursor: pointer;
+    border: 0;
+    background: transparent;
+    color: #ffffff;
+    cursor: pointer;
 }
 
 .menu-drawer {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  pointer-events: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10050;
+    pointer-events: none;
 }
 
 .menu-drawer--open {
-  pointer-events: auto;
+    pointer-events: auto;
 }
 
 .menu-drawer__backdrop {
-  position: absolute;
-  inset: 0;
-  border: 0;
-  padding: 0;
-  background: rgba(2, 6, 13, 0.54);
-  opacity: 0;
-  cursor: pointer;
-  transition: opacity 220ms ease;
+    position: absolute;
+    inset: 0;
+    border: 0;
+    padding: 0;
+    background: transparent; /* Changed from rgba(2, 6, 13, 0.54) */
+    opacity: 0;
+    cursor: pointer;
+    transition: opacity 220ms ease;
 }
 
 .menu-drawer--open .menu-drawer__backdrop {
-  opacity: 1;
+    opacity: 1;
+    pointer-events: auto; /* Added to ensure click-to-close works */
 }
 
 .menu-drawer__panel {
-  position: absolute;
-  top: 20px;
-  right: 12px;
-  bottom: 12px;
-  width: min(276px, calc(100vw - 24px));
-  display: flex;
-  flex-direction: column;
-  padding: 20px 22px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  background: #111821;
-  color: #ffffff;
-  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.42);
-  transform: translateX(112%);
-  opacity: 0;
-  transition:
-    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 200ms ease;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    bottom: 12px;
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    padding: 2.5rem 2.5rem 4rem;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 1.5rem;
+    background: #13171e;
+    color: #ffffff;
+    box-shadow: 0 26px 70px rgba(0, 0, 0, 0.42);
+    transform: translateX(112%);
+    opacity: 0;
+    transition:
+        transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 200ms ease;
 }
 
 .menu-drawer--open .menu-drawer__panel {
-  transform: translateX(0);
-  opacity: 1;
+    transform: translateX(0);
+    opacity: 1;
 }
 
 .menu-drawer__top {
-  display: grid;
-  grid-template-columns: 1fr 38px;
-  align-items: center;
-  gap: 14px;
-  direction: ltr;
+    display: grid;
+    grid-template-columns: 1fr 38px;
+    align-items: center;
+    gap: 2rem;
+    direction: ltr;
 }
 
 .menu-drawer__search {
-  height: 40px;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 0 12px;
-  border-radius: 9px;
-  background: #080e15;
-  direction: rtl;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 0 12px;
+    border-radius: 9px;
+    background: #0c0f14;
+    direction: rtl;
 }
 
-.menu-drawer__search svg {
-  width: 18px;
-  height: 18px;
-  flex: 0 0 auto;
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.86);
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.menu-drawer__search img {
+    display: block;
+    flex: 0 0 auto;
 }
 
 .menu-drawer__search input {
-  width: 100%;
-  min-width: 0;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  color: #ffffff;
-  font: inherit;
-  font-size: 10px;
-  direction: rtl;
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    box-shadow: none;
+    background: transparent;
+    color: #ffffff;
+    caret-color: #ffffff;
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.menu-drawer__search input:focus,
+.menu-drawer__search input:focus-visible {
+    border: 0;
+    outline: 0;
+    box-shadow: none;
 }
 
 .menu-drawer__search input::placeholder {
-  color: rgba(255, 255, 255, 0.54);
+    color: rgba(255, 255, 255, 0.54);
 }
 
 .menu-drawer__close {
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  border: 0;
-  padding: 0;
-  background: transparent;
-  color: #ffffff;
-  cursor: pointer;
+    display: grid;
+    place-items: center;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: #ffffff;
+    cursor: pointer;
 }
 
 .menu-drawer__close svg {
-  width: 27px;
-  height: 27px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.9;
-  stroke-linecap: round;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.9;
+    stroke-linecap: round;
 }
 
 .menu-drawer__nav {
-  display: flex;
-  flex-direction: column;
-  gap: 13px;
-  margin-top: 19px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 2rem;
 }
 
 .menu-drawer__item {
-  min-height: 42px;
-  display: grid;
-  grid-template-columns: 74px 1fr;
-  align-items: center;
-  gap: 28px;
-  color: #ffffff;
-  text-decoration: none;
+    min-height: 42px;
+    display: grid;
+    grid-template-columns: 1fr 8rem;
+    align-items: center;
+    gap: 2.8rem;
+    color: #ffffff;
+    text-decoration: none;
+    padding-right: 2rem;
 }
 
 .menu-drawer__item-icon {
-  width: 74px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-  border-radius: 9px;
-  background: #080e15;
+    width: 8rem;
+    height: 4.6rem;
+    display: grid;
+    place-items: center;
+    border-radius: 1.2rem;
+    background: #0c0f14;
+    justify-self: end;
 }
 
-.menu-drawer__item-icon svg {
-  width: 21px;
-  height: 21px;
-  fill: none;
-  stroke: #ffffff;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.menu-drawer__item-icon img {
+    width: 2.1rem;
+    height: 2.1rem;
+    display: block;
 }
 
 .menu-drawer__item-label {
-  font-size: 13px;
-  font-weight: 800;
-  white-space: nowrap;
-  text-align: right;
+    font-size: 1.2rem;
+    font-weight: 600;
+    white-space: nowrap;
+    text-align: right;
 }
 
 .menu-drawer__settings {
-  margin-top: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 11px;
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
 }
 
 .menu-drawer__setting {
-  width: 100%;
-  display: grid;
-  grid-template-columns: 48px 48px 1fr 22px;
-  align-items: center;
-  gap: 10px;
-  border: 0;
-  padding: 0;
-  background: transparent;
-  color: #ffffff;
-  font: inherit;
-  text-align: right;
-  cursor: pointer;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.6rem;
+    border: 0;
+    padding: 0 2rem 0 0;
+    background: transparent;
+    color: #ffffff;
+    font: inherit;
+    text-align: right;
+    cursor: pointer;
 }
 
-.menu-drawer__setting-switch {
-  position: relative;
-  width: 41px;
-  height: 20px;
-  border: 2px solid #ff5b35;
-  border-radius: 999px;
+.menu-drawer__setting-main {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    min-width: 0;
 }
 
-.menu-drawer__setting-switch::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  right: 3px;
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  background: transparent;
-  transform: translateY(-50%);
-  transition:
-    right 180ms ease,
-    background 180ms ease;
-}
-
-.menu-drawer__setting--active .menu-drawer__setting-switch::after {
-  right: 21px;
-  background: #ff5b35;
-}
-
-.menu-drawer__setting-value {
-  color: rgba(255, 255, 255, 0.66);
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.menu-drawer__setting-title {
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 900;
+.menu-drawer__setting-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 2.1rem;
+    margin-inline-start: auto;
 }
 
 .menu-drawer__setting-icon {
-  display: grid;
-  place-items: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
 }
 
-.menu-drawer__setting-icon svg {
-  width: 19px;
-  height: 19px;
-  fill: none;
-  stroke: #ffffff;
-  stroke-width: 1.7;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.menu-drawer__setting-icon img {
+    width: 2rem;
+    height: 2rem;
+    display: block;
+}
+
+.menu-drawer__setting-title {
+    color: #ffffff;
+    font-size: 1.2rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.menu-drawer__setting-value {
+    min-width: 4.8rem;
+    height: 2.2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    overflow: hidden;
+    color: rgba(255, 255, 255, 0.66);
+    font-size: 1.1rem;
+    font-weight: 600;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.menu-drawer__setting-value-text {
+    display: inline-block;
+    animation: menuDrawerTextChange 180ms ease both;
+}
+
+@keyframes menuDrawerTextChange {
+    from {
+        opacity: 0;
+        transform: translateY(0.45rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.menu-drawer__setting-switch {
+    position: relative;
+    width: 4.2rem;
+    height: 2.1rem;
+    flex: 0 0 auto;
+    border: 2px solid #ff5b35;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.menu-drawer__setting-switch-icon {
+    position: absolute;
+    top: 50%;
+    width: 1.2rem;
+    height: 1.2rem;
+    display: block;
+    opacity: 0;
+    transform: translateY(-50%) scale(0.7);
+    transition:
+        right 220ms cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 180ms ease,
+        transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Active icon: sun / notification-on */
+.menu-drawer__setting-switch-icon--active {
+    right: calc(100% - 1.65rem);
+}
+
+/* Inactive icon: moon / notification-off */
+.menu-drawer__setting-switch-icon--inactive {
+    right: calc(100% - 1.65rem);
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+}
+
+/* Active state: active icon appears on right */
+.menu-drawer__setting--active .menu-drawer__setting-switch-icon--active {
+    right: 0.45rem;
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+}
+
+/* Active state: inactive icon moves right and disappears */
+.menu-drawer__setting--active .menu-drawer__setting-switch-icon--inactive {
+    right: 0.45rem;
+    opacity: 0;
+    transform: translateY(-50%) scale(0.7);
 }
 
 @media (max-width: 380px) {
-  .menu-drawer__panel {
-    right: 10px;
-    left: 10px;
-    width: auto;
-  }
+    .menu-drawer__panel {
+        right: 10px;
+        left: 10px;
+        width: auto;
+    }
 
-  .menu-drawer__item {
-    grid-template-columns: 68px 1fr;
-    gap: 20px;
-  }
+    .menu-drawer__item {
+        grid-template-columns: 1fr 6.8rem;
+        gap: 2rem;
+    }
 
-  .menu-drawer__item-icon {
-    width: 68px;
-  }
+    .menu-drawer__item-icon {
+        width: 6.8rem;
+    }
 }

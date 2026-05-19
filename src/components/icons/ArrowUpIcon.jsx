@@ -10,9 +10,9 @@ export default function ArrowUpIcon() {
       <path
         d="M21.1663 21.1668L2.83301 2.8335M2.83301 2.8335V17.5002M2.83301 2.8335H17.4997"
         stroke="white"
-        stroke-width="3.7"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="3.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );

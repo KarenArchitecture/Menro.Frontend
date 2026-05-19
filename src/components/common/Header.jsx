@@ -1,22 +1,32 @@
 // src/components/common/Header.jsx
 import React from "react";
 import SearchBar from "./SearchBar";
-import MobileNav from "./MobileNav";
+// Delete the MobileNav import
+import MenuDrawer from "./MenuDrawer";
 
 function Header({ onSearchSubmit }) {
   return (
     <header className="header">
-      <MobileNav />
+      {/* REMOVE <MobileNav /> FROM HERE */}
+
       <div className="header__bar">
-        <SearchBar className="header__search" onSubmit={onSearchSubmit} />
-        <button
-          type="button"
-          className="header__hamburger"
-          aria-label="menu"
-          onClick={() => console.log("hamburger clicked")}
-        >
-          <img src="/images/menu.svg" alt="hamburger menu" />
-        </button>
+        <SearchBar
+          className="header__search"
+          onSubmit={onSearchSubmit}
+        />
+
+        <MenuDrawer
+          onSearch={onSearchSubmit}
+          trigger={
+            <button
+              type="button"
+              className="header__hamburger"
+              aria-label="منو"
+            >
+              <img src="/images/menu.svg" alt="" />
+            </button>
+          }
+        />
       </div>
     </header>
   );

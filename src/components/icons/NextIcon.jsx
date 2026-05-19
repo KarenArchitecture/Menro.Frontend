@@ -10,9 +10,9 @@ export default function NextIcon() {
       <path
         d="M2.625 2.875L14.25 14.5L2.625 26.125"
         stroke="white"
-        stroke-width="4"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );

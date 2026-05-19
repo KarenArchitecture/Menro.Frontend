@@ -14,7 +14,7 @@ export default function MouseIcon() {
         height="18.5"
         rx="5.75"
         stroke="#F3F6FC"
-        stroke-width="1.5"
+        strokeWidth="1.5"
       />
       <rect
         x="4.75"
@@ -23,7 +23,7 @@ export default function MouseIcon() {
         height="5.5"
         rx="1.75"
         stroke="#F3F6FC"
-        stroke-width="1.5"
+        strokeWidth="1.5"
       />
     </svg>
   );

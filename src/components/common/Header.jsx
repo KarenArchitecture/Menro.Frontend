@@ -1,13 +1,13 @@
 // src/components/common/Header.jsx
 import React from "react";
 import SearchBar from "./SearchBar";
-import MobileNav from "./MobileNav";
+// Delete the MobileNav import
 import MenuDrawer from "./MenuDrawer";
 
 function Header({ onSearchSubmit }) {
   return (
     <header className="header">
-      <MobileNav />
+      {/* REMOVE <MobileNav /> FROM HERE */}
 
       <div className="header__bar">
         <SearchBar

@@ -19,20 +19,24 @@ import UnauthorizedPage from "./pages/UnauthorizedPage";
 import ChangePhone from "./pages/ChangePhone";
 import AdminPage from "./pages/AdminPage";
 
-import { DrawerStateProvider, useDrawerState } from "./Context/DrawerStateContext";
+import { DrawerStateProvider, useDrawerState } from "../src/Context/DrawerStateContext";
 
 // --- Page wrapper for 3D depth animation ---
-function PageWrapper({ children }) {
+function PageWrapper({ children, hideMobileNav }) {
   const { isDrawerOpen } = useDrawerState();
 
   return (
     <>
-      {/* Background layer that reveals when drawer opens */}
       <div className={`page-background ${isDrawerOpen ? "is-visible" : ""}`} />
-      
-      {/* Main page content that scales down */}
-      <div className={`page-content ${isDrawerOpen ? "page--shifted" : ""}`}>
-        {children}
+
+      <div className={`app-shell ${isDrawerOpen ? "app-shell--shifted" : ""}`}>
+
+        <div className="app-shell__content">
+          {children}
+        </div>
+
+        {!hideMobileNav && <MobileNav />}
+
       </div>
     </>
   );
@@ -49,7 +53,8 @@ export default function App() {
 
   return (
     <DrawerStateProvider>
-      <PageWrapper>
+      {/* PageWrapper now ONLY contains the Routes */}
+      <PageWrapper hideMobileNav={hideMobileNav}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/home" element={<HomePage />} />
@@ -80,8 +85,6 @@ export default function App() {
             }
           />
         </Routes>
-
-        {!hideMobileNav && <MobileNav />}
       </PageWrapper>
     </DrawerStateProvider>
   );

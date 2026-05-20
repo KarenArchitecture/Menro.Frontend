@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const adSettingsAxios = axios.create({
-  baseURL: "https://localhost:7270/api/admin/adSettings",
+  baseURL: `${import.meta.env.VITE_API_URL}/admin/adSettings`,
   withCredentials: true,
 });
 

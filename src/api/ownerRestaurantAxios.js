@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const ownerRestaurantAxios = axios.create({
-  baseURL: "https://localhost:7270/api/owner/restaurant",
+  baseURL: `${import.meta.env.VITE_API_URL}/owner/restaurant`,
   withCredentials: true,
 });
 

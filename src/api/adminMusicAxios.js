@@ -4,7 +4,7 @@ import axios from "axios";
 // Axios instance for Admin Music
 // ----------------------
 const adminMusicAxios = axios.create({
-  baseURL: "https://localhost:7270/api/admin/music",
+  baseURL: `${import.meta.env.VITE_API_URL}admin/music`,
   withCredentials: true, // اگر cookie-based auth داری
 });
 

@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const adminOrderAxios = axios.create({
-  baseURL: "https://localhost:7270/api/admin/orders",
+  baseURL: `${import.meta.env.VITE_API_URL}/admin/orders`,
   withCredentials: true,
 });
 adminOrderAxios.interceptors.request.use((config) => {

@@ -58,7 +58,7 @@ function RestaurantContent() {
   /* ---------- FETCH MODAL DETAILS ---------- */
   const fetchFoodDetails = async (id) => {
     const apiBase =
-      import.meta.env.VITE_API_URL || "https://localhost:7270/api";
+      import.meta.env.VITE_API_URL;
     const baseUrl = apiBase.replace(/\/api\/?$/, "");
 
     const res = await fetch(`${baseUrl}/api/public/food/${id}/details`);

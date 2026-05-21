@@ -102,7 +102,7 @@
 //     );
 //   }
 
-//   const BACKEND_URL = "https://localhost:7270"; // secure backend
+//   const BACKEND_URL = "https://localhost:xxxx"; // secure backend
 
 //   // Resolve banner URL from backend or frontend fallback
 //   function resolveBannerUrl(url) {
@@ -194,7 +194,7 @@
 // import { getRestaurantBannerBySlug } from "../../api/restaurants";
 
 // function ShopBanner({ slug }) {
-//   const BACKEND_URL = "https://localhost:7270"; // secure backend
+//   const BACKEND_URL = "https://localhost:xxxx"; // secure backend
 
 //   const { data: banner, isLoading, isError } = useQuery({
 //     queryKey: ["restaurantBanner", slug],
@@ -330,8 +330,7 @@ import MusicIcon from "../icons/MusicIcon";
 import CircleIcon from "../icons/CircleIcon";
 import { useNavigate } from "react-router-dom";
 
-const BACKEND_URL = import.meta.env.VITE_API_BASE_URL; 
-// example: https://localhost:7270
+const BACKEND_URL = import.meta.env.VITE_API_BASE_URL;
 
 function ShopBanner({ banner }) {
   const navigate = useNavigate();

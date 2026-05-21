@@ -189,7 +189,7 @@ function ItemDetailModal({ item, onClose }) {
               </nav>
 
               <img
-                src={`https://localhost:7270${item.imageUrl}`}
+                src={`${import.meta.env.VITE_SERVER_URL}${item.imageUrl}`}
                 alt={item.name}
                 className="modal-hero-img"
               />

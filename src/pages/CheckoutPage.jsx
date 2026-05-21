@@ -22,7 +22,7 @@ export default function CheckoutPage() {
       id: ci.id,
       title: ci.name, // e.g. "کباب - بزرگ"
       img: ci.imageUrl
-        ? `https://localhost:7270${ci.imageUrl}`
+        ? `${import.meta.env.VITE_SERVER_URL}${ci.imageUrl}`
         : "/images/checkout-pic.png",
       rating: { score: 4.5, count: 0 }, // placeholder for now
       subtext: "",

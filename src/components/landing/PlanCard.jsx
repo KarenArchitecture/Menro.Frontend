@@ -1,4 +1,3 @@
-// PlanCard.jsx
 import React from "react";
 import GreenCheckIcon from "../icons/GreenCheckIcon";
 
@@ -44,17 +43,35 @@ export default function PlanCard({ plan }) {
 
         {/* Features (optional, on the left) */}
         {features?.length > 0 && (
-          <ul className="plan-card__features" aria-label={`امکانات ${title}`}>
-            {features.map((f, i) => (
-              <li key={i} className="plan-card__feature">
-                <span>{f}</span>
-                <GreenCheckIcon
+          <div className="plan-card__features-wrapper">
+            <ul className="plan-card__features" aria-label={`امکانات ${title}`}>
+              {/* 1st Render: Original Features */}
+              {features.map((f, i) => (
+                <li key={`orig-${i}`} className="plan-card__feature">
+                  <span>{f}</span>
+                  <GreenCheckIcon
+                    aria-hidden="true"
+                    className="plan-card__feature-icon"
+                  />
+                </li>
+              ))}
+
+              {/* 2nd Render: Duplicated for seamless infinite scrolling */}
+              {features.map((f, i) => (
+                <li
+                  key={`dup-${i}`}
+                  className="plan-card__feature"
                   aria-hidden="true"
-                  className="plan-card__feature-icon"
-                />
-              </li>
-            ))}
-          </ul>
+                >
+                  <span>{f}</span>
+                  <GreenCheckIcon
+                    aria-hidden="true"
+                    className="plan-card__feature-icon"
+                  />
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
       </div>
     </div>

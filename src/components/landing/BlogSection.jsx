@@ -137,7 +137,6 @@ function BlogCursorFollower({ targetEl, offsetY = -5 }) {
       className="blog-cursor-follower"
       aria-hidden="true"
       role="presentation"
-      /* fallback inline styles so it works even before CSS lands */
       style={{
         position: "fixed",
         top: 0,
@@ -167,10 +166,16 @@ function BlogCursorFollower({ targetEl, offsetY = -5 }) {
         }}
       >
         <span className="label">برای اسکرول بکشید</span>
-        <img
-          src="/images/landing-blog-scroll.svg"
-          alt="scroll indicator for blogs"
-        />
+        <div className="landing-blog-scroll">
+          <img
+            src="/images/landing-blog-scroll-bar.svg"
+            alt="scroll indicator for blogs"
+          />
+          <img
+            src="/images/landing-blog-scroll-ball.svg"
+            alt="scroll indicator for blogs"
+          />
+        </div>
       </div>
     </div>,
     document.body,
@@ -186,6 +191,7 @@ function BlogCard({ post }) {
         className="blogs__card-link"
         href={href}
         aria-label={`خواندن: ${title}`}
+        draggable="false" // <--- PREVENTS BROWSER GHOST DRAGGING
       >
         <img
           className="blogs__card-img"
@@ -195,6 +201,7 @@ function BlogCard({ post }) {
           width="360"
           height="450"
           decoding="async"
+          draggable="false" // <--- PREVENTS BROWSER GHOST DRAGGING
         />
         <div className="blogs__card-overlay" />
         <div className="blogs__card-meta">
@@ -237,6 +244,12 @@ export default function BlogSection({
   const railRef = useRef(null);
   const sectionRef = useRef(null);
 
+  // Dragging Refs
+  const isDragging = useRef(false);
+  const hasDragged = useRef(false);
+  const startX = useRef(0);
+  const scrollLeftPos = useRef(0);
+
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(true);
   const [playMarquee, setPlayMarquee] = useState(true);
@@ -251,7 +264,7 @@ export default function BlogSection({
     [sectionTitle, highlightWord],
   );
 
-  /** ------- Rail controls (step = card width + CSS gap) ------- */
+  /** ------- Rail controls ------- */
   const getStep = () => {
     const rail = railRef.current;
     if (!rail) return 0;
@@ -265,8 +278,10 @@ export default function BlogSection({
   const updateButtons = () => {
     const el = railRef.current;
     if (!el) return;
+    // In RTL, scrollLeft is usually negative in modern browsers, starting at 0.
+    // We check absolute values to easily toggle button states.
     const max = el.scrollWidth - el.clientWidth;
-    const sl = el.scrollLeft;
+    const sl = Math.abs(el.scrollLeft);
     setCanPrev(sl > 0);
     setCanNext(sl < max - 1);
   };
@@ -300,16 +315,14 @@ export default function BlogSection({
       dir="rtl"
       aria-labelledby="blogs-title"
       ref={sectionRef}
-      style={{ cursor: "pointer" }} // pointer cursor inside section
+      style={{ cursor: "pointer" }}
     >
-      {/* Cursor follower (portal) */}
       <BlogCursorFollower targetEl={sectionRef} />
 
       <h2 id="blogs-title" className="sr-only">
         {sectionTitle}
       </h2>
 
-      {/* Marquee */}
       <div className="blogs__marquee" aria-hidden="true" dir="ltr">
         <div className="marquee__track" style={{ "--dur": "22s" }}>
           <div className="marquee__row" dir="rtl">
@@ -335,13 +348,48 @@ export default function BlogSection({
         </div>
       </div>
 
-      {/* Rail + controls */}
       <div className="blogs__viewport">
         <ul
           className="blogs__rail"
           ref={railRef}
           role="list"
           onScroll={updateButtons}
+          // --- DRAG EVENT HANDLERS ---
+          onMouseDown={(e) => {
+            isDragging.current = true;
+            hasDragged.current = false;
+            startX.current = e.pageX - railRef.current.offsetLeft;
+            scrollLeftPos.current = railRef.current.scrollLeft;
+            railRef.current.style.cursor = "grabbing";
+          }}
+          onMouseLeave={() => {
+            isDragging.current = false;
+            if (railRef.current) railRef.current.style.cursor = "grab";
+          }}
+          onMouseUp={() => {
+            isDragging.current = false;
+            if (railRef.current) railRef.current.style.cursor = "grab";
+          }}
+          onMouseMove={(e) => {
+            if (!isDragging.current) return;
+            e.preventDefault();
+            const x = e.pageX - railRef.current.offsetLeft;
+            const walk = (x - startX.current) * 1.5; // Scroll-fast multiplier
+
+            // Register as an actual drag only if moved more than 5 pixels
+            if (Math.abs(walk) > 5) {
+              hasDragged.current = true;
+            }
+
+            railRef.current.scrollLeft = scrollLeftPos.current - walk;
+          }}
+          onClickCapture={(e) => {
+            // Stop navigation if they actually dragged the slider
+            if (hasDragged.current) {
+              e.stopPropagation();
+              e.preventDefault();
+            }
+          }}
         >
           {posts.map((p) => (
             <BlogCard key={p.id} post={p} />

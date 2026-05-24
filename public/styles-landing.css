@@ -1165,10 +1165,66 @@ body {
   gap: 2rem;
   padding: 3.2rem 2.4rem;
 }
-.plan-card__features {
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
+/* Container for the scrolling features */
+.plan-card__features-wrapper {
+  overflow: hidden; /* Hides the scrollbar and items outside the box */
+  max-height: 30rem; /* ADJUST THIS based on your card's design height */
+  pointer-events: none; /* Prevents the user from clicking/dragging to scroll */
+
+  /* Optional: Adds a nice fade out effect at the top and bottom edges */
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 15%,
+    black 85%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 15%,
+    black 85%,
+    transparent
+  );
 }
+
+/* The actual list that moves */
+/* The actual list that moves */
+.plan-card__features {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  /* --- THE FIX --- */
+  /* Force the UL to take the total combined height of all 2x items */
+  height: max-content;
+  min-height: max-content;
+  /* Prevent flexbox from squishing the UL to fit the parent container */
+  flex-shrink: 0;
+
+  animation: autoScrollFeatures 25s linear infinite;
+}
+
+/* Ensure individual items don't get squished by flexbox */
+.plan-card__feature {
+  flex-shrink: 0;
+
+  /* (Keep your existing styles for display, padding, etc. here) */
+}
+
+/* The keyframe animation */
+@keyframes autoScrollFeatures {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    /* Moves up by exactly half its height (the first set of items) */
+    transform: translateY(-50%);
+  }
+}
+
 /* Info (right) */
 .plan-card__info {
   display: flex;
@@ -1803,11 +1859,17 @@ body {
 
 /* ----- Card ----- */
 .blogs__card {
-  flex: 0 0 auto; /* don't shrink; keep natural block width */
-  width: 250px; /* if you want natural image width, remove this */
+  flex: 0 0 auto;
+  width: 250px;
   height: 400px;
   list-style: none;
   scroll-snap-align: start;
+  /* Add this to suggest grab interaction */
+  cursor: grab;
+}
+
+.blogs__card:active {
+  cursor: grabbing;
 }
 
 .blogs__card-link {
@@ -1823,6 +1885,12 @@ body {
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
+
+  /* Prevent text selection while dragging */
+  user-select: none;
+  -webkit-user-select: none;
+  /* Prevent native link dragging */
+  -webkit-user-drag: none;
 }
 .blogs__card-link:hover {
   transform: translateY(-2px);
@@ -1840,6 +1908,10 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+
+  /* Prevent native image dragging (ghost image) */
+  -webkit-user-drag: none;
+  pointer-events: none; /* Optional: lets the link handle all mouse events */
 }
 
 /* Overlay + meta */
@@ -3145,7 +3217,7 @@ body {
   .plans-pin--mobile .plan-card {
     position: relative;
     z-index: 3;
-
+    border-radius: 30px;
     width: 100%;
     height: auto;
     min-height: 51rem;
@@ -3181,117 +3253,121 @@ body {
   }
 
   .plans-pin--mobile .plan-card__info {
-    display: contents;
-  }
-
-  .plans-pin--mobile .plan-card__chip {
-    order: 1;
-    margin: 0 0 0.8rem;
-
-    color: #ff7a3d;
-    font-size: 1.2rem;
-    font-weight: 900;
-    line-height: 1.6;
-    text-align: right;
-  }
-
-  .plans-pin--mobile .plan-card__title {
-    order: 2;
-    margin: 0;
-
-    color: #ffffff;
-    font-size: 3.4rem;
-    font-weight: 900;
-    line-height: 1.35;
-    text-align: right;
-  }
-
-  .plans-pin--mobile .plan-card__subtitle {
-    order: 3;
-    max-width: 100%;
-    margin: 1rem 0 2.6rem;
-
-    color: #a7adb6;
-    font-size: 1.85rem;
-    font-weight: 500;
-    line-height: 1.9;
-    text-align: right;
-  }
-
-  .plans-pin--mobile .plan-card__features {
-    order: 4;
-
-    width: 100%;
-    max-height: none;
-    overflow: visible;
-
-    margin: 0;
-    padding: 0;
-
     display: flex;
     flex-direction: column;
-    gap: 1.55rem;
-
-    scrollbar-width: none;
+    align-items: flex-start;
+    padding: 0;
+    margin-bottom: 20px;
   }
+}
 
-  .plans-pin--mobile .plan-card__feature {
-    width: 100%;
+.plans-pin--mobile .plan-card__chip {
+  order: 1;
+  margin: 0 0 0.8rem;
 
-    display: flex;
-    flex-direction: row-reverse;
-    align-items: center;
-    justify-content: space-between;
+  color: #ff7a3d;
+  font-size: 1.2rem;
+  font-weight: 900;
+  line-height: 1.6;
+  text-align: right;
+}
 
-    gap: 1.2rem;
+.plans-pin--mobile .plan-card__title {
+  order: 2;
+  margin: 0;
 
-    color: #ffffff;
-    font-size: 1.25rem;
-    font-weight: 800;
-    line-height: 1.5;
-    text-align: right;
-  }
+  color: #ffffff;
+  font-size: 3.4rem;
+  font-weight: 900;
+  line-height: 1.35;
+  text-align: right;
+}
 
-  .plans-pin--mobile .plan-card__feature span {
-    flex: 1;
-    min-width: 0;
-  }
+.plans-pin--mobile .plan-card__subtitle {
+  order: 3;
+  max-width: 100%;
+  margin: 1rem 0 2.6rem;
 
-  .plans-pin--mobile .plan-card__feature-icon {
-    width: 1.6rem;
-    height: 1.6rem;
-    flex: 0 0 1.6rem;
-    transform: none;
-  }
+  color: #a7adb6;
+  font-size: 1.85rem;
+  font-weight: 500;
+  line-height: 1.9;
+  text-align: right;
+}
 
-  .plans-pin--mobile .plan-card__actions {
-    order: 5;
+.plans-pin--mobile .plan-card__features {
+  order: 4;
 
-    width: 100%;
-    margin: auto 0 0;
-    padding-top: 2.2rem;
-  }
+  width: 100%;
+  max-height: none;
+  overflow: visible;
 
-  .plans-pin--mobile .plan-card__actions .btn.btn-light {
-    width: 100%;
-    height: 5rem;
+  margin: 0;
+  padding: 0;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1.55rem;
 
-    border-radius: 0.8rem;
-    background: #f6f7fb;
-    color: #111820;
+  scrollbar-width: none;
+}
 
-    font-size: 1.35rem;
-    font-weight: 900;
-    text-decoration: none;
+.plans-pin--mobile .plan-card__feature {
+  width: 100%;
 
-    box-shadow:
-      0 0 1.4rem rgba(255, 255, 255, 0.4),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.9);
-  }
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 1.2rem;
+
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.plans-pin--mobile .plan-card__feature span {
+  flex: 1;
+  min-width: 0;
+}
+
+.plans-pin--mobile .plan-card__feature-icon {
+  width: 1.6rem;
+  height: 1.6rem;
+  flex: 0 0 1.6rem;
+  transform: none;
+}
+
+.plans-pin--mobile .plan-card__actions {
+  order: 5;
+
+  width: 100%;
+  margin: auto 0 0;
+  padding-top: 2.2rem;
+}
+
+.plans-pin--mobile .plan-card__actions .btn.btn-light {
+  width: 100%;
+  height: 5rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 0.8rem;
+  background: #f6f7fb;
+  color: #111820;
+
+  font-size: 1.35rem;
+  font-weight: 900;
+  text-decoration: none;
+
+  box-shadow:
+    0 0 1.4rem rgba(255, 255, 255, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.9);
 }
 
 @media (max-width: 420px) {
@@ -4123,4 +4199,41 @@ body::-webkit-scrollbar {
   width: 0;
   height: 0;
   display: none; /* Chrome / Safari / Edge */
+}
+/* Container holding the bar and the ball */
+.landing-blog-scroll {
+  position: relative;
+  display: flex;
+  align-items: center;
+  /* Optional: Set a specific width if the SVG doesn't have an intrinsic one */
+}
+
+/* The Bar */
+.landing-blog-scroll img:first-child {
+  width: 100%;
+  display: block;
+}
+
+/* The Ball */
+.landing-blog-scroll img:last-child {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  /* Start vertically centered at the very left edge */
+  transform: translate(0, -50%);
+  /* Animate back and forth continuously */
+  animation: slideBall 1.2s ease-in-out infinite alternate;
+}
+
+/* Keyframes for sliding left to right */
+@keyframes slideBall {
+  0% {
+    left: 0;
+    transform: translate(0, -50%);
+  }
+  100% {
+    left: 100%;
+    /* -100% prevents the ball from spilling outside the right edge of the bar */
+    transform: translate(-100%, -50%);
+  }
 }

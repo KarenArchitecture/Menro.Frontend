@@ -16,19 +16,61 @@ export default function InstallPhonesBanner({
   const sectionRef = useRef(null);
   const backRef = useRef(null);
   const frontRef = useRef(null);
+  const desktopContentRef = useRef(null);
 
   useLayoutEffect(() => {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const isMobile = window.matchMedia("(max-width: 768px)");
 
-    // Desktop animation only
     if (reducedMotion.matches || isMobile.matches) return;
 
     const ctx = gsap.context(() => {
       const backEl = backRef.current;
       const frontEl = frontRef.current;
       const sectionEl = sectionRef.current;
-      if (!backEl || !frontEl || !sectionEl) return;
+      const desktopContentEl = desktopContentRef.current;
+
+      if (!backEl || !frontEl || !sectionEl || !desktopContentEl) return;
+
+      const splitTextToWords = (element) => {
+        if (element.dataset.splitted)
+          return Array.from(element.querySelectorAll(".gsap-word"));
+
+        const walker = document.createTreeWalker(
+          element,
+          NodeFilter.SHOW_TEXT,
+          null,
+          false,
+        );
+        let textNodes = [];
+        let node;
+        while ((node = walker.nextNode())) {
+          if (node.nodeValue.trim() !== "") textNodes.push(node);
+        }
+
+        textNodes.forEach((textNode) => {
+          const fragment = document.createDocumentFragment();
+          const words = textNode.nodeValue.split(/(\s+)/);
+          words.forEach((word) => {
+            if (word.trim() === "") {
+              fragment.appendChild(document.createTextNode(word));
+            } else {
+              const span = document.createElement("span");
+              span.textContent = word;
+              span.className = "gsap-word";
+              // Inline-block is critical for the Y-axis transform to work
+              span.style.display = "inline-block";
+              fragment.appendChild(span);
+            }
+          });
+          textNode.parentNode.replaceChild(fragment, textNode);
+        });
+
+        element.dataset.splitted = "true";
+        return Array.from(element.querySelectorAll(".gsap-word"));
+      };
+
+      const words = splitTextToWords(desktopContentEl);
 
       const REST = {
         back: { x: -185, y: -179 },
@@ -49,12 +91,31 @@ export default function InstallPhonesBanner({
         defaults: { ease: "none" },
       });
 
-      tl.to(backEl, {
-        y: REST.back.y,
-        autoAlpha: 1,
-        duration: backDur,
-        overwrite: "auto",
-      }).to(
+      // 1. Updated Words Animation
+      tl.to(
+        words,
+        {
+          autoAlpha: 1, // Fades in
+          y: 0, // Moves to its original position
+          stagger: 0.1, // Increased delay between words for a clearer sequence
+          duration: 0.8, // Increased duration for a softer, slower movement
+          ease: "back.out(1.2)", // Gives a very slight, elegant bounce/overshoot
+          overwrite: "auto",
+        },
+        0,
+      ); // Still starts with the phones
+
+      // 2. Phone Animations
+      tl.to(
+        backEl,
+        {
+          y: REST.back.y,
+          autoAlpha: 1,
+          duration: backDur,
+          overwrite: "auto",
+        },
+        0,
+      ).to(
         frontEl,
         {
           y: REST.front.y,
@@ -65,7 +126,7 @@ export default function InstallPhonesBanner({
         "-=0.2",
       );
 
-      const resetPhones = () => {
+      const resetAnimations = () => {
         tl.pause(0);
 
         gsap.set(backEl, {
@@ -85,18 +146,27 @@ export default function InstallPhonesBanner({
           z: 0.01,
           willChange: "transform, opacity",
         });
+
+        // Updated Reset Words: Start invisible AND 20px lower
+        if (words.length) {
+          gsap.set(words, {
+            autoAlpha: 0,
+            y: 20, // Start 20px down so it can move up to 0
+            willChange: "opacity, transform",
+          });
+        }
       };
 
       const play = () => {
-        resetPhones();
+        resetAnimations();
         tl.play(0);
       };
 
       tl.eventCallback("onComplete", () => {
-        gsap.set([backEl, frontEl], { willChange: "auto" });
+        gsap.set([backEl, frontEl, ...words], { willChange: "auto" });
       });
 
-      resetPhones();
+      resetAnimations();
 
       ScrollTrigger.create({
         id: "installPhones",
@@ -118,7 +188,7 @@ export default function InstallPhonesBanner({
     }, sectionRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [children]);
 
   return (
     <section
@@ -135,10 +205,13 @@ export default function InstallPhonesBanner({
             loading="lazy"
             decoding="async"
           />
-
-          {/* Desktop content only */}
           {children && (
-            <div className="install-banner__card-content">{children}</div>
+            <div
+              ref={desktopContentRef}
+              className="install-banner__card-content"
+            >
+              {children}
+            </div>
           )}
         </div>
 
@@ -162,7 +235,6 @@ export default function InstallPhonesBanner({
         </div>
       </div>
 
-      {/* Mobile content only */}
       {children && (
         <div className="install-banner__mobile-content">{children}</div>
       )}

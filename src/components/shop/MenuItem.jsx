@@ -8,7 +8,7 @@ export default function MenuItem({ item, onOpen }) {
 
   const formatTomans = (n) => (Number(n) || 0).toLocaleString("fa-IR");
 
-  const apiBase = import.meta.env.VITE_API_URL || "https://localhost:7270/api";
+  const apiBase = import.meta.env.VITE_API_URL;
   // remove "/api" from the end → hit backend root
   const baseUrl = apiBase.replace(/\/api\/?$/, "");
   const fullImageUrl = `${baseUrl}${imageUrl}`;

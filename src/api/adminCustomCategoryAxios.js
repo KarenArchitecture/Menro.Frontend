@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const adminCustomCategoryAxios = axios.create({
-  baseURL: "https://localhost:7270/api/adminpanel/customFoodCategory",
+  baseURL: `${import.meta.env.VITE_API_URL}/adminpanel/customFoodCategory`,
   withCredentials: true, // اگه از Identity Cookie هم استفاده بشه، این لازمه
 });
 

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const fileAxios = axios.create({
-  baseURL: "https://localhost:7270/api/file",
+  baseURL: `${import.meta.env.VITE_API_URL}/file`,
   withCredentials: true,
 });
 

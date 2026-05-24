@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const adminFoodAxios = axios.create({
-  baseURL: "https://localhost:7270/api/adminpanel/food",
+  baseURL: `${import.meta.env.VITE_API_URL}/adminpanel/food`,
   withCredentials: true,
 });
 

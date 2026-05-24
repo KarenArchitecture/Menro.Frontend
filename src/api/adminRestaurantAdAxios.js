@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const adminRestaurantAdAxios = axios.create({
-  baseURL: "https://localhost:7270/api/admin/ads",
+  baseURL: `${import.meta.env.VITE_API_URL}/admin/ads`,
   withCredentials: true,
 });
 adminRestaurantAdAxios.interceptors.request.use((config) => {

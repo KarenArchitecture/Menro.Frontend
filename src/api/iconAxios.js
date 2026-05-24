@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const iconAxios = axios.create({
-  baseURL: "https://localhost:7270/api/icon",
+  baseURL: `${import.meta.env.VITE_API_URL}/icon`,
   withCredentials: true,
 });
 

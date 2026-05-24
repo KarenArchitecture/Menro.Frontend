@@ -8,25 +8,33 @@
     padding: 0 32px;
     pointer-events: none;
     display: block;
+    transition: opacity 0.25s ease;
+  }
+
+  .app-header.is-dim {
+    opacity: 0;
   }
 
   .app-header__pill {
     margin: 0 auto;
-    width: 50vw;
+    width: 670px;
     overflow: hidden;
     padding: 22px 28px;
-    min-height: 58px;
-    border-radius: 1.5rem;
+    height: 100px;
+    border-radius: 20px;
     background: rgba(17, 20, 26, 0.62);
     backdrop-filter: blur(18px) saturate(135%);
     -webkit-backdrop-filter: blur(18px) saturate(135%);
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
     pointer-events: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .app-header__nav {
-    gap: 15rem;
+    gap: 7rem;
     position: relative;
     display: flex;
     align-items: center;
@@ -38,7 +46,7 @@
   .app-header__left {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 2rem;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -46,8 +54,8 @@
 
   .app-header__link {
     color: #d0d4db;
-    font-weight: 700;
-    font-size: 1.8rem;
+    font-weight: 200;
+    font-size: 1.4rem;
     text-decoration: none;
   }
   .app-header__link.is-active {
@@ -69,6 +77,7 @@
   .icon-wrap {
     position: relative;
   }
+
   .icon-wrap .badge {
     position: absolute;
     top: -6px;
@@ -84,17 +93,53 @@
     place-items: center;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
   }
-
   .icon-btn {
-    width: 40px;
-    height: 40px;
+    border: 0; /* no border */
+    background: transparent; /* no background */
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    border-radius: 6px; /* just for subtle focus ring shape */
+    outline: none; /* we'll control focus-visible below */
   }
 
+  .icon-btn .icon,
+  .icon-btn > img,
   .icon-btn > svg {
-    color: #4e5053;
     width: 22px;
     height: 22px;
+    display: block;
+    opacity: 0.85;
+    transition:
+      filter 0.15s ease,
+      opacity 0.15s ease,
+      transform 0.08s ease;
   }
+
+  .icon-btn:hover .icon,
+  .icon-btn:hover > img,
+  .icon-btn:hover > svg {
+    opacity: 1;
+    filter: brightness(1.25);
+  }
+
+  .icon-btn:active .icon,
+  .icon-btn:active > img,
+  .icon-btn:active > svg {
+    transform: scale(0.96);
+    filter: brightness(1.4);
+  }
+
+  .icon-btn:focus {
+    outline: none;
+  }
+  .icon-btn:focus-visible {
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.14) inset;
+  }
+
   @media (max-width: 1024px) {
     .app-header__pill {
       width: min(94vw, 1100px);
@@ -103,4 +148,47 @@
       column-gap: 48px;
     }
   }
+}
+.brand-logo {
+  width: 50px;
+  height: 50px;
+  margin-top: 10px;
+}
+.app-header,
+.app-header .app-header__pill {
+  transition: opacity 0.25s ease;
+}
+
+/* when dimmed: fade + 100% click-through */
+.app-header.is-dim,
+.app-header.is-dim .app-header__pill {
+  opacity: 0; /* or .25 if you prefer */
+  pointer-events: none; /* <-- stops the pill from catching clicks */
+}
+
+.app-header__nav {
+  direction: rtl;
+}
+
+.app-header__right {
+  display: flex;
+  flex-direction: row;
+}
+.app-header__left {
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+/* bigger click target */
+.icon-btn {
+  width: 44px;
+  height: 44px;
+}
+
+/* bigger icon */
+.icon-btn .icon,
+.icon-btn > img,
+.icon-btn > svg {
+  width: 28px;
+  height: 28px;
 }

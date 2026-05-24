@@ -1,230 +1,676 @@
-// PlansSection.jsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import gsap from "gsap";
+// src/components/landing/PlansSection.jsx
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import PlanCard from "./PlanCard";
 import plansData from "./plans";
 
-function getRank(index, activeIndex, total) {
-  return (index - activeIndex + total) % total; // 0..3
+const SCROLL_FACTOR = 4200;
+const SCROLLBAR_FACTOR = 9000;
+const EPS = 0.001;
+
+// smoother start tuning
+const START_LOCK_TOL = 24;
+const MIN_VISIBLE_BELOW_NAV = 160;
+
+function clamp01(v) {
+  return Math.max(0, Math.min(1, v));
 }
 
-export default function PlansSection({ plans = plansData, initialActiveId }) {
-  const defaultId = initialActiveId ?? (plans[0]?.id || "");
-  const [activeId, setActiveId] = useState(defaultId);
-  const [isAnimating, setIsAnimating] = useState(false);
+export default function PlansSection({ plans = plansData }) {
+  const sectionRef = useRef(null);
 
-  const activeIndex = useMemo(
-    () =>
-      Math.max(
-        0,
-        plans.findIndex((p) => p.id === activeId)
-      ),
-    [plans, activeId]
-  );
+  const [activeStep, setActiveStep] = useState(0);
+  const [viewportH, setViewportH] = useState(900);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 768px)").matches;
+  });
 
-  const cardRefs = useRef([]); // .plans__deck-card nodes
+  // 0..1 drives the desktop deck
+  const progress = useMotionValue(0);
 
-  // ===== Animation tuning =====
-  const T = {
-    reflow: 0.38, // others shifting to new ranks
-    lift: 0.34, // selected lifting forward
-    settle: 0.22, // selected settling from overshoot
-    contentIn: 0.25, // content fade in
-    fadeOut: 0.18, // old content fade out
-    stagger: 0.04, // cascade for other cards reflow
-  };
-  const EASE_OUT = "power2.out";
-  const EASE_IN = "power2.in";
-  const EASE_IO = "power2.inOut";
-  const OVERSHOOT = 1.035; // tiny scale overshoot
-  const LIFT_Y = -22; // small upward lift
+  // lock refs
+  const lockedRef = useRef(false);
+  const lockTopRef = useRef(0);
+  const snappingRef = useRef(false);
+  const justLockedRef = useRef(false);
 
-  // Visual states per rank (front -> deepest)
-  const STATES = useMemo(
-    () => [
-      { scale: 1.0, y: 0, z: 40, shadow: "0 20px 60px rgba(0,0,0,0.45)" },
-      { scale: 0.955, y: 20, z: 30, shadow: "0 18px 50px rgba(0,0,0,0.35)" },
-      { scale: 0.92, y: 40, z: 20, shadow: "0 16px 40px rgba(0,0,0,0.28)" },
-      { scale: 0.9, y: 60, z: 10, shadow: "0 14px 32px rgba(0,0,0,0.22)" },
-    ],
-    []
-  );
+  const lastScrollYRef = useRef(0);
+  const lastTouchYRef = useRef(null);
 
-  const placeInstant = (ai) => {
-    cardRefs.current.forEach((wrapEl, i) => {
-      if (!wrapEl) return;
-      const rank = getRank(i, ai, plans.length);
-      const st = STATES[rank];
-
-      gsap.set(wrapEl, { y: st.y, scale: st.scale, zIndex: st.z });
-      const cardEl = wrapEl.querySelector(".plan-card");
-      if (cardEl) gsap.set(cardEl, { boxShadow: st.shadow });
-
-      const contentEl = wrapEl.querySelector(".plan-card__content");
-      if (contentEl) {
-        if (rank === 0)
-          gsap.set(contentEl, { autoAlpha: 1, y: 0, pointerEvents: "auto" });
-        else gsap.set(contentEl, { autoAlpha: 0, y: 8, pointerEvents: "none" });
-      }
-      wrapEl.classList.toggle("is-active", rank === 0);
-    });
-  };
+  const lastOutsideRef = useRef("above");
+  const cooldownRef = useRef(null);
 
   useEffect(() => {
-    placeInstant(activeIndex);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const mql = window.matchMedia("(max-width: 768px)");
+
+    const update = () => {
+      setIsMobile(mql.matches);
+
+      if (mql.matches) {
+        lockedRef.current = false;
+        snappingRef.current = false;
+        justLockedRef.current = false;
+        cooldownRef.current = null;
+        progress.set(0);
+      }
+    };
+
+    update();
+
+    if (mql.addEventListener) {
+      mql.addEventListener("change", update);
+      return () => mql.removeEventListener("change", update);
+    }
+
+    mql.addListener(update);
+    return () => mql.removeListener(update);
+  }, [progress]);
+
+  useEffect(() => {
+    const onResize = () => setViewportH(window.innerHeight || 900);
+    onResize();
+
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  const shuffleTo = (targetIndex) => {
-    if (isAnimating || targetIndex === activeIndex) return;
+  const getNavH = useCallback(() => {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(
+      "--nav-h",
+    );
 
-    const reduce = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-    if (reduce) {
-      setActiveId(plans[targetIndex].id);
-      placeInstant(targetIndex);
-      return;
-    }
+    const n = parseInt(v || "96", 10);
+    return Number.isFinite(n) ? n : 96;
+  }, []);
 
-    setIsAnimating(true);
+  const computeLockTop = useCallback(() => {
+    const el = sectionRef.current;
+    if (!el) return window.scrollY || 0;
 
-    const tl = gsap.timeline({
-      defaults: { overwrite: true },
-      onComplete: () => {
-        setActiveId(plans[targetIndex].id);
-        placeInstant(targetIndex); // snap to canonical state
-        setIsAnimating(false);
-      },
+    const rect = el.getBoundingClientRect();
+    const navH = getNavH();
+    const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+
+    return scrollY + rect.top - navH;
+  }, [getNavH]);
+
+  const snapTo = useCallback((top, smooth = false) => {
+    lockTopRef.current = top;
+    snappingRef.current = true;
+
+    window.scrollTo({
+      top,
+      behavior: smooth ? "smooth" : "auto",
     });
 
-    const selectedEl = cardRefs.current[targetIndex];
-    const currentActiveEl = cardRefs.current[activeIndex];
-    if (!selectedEl) return;
+    requestAnimationFrame(() => {
+      snappingRef.current = false;
+    });
+  }, []);
 
-    // 1) Fade out current content early (cleaner)
-    const currentContent = currentActiveEl?.querySelector(
-      ".plan-card__content"
+  const snapToLockTop = useCallback(
+    (smooth = false) => {
+      const top = computeLockTop();
+      snapTo(top, smooth);
+    },
+    [computeLockTop, snapTo],
+  );
+
+  const computeRegion = useCallback(() => {
+    const el = sectionRef.current;
+    if (!el) return "above";
+
+    const rect = el.getBoundingClientRect();
+    const navH = getNavH();
+    const vpH = window.innerHeight || 900;
+
+    if (rect.top >= vpH) return "above";
+    if (rect.bottom <= navH) return "below";
+
+    return "inside";
+  }, [getNavH]);
+
+  const nearLockLine = useCallback(() => {
+    const el = sectionRef.current;
+    if (!el) return false;
+
+    const rect = el.getBoundingClientRect();
+    const navH = getNavH();
+
+    return (
+      rect.top <= navH + START_LOCK_TOL &&
+      rect.bottom >= navH + MIN_VISIBLE_BELOW_NAV
     );
-    if (currentContent) {
-      tl.to(
-        currentContent,
-        { autoAlpha: 0, y: 8, duration: T.fadeOut, ease: EASE_IN },
-        0
-      );
-      tl.set(currentContent, { pointerEvents: "none" }, 0);
-    }
+  }, [getNavH]);
 
-    // 2) Reflow everyone to their new ranks (short stagger for depth feel)
-    cardRefs.current.forEach((wrapEl, i) => {
-      if (!wrapEl) return;
-      const rank = getRank(i, targetIndex, plans.length);
-      const st = STATES[rank];
+  const getInnerScroller = useCallback((target) => {
+    if (!(target instanceof Element)) return null;
 
-      const at = i === targetIndex ? 0 : i * T.stagger;
+    const el = target.closest(".plan-card__features");
+    if (!el) return null;
 
-      tl.to(
-        wrapEl,
-        {
-          y: st.y,
-          scale: st.scale,
-          zIndex: st.z,
-          duration: T.reflow,
-          ease: EASE_IO,
-        },
-        at
-      );
+    const cs = window.getComputedStyle(el);
+    const overflowY = cs.overflowY;
 
-      const cardEl = wrapEl.querySelector(".plan-card");
-      if (cardEl) {
-        tl.to(
-          cardEl,
-          { boxShadow: st.shadow, duration: T.reflow, ease: EASE_IO },
-          `<`
-        );
+    const scrollable =
+      (overflowY === "auto" || overflowY === "scroll") &&
+      el.scrollHeight > el.clientHeight + 1;
+
+    return scrollable ? el : null;
+  }, []);
+
+  const canConsumeScroll = useCallback((el, deltaY) => {
+    if (!el) return false;
+
+    const atTop = el.scrollTop <= 0;
+    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+
+    return deltaY > 0 ? !atBottom : !atTop;
+  }, []);
+
+  const shouldEngage = useCallback((forward) => {
+    if (forward && cooldownRef.current === "down") return false;
+    if (!forward && cooldownRef.current === "up") return false;
+
+    return true;
+  }, []);
+
+  const engageLock = useCallback(
+    (forward, smoothSnap = false) => {
+      lockedRef.current = true;
+      justLockedRef.current = true;
+
+      const from = lastOutsideRef.current;
+
+      if (forward && from === "above") progress.set(0);
+      if (!forward && from === "below") progress.set(1);
+
+      cooldownRef.current = null;
+      snapToLockTop(smoothSnap);
+    },
+    [progress, snapToLockTop],
+  );
+
+  const disengageLock = useCallback((dir) => {
+    lockedRef.current = false;
+    justLockedRef.current = false;
+    cooldownRef.current = dir;
+  }, []);
+
+  const focusTab = useCallback(
+    (index) => {
+      if (isMobile) {
+        setActiveStep(index);
+        return;
       }
+
+      lockedRef.current = true;
+      cooldownRef.current = null;
+      justLockedRef.current = false;
+
+      snapToLockTop(true);
+
+      const seg = 1 / (plans.length + 1);
+      const target = Math.min(1, (index + 0.52) * seg);
+
+      animate(progress, target, {
+        duration: 0.55,
+        ease: [0.22, 0.68, 0.2, 0.99],
+      });
+    },
+    [isMobile, plans.length, progress, snapToLockTop],
+  );
+
+  useEffect(() => {
+    if (isMobile) return;
+
+    const el = sectionRef.current;
+    if (!el) return;
+
+    const onWheel = (e) => {
+      if (!sectionRef.current) return;
+
+      const forward = e.deltaY > 0;
+
+      const inner = getInnerScroller(e.target);
+
+      if (lockedRef.current && inner && canConsumeScroll(inner, e.deltaY)) {
+        e.preventDefault();
+        inner.scrollTop += e.deltaY;
+        window.scrollTo({ top: lockTopRef.current, behavior: "auto" });
+        return;
+      }
+
+      if (!lockedRef.current) {
+        if (inner && canConsumeScroll(inner, e.deltaY)) return;
+        if (!nearLockLine()) return;
+        if (!shouldEngage(forward)) return;
+
+        engageLock(forward, false);
+        e.preventDefault();
+        return;
+      }
+
+      if (justLockedRef.current) {
+        justLockedRef.current = false;
+        e.preventDefault();
+        window.scrollTo({ top: lockTopRef.current, behavior: "auto" });
+        return;
+      }
+
+      const v = progress.get();
+      const atStart = v <= EPS;
+      const atEnd = v >= 1 - EPS;
+
+      if (atEnd && forward) {
+        disengageLock("down");
+        return;
+      }
+
+      if (atStart && !forward) {
+        disengageLock("up");
+        return;
+      }
+
+      e.preventDefault();
+
+      const delta = Math.max(-80, Math.min(80, e.deltaY));
+      progress.set(clamp01(v + delta / SCROLL_FACTOR));
+
+      window.scrollTo({ top: lockTopRef.current, behavior: "auto" });
+    };
+
+    const onTouchStart = (e) => {
+      lastTouchYRef.current = e.touches[0].clientY;
+    };
+
+    const onTouchMove = (e) => {
+      if (!sectionRef.current) return;
+
+      const y = e.touches[0].clientY;
+      const last = lastTouchYRef.current;
+      const dy = last == null ? 0 : last - y;
+
+      lastTouchYRef.current = y;
+
+      const forward = dy > 0;
+
+      const inner = getInnerScroller(e.target);
+
+      if (lockedRef.current && inner && canConsumeScroll(inner, dy)) {
+        e.preventDefault();
+        inner.scrollTop += dy;
+        window.scrollTo({ top: lockTopRef.current, behavior: "auto" });
+        return;
+      }
+
+      if (!lockedRef.current) {
+        if (inner && canConsumeScroll(inner, dy)) return;
+        if (!nearLockLine()) return;
+        if (!shouldEngage(forward)) return;
+
+        engageLock(forward, false);
+        e.preventDefault();
+        return;
+      }
+
+      if (justLockedRef.current) {
+        justLockedRef.current = false;
+        e.preventDefault();
+        window.scrollTo({ top: lockTopRef.current, behavior: "auto" });
+        return;
+      }
+
+      const v = progress.get();
+      const atStart = v <= EPS;
+      const atEnd = v >= 1 - EPS;
+
+      if (atEnd && forward) {
+        disengageLock("down");
+        return;
+      }
+
+      if (atStart && !forward) {
+        disengageLock("up");
+        return;
+      }
+
+      e.preventDefault();
+
+      progress.set(clamp01(v + dy / (SCROLL_FACTOR * 0.9)));
+
+      window.scrollTo({ top: lockTopRef.current, behavior: "auto" });
+    };
+
+    const onTouchEnd = () => {
+      lastTouchYRef.current = null;
+    };
+
+    const opts = { passive: false };
+
+    window.addEventListener("wheel", onWheel, opts);
+    window.addEventListener("touchstart", onTouchStart, opts);
+    window.addEventListener("touchmove", onTouchMove, opts);
+    window.addEventListener("touchend", onTouchEnd, opts);
+
+    return () => {
+      window.removeEventListener("wheel", onWheel, opts);
+      window.removeEventListener("touchstart", onTouchStart, opts);
+      window.removeEventListener("touchmove", onTouchMove, opts);
+      window.removeEventListener("touchend", onTouchEnd, opts);
+    };
+  }, [
+    isMobile,
+    progress,
+    nearLockLine,
+    shouldEngage,
+    engageLock,
+    disengageLock,
+    getInnerScroller,
+    canConsumeScroll,
+  ]);
+
+  useEffect(() => {
+    if (isMobile) return;
+
+    lastScrollYRef.current =
+      window.scrollY || document.documentElement.scrollTop || 0;
+
+    const onScroll = () => {
+      if (snappingRef.current) return;
+
+      const el = sectionRef.current;
+      if (!el) return;
+
+      const curY = window.scrollY || document.documentElement.scrollTop || 0;
+      const prevY = lastScrollYRef.current;
+      const goingDown = curY > prevY;
+
+      const lockTop = computeLockTop();
+
+      /**
+       * Keep this before updating lastScrollYRef.
+       * This lets scrollbar dragging trigger the lock even if it jumps.
+       */
+      const crossedLockLine =
+        (prevY < lockTop && curY >= lockTop) ||
+        (prevY > lockTop && curY <= lockTop);
+
+      lastScrollYRef.current = curY;
+
+      const region = computeRegion();
+
+      if (region !== "inside") {
+        lastOutsideRef.current = region;
+        cooldownRef.current = null;
+      }
+
+      /**
+       * CASE 1:
+       * Already locked.
+       * Scrollbar drag tries to move the page away from lockTop.
+       * Convert that attempted movement into animation progress.
+       */
+      if (lockedRef.current) {
+        lockTopRef.current = lockTop;
+
+        const attemptedDelta = curY - lockTop;
+
+        if (Math.abs(attemptedDelta) > 1) {
+          const forward = attemptedDelta > 0;
+
+          const v = progress.get();
+          const atStart = v <= EPS;
+          const atEnd = v >= 1 - EPS;
+
+          if (atEnd && forward) {
+            disengageLock("down");
+            return;
+          }
+
+          if (atStart && !forward) {
+            disengageLock("up");
+            return;
+          }
+
+          const delta = Math.max(-120, Math.min(120, attemptedDelta));
+
+          progress.set(clamp01(v + delta / SCROLLBAR_FACTOR));
+
+          lastScrollYRef.current = lockTop;
+          snapTo(lockTop, false);
+        }
+
+        return;
+      }
+
+      /**
+       * CASE 2:
+       * Not locked yet.
+       * Mouse wheel enters through the wheel handler.
+       * Scrollbar dragging enters through this scroll handler.
+       */
+      const shouldStartFromScrollbar = crossedLockLine || nearLockLine();
+
+      if (!shouldStartFromScrollbar) return;
+      if (!shouldEngage(goingDown)) return;
+
+      lockedRef.current = true;
+      justLockedRef.current = true;
+      cooldownRef.current = null;
+
+      if (goingDown) {
+        progress.set(0);
+      } else {
+        progress.set(1);
+      }
+
+      lockTopRef.current = lockTop;
+      lastScrollYRef.current = lockTop;
+
+      /**
+       * Do not smooth snap here.
+       * Smooth snap can let the scrollbar skip the locked state.
+       */
+      snapTo(lockTop, false);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, [
+    isMobile,
+    progress,
+    computeRegion,
+    computeLockTop,
+    nearLockLine,
+    snapTo,
+    shouldEngage,
+    disengageLock,
+  ]);
+
+  useEffect(() => {
+    if (isMobile) return;
+
+    const total = plans.length || 1;
+
+    return progress.on("change", (v) => {
+      const seg = 1 / (total + 1);
+      let cur = 0;
+
+      for (let i = 0; i < total; i++) {
+        if (v >= (i + 0.5) * seg) cur = i;
+      }
+
+      setActiveStep(cur);
+    });
+  }, [isMobile, plans, progress]);
+
+  useEffect(() => {
+    if (isMobile) return;
+
+    const header = document.querySelector(".app-header");
+    if (!header) return;
+
+    const off = progress.on("change", (v) => {
+      const dim = v > 0.02 && v < 0.98;
+      header.classList.toggle("is-dim", dim);
     });
 
-    // 3) Selected: gentle lift with overshoot, then settle
-    const front = STATES[0];
-    const selectedContent = selectedEl.querySelector(".plan-card__content");
+    return () => off();
+  }, [isMobile, progress]);
 
-    tl.set(selectedEl, { zIndex: 100 }, 0); // ensure on top during lift
-    tl.to(
-      selectedEl,
-      {
-        y: front.y + LIFT_Y,
-        scale: OVERSHOOT,
-        duration: T.lift,
-        ease: EASE_OUT,
-      },
-      0.06
-    );
-    tl.to(
-      selectedEl,
-      { y: front.y, scale: 1, duration: T.settle, ease: EASE_IN },
-      `>-0.02`
-    );
+  useEffect(() => {
+    return () => {
+      const header = document.querySelector(".app-header");
+      if (header) header.classList.remove("is-dim");
+    };
+  }, []);
 
-    // 4) Selected content fades in after settle
-    if (selectedContent) {
-      tl.fromTo(
-        selectedContent,
-        { autoAlpha: 0, y: 10 },
-        {
-          autoAlpha: 1,
-          y: 0,
-          duration: T.contentIn,
-          ease: EASE_OUT,
-          onStart: () => gsap.set(selectedContent, { pointerEvents: "auto" }),
-        },
-        `>-0.05`
-      );
-    }
-  };
+  const activePlan = plans[activeStep] ?? plans[0];
+
+  if (isMobile) {
+    return (
+      <section
+        ref={sectionRef}
+        className="plans-pin plans-pin--mobile"
+        aria-labelledby="plans-title"
+      >
+        <div className="plans-pin__sticky plans-pin__sticky--mobile">
+          <div className="plans__tabs" role="tablist" aria-label="انتخاب پلن">
+            {plans.map((p, i) => (
+              <button
+                key={p.id}
+                role="tab"
+                aria-selected={i === activeStep}
+                className={`plans__tab ${i === activeStep ? "is-active" : ""}`}
+                type="button"
+                onClick={() => setActiveStep(i)}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          <h2 id="plans-title" className="sr-only">
+            پلن‌های منرو
+          </h2>
+
+          <div className="plans__deck plans__deck--mobile">
+            <div
+              className="plans__mobile-stack plans__mobile-stack--1"
+              aria-hidden="true"
+              style={{
+                backgroundImage: activePlan?.bgSrc
+                  ? `url(${activePlan.bgSrc})`
+                  : undefined,
+              }}
+            />
+            <div
+              className="plans__mobile-stack plans__mobile-stack--2"
+              aria-hidden="true"
+              style={{
+                backgroundImage: activePlan?.bgSrc
+                  ? `url(${activePlan.bgSrc})`
+                  : undefined,
+              }}
+            />
+            <div
+              className="plans__mobile-stack plans__mobile-stack--3"
+              aria-hidden="true"
+              style={{
+                backgroundImage: activePlan?.bgSrc
+                  ? `url(${activePlan.bgSrc})`
+                  : undefined,
+              }}
+            />
+
+            <PlanCard plan={activePlan} />
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section
-      className={`plans${isAnimating ? " is-animating" : ""}`}
+      ref={sectionRef}
+      className="plans-pin"
       aria-labelledby="plans-title"
     >
-      {/* Tabs */}
-      <div className="plans__tabs" role="tablist" aria-label="انتخاب پلن">
-        {plans.map((p, i) => {
-          const isActive = i === activeIndex;
-          return (
+      <div className="plans-pin__sticky">
+        <div className="plans__tabs" role="tablist" aria-label="انتخاب پلن">
+          {plans.map((p, i) => (
             <button
               key={p.id}
               role="tab"
-              aria-selected={isActive}
-              className={`plans__tab ${isActive ? "is-active" : ""}`}
+              aria-selected={i === activeStep}
+              className={`plans__tab ${i === activeStep ? "is-active" : ""}`}
               type="button"
-              onClick={() => shuffleTo(i)}
-              disabled={isAnimating}
+              onClick={() => focusTab(i)}
             >
               {p.label}
             </button>
-          );
-        })}
-      </div>
+          ))}
+        </div>
 
-      <h2 id="plans-title" className="sr-only">
-        پلن‌های منرو
-      </h2>
+        <h2 id="plans-title" className="sr-only">
+          پلن‌های منرو
+        </h2>
 
-      {/* Deck */}
-      <div className="plans__deck">
-        {plans.map((p, i) => (
-          <div
-            key={p.id}
-            className="plans__deck-card"
-            ref={(el) => (cardRefs.current[i] = el)}
-            data-index={i}
-          >
-            <PlanCard plan={p} />
-          </div>
-        ))}
+        <div className="plans__deck">
+          {plans.map((plan, index) => (
+            <PlanMotionCard
+              key={plan.id}
+              index={index}
+              total={plans.length}
+              plan={plan}
+              progress={progress}
+              viewportH={viewportH}
+            />
+          ))}
+        </div>
       </div>
     </section>
+  );
+}
+
+function PlanMotionCard({ index, total, plan, progress, viewportH }) {
+  const seg = 1 / (total + 1);
+
+  const start = index * seg;
+  const mid = (index + 0.5) * seg;
+  const end = (index + 1) * seg;
+
+  const baseY = index * 32;
+  const baseScale = 1 - index * 0.04;
+
+  const outY = -Math.max(320, Math.round(viewportH * 0.8));
+
+  const y = useTransform(
+    progress,
+    [0, start, mid, end, 1],
+    [baseY, baseY, 0, outY, outY],
+  );
+
+  const scale = useTransform(
+    progress,
+    [0, start, mid, end, 1],
+    [baseScale, baseScale, 1, 1, 1],
+  );
+
+  const zIndex = useTransform(
+    progress,
+    [0, start, mid, end, 1],
+    [20 - index, 20 - index, 60, 0, 0],
+  );
+
+  return (
+    <motion.div className="plans__deck-card" style={{ y, scale, zIndex }}>
+      <PlanCard plan={plan} />
+    </motion.div>
   );
 }

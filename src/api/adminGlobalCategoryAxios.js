@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const adminGlobalCategoryAxios = axios.create({
-  baseURL: "https://localhost:7270/api/adminpanel/globalFoodCategory",
+  baseURL: `${import.meta.env.VITE_API_URL}/adminpanel/globalFoodCategory`,
   withCredentials: true,
 });
 // افزودن توکن JWT به تمام درخواست‌ها

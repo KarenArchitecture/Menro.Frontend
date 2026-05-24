@@ -1,16 +1,22 @@
-:root {
-    /* font tokens so you can swap easily later */
-    --font-sans: "Vazirmatn", system-ui, -apple-system, "Segoe UI", Roboto,
-        "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-    --font-alt: ui-rounded, "SF Pro Rounded", "Vazirmatn", sans-serif;
+/* src/assets/css/fonts.css */
+@font-face {
+    font-family: "Estedad";
+    src:
+        /* url("../fonts/Estedad-VF.woff2") format("woff2"), */
+        /* url("../fonts/Estedad-VF.woff") format("woff"); */
+        url("../fonts/Estedad-VF.woff2") format("woff2"),
+        url("../fonts/Estedad-VF.woff") format("woff");
+    font-weight: 100 900; /* variable font range */
+    font-style: normal;
+    font-display: swap;
 }
 
 * {
-    box-sizing: border-box;
-    font-family: "Vazirmatn", sans-serif;
-    margin: 0;
-    padding: 0;
-    transition: 0.3s ease;
+    font-family: "Estedad" !important;
+}
+
+:root {
+    font-size: 0.625rem;;
 }
 
 *,
@@ -51,6 +57,20 @@ a {
 
 ul {
     list-style: none;
+}
+
+.fade-in {
+    animation: fadeInUp 220ms ease-out;
+}
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* mobile Navigation */
@@ -224,6 +244,35 @@ ul {
     border: none;
 }
 
+/* show all */
+.restaurant-card-skeleton {
+    border-radius: 18px;
+    aspect-ratio: 4 / 3;
+    background: rgba(255, 255, 255, 0.06);
+    position: relative;
+    overflow: hidden;
+}
+
+.restaurant-card-skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    animation: shimmer 1.1s infinite;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.12),
+        transparent
+    );
+}
+
+@keyframes shimmer {
+    100% {
+        transform: translateX(100%);
+    }
+}
+
 /* header utilities */
 .user-header {
     display: none;
@@ -391,8 +440,11 @@ ul {
     font-size: 0.95rem;
     line-height: 1;
     cursor: pointer;
-    transition: transform 0.08s ease, background-color 0.15s ease,
-        border-color 0.15s ease, color 0.15s ease;
+    transition:
+        transform 0.08s ease,
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
     user-select: none;
 }
 

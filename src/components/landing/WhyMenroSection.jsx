@@ -21,29 +21,41 @@ export default function WhyMenroSection() {
   const titlesRef = useRef(null);
 
   useLayoutEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const isMobile = window.matchMedia("(max-width: 768px)");
+
+    // No animation on mobile
+    if (reducedMotion.matches || isMobile.matches) return;
+
     const ctx = gsap.context(() => {
       const section = sectionRef.current;
       const titles = titlesRef.current;
       const cards = gsap.utils.toArray(".why-card");
 
-      // --- Title fade in/out control
-      gsap
-        .timeline({
+      if (!section || !titles) return;
+
+      // Important:
+      // GSAP overrides CSS transform, so we must keep xPercent: -50
+      // to preserve horizontal centering.
+      gsap.fromTo(
+        titles,
+        {
+          xPercent: -50,
+          yPercent: 70,
+        },
+        {
+          xPercent: -50,
+          yPercent: -270,
+          ease: "none",
           scrollTrigger: {
             trigger: section,
-            start: "top center",
-            end: "bottom 50%",
+            start: "top bottom",
+            end: "bottom top",
             scrub: true,
           },
-        })
-        .fromTo(
-          titles,
-          { autoAlpha: 0 },
-          { autoAlpha: 1, ease: "power2.out", duration: 0.5 }
-        )
-        .to(titles, { autoAlpha: 0, ease: "power2.in", duration: 0.5 });
+        },
+      );
 
-      // --- Cards scroll upward behind title
       gsap.to(cards, {
         yPercent: -200,
         ease: "none",
@@ -112,7 +124,17 @@ export default function WhyMenroSection() {
         icon={<LandingWalletIcon />}
         title="مدیریت مالی"
       />
-      <IconCard className="why-card why-card--panel pos-i" title="منرو" />
+      <IconCard
+        className="why-card why-card--panel pos-i pos-i--menro-logo"
+        icon={
+          <img
+            src="/images/menro-logo-landing.svg"
+            alt="منرو"
+            className="why-menro-logo-icon"
+            draggable="false"
+          />
+        }
+      />
     </section>
   );
 }

@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const restaurantAxios = axios.create({
-  baseURL: "https://localhost:7270/api/public/restaurant",
+  baseURL: `${import.meta.env.VITE_API_URL}/public/restaurant`,
   withCredentials: true,
 });
 restaurantAxios.interceptors.request.use((config) => {

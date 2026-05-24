@@ -29,6 +29,7 @@ export default function RegisterRestaurantPage() {
     restaurantName: "",
     restaurantDescription: "",
     restaurantAddress: "",
+    contactNumber: "",
     restaurantCategoryId: "",
     restaurantOpenTime: "",
     restaurantCloseTime: "",
@@ -115,6 +116,15 @@ export default function RegisterRestaurantPage() {
             id="addr"
             value={form.restaurantAddress}
             onChange={updateField("restaurantAddress")}
+            required
+          />
+        </div>
+        <div className="input-group">
+          <label htmlFor="addr">شماره تماس</label>
+          <input
+            id="addr"
+            value={form.contactNumber}
+            onChange={updateField("contactNumber")}
             required
           />
         </div>

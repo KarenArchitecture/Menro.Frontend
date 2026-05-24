@@ -1,76 +1,5 @@
-/* Dark mode StateMessage */
-/* .state-message {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 16px;
-    border-radius: 12px;
-    background-color: #1a1d25;
-    color: #f0f0f0;
-    font-size: 14px;
-    line-height: 1.4;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
-}
-
-.state-message__icon-wrapper {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.state-message__title {
-    margin: 0;
-    font-weight: 600;
-    color: #ffffff;
-    font-size: 16px;
-}
-
-.state-message__text {
-    margin-top: 4px;
-    color: #d0d0d0;
-}
-
-.state-message__action {
-    margin-top: 20px;
-}
-
-.state-message__action button {
-    background-color: #2d3748;
-    color: #f0f0f0;
-    padding: 6px 12px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: background-color 0.2s ease;
-}
-
-.state-message__action button:hover {
-    background-color: #3b4252;
-} */
-
-/* Kind-specific icon colors */
-/* .state-message.info .state-icon {
-    stroke: #60a5fa;
-}
-
-.state-message.error .state-icon {
-    stroke: #f87171;
-}
-
-.state-message.empty .state-icon {
-    stroke: #fbbf24;
-} */
-
-/* Compact mode (optional, if you use it) */
-/* .state-message.compact {
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 13px;
-} */
-
 .state-message {
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -79,9 +8,17 @@
     border-radius: 1rem;
     background-color: #1a1d25; /* dark background for Menro */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    margin: 1rem auto;
-    max-width: 400px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.restaurants .state-message {
+    border-radius: 0;
+}
+
+.state-message-subject {
+    color: #ff683c;
 }
 
 .state-message:hover {
@@ -91,7 +28,6 @@
 
 .state-message.compact {
     padding: 1rem;
-    max-width: 300px;
 }
 
 .state-message__icon-wrapper {
@@ -108,7 +44,7 @@
 }
 
 .state-icon.empty {
-    color: #fbbf24; /* yellow-400 */
+    color: #ff683c; /* yellow-400 */
 }
 
 .state-icon.info {
@@ -123,7 +59,7 @@
 }
 
 .state-message__text {
-    font-size: 1rem;
+    font-size: 1.2rem;
     color: #d1d5db; /* light gray for readability */
     margin-bottom: 2.4rem;
     line-height: 1.5;

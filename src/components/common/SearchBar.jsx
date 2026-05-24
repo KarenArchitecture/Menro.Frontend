@@ -1,14 +1,17 @@
+// src/components/common/SearchBar.jsx
 import React, { useState } from "react";
 import "../../assets/css/search-bar-styles.css";
+
 function SearchBar({
   placeholder = "جستجو رستوران، نوشیدنی، غذا ...",
   className = "",
+  onSubmit,
 }) {
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleSearch = (event) => {
     event.preventDefault();
-    console.log("Searching for:", searchTerm);
+    onSubmit?.(searchTerm.trim()); // empty => exits search mode
   };
 
   return (

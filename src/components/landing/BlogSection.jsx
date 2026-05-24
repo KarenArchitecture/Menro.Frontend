@@ -87,7 +87,7 @@ function BlogCursorFollower({ targetEl, offsetY = -5 }) {
     if (!host || !section) return;
 
     const prefersReduced = window.matchMedia?.(
-      "(prefers-reduced-motion: reduce)"
+      "(prefers-reduced-motion: reduce)",
     )?.matches;
     const hasFinePointer =
       window.matchMedia?.("(pointer: fine)")?.matches ?? true;
@@ -173,7 +173,7 @@ function BlogCursorFollower({ targetEl, offsetY = -5 }) {
         />
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
 
@@ -248,7 +248,7 @@ export default function BlogSection({
 
   const marqueeChunk = useMemo(
     () => <HighlightedChunk text={sectionTitle} token={highlightWord} />,
-    [sectionTitle, highlightWord]
+    [sectionTitle, highlightWord],
   );
 
   /** ------- Rail controls (step = card width + CSS gap) ------- */

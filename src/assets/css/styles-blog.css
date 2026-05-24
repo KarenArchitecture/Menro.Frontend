@@ -1,0 +1,766 @@
+/* assets/css/styles-blog.css */
+/* Override the app shell padding only for the blog page */
+.app-shell-content {
+  padding: 0 !important; /* Or whatever padding you actually want, e.g., padding-top: 2rem; */
+}
+
+.blog-page-wrapper {
+  background-color: #111214; /* Dark theme background */
+  color: #ffffff;
+  font-family: inherit;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  /* Optional: Add background pattern image here if you have it */
+}
+
+/* Header placement */
+.header-wrapper {
+  position: absolute;
+  top: 20px;
+  left: 0;
+  width: 100%;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+}
+
+/* Hero Section */
+.blog-hero-section {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 25vh; /* Pushes content slightly up from center */
+}
+
+/* Central Content */
+.blog-hero-content {
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+}
+
+.hero-title {
+  font-size: 2.2rem;
+  font-weight: bold;
+  margin: 0;
+  text-align: center;
+}
+
+.highlight-text {
+  color: #ff6b4a; /* Orange highlight */
+}
+
+/* Search Bar */
+.hero-search-container {
+  display: flex;
+  align-items: center;
+  background-color: #18191c;
+  border-radius: 12px;
+  width: 500px;
+  max-width: 90vw;
+  padding: 5px 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.hero-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  padding: 15px 10px;
+  font-family: inherit;
+}
+
+.hero-search-input::placeholder {
+  color: #666;
+}
+
+.search-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.search-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Scroll Indicator */
+.scroll-indicator {
+  position: absolute;
+  bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #888;
+  font-size: 0.9rem;
+  z-index: 10;
+  animation: float 2s ease-in-out infinite;
+}
+
+.scroll-indicator svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Floating Images (Adjust positions based on your SVG sizes) */
+/* Floating Images - Updated Sizes, Positions, and Orientations */
+.floating-img {
+  position: absolute;
+  z-index: 1;
+  animation: float 6s ease-in-out infinite;
+  /* Variable to hold rotation so the animation doesn't overwrite it */
+  --rot: 0deg;
+}
+
+/* Originally on the right, now moved to the LEFT */
+.img-fries {
+  top: 15%;
+  left: 10%;
+  width: 194px; /* Increased from 70px */
+  animation-delay: 0s;
+  --rot: -25deg; /* Changed orientation */
+}
+
+.img-burger {
+  top: 35%;
+  left: 18%;
+  width: 163px; /* Increased from 85px */
+  animation-delay: 1s;
+  --rot: 15deg;
+}
+
+.img-ramen {
+  bottom: 20%;
+  left: 8%;
+  width: 318px; /* Increased from 150px */
+  animation-delay: 2s;
+  --rot: -10deg;
+}
+
+/* Originally on the left, now moved to the RIGHT */
+.img-sushi {
+  top: 25%;
+  right: 12%;
+  width: 196px; /* Increased from 70px */
+  animation-delay: 0.5s;
+  --rot: 30deg;
+}
+
+.img-pizza {
+  top: 45%;
+  right: 20%;
+  width: 342px; /* Increased from 120px */
+  animation-delay: 1.5s;
+  --rot: -20deg;
+}
+
+.img-soda {
+  bottom: 15%;
+  right: 10%;
+  width: 156px; /* Increased from 50px */
+  animation-delay: 2.5s;
+  --rot: -35deg;
+}
+
+/* Float Animation - Updated to preserve the unique rotation of each item */
+@keyframes float {
+  0% {
+    transform: translateY(0px) rotate(var(--rot));
+  }
+  50% {
+    transform: translateY(-20px) rotate(var(--rot));
+  }
+  100% {
+    transform: translateY(0px) rotate(var(--rot));
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 1.5rem;
+    padding: 0 20px;
+  }
+  .floating-img {
+    display: none;
+  }
+}
+.blog-hero-section {
+  /* ... your existing flexbox and height properties ... */
+
+  /* Radial gradient shining from the bottom */
+  background: radial-gradient(circle at bottom center, #35200f 0%, #000 100%);
+
+  /* If you want it to blend into your dark background instead of ending in pure D9D9D9, 
+     you could also try fading it into your base dark color (#111214) like this:
+     background: radial-gradient(circle at bottom center, #35200F 0%, #111214 70%); */
+}
+
+/* --- Blog Categories Section --- */
+.blog-categories-section {
+  padding: 40px 2%; /* Reduced side padding from 5% to 2% to let it stretch more */
+  background-color: transparent;
+  display: flex;
+  justify-content: center;
+}
+
+.categories-wrapper {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  background-color: #1a1c20;
+  padding: 30px;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 1440px; /* Increased from 1200px to cover wider screens */
+  border: 1px solid #2a2d32;
+}
+
+.category-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background-color: #111214;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid #2a2d32;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
+  cursor: pointer;
+}
+
+.category-card:hover {
+  transform: translateY(-5px);
+  border-color: #4a4d52;
+}
+
+.category-icon-box {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.category-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.category-text h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.category-text p {
+  margin: 0;
+  font-size: 12px;
+  color: #a0a0a0;
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 1024px) {
+  .categories-wrapper {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .categories-wrapper {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+
+  .blog-categories-section {
+    padding: 20px 5%;
+  }
+}
+/* --- Blog Feed Container --- */
+.blog-feed-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 85%;
+}
+
+/* 1. Navbar Categories */
+.blog-feed-nav {
+  display: flex;
+  gap: 15px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 10px;
+  overflow-x: auto; /* In case screen is too small */
+}
+
+.feed-nav-btn {
+  background: none;
+  border: none;
+  color: #a0a0a0;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 5px 10px;
+  transition: color 0.3s;
+  font-family: inherit;
+}
+
+.feed-nav-btn:hover,
+.feed-nav-btn.active {
+  color: #ffffff;
+  font-weight: bold;
+  border-bottom: 2px solid #ff6b00; /* Orange highlight for active */
+}
+
+/* 2. Scrollable Grid Area */
+.blog-feed-scroll-area {
+  max-height: 600px; /* Adjust height based on your needs */
+  overflow-y: auto;
+  padding-right: 5px; /* Prevent scrollbar from touching content */
+}
+
+/* Customizing the scrollbar for a dark theme */
+.blog-feed-scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+.blog-feed-scroll-area::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+.blog-feed-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Exactly two cards per row */
+  row-gap: 2rem; /* Adjust gap as needed for spacing between cards */
+  padding-right: 10px; /* Add some padding to prevent scrollbar overlapping content */
+}
+
+/* Ensure your existing mobile media query is still in place */
+@media (max-width: 768px) {
+  /* Adjust breakpoint if different in your code */
+  .blog-feed-grid {
+    grid-template-columns: 1fr; /* Stack cards on smaller screens */
+  }
+}
+/* 3. Show More Button */
+.blog-feed-show-more {
+  width: 100%;
+  padding: 15px;
+  background-color: #0c0f14;
+  color: #ffffff;
+  border: 1px solid #444;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.blog-feed-show-more:hover {
+  background-color: #ff6b00;
+  border-color: #ff6b00;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 768px) {
+  .blog-feed-grid {
+    grid-template-columns: 1fr; /* Switch to 1 item per row on mobile */
+  }
+}
+/* --- Blog Sidebar Container --- */
+.blog-sidebar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  width: 100%;
+}
+
+/* Tags Box */
+.blog-sidebar-tags-box {
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.sidebar-tags-title {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  margin-top: 0;
+}
+
+.sidebar-tags-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sidebar-tag-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.sidebar-tag-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.tag-item-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tag-hashtag-icon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.7; /* Optional: slightly dim the icon if it's too bright */
+}
+
+.tag-item-name {
+  color: #dcdcdc;
+  font-size: 14px;
+  transition: color 0.2s;
+  cursor: pointer;
+}
+
+.sidebar-tag-item:hover .tag-item-name {
+  color: #ff683c;
+}
+
+.tag-item-count {
+  color: #888888;
+  font-size: 13px;
+}
+
+/* Ad Banner Box */
+.blog-sidebar-ad-box {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+}
+/* --- Two-Column Content Area --- */
+.blog-content-section {
+  padding: 40px 2%;
+  background-color: transparent; /* Inherits the dark background from the wrapper */
+}
+
+.blog-content-wrapper {
+  max-width: 1440px; /* Matches the width of your categories section */
+  margin: 0 auto;
+  display: grid;
+  /* Increased sidebar width to 400px, 1fr takes the rest */
+  grid-template-columns: 1fr 400px;
+  gap: 40px;
+  align-items: start; /* Prevents columns from stretching to equal heights */
+}
+
+/* Responsive adjustment for tablets and mobile */
+@media (max-width: 1024px) {
+  .blog-content-wrapper {
+    grid-template-columns: 1fr; /* Stacks Feed on top of Sidebar */
+  }
+}
+/* Update the grid to automatically fit narrow columns (approx 240px-250px wide) */
+/* =========================
+   Footer background section
+   ========================= */
+.footer-bg {
+  position: relative;
+  background-color: #0b0f13;
+  padding: 10rem 2rem 14rem; /* space for fruits + footer + back-to-top */
+  overflow: hidden;
+}
+
+/* Fruits background scene (5 floating icons behind the glass footer) */
+.footer-bg__scene {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1200px; /* same width as glass footer */
+  height: 100%;
+  z-index: 0; /* behind glass footer */
+  pointer-events: none; /* wrapper doesn't block clicks */
+}
+
+.footer-bg__scene-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Generic fruit wrapper – JS translates the <img>, wrapper stays fixed */
+.footer-bg__item {
+  position: absolute;
+  pointer-events: auto; /* so hover works on the fruit area */
+}
+
+.footer-bg__item img {
+  display: block;
+  user-select: none;
+  pointer-events: none; /* events stay on wrapper */
+  will-change: transform;
+}
+
+/* ----- Positions (tweak numbers if needed) ----- */
+
+/* Tall orange bread / stick behind footer */
+.footer-bg__item--bread {
+  bottom: 15rem;
+  left: 26%;
+  transform: translateX(-32%);
+}
+
+/* Tomato above the stick, slightly to the right */
+.footer-bg__item--tomato {
+  bottom: 34rem;
+  left: 38%;
+  transform: translateX(-4rem);
+}
+
+/* Cucumber crossing the middle-right */
+.footer-bg__item--cucumber {
+  bottom: 17rem;
+  right: 38%;
+}
+
+/* Oil bottle at top-right */
+.footer-bg__item--oil {
+  bottom: 34rem;
+  right: 20%;
+}
+
+/* Juice glass at the very bottom (this one looked correct) */
+.footer-bg__item--juice {
+  bottom: -10rem; /* sticks out from under the card */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Wrapper so glass footer + content sit above fruits */
+.footer-bg__content {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  z-index: 1;
+}
+
+/* =========================
+   Glass footer
+   ========================= */
+.footer-glass {
+  position: relative;
+  width: 1200px;
+  height: 250px;
+  margin: 0 auto;
+  background: #0c0f1499;
+  border: 1px solid #394350;
+  border-radius: 20px;
+  backdrop-filter: blur(60px);
+  -webkit-backdrop-filter: blur(60px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  color: #fff;
+  overflow: visible;
+  padding: 2.8rem 3.2rem 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Inner layout */
+.footer-glass__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+}
+
+.footer-glass__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9rem;
+  display: flex;
+  margin: 3rem 1.5rem 0 0;
+}
+
+.footer-glass__brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 40px;
+}
+
+.footer-glass__brand img,
+.footer-glass__brand svg {
+  display: block; /* removes the inline baseline whitespace */
+  height: 100%;
+  width: auto;
+  height: 4rem;
+}
+
+.footer-glass__nav {
+  gap: 3rem;
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+}
+.footer-glass__nav a {
+  color: var(--text);
+  text-decoration: none;
+  opacity: 0.9;
+  line-height: 1; /* or 1.1 if you prefer */
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+.footer-glass__nav a:hover {
+  color: var(--accent);
+}
+
+/* Bottom row */
+.footer-glass__bottom {
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+  gap: 16rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.footer-glass__copy {
+  font-size: 20px;
+  font-weight: 400;
+  color: #999fa8;
+  margin: 0;
+}
+
+.footer-glass__socials {
+  width: auto;
+  height: auto;
+  display: flex;
+  gap: 2rem;
+}
+.footer-glass__socials a {
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+  font-size: 2rem;
+  transition: background 0.2s;
+}
+.footer-glass__socials a:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.footer-glass__socials a svg {
+  width: 30px;
+  height: 30px;
+}
+
+/* Back-to-top pill */
+.footer-glass__backtotop {
+  position: absolute;
+  bottom: -18px; /* hang below the footer */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 56px; /* slightly larger for better tap area */
+  height: 56px;
+  border-radius: 16px;
+  background: rgba(15, 15, 16, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  z-index: 6; /* above footer */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  width: 100%;
+  height: 100%;
+}
+
+.footer-glass__backtotop:hover {
+  background: rgba(15, 15, 16, 0.65);
+}
+
+.footer-glass__chevron {
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(225deg);
+}
+
+/* the “row height” */
+.footer-glass__brand {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+/* the actual svg image */
+.footer-glass__brandImg {
+  height: 40px;
+  width: auto;
+  display: block;
+
+  /* OPTICAL ALIGNMENT (this is what you need) */
+  translate: 0 4px; /* try 2px–8px */
+}
+.footer-glass__button-wrapper {
+  height: 4rem;
+  width: 7rem;
+  bottom: 1%;
+  position: absolute;
+  right: 7%;
+}
+.footer-glass__button-wrapper::before {
+  border-radius: 1rem;
+  content: "";
+  background-color: #000;
+  height: 4.5rem;
+  width: 9rem;
+  bottom: -20%;
+  position: absolute;
+  right: -14%;
+  border-top: 1px solid #394350;
+  border-right: 1px solid #394350;
+  border-left: 1px solid #394350;
+  border-bottom: none;
+}
+
+.footer-wrapper {
+  position: relative;
+  height: 50rem;
+  display: flex;
+  justify-content: start;
+  align-items: end;
+  margin: 0 auto;
+}

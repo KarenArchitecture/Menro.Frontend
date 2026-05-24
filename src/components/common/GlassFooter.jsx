@@ -38,7 +38,7 @@ export default function GlassFooter() {
         {/* Row 2: socials + copy */}
         <div className="footer-glass__bottom">
           <p className="footer-glass__copy">
-            تمامی حقوق این وبسایت متعلق به منرو می‌باشد
+            تمامی حقوق این وبسایت متعلق به نکروتک می‌باشد
           </p>
           <div className="footer-glass__socials">
             {socials.map(({ id, href, label, icon }) => (

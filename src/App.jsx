@@ -18,8 +18,13 @@ import ProtectedRoute from "./components/common/ProtectedRoute";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import ChangePhone from "./pages/ChangePhone";
 import AdminPage from "./pages/AdminPage";
+// Import the new Blog Page
+import BlogPage from "./pages/BlogPage";
 
-import { DrawerStateProvider, useDrawerState } from "../src/Context/DrawerStateContext";
+import {
+  DrawerStateProvider,
+  useDrawerState,
+} from "../src/Context/DrawerStateContext";
 
 // --- Page wrapper for 3D depth animation ---
 function PageWrapper({ children, hideMobileNav }) {
@@ -30,13 +35,9 @@ function PageWrapper({ children, hideMobileNav }) {
       <div className={`page-background ${isDrawerOpen ? "is-visible" : ""}`} />
 
       <div className={`app-shell ${isDrawerOpen ? "app-shell--shifted" : ""}`}>
-
-        <div className="app-shell__content">
-          {children}
-        </div>
+        <div className="app-shell__content">{children}</div>
 
         {!hideMobileNav && <MobileNav />}
-
       </div>
     </>
   );
@@ -48,7 +49,7 @@ export default function App() {
   const NAV_HIDE_PREFIXES = ["/admin", "/checkout"];
 
   const hideMobileNav = NAV_HIDE_PREFIXES.some((prefix) =>
-    pathname.startsWith(prefix)
+    pathname.startsWith(prefix),
   );
 
   return (
@@ -59,10 +60,16 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/home" element={<HomePage />} />
 
+          {/* New Blog Route */}
+          <Route path="/blog" element={<BlogPage />} />
+
           <Route path="/restaurants" element={<RestaurantsBrowsePage />} />
           <Route path="/orders" element={<RecentOrdersBrowsePage />} />
           <Route path="/foods/popular" element={<PopularFoodsBrowsePage />} />
-          <Route path="/foods/popular/:categoryId" element={<PopularFoodsBrowsePage />} />
+          <Route
+            path="/foods/popular/:categoryId"
+            element={<PopularFoodsBrowsePage />}
+          />
           <Route path="/restaurant/:slug" element={<RestaurantPage />} />
 
           <Route path="/login" element={<LoginPage />} />
@@ -71,7 +78,10 @@ export default function App() {
           <Route path="/change-password" element={<ChangePasswordPage />} />
           <Route path="/change-phone" element={<ChangePhone />} />
 
-          <Route path="/register-restaurant" element={<RegisterRestaurantPage />} />
+          <Route
+            path="/register-restaurant"
+            element={<RegisterRestaurantPage />}
+          />
 
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />

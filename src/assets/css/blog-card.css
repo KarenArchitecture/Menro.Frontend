@@ -1,0 +1,98 @@
+/* Ensure the card CSS is included (if not already global) */
+.blogs__card {
+  /* This height (e.g., 400px) will now make the cards look taller
+     because the grid forces them to be narrower. */
+  height: 600x; /* Or adjust to, for example, 380px or 420px for desired height */
+  /* Ensure these properties are present and correctly applied */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Important to contain content */
+  border-radius: 12px; /* Example, use your actual value */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Example, use your actual value */
+}
+.blogs__card-link {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #141821;
+  border: 1px solid rgba(255, 255, 255, 0.05); /* Adjusted variable fallback */
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.blogs__card-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 26px 56px rgba(0, 0, 0, 0.45);
+}
+.blogs__card-image-wrapper {
+  /* Assuming this class exists for your image container */
+  height: 220px; /* Adjust this value to control how much of the card height the image takes */
+  width: 100%;
+  overflow: hidden;
+}
+.blogs__card img {
+  width: 100%;
+  height: 100%; /* Make the image fill its container */
+  object-fit: cover; /* Ensures image covers the area without distortion */
+  object-position: center; /* Centers the image within its frame */
+}
+.blogs__card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.55) 0%,
+    rgba(0, 0, 0, 0.25) 42%,
+    rgba(0, 0, 0, 0) 64%
+  );
+}
+
+.blogs__card-meta {
+  position: absolute;
+  inset: auto 14px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: right;
+  color: #f1f3f5;
+  padding-right: 1rem;
+}
+
+.blogs__card-title {
+  margin: 0;
+  font-weight: 900;
+  font-size: 1.8rem;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  margin-bottom: 8px;
+}
+
+.blogs__card-info {
+  display: inline-grid;
+  grid-auto-flow: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.9;
+  font-size: 1.3rem;
+}
+
+.blogs__card-info svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+/* Update your BlogCard container styling */
+/* Update the grid to automatically fit narrow columns (approx 240px-250px wide) */
+.blog-feed-grid {
+  display: grid;
+  /* This creates 3 or 4 narrower columns instead of 2 massive ones */
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+/* Update the card to use a fixed 400px height like your landing page */

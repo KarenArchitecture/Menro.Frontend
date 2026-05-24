@@ -302,37 +302,50 @@
 }
 
 /* 1. Navbar Categories */
+/* Container for the navigation */
 .blog-feed-nav {
   display: flex;
-  gap: 15px;
-  border-bottom: 1px solid #333;
-  padding-bottom: 10px;
-  overflow-x: auto; /* In case screen is too small */
+  gap: 1.5rem; /* Space between buttons */
+  align-items: center;
+  margin-bottom: 2rem;
+  /* If you want them aligned to the right (RTL), uncomment below */
+  /* justify-content: flex-start; */
 }
 
+/* Default state for all category buttons */
 .feed-nav-btn {
-  background: none;
+  background-color: transparent;
+  color: #a0a0a0; /* Grey text for unselected */
   border: none;
-  color: #a0a0a0;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 5px 10px;
-  transition: color 0.3s;
+  padding: 8px 24px; /* Padding creates the pill size */
+  border-radius: 50px; /* Makes it pill-shaped */
   font-family: inherit;
+  font-size: 1.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease; /* Smooth transition when clicking */
 }
 
-.feed-nav-btn:hover,
-.feed-nav-btn.active {
+/* Hover effect for unselected buttons (optional but recommended) */
+.feed-nav-btn:hover {
   color: #ffffff;
-  font-weight: bold;
-  border-bottom: 2px solid #ff6b00; /* Orange highlight for active */
 }
 
+/* Active state for the selected category */
+.feed-nav-btn.active {
+  background-color: #ff6b35; /* Adjust to match your exact orange */
+  color: #ffffff;
+}
+.blog-feed-scroll-area::-webkit-scrollbar {
+  display: none;
+}
 /* 2. Scrollable Grid Area */
 .blog-feed-scroll-area {
   max-height: 600px; /* Adjust height based on your needs */
   overflow-y: auto;
   padding-right: 5px; /* Prevent scrollbar from touching content */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 /* Customizing the scrollbar for a dark theme */

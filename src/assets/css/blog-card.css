@@ -9,6 +9,8 @@
   overflow: hidden; /* Important to contain content */
   border-radius: 12px; /* Example, use your actual value */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Example, use your actual value */
+  user-select: none;
+  -webkit-user-select: none;
 }
 .blogs__card-link {
   position: relative;
@@ -24,7 +26,11 @@
     transform 0.2s ease,
     box-shadow 0.2s ease;
 }
-
+.blogs__card-link,
+.blogs__card img {
+  -webkit-user-drag: none;
+  /* user-drag: none; (Not strictly standard yet, but -webkit- handles most modern browsers) */
+}
 .blogs__card-link:hover {
   transform: translateY(-2px);
   box-shadow: 0 26px 56px rgba(0, 0, 0, 0.45);

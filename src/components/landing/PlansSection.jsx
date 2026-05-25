@@ -509,27 +509,6 @@ export default function PlansSection({ plans = plansData }) {
     });
   }, [isMobile, plans, progress]);
 
-  useEffect(() => {
-    if (isMobile) return;
-
-    const header = document.querySelector(".app-header");
-    if (!header) return;
-
-    const off = progress.on("change", (v) => {
-      const dim = v > 0.02 && v < 0.98;
-      header.classList.toggle("is-dim", dim);
-    });
-
-    return () => off();
-  }, [isMobile, progress]);
-
-  useEffect(() => {
-    return () => {
-      const header = document.querySelector(".app-header");
-      if (header) header.classList.remove("is-dim");
-    };
-  }, []);
-
   const activePlan = plans[activeStep] ?? plans[0];
 
   if (isMobile) {
@@ -648,7 +627,8 @@ function PlanMotionCard({ index, total, plan, progress, viewportH }) {
   const baseY = index * 32;
   const baseScale = 1 - index * 0.04;
 
-  const outY = -Math.max(320, Math.round(viewportH * 0.8));
+  // Make outY much higher to ensure it fully leaves the screen
+  const outY = -(viewportH * 1.5);
 
   const y = useTransform(
     progress,
@@ -662,10 +642,11 @@ function PlanMotionCard({ index, total, plan, progress, viewportH }) {
     [baseScale, baseScale, 1, 1, 1],
   );
 
+  // Keep zIndex high at the end (60 instead of 0) so it passes IN FRONT of the tabs/header
   const zIndex = useTransform(
     progress,
     [0, start, mid, end, 1],
-    [20 - index, 20 - index, 60, 0, 0],
+    [20 - index, 20 - index, 60, 60, 60],
   );
 
   return (

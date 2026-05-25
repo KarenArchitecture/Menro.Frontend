@@ -868,7 +868,7 @@ ul {
         overflow: hidden;
         transform-origin: center center;
         backface-visibility: hidden;
-        border: 2px solid transparent;
+        /* border: 2px solid transparent; */
         transition:
             transform 700ms cubic-bezier(0.22, 1, 0.36, 1),
             border-radius 700ms cubic-bezier(0.22, 1, 0.36, 1),

@@ -20,7 +20,7 @@ function PopularFoodRow({
     return (
       <section className="popular-food-row">
         {!hideTitle && <SectionHeader title="در حال بارگذاری..." />}
-        <ShimmerRow height={160} style={{ margin: "0 auto" }} />
+        <ShimmerRow height={160} style={{ margin: "2.8rem auto" }} />
       </section>
     );
   }

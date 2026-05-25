@@ -80,7 +80,7 @@ export default function AdBanner({
   height = 260,
   objectPosition = "center",
   maxWidth = 920,
-  fallbackImage = "/images/ad-banner-1.jpg",
+  fallbackImage = "/images/ads/banner-placeholder.jpg",
 }) {
   const isStatic = !!imageSrc || !!title || !!subtitle || !!href;
 

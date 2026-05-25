@@ -200,7 +200,7 @@ function NormalModeFeed({ showAds }) {
       {isFetchingNextPage && (
         <>
           <PopularFoodRow isLoading />
-          {showAds && <ShimmerRow height={260} style={{ margin: "16px 0" }} />}
+          {showAds && <ShimmerRow height={260} style={{ margin: "2.8rem auto" }} />}
         </>
       )}
 

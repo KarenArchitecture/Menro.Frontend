@@ -182,7 +182,7 @@ function PreviousOrders() {
     return (
       <section className="previous-orders">
         <SectionHeader icon={<ReceiptIcon />} title="سفارش‌های پیشین" />
-        <ShimmerRow height={220} style={{ margin: "16px 0" }} />
+        <ShimmerRow height={220} style={{ margin: "2.8rem auto" }} />
       </section>
     );
   }

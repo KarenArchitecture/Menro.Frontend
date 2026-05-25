@@ -115,7 +115,7 @@ function RestaurantList({ searchQuery = "", onSearchCount }) {
       />
 
       {isLoading && (
-        <ShimmerRow height={200} style={{ margin: "1.6rem 0" }} />
+        <ShimmerRow height={200} style={{ margin: "2.8rem auto" }} />
       )}
 
       {isError && (
@@ -142,21 +142,23 @@ function RestaurantList({ searchQuery = "", onSearchCount }) {
               key={r.id}
               restaurant={{
                 name: r.name,
-                type: r.category,
-                hours: `${r.openTime ?? "نامشخص"} تا ${
-                  r.closeTime ?? "نامشخص"
-                }`,
+                category: r.category,
+                openTime: r.openTime,
+                closeTime: r.closeTime,
                 discount: r.discount || 0,
                 rating: Number(r.rating) || 0,
-                ratingCount: r.voters || 0,
-                imageUrl: toAssetUrl(
+                voters: r.voters || 0,
+
+                bannerImageUrl: toAssetUrl(
                   r.bannerImageUrl,
-                  "/images/res-card-1.png"
+                  "/images/restaurant/restaurant-home-placeholder.png"
                 ),
-                logoUrl: toAssetUrl(
+
+                logoImageUrl: toAssetUrl(
                   r.logoImageUrl,
-                  "/images/logo-green.png"
+                  "/images/restaurant/logo-placeholder.png"
                 ),
+
                 isOpen: !!r.isOpen,
                 slug: r.slug,
               }}

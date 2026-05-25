@@ -23,7 +23,7 @@ export default function FoodCard({
   const apiOrigin = new URL(publicAxios.defaults.baseURL).origin;
   const appOrigin = window.location.origin;
   const toAssetUrl = (url) => {
-    if (!url) return "/images/food-placeholder.jpg";
+    if (!url) return "/images/food/food-placeholder.png";
     if (/^https?:\/\//i.test(url)) return url;
     const withSlash = url.startsWith("/") ? url : `/${url}`;
     if (withSlash.startsWith("/img/"))     return `${apiOrigin}${withSlash}`;
@@ -57,7 +57,10 @@ export default function FoodCard({
           src={imgSrc}
           alt={name}
           className="food-img"
-          onError={(e) => { e.currentTarget.src = "/images/food-placeholder.jpg"; }}
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = "/images/food/food-placeholder.png";
+}}
         />
         <div className="rating-chip">
           <StarIcon />

@@ -1,4 +1,5 @@
 // src/components/home/RestaurantCard.jsx
+
 import React from "react";
 import StarIcon from "../icons/StarIcon";
 import { Link } from "react-router-dom";
@@ -12,52 +13,66 @@ function RestaurantCard({ restaurant }) {
   if (!restaurant) return null;
 
   const {
-    imageUrl = "/images/res-card-1.png",
+    bannerImageUrl,
     discount = 0,
-    hours = "نامشخص",
-    logoUrl = "/images/logo-green.png",
+    openTime = "نامشخص",
+    closeTime = "نامشخص",
+    logoImageUrl,
     name = "رستوران",
-    rating = "N/A",
-    ratingCount = 0,
-    type = "نوع نامشخص",
+    rating = 0,
+    voters = 0,
+    category = "نوع نامشخص",
     isOpen = false,
     slug,
   } = restaurant;
 
-  const formattedHours = toPersianDigits(hours);
+  const coverSrc =
+    bannerImageUrl || "/images/restaurant/restaurant-home-placeholder.png";
+
+  const logoSrc =
+    logoImageUrl || "/images/restaurant/logo-placeholder.png";
+
+  const formattedHours = `${toPersianDigits(openTime)} - ${toPersianDigits(closeTime)}`;
+
   const formattedDiscount = formatPersianNumber(discount, {
     useGrouping: false,
   });
+
   const formattedRating = formatPersianRating(rating);
-  const formattedRatingCount = formatPersianNumber(ratingCount);
+
+  const formattedRatingCount = formatPersianNumber(voters);
 
   const cardContent = (
     <>
       <div className="card-img-container">
         <img
-          src={imageUrl}
+          src={coverSrc}
           alt={`عکس رستوران ${name}`}
           className="card-img"
           onError={(e) => {
             e.currentTarget.onerror = null;
-            e.currentTarget.src = "/images/res-card-1.png";
+            e.currentTarget.src = "/images/restaurant/restaurant-home-placeholder.png";
           }}
         />
 
         {discount > 0 && (
           <div className="discount-bubble">
-            تا <span className="discount_num">{formattedDiscount}%</span> درصد تخفیف
+            تا{" "}
+            <span className="discount_num">
+              {formattedDiscount}%
+            </span>
+            {" "}درصد تخفیف
           </div>
         )}
 
         <div className="logo-container">
           <img
-            src={logoUrl}
+            src={logoSrc}
             alt={`لوگو رستوران ${name}`}
             className="restaurant-badge"
             onError={(e) => {
               e.currentTarget.onerror = null;
-              e.currentTarget.src = "/images/logo-green.png";
+              e.currentTarget.src = "/images/restaurant/logo-placeholder.png";
             }}
           />
         </div>
@@ -65,20 +80,30 @@ function RestaurantCard({ restaurant }) {
 
       <div className="card-body">
         <span className="time-badge">
-          <span className="time-badge__time">{formattedHours}</span>
+          <span className="time-badge__time">
+            {formattedHours}
+          </span>
 
-          <span className={`time-badge__status ${isOpen ? "open" : "closed"}`}>
+          <span
+            className={`time-badge__status ${
+              isOpen ? "open" : "closed"
+            }`}
+          >
             {isOpen ? "باز است" : "بسته است"}
           </span>
         </span>
 
         <div className="restaurant-header">
-          <h3 className="restaurant-name">{name}</h3>
+          <h3 className="restaurant-name">
+            {name}
+          </h3>
 
           <div className="rating">
             <StarIcon />
 
-            <span className="rate">{formattedRating}</span>
+            <span className="rate">
+              {formattedRating}
+            </span>
 
             <span className="rate-voters-num">
               ({formattedRatingCount})
@@ -87,7 +112,7 @@ function RestaurantCard({ restaurant }) {
         </div>
 
         <div className="restaurant-description">
-          <p>{type}</p>
+          <p>{category}</p>
         </div>
       </div>
     </>
@@ -103,7 +128,11 @@ function RestaurantCard({ restaurant }) {
     <Link
       to={`/restaurant/${encodeURIComponent(slug)}`}
       className="card card-link"
-      style={{ display: "block", textDecoration: "none", color: "inherit" }}
+      style={{
+        display: "block",
+        textDecoration: "none",
+        color: "inherit",
+      }}
     >
       {cardContent}
     </Link>

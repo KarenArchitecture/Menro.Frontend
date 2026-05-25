@@ -89,7 +89,7 @@ export default function BurgerPanelSection({
       style={{
         position: "fixed",
         left: "50%",
-        top: "50%",
+        top: "60%",
         transform: panelTransform,
         transformOrigin: "0 100%",
         willChange: "transform, opacity",
@@ -105,23 +105,39 @@ export default function BurgerPanelSection({
           aria-hidden="true"
         />
       )}
-
-      <motion.h2
-        className="bp__title"
-        style={{
-          opacity: titleOpacity,
-          y: titleY,
-          zIndex: 2,
-        }}
-      >
-        {title}
-      </motion.h2>
+      {/* TITLE REMOVED FROM HERE */}
     </motion.div>
   );
 
   return (
     <section ref={sectionRef} className="bp">
-      <div ref={sceneRef} className="bp__scene">
+      {/* 
+        Fixed motion.h2:
+        - Locks to the center of the viewport (position: fixed, top/left: 50%, x/y: -50%)
+        - Layered between the Portal Panel (z:50) and Burger Scene (z:100)
+        - Uses panelOpacity to fade out smoothly when scrolling past
+      */}
+      <motion.h2
+        className="bp__title"
+        style={{
+          position: "fixed",
+          top: "18%",
+          left: "50%",
+          x: "-50%",
+          y: "-50%",
+          zIndex: 60,
+          opacity: panelOpacity,
+          pointerEvents: "none",
+        }}
+      >
+        {title}
+      </motion.h2>
+
+      <div
+        ref={sceneRef}
+        className="bp__scene"
+        style={{ position: "relative", zIndex: 100 }}
+      >
         <div className="bp__stage">
           <motion.div
             ref={burgerRef}

@@ -1461,18 +1461,18 @@ body {
 
 /* --- Title (starts slightly above center, hidden) --- */
 .bp__title {
-  position: absolute;
+  position: relative;
   inset: 0;
   margin: 0;
   display: grid;
   place-items: center;
   text-align: center;
   padding: 2rem;
-  font-size: clamp(2.5rem, 8vw, 6rem);
+  font-size: 5rem;
   font-weight: 800;
   color: #fff;
-  z-index: 50;
-  opacity: 0;
+  z-index: 10;
+  /* opacity: 0; REMOVE THIS LINE */
 }
 
 /* --- Burger (independent of scene) --- */
@@ -1483,10 +1483,10 @@ body {
   translate: -50% -50%;
   pointer-events: none;
   opacity: 0;
-  z-index: 100;
+  z-index: 1100;
 }
 .bp__panel {
-  z-index: 1;
+  z-index: 50; /* Changed from 1 to be higher than the title's 10 */
   position: relative;
 }
 
@@ -1503,7 +1503,7 @@ body {
   opacity: 0.9;
   overflow: initial;
   width: 800px;
-  z-index: -1;
+  z-index: 99;
 }
 
 .bp__burgerImg {

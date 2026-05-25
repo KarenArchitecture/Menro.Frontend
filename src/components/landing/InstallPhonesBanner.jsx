@@ -82,28 +82,28 @@ export default function InstallPhonesBanner({
         frontY: REST.front.y + 520,
       };
 
-      const SPEED = 500;
-      const backDur = Math.abs(START.backY - REST.back.y) / SPEED;
-      const frontDur = Math.abs(START.frontY - REST.front.y) / SPEED;
+      // Remove the SPEED, backDur, and frontDur calculations.
+      // We will use a fixed, fast duration instead.
+      const phoneDur = 2; // 0.6 seconds is much snappier
 
       const tl = gsap.timeline({
         paused: true,
-        defaults: { ease: "none" },
+        // Removed defaults: { ease: "none" } so we can use dynamic easing
       });
 
       // 1. Updated Words Animation
       tl.to(
         words,
         {
-          autoAlpha: 1, // Fades in
-          y: 0, // Moves to its original position
-          stagger: 0.1, // Increased delay between words for a clearer sequence
-          duration: 0.8, // Increased duration for a softer, slower movement
-          ease: "back.out(1.2)", // Gives a very slight, elegant bounce/overshoot
+          autoAlpha: 1,
+          y: 0,
+          stagger: 0.1,
+          duration: 0.8,
+          ease: "back.out(1.2)",
           overwrite: "auto",
         },
         0,
-      ); // Still starts with the phones
+      );
 
       // 2. Phone Animations
       tl.to(
@@ -111,7 +111,8 @@ export default function InstallPhonesBanner({
         {
           y: REST.back.y,
           autoAlpha: 1,
-          duration: backDur,
+          duration: phoneDur,
+          ease: "power3.out", // Starts fast, slows down smoothly at the end
           overwrite: "auto",
         },
         0,
@@ -120,10 +121,11 @@ export default function InstallPhonesBanner({
         {
           y: REST.front.y,
           autoAlpha: 1,
-          duration: frontDur,
+          duration: phoneDur,
+          ease: "power3.out",
           overwrite: "auto",
         },
-        "-=0.2",
+        0.1, // Starts exactly 0.1s after the back phone
       );
 
       const resetAnimations = () => {

@@ -1,118 +1,118 @@
 .state-message {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 2rem 2.5rem;
-  border-radius: 1rem;
-  background-color: #1a1d25;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 2rem 2.5rem;
+    border-radius: 1rem;
+    background-color: #1a1d25;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 .restaurants .state-message {
-  border-radius: 0;
+    border-radius: 0;
 }
 
 .state-message-subject {
-  color: #ff683c;
+    color: #ff683c;
 }
 
 .state-message.compact {
-  padding: 1rem;
+    padding: 1rem;
 }
 
 .state-message__icon-wrapper {
-  margin-bottom: 1rem;
+    margin-bottom: 1rem;
 }
 
 .state-icon {
-  width: 48px;
-  height: 48px;
+    width: 48px;
+    height: 48px;
 }
 
 .state-icon.error {
-  color: #f87171; /* red-400 for dark mode */
+    color: #f87171; /* red-400 for dark mode */
 }
 
 .state-icon.empty {
-  color: #ff683c; /* yellow-400 */
+    color: #ff683c; /* yellow-400 */
 }
 
 .state-icon.info {
-  color: #60a5fa; /* blue-400 */
+    color: #60a5fa; /* blue-400 */
 }
 
 .state-message__title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: #f9fafb; /* near-white text */
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #f9fafb; /* near-white text */
 }
 
 .state-message__text {
-  font-size: 1.2rem;
-  color: #d1d5db; /* light gray for readability */
-  margin-bottom: 2.4rem;
-  line-height: 1.5;
+    font-size: 1.2rem;
+    color: #d1d5db; /* light gray for readability */
+    margin-bottom: 2.4rem;
+    line-height: 1.5;
 }
 
 .state-message__action {
-  margin-top: 2.4rem;
+    margin-top: 2.4rem;
 }
 
 .state-message__action button {
-  background-color: #2563eb; /* slightly darker blue button */
-  color: #f9fafb;
-  font-weight: 500;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+    background-color: #2563eb; /* slightly darker blue button */
+    color: #f9fafb;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
 }
 
 .state-message__action button:hover {
-  background-color: #1d4ed8;
+    background-color: #1d4ed8;
 }
 
 /* shimmer effect */
 .shimmer-row {
-  position: relative;
-  overflow: hidden;
-  background-color: #1a1d26; /* dark-mode background */
-  height: 120px; /* fixed default height for all */
-  border-radius: 12px;
-  margin: 1rem auto; /* center vertically and give spacing */
+    position: relative;
+    overflow: hidden;
+    background-color: #1a1d26; /* dark-mode background */
+    height: 120px; /* fixed default height for all */
+    border-radius: 12px;
+    margin: 1rem auto; /* center vertically and give spacing */
 }
 
 .shimmer-row::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -150%;
-  width: 150%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.1) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  animation: shimmer 1.2s infinite;
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 150%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    animation: shimmer 1.2s infinite;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .state-message:hover {
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
-  }
+    .state-message:hover {
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+    }
 }
 
 @keyframes shimmer {
-  0% {
-    left: -150%;
-  }
-  100% {
-    left: 100%;
-  }
+    0% {
+        left: -150%;
+    }
+    100% {
+        left: 100%;
+    }
 }

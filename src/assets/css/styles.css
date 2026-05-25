@@ -1,7 +1,3 @@
-.card {
-    --card-bg: #0c0f14;
-}
-
 :root {
     --section-gap-sm: 1.2rem;
     --section-gap: 3.2rem;
@@ -12,6 +8,9 @@
     --halo-shadow: 0 6px 12px rgba(0, 0, 0, 0.45);
 }
 
+.card {
+    --card-bg: #0c0f14;
+}
 /* Header */
 .header {
     /* margin-bottom: 2rem; */
@@ -47,10 +46,6 @@
     width: 37px;
     height: 38px;
     display: block;
-}
-
-.content {
-    margin-bottom: 10rem;
 }
 
 .icon-button img {
@@ -246,6 +241,10 @@
 
 /* restaurants */
 
+.restaurants {
+    margin-bottom: 2.8rem;
+}
+
 .res-title-box {
     padding: 0 2.5rem;
     margin-bottom: 1.4rem;
@@ -300,14 +299,15 @@
 
 /* ===== Cards Container ===== */
 .cards-container {
-    padding: 0 1.4rem 1rem;
-    margin-bottom: 2.4rem;
+    padding: 0 2.5rem;
+    margin-bottom: 2.8rem;
     display: flex;
     flex-wrap: nowrap;
-    gap: 1rem;
+    gap: 1.5rem;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    touch-action: pan-x pan-y;
 }
 
 .cards-container::-webkit-scrollbar {
@@ -326,6 +326,7 @@
     color: #fff;
     width: 162.5px;
     flex: 0 0 162.5px;
+    --card-bg: #0c0f14;
 }
 
 .card-img-container {
@@ -334,6 +335,8 @@
     position: relative;
     margin-bottom: 0.5rem;
     display: block;
+    overflow: visible;
+    border-radius: 15px;
 }
 
 .card-img {
@@ -343,40 +346,62 @@
     display: block;
     position: relative;
     z-index: 1;
-    border-radius: 15px;
+    border-radius: inherit;
+    -webkit-user-drag: none;
+    user-select: none;
+}
+
+/* image dark overlay */
+.card-img-container::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    border-radius: inherit;
+    background: linear-gradient(
+        180deg,
+        rgba(12, 15, 20, 0) 0%,
+        rgba(12, 15, 20, 0.08) 38%,
+        rgba(12, 15, 20, 0.28) 60%,
+        rgba(12, 15, 20, 0.52) 80%,
+        rgba(12, 15, 20, 0.72) 100%
+    );
 }
 
 .logo-container {
     position: absolute;
-    right: -25px;
+    right: -2rem;
     bottom: 0;
     transform: translate(-50%, 50%);
     width: var(--badge-size);
     height: var(--badge-size);
-    z-index: 3;
+    z-index: 5;
+    pointer-events: none;
 }
 
 .logo-container::before {
     content: "";
     position: absolute;
-    top: calc(2% - var(--halo-gap));
-    /* left: -3px; */
-    width: 59px;
-    height: 33px;
-    background: var(--card-bg);
-    border-top-left-radius: 50% 100%;
-    border-top-right-radius: 50% 100%;
-    z-index: 2;
-    box-shadow: var(--halo-shadow);
+    inset: -0.6rem;
+    z-index: 1;
+    border-radius: 50%;
+    background: #0c0f14;
+    box-shadow: 0 0.8rem 1.8rem rgba(0, 0, 0, 0.35);
+    pointer-events: none;
 }
 
 .restaurant-badge {
     position: relative;
-    z-index: 3;
+    z-index: 2;
     width: 100%;
     height: 100%;
+    margin-right: 0;
     border-radius: 50%;
     object-fit: cover;
+    pointer-events: none;
+    -webkit-user-drag: none;
+    user-select: none;
 }
 
 .discount-bubble {
@@ -392,6 +417,7 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     white-space: nowrap;
     display: inline-block;
+    z-index: 5;
 }
 
 .discount_num {
@@ -404,7 +430,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
+    gap: 1.5rem;
 }
 
 /* single orange pill */
@@ -413,16 +439,17 @@
     align-self: end !important;
     justify-content: space-between; /* little space between time and status */
     background-color: #2b3038;
-    color: #fff; /* default text color (time stays white) */
-    padding: 4px;
-    border-radius: 10px;
-    font-weight: 600;
-    width: calc(100% - 55px);
+    color: #fafaf4; /* default text color (time stays white) */
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.6rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    width: calc(100% - 6.5rem);
 }
 
 /* time is always white (inherits from .time-badge) */
 .time-badge__time {
-    color: #fff;
+    color: #fafaf4;
 }
 
 /* status color toggles */
@@ -439,22 +466,20 @@
 .time-badge span {
     text-align: center;
     border-radius: 6px;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: #fff;
-    max-width: calc(100% - var(--badge-overlay));
-    align-self: flex-start; /* keeps it left-aligned in your column flow */
 }
 
 .restaurant-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-top: 0.3rem;
 }
 
 .restaurant-name {
     font-size: 1.3rem;
     font-weight: 600;
+    margin: 0;
 }
 
 .rating {
@@ -476,25 +501,29 @@
 }
 
 .restaurant-description {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 6rem;
+    margin-top: -1rem;
 }
 
 .restaurant-description p {
     font-size: 1rem;
-    font-weight: 500;
+    margin: 0;
+}
+
+.logo-container,
+.logo-container::before,
+.restaurant-badge,
+.card-img-container::after {
+    pointer-events: none;
 }
 
 /* Single banner */
 .single-banner {
-    width: 340px;
-    height: 145px;
-    margin: 2rem auto;
+    /* width: 340px;
+    height: 145px; */
+    padding: 0 2.5rem;
+    margin-bottom: 2.8rem;
     display: block;
     overflow: hidden;
-    border-radius: 16px;
 }
 
 .banner-content {
@@ -509,6 +538,7 @@
     height: 100%;
     object-fit: cover;
     object-position: center;
+    border-radius: 2rem;
 }
 
 /* black overlay */
@@ -523,6 +553,7 @@
         rgba(0, 0, 0, 0.15) 70%,
         rgba(0, 0, 0, 0) 100%
     );
+    border-radius: 2rem;
 }
 
 /* text on top */
@@ -565,9 +596,10 @@
 }
 
 /* e.g., in your main css */
+
 .previous-orders.unauth-cta {
     width: 100%;
-    margin: 24px 0;
+    margin-bottom: 2.8rem;
 }
 
 .unauth-cta__inner {
@@ -575,7 +607,7 @@
         linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.35)),
         url("/images/ad-banner-1.jpg") center/cover no-repeat;
     border-radius: 16px;
-    padding: 28px 20px;
+    padding: 2.8rem 2.5rem;
     text-align: center;
     color: #fff;
 }
@@ -622,8 +654,9 @@
     flex-wrap: nowrap;
     gap: 1rem;
     overflow-x: auto;
-    padding: 0 1.4rem;
+    padding: 0 2.5rem;
     scrollbar-width: none;
+    touch-action: pan-x pan-y;
 }
 
 .food-cards-container::-webkit-scrollbar {
@@ -632,7 +665,7 @@
 }
 
 .popular-food-row {
-    margin: 1.5rem 0 2.5rem 0;
+    margin: 0 0 2.8rem 0;
 }
 
 .food-card {
@@ -945,7 +978,7 @@
     }
 
     .mobile-nav .nav-item {
-        color: #ccc;
+        color: #fafaf4;
         font-size: 1rem;
         font-weight: 500;
         gap: 0.5rem;
@@ -1020,8 +1053,7 @@
     .single-banner {
         width: 100%;
         max-width: none;
-        margin: 2rem 0;
-        padding: 0 1rem;
+        margin-bottom: 2.8rem;
         box-sizing: border-box;
         border-radius: 1rem;
         overflow: hidden;

@@ -93,7 +93,7 @@ export default function StatsSection() {
     const icons = Array.from(root.querySelectorAll(ICON_SEL));
 
     const states = new Map(); // per icon: { tx, ty, targetX, targetY, raf, rect }
-    const maxShift = 16; // px — tweak strength here
+    const maxShift = 40; // px — tweak strength here
     const lerpAlpha = 0.18; // smoothing (0..1), lower = smoother
 
     function ensureState(el) {
@@ -234,7 +234,31 @@ export default function StatsSection() {
             <div className="stat-icon" data-shift="16">
               <img src={stat.icon} alt={`Stat ${stat.id}`} draggable="false" />
             </div>
-            <div className="stat-number">{stat.number}</div>
+
+            {/* JITTER FIX: Wrapper to lock layout dimensions */}
+            <div
+              className="stat-number-wrapper"
+              style={{ display: "grid", justifyContent: "center" }}
+            >
+              {/* Invisible placeholder takes up the exact final width */}
+              <div
+                aria-hidden="true"
+                style={{ visibility: "hidden", gridArea: "1 / 1" }}
+              >
+                {stat.number}
+              </div>
+              {/* Actual animating element laid perfectly on top */}
+              <div
+                className="stat-number"
+                style={{
+                  gridArea: "1 / 1",
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {stat.number}
+              </div>
+            </div>
+
             <div className="stat-text">{stat.text}</div>
           </div>
         ))}

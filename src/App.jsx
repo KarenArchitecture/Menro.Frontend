@@ -46,7 +46,7 @@ function PageWrapper({ children, hideMobileNav }) {
 
 export default function App() {
   const { pathname } = useLocation();
-  const NAV_HIDE_PREFIXES = ["/admin", "/checkout"];
+  const NAV_HIDE_PREFIXES = ["/admin", "/checkout", "/landing"];
 
   const hideMobileNav = NAV_HIDE_PREFIXES.some((prefix) =>
     pathname.startsWith(prefix),
@@ -57,7 +57,7 @@ export default function App() {
       {/* PageWrapper now ONLY contains the Routes */}
       <PageWrapper hideMobileNav={hideMobileNav}>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/landing" element={<LandingPage />} />
           <Route path="/home" element={<HomePage />} />
 
           {/* New Blog Route */}

@@ -46,11 +46,12 @@ function PageWrapper({ children, hideMobileNav }) {
 
 export default function App() {
   const { pathname } = useLocation();
-  const NAV_HIDE_PREFIXES = ["/admin", "/checkout", "/landing"];
+  const NAV_HIDE_PREFIXES = ["/admin", "/checkout", "/landing", "/restaurant"];
 
-  const hideMobileNav = NAV_HIDE_PREFIXES.some((prefix) =>
-    pathname.startsWith(prefix),
-  );
+  const hideMobileNav = pathname.startsWith("/admin")
+  || pathname.startsWith("/checkout")
+  || pathname.startsWith("/landing")
+  || pathname.startsWith("/restaurant/");
 
   return (
     <DrawerStateProvider>

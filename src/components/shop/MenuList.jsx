@@ -1,31 +1,21 @@
 import React from "react";
 import MenuItem from "./MenuItem";
-import { useQuery } from "@tanstack/react-query";
-import { getRestaurantMenuBySlug } from "../../api/restaurants";
-import { useParams } from "react-router-dom";
 
 function MenuList({
+  menuData = [],
+  isLoading,
+  isError,
   activeCategory,
   onSelectItem,
   onSeeAll,
   categories = [],
   setActiveCategory,
+  searchQuery = "",
 }) {
-  const { slug } = useParams();
-  const isHorizontal = activeCategory === "all";
+  const isSearching = searchQuery.trim().length > 0;
+  const isHorizontal = activeCategory === "all" && !isSearching;
   const scrollClass = isHorizontal ? "horizontal-scroll" : "vertical-scroll";
 
-  /* ---------------- FETCH MENU ---------------- */
-  const {
-    data: menuData = [],
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["restaurantMenu", slug],
-    queryFn: () => getRestaurantMenuBySlug(slug),
-  });
-
-  /* ---------------- SVG HELPERS ---------------- */
   const decodeHtml = (html) => {
     const txt = document.createElement("textarea");
     txt.innerHTML = html || "";
@@ -41,7 +31,6 @@ function MenuList({
     );
   };
 
-  /* ---------------- CATEGORY LIST (fallback) ---------------- */
   const catList = React.useMemo(() => {
     if (categories && categories.length) return categories;
 
@@ -57,7 +46,6 @@ function MenuList({
     ];
   }, [categories, menuData]);
 
-  /* ---------------- SVG CACHE LOADING ---------------- */
   const [svgCache, setSvgCache] = React.useState({});
 
   React.useEffect(() => {
@@ -76,7 +64,7 @@ function MenuList({
             const text = await res.text();
             cache[c.id] = text;
           } else {
-            cache[c.id] = icon; // inline SVG
+            cache[c.id] = icon;
           }
         } catch {
           cache[c.id] = "";
@@ -89,7 +77,39 @@ function MenuList({
     loadSvgs();
   }, [catList]);
 
-  /* ---------------- PREV / NEXT CATEGORY ---------------- */
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  const filteredMenuData = React.useMemo(() => {
+    let sections = menuData;
+
+    if (activeCategory !== "all") {
+      sections = sections.filter(
+        (section) => String(section.categoryId) === String(activeCategory)
+      );
+    }
+
+    if (!normalizedQuery) return sections;
+
+    return sections
+      .map((section) => {
+        const filteredFoods = (section.foods || []).filter((item) => {
+          const name = item.name?.toLowerCase() || "";
+          const description = item.description?.toLowerCase() || "";
+
+          return (
+            name.includes(normalizedQuery) ||
+            description.includes(normalizedQuery)
+          );
+        });
+
+        return {
+          ...section,
+          foods: filteredFoods,
+        };
+      })
+      .filter((section) => section.foods.length > 0);
+  }, [menuData, activeCategory, normalizedQuery]);
+
   const activeIndex = catList.findIndex(
     (c) => String(c.id) === String(activeCategory)
   );
@@ -103,22 +123,22 @@ function MenuList({
   const showPrev = prevCat && String(prevCat.id) !== "all";
   const showNext = Boolean(nextCat);
 
-  /* ---------------- LOADING & ERRORS ---------------- */
   if (isLoading) return <p>در حال بارگذاری…</p>;
   if (isError) return <p>خطا در بارگیری منو</p>;
   if (!menuData?.length) return <p>موردی یافت نشد</p>;
+  if (!filteredMenuData?.length) return <p>غذایی با این جستجو پیدا نشد</p>;
 
-  /* ---------------- RENDER ---------------- */
   return (
     <div className="res-menu">
-      {menuData.map((section) => {
+      {filteredMenuData.map((section) => {
         const catId = String(section.categoryId);
 
-        if (!isHorizontal && catId !== activeCategory) return null;
+        if (!isHorizontal && !isSearching && catId !== activeCategory) {
+          return null;
+        }
 
         return (
           <section key={catId} data-category-section={catId}>
-            {/* ---------------- SECTION HEADER (icon + title + button) ---------------- */}
             <div className="menu_nav">
               <div className="menu_nav-title-holder">
                 <span
@@ -127,7 +147,6 @@ function MenuList({
                     __html: getColoredIcon(svgCache[catId], "#FFF"),
                   }}
                 />
-
                 <p className="menu_nav-title">{section.categoryTitle}</p>
               </div>
 
@@ -139,7 +158,6 @@ function MenuList({
               </button>
             </div>
 
-            {/* ---------------- FOOD CARDS ---------------- */}
             <div className={`food_items ${scrollClass}`}>
               {section.foods.map((item) => (
                 <MenuItem
@@ -149,7 +167,6 @@ function MenuList({
                 />
               ))}
 
-              {/* Trailing “see all” only in horizontal */}
               {isHorizontal && (
                 <button
                   type="button"
@@ -162,8 +179,7 @@ function MenuList({
               )}
             </div>
 
-            {/* ---------------- VERTICAL MODE ACTIONS ---------------- */}
-            {!isHorizontal && (
+            {!isHorizontal && !isSearching && (
               <div className="vertical-actions" dir="rtl">
                 {showNext && (
                   <button

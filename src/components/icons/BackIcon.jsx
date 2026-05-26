@@ -1,19 +1,9 @@
 function BackIcon({ size = 22, color = "currentColor", ...props }) {
   return (
-    <svg
-      width="8"
-      height="15"
-      viewBox="0 0 8 15"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M1.391 13.3063L3.58349 11.3048C5.57706 9.48491 6.57385 8.57496 6.57385 7.40733C6.57385 6.2397 5.57706 5.32975 3.58349 3.50986L1.391 1.50838"
-        stroke="#FAFAF4"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
+    <svg width="7" height="14" viewBox="0 0 7 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0.750006 12.5479L2.9425 10.5464C4.93607 8.72654 5.93286 7.8166 5.93286 6.64897C5.93286 5.48134 4.93607 4.57139 2.9425 2.7515L0.750007 0.750021" stroke="#FAFAF4" strokeWidth="1.5" strokeLinecap="round"/>
     </svg>
+
   );
 }
 

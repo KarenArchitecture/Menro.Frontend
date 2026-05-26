@@ -8,18 +8,22 @@ export default function MenuItem({ item, onOpen }) {
 
   const formatTomans = (n) => (Number(n) || 0).toLocaleString("fa-IR");
 
-  const apiBase = import.meta.env.VITE_API_URL;
-  // remove "/api" from the end → hit backend root
-  const baseUrl = apiBase.replace(/\/api\/?$/, "");
-  const fullImageUrl = `${baseUrl}${imageUrl}`;
+  // اصلاح منطق ساخت URL
+  const fullImageUrl = useMemo(() => {
+    if (!imageUrl) return "";
+    // اگر URL از قبل کامل است (با http شروع می‌شود)، همان را برگردان
+    if (imageUrl.startsWith("http")) return imageUrl;
+    
+    // در غیر این صورت، baseUrl را اضافه کن
+    const apiBase = import.meta.env.VITE_API_URL || "";
+    const baseUrl = apiBase.replace(/\/api\/?$/, "");
+    return `${baseUrl}/${imageUrl.replace(/^\//, "")}`;
+  }, [imageUrl]);
 
   // ---- cart key for this food ----
   const baseKey = cart.keyOf(item);
-
-  // quantity of the simple (non-variant) item
   const baseQty = cart.getQty(baseKey);
 
-  // total quantity = base item + all variant entries (baseKey__*)
   const totalQty = useMemo(() => {
     let sum = 0;
     for (const [k, val] of cart.items.entries()) {
@@ -43,14 +47,10 @@ export default function MenuItem({ item, onOpen }) {
 
   const dec = (e) => {
     e.stopPropagation();
-
-    // 1) if base item exists, decrement that (old behavior)
     if (baseQty > 0) {
       cart.setQty(baseKey, item, Math.max(0, baseQty - 1));
       return;
     }
-
-    // 2) otherwise, try to decrement one of the variant entries
     for (const [k, val] of cart.items.entries()) {
       if (k.startsWith(`${baseKey}__`) && val.qty > 0) {
         cart.setQty(k, null, val.qty - 1);

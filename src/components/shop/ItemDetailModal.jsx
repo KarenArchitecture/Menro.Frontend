@@ -189,10 +189,11 @@ function ItemDetailModal({ item, onClose }) {
               </nav>
 
               <img
-                src={`${import.meta.env.VITE_SERVER_URL}${item.imageUrl}`}
+                src={item.imageUrl.startsWith("http") ? item.imageUrl : `${import.meta.env.VITE_SERVER_URL}${item.imageUrl}`}
                 alt={item.name}
                 className="modal-hero-img"
               />
+
 
               <div className="modal-info-panel">
                 <h2 className="modal-title">{item.name}</h2>

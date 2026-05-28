@@ -910,6 +910,14 @@ ul {
         overflow-y: auto;
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
+        padding-bottom: 0;
+    }
+
+    .app-shell--with-mobile-nav .app-shell__content {
         padding-bottom: 9rem;
+    }
+
+    .app-shell--no-mobile-nav .app-shell__content {
+        padding-bottom: 5rem;
     }
 }

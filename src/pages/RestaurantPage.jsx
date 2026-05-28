@@ -28,6 +28,7 @@ function RestaurantContent() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isNearPageBottom, setIsNearPageBottom] = useState(false);
 
   const handleSelectItem = (item) => {
     setSelectedItem({ id: item.id });
@@ -136,6 +137,30 @@ function RestaurantContent() {
     };
   }, [cart.count]);
 
+  useEffect(() => {
+    const checkIfNearBottom = () => {
+      const scrollTop = window.scrollY || window.pageYOffset;
+      const viewportHeight = window.innerHeight;
+      const fullHeight = document.documentElement.scrollHeight;
+      const threshold = 120;
+
+      const nearBottom =
+        scrollTop + viewportHeight >= fullHeight - threshold;
+
+      setIsNearPageBottom(nearBottom);
+    };
+
+    checkIfNearBottom();
+
+    window.addEventListener("scroll", checkIfNearBottom, { passive: true });
+    window.addEventListener("resize", checkIfNearBottom);
+
+    return () => {
+      window.removeEventListener("scroll", checkIfNearBottom);
+      window.removeEventListener("resize", checkIfNearBottom);
+    };
+  }, []);
+
   if (bannerLoading) return <div>Loading...</div>;
   if (bannerError) return <div>Error loading restaurant data</div>;
 
@@ -175,6 +200,10 @@ function RestaurantContent() {
           setActiveCategory={setActiveCategory}
           searchQuery={searchQuery}
         />
+
+        {cart.count > 0 && isNearPageBottom && (
+          <div className="checkout-safe-spacer" aria-hidden="true" />
+        )}
       </div>
 
       {selectedItem && modalLoading && (

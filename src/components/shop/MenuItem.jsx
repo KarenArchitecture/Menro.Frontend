@@ -1,19 +1,40 @@
 import React, { useMemo } from "react";
 import { useCart } from "./CartContext";
+import StarIcon from "../icons/StarIcon";
 
-export default function MenuItem({ item, onOpen }) {
+export default function MenuItem({ item, onOpen, layout = "horizontal" }) {
   const cart = useCart();
 
   const { name, price, imageUrl, rating = 4.5, voters = 0 } = item || {};
 
+  const toPersianDigits = (value) => {
+    if (value === null || value === undefined) return "";
+
+    return String(value).replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[digit]);
+  };
+
   const formatTomans = (n) => (Number(n) || 0).toLocaleString("fa-IR");
+
+  const formatRating = (value) => {
+    const num = Number(value) || 0;
+
+    // اگر عدد اعشاری بود، یک رقم اعشار نگه می‌داریم
+    // مثلا 4.5 => ۴.۵
+    // اگر 4 بود => ۴.۰
+    return toPersianDigits(num.toFixed(1));
+  };
+
+  const formatVoters = (value) => {
+    return toPersianDigits((Number(value) || 0).toLocaleString("en-US"));
+  };
 
   // اصلاح منطق ساخت URL
   const fullImageUrl = useMemo(() => {
     if (!imageUrl) return "";
-    // اگر URL از قبل کامل است (با http شروع می‌شود)، همان را برگردان
+
+    // اگر URL از قبل کامل است، همان را برگردان
     if (imageUrl.startsWith("http")) return imageUrl;
-    
+
     // در غیر این صورت، baseUrl را اضافه کن
     const apiBase = import.meta.env.VITE_API_URL || "";
     const baseUrl = apiBase.replace(/\/api\/?$/, "");
@@ -51,6 +72,7 @@ export default function MenuItem({ item, onOpen }) {
       cart.setQty(baseKey, item, Math.max(0, baseQty - 1));
       return;
     }
+
     for (const [k, val] of cart.items.entries()) {
       if (k.startsWith(`${baseKey}__`) && val.qty > 0) {
         cart.setQty(k, null, val.qty - 1);
@@ -62,7 +84,11 @@ export default function MenuItem({ item, onOpen }) {
   const openModal = () => onOpen?.(item);
 
   return (
-    <article className="menu-card" dir="rtl" onClick={openModal}>
+    <article
+      className={`menu-card ${layout === "vertical" ? "menu-card--vertical" : "menu-card--horizontal"}`}
+      dir="rtl"
+      onClick={openModal}
+    >
       <div className="menu-card__media">
         <img
           src={fullImageUrl}
@@ -72,11 +98,16 @@ export default function MenuItem({ item, onOpen }) {
         />
 
         <div className="menu-card__imgShade" aria-hidden />
+
         <div className="menu-card__rating">
-          <i className="fas fa-star menu-card__star" aria-hidden />
-          <span className="menu-card__ratingValue">{rating}</span>
+          <StarIcon />
+
+          <span className="menu-card__ratingValue">
+            {formatRating(rating)}
+          </span>
+
           <span className="menu-card__ratingCount">
-            ({voters.toLocaleString("fa-IR")})
+            ({formatVoters(voters)})
           </span>
         </div>
       </div>
@@ -106,7 +137,11 @@ export default function MenuItem({ item, onOpen }) {
               >
                 −
               </button>
-              <span className="menu-card__qtyDisplay">{totalQty}</span>
+
+              <span className="menu-card__qtyDisplay">
+                {toPersianDigits(totalQty)}
+              </span>
+
               <button
                 className="menu-card__qtyBtn menu-card__qtyBtn--inc"
                 onClick={inc}

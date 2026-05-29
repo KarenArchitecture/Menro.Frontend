@@ -1,5 +1,5 @@
 // components/landing/BurgerPanelSection.jsx
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import {
   motion,
@@ -20,9 +20,47 @@ export default function BurgerPanelSection({
   const sceneRef = useRef(null);
   const burgerRef = useRef(null);
 
+  // ==========================================
+  // === THE FIX: SAFE AUTO-DETECT SCROLLER ===
+  // ==========================================
+  const [scrollElement, setScrollElement] = useState(null);
+  const customScrollRef = useRef(null);
+
+  useEffect(() => {
+    const checkScrollContainer = () => {
+      const container = document.querySelector(".app-shell__content");
+      if (container) {
+        // Evaluate CSS *after* the DOM is fully painted
+        const styles = window.getComputedStyle(container);
+        if (styles.overflowY === "auto" || styles.overflowY === "scroll") {
+          setScrollElement(container);
+          return;
+        }
+      }
+      setScrollElement(null);
+    };
+
+    // Run on mount
+    checkScrollContainer();
+
+    // Re-evaluate if the user resizes the screen (e.g., rotating phone)
+    window.addEventListener("resize", checkScrollContainer);
+    return () => window.removeEventListener("resize", checkScrollContainer);
+  }, []);
+
+  // Keep the Ref in sync with the detected element
+  customScrollRef.current = scrollElement;
+
+  const scrollConfig = {
+    target: sectionRef,
+    // Only pass the container if we found a scrollable one
+    ...(scrollElement ? { container: customScrollRef } : {}),
+  };
+  // ==========================================
+
   // ===== Burger animation =====
   const { scrollYProgress } = useScroll({
-    target: sectionRef,
+    ...scrollConfig,
     offset: ["start 90%", "end 10%"],
   });
 
@@ -40,7 +78,7 @@ export default function BurgerPanelSection({
 
   // ===== Panel: portal + fixed + smooth fade + de-tilt =====
   const { scrollYProgress: sectionProg } = useScroll({
-    target: sectionRef,
+    ...scrollConfig,
     offset: ["start start", "end end"],
   });
 
@@ -69,9 +107,6 @@ export default function BurgerPanelSection({
   });
 
   // ===== Title animation =====
-  // Starts above the panel/frame and settles into exact center.
-  // Burger remains in front and moves upward with its existing animation.
-
   const titleOpacityIn = useTransform(scrollYProgress, [0.04, 0.12], [0, 1]);
 
   const titleY = useTransform(scrollYProgress, [0.06, 0.55], ["-42vh", "0vh"]);
@@ -105,26 +140,19 @@ export default function BurgerPanelSection({
           aria-hidden="true"
         />
       )}
-      {/* TITLE REMOVED FROM HERE */}
     </motion.div>
   );
 
   return (
-    <section ref={sectionRef} className="bp">
-      {/* 
-        Fixed motion.h2:
-        - Locks to the center of the viewport (position: fixed, top/left: 50%, x/y: -50%)
-        - Layered between the Portal Panel (z:50) and Burger Scene (z:100)
-        - Uses panelOpacity to fade out smoothly when scrolling past
-      */}
+    <section ref={sectionRef} className="bp" style={{ height: "300vh" }}>
       <motion.h2
         className="bp__title"
         style={{
           position: "fixed",
           top: "18%",
           left: "50%",
-          x: "-50%",
-          y: "-50%",
+          x: "0%", // Perfectly centered horizontally
+          y: "-50%", // Pushed up slightly
           zIndex: 60,
           opacity: panelOpacity,
           pointerEvents: "none",

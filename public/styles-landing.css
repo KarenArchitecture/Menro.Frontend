@@ -519,7 +519,7 @@ body {
 @media (max-width: 768px) {
   .why-static {
     padding: 6rem 1.6rem 6rem;
-    min-height: auto;
+    min-height: 200vh; /* or 300vh, depending on how long you want the scroll to be */
   }
   .why-static__inner,
   .why-static__stage {
@@ -1472,7 +1472,7 @@ body {
   font-weight: 800;
   color: #fff;
   z-index: 10;
-  /* opacity: 0; REMOVE THIS LINE */
+  width: 100%; /* Ensure it spans the full container */
 }
 
 /* --- Burger (independent of scene) --- */
@@ -1502,7 +1502,7 @@ body {
   object-fit: cover;
   opacity: 0.9;
   overflow: initial;
-  width: 800px;
+  /* width: 800px; */
   z-index: 99;
 }
 
@@ -2517,6 +2517,7 @@ body {
 /***************************************
  * Mobile Why Menro Only
  ***************************************/
+
 @media (max-width: 768px) {
   .why-static {
     min-height: auto;
@@ -2530,16 +2531,15 @@ body {
   }
 
   .why-static__titles {
-    position: relative;
-    top: auto;
-    left: auto;
-    transform: none !important;
+    position: relative; /* Change from fixed to relative */
+    top: auto; /* Reset top */
+    /* transform: none !important;  <--- DELETE THIS LINE ENTIRELY */
     width: 100%;
     grid-column: 1 / -1;
     order: 1;
     text-align: center;
     margin-bottom: 1.8rem;
-    z-index: 1;
+    z-index: 1; /* Make sure it's above the cards */
   }
 
   .why-static__title {
@@ -2555,7 +2555,17 @@ body {
     margin-top: 1.2rem;
     color: #999fa8;
   }
-
+  @media (max-width: 768px) {
+    .bp__title {
+      padding: 0 1rem; /* Reduce padding to free up horizontal space */
+      white-space: nowrap; /* Prevent the text from wrapping to a second line */
+      font-size: clamp(
+        1.2rem,
+        6.5vw,
+        2.5rem
+      ); /* Dynamically scale text size based on screen width */
+    }
+  }
   .why-card,
   .pos-a,
   .pos-b,
@@ -3089,7 +3099,7 @@ body {
   }
 
   .install-banner__mobile-content .hero__title {
-    font-size: 3rem;
+    font-size: 2.5rem;
   }
 
   .install-banner__mobile-content .hero__description {
@@ -3222,11 +3232,8 @@ body {
     width: 100%;
     height: auto;
     min-height: 51rem;
-
     margin: 0;
-    border-radius: 0;
     overflow: hidden;
-
     border: 2px solid #029dfb;
     background: #0c0f14;
     box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.38);
@@ -4236,5 +4243,12 @@ body::-webkit-scrollbar {
     left: 100%;
     /* -100% prevents the ball from spilling outside the right edge of the bar */
     transform: translate(-100%, -50%);
+  }
+}
+@media (max-width: 768px) {
+  .bp__title {
+    /* Adjust these values specifically for mobile! */
+    top: 12%;
+    transform: translate(00%, -40%) !important;
   }
 }

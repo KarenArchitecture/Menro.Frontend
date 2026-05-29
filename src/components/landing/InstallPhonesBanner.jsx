@@ -19,177 +19,253 @@ export default function InstallPhonesBanner({
   const desktopContentRef = useRef(null);
 
   useLayoutEffect(() => {
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const isMobile = window.matchMedia("(max-width: 768px)");
-
-    if (reducedMotion.matches || isMobile.matches) return;
+    if (!sectionRef.current) return;
 
     const ctx = gsap.context(() => {
-      const backEl = backRef.current;
-      const frontEl = frontRef.current;
-      const sectionEl = sectionRef.current;
-      const desktopContentEl = desktopContentRef.current;
+      const mm = gsap.matchMedia();
 
-      if (!backEl || !frontEl || !sectionEl || !desktopContentEl) return;
-
-      const splitTextToWords = (element) => {
-        if (element.dataset.splitted)
-          return Array.from(element.querySelectorAll(".gsap-word"));
-
-        const walker = document.createTreeWalker(
-          element,
-          NodeFilter.SHOW_TEXT,
-          null,
-          false,
+      // --- DESKTOP ANIMATION (>= 769px) ---
+      mm.add("(min-width: 769px)", () => {
+        const reducedMotion = window.matchMedia(
+          "(prefers-reduced-motion: reduce)",
         );
-        let textNodes = [];
-        let node;
-        while ((node = walker.nextNode())) {
-          if (node.nodeValue.trim() !== "") textNodes.push(node);
-        }
+        if (reducedMotion.matches) return;
 
-        textNodes.forEach((textNode) => {
-          const fragment = document.createDocumentFragment();
-          const words = textNode.nodeValue.split(/(\s+)/);
-          words.forEach((word) => {
-            if (word.trim() === "") {
-              fragment.appendChild(document.createTextNode(word));
-            } else {
-              const span = document.createElement("span");
-              span.textContent = word;
-              span.className = "gsap-word";
-              // Inline-block is critical for the Y-axis transform to work
-              span.style.display = "inline-block";
-              fragment.appendChild(span);
-            }
+        const backEl = backRef.current;
+        const frontEl = frontRef.current;
+        const sectionEl = sectionRef.current;
+        const desktopContentEl = desktopContentRef.current;
+
+        if (!backEl || !frontEl || !sectionEl || !desktopContentEl) return;
+
+        const splitTextToWords = (element) => {
+          if (element.dataset.splitted)
+            return Array.from(element.querySelectorAll(".gsap-word"));
+          const walker = document.createTreeWalker(
+            element,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false,
+          );
+          let textNodes = [];
+          let node;
+          while ((node = walker.nextNode())) {
+            if (node.nodeValue.trim() !== "") textNodes.push(node);
+          }
+          textNodes.forEach((textNode) => {
+            const fragment = document.createDocumentFragment();
+            const words = textNode.nodeValue.split(/(\s+)/);
+            words.forEach((word) => {
+              if (word.trim() === "") {
+                fragment.appendChild(document.createTextNode(word));
+              } else {
+                const span = document.createElement("span");
+                span.textContent = word;
+                span.className = "gsap-word";
+                span.style.display = "inline-block";
+                fragment.appendChild(span);
+              }
+            });
+            textNode.parentNode.replaceChild(fragment, textNode);
           });
-          textNode.parentNode.replaceChild(fragment, textNode);
-        });
+          element.dataset.splitted = "true";
+          return Array.from(element.querySelectorAll(".gsap-word"));
+        };
 
-        element.dataset.splitted = "true";
-        return Array.from(element.querySelectorAll(".gsap-word"));
-      };
+        const words = splitTextToWords(desktopContentEl);
+        const REST = { back: { x: -185, y: -179 }, front: { x: 16, y: -239 } };
+        const START = { backY: REST.back.y + 500, frontY: REST.front.y + 520 };
+        const phoneDur = 2;
+        const tl = gsap.timeline({ paused: true });
 
-      const words = splitTextToWords(desktopContentEl);
+        tl.to(
+          words,
+          {
+            autoAlpha: 1,
+            y: 0,
+            stagger: 0.1,
+            duration: 0.8,
+            ease: "back.out(1.2)",
+            overwrite: "auto",
+          },
+          0,
+        );
+        tl.to(
+          backEl,
+          {
+            y: REST.back.y,
+            autoAlpha: 1,
+            duration: phoneDur,
+            ease: "power3.out",
+            overwrite: "auto",
+          },
+          0,
+        ).to(
+          frontEl,
+          {
+            y: REST.front.y,
+            autoAlpha: 1,
+            duration: phoneDur,
+            ease: "power3.out",
+            overwrite: "auto",
+          },
+          0.1,
+        );
 
-      const REST = {
-        back: { x: -185, y: -179 },
-        front: { x: 16, y: -239 },
-      };
-
-      const START = {
-        backY: REST.back.y + 500,
-        frontY: REST.front.y + 520,
-      };
-
-      // Remove the SPEED, backDur, and frontDur calculations.
-      // We will use a fixed, fast duration instead.
-      const phoneDur = 2; // 0.6 seconds is much snappier
-
-      const tl = gsap.timeline({
-        paused: true,
-        // Removed defaults: { ease: "none" } so we can use dynamic easing
-      });
-
-      // 1. Updated Words Animation
-      tl.to(
-        words,
-        {
-          autoAlpha: 1,
-          y: 0,
-          stagger: 0.1,
-          duration: 0.8,
-          ease: "back.out(1.2)",
-          overwrite: "auto",
-        },
-        0,
-      );
-
-      // 2. Phone Animations
-      tl.to(
-        backEl,
-        {
-          y: REST.back.y,
-          autoAlpha: 1,
-          duration: phoneDur,
-          ease: "power3.out", // Starts fast, slows down smoothly at the end
-          overwrite: "auto",
-        },
-        0,
-      ).to(
-        frontEl,
-        {
-          y: REST.front.y,
-          autoAlpha: 1,
-          duration: phoneDur,
-          ease: "power3.out",
-          overwrite: "auto",
-        },
-        0.1, // Starts exactly 0.1s after the back phone
-      );
-
-      const resetAnimations = () => {
-        tl.pause(0);
-
-        gsap.set(backEl, {
-          x: REST.back.x,
-          y: START.backY,
-          autoAlpha: 0,
-          transformPerspective: 1000,
-          z: 0.01,
-          willChange: "transform, opacity",
-        });
-
-        gsap.set(frontEl, {
-          x: REST.front.x,
-          y: START.frontY,
-          autoAlpha: 0,
-          transformPerspective: 1000,
-          z: 0.01,
-          willChange: "transform, opacity",
-        });
-
-        // Updated Reset Words: Start invisible AND 20px lower
-        if (words.length) {
-          gsap.set(words, {
+        const resetAnimations = () => {
+          tl.pause(0);
+          gsap.set(backEl, {
+            x: REST.back.x,
+            y: START.backY,
             autoAlpha: 0,
-            y: 20, // Start 20px down so it can move up to 0
-            willChange: "opacity, transform",
+            transformPerspective: 1000,
+            z: 0.01,
+            willChange: "transform, opacity",
           });
-        }
-      };
+          gsap.set(frontEl, {
+            x: REST.front.x,
+            y: START.frontY,
+            autoAlpha: 0,
+            transformPerspective: 1000,
+            z: 0.01,
+            willChange: "transform, opacity",
+          });
+          if (words.length)
+            gsap.set(words, {
+              autoAlpha: 0,
+              y: 20,
+              willChange: "opacity, transform",
+            });
+        };
 
-      const play = () => {
+        const play = () => {
+          resetAnimations();
+          tl.play(0);
+        };
+
+        tl.eventCallback("onComplete", () => {
+          gsap.set([backEl, frontEl, ...words], { willChange: "auto" });
+        });
+
         resetAnimations();
-        tl.play(0);
-      };
 
-      tl.eventCallback("onComplete", () => {
-        gsap.set([backEl, frontEl, ...words], { willChange: "auto" });
+        ScrollTrigger.create({
+          id: "installPhonesDesktop",
+          trigger: sectionEl,
+          start: "center center",
+          onEnter: play,
+          onEnterBack: play,
+          invalidateOnRefresh: true,
+        });
       });
 
-      resetAnimations();
+      // --- MOBILE ANIMATION (<= 768px) ---
+      mm.add("(max-width: 768px)", () => {
+        const reducedMotion = window.matchMedia(
+          "(prefers-reduced-motion: reduce)",
+        );
+        if (reducedMotion.matches) return;
 
-      ScrollTrigger.create({
-        id: "installPhones",
-        trigger: sectionEl,
-        start: "center center",
-        onEnter: play,
-        onEnterBack: play,
-        invalidateOnRefresh: true,
-      });
+        // THE FIX: Intelligently determine the scroller
+        let activeScroller = window;
+        const customContainer = document.querySelector(".app-shell__content");
 
-      const imgs = sectionEl.querySelectorAll("img");
-      const onLoad = () => ScrollTrigger.refresh();
-
-      imgs.forEach((img) => {
-        if (!img.complete) {
-          img.addEventListener("load", onLoad, { once: true });
+        if (customContainer) {
+          // Check if the CSS has actually turned this into a scrollable container
+          const styles = window.getComputedStyle(customContainer);
+          if (styles.overflowY === "auto" || styles.overflowY === "scroll") {
+            activeScroller = customContainer;
+          }
         }
+
+        const backEl = backRef.current;
+        const frontEl = frontRef.current;
+        const sectionEl = sectionRef.current;
+
+        if (!backEl || !frontEl || !sectionEl) return;
+
+        const REST = { back: { x: -185, y: -179 }, front: { x: 16, y: -239 } };
+        const START = { backY: REST.back.y + 500, frontY: REST.front.y + 520 };
+        const phoneDur = 2;
+        const tl = gsap.timeline({ paused: true });
+
+        tl.to(
+          backEl,
+          {
+            y: REST.back.y,
+            autoAlpha: 1,
+            duration: phoneDur,
+            ease: "power3.out",
+            overwrite: "auto",
+          },
+          0,
+        ).to(
+          frontEl,
+          {
+            y: REST.front.y,
+            autoAlpha: 1,
+            duration: phoneDur,
+            ease: "power3.out",
+            overwrite: "auto",
+          },
+          0.1,
+        );
+
+        const resetAnimations = () => {
+          tl.pause(0);
+          gsap.set(backEl, {
+            x: REST.back.x,
+            y: START.backY,
+            autoAlpha: 0,
+            transformPerspective: 1000,
+            z: 0.01,
+            willChange: "transform, opacity",
+          });
+          gsap.set(frontEl, {
+            x: REST.front.x,
+            y: START.frontY,
+            autoAlpha: 0,
+            transformPerspective: 1000,
+            z: 0.01,
+            willChange: "transform, opacity",
+          });
+        };
+
+        const play = () => {
+          resetAnimations();
+          tl.play(0);
+        };
+
+        tl.eventCallback("onComplete", () => {
+          gsap.set([backEl, frontEl], { willChange: "auto" });
+        });
+
+        resetAnimations();
+
+        ScrollTrigger.create({
+          id: "installPhonesMobile",
+          trigger: sectionEl,
+          scroller: activeScroller, // Uses the intelligently detected scroller
+          start: "top 75%", // Triggers slightly earlier on mobile
+          onEnter: play,
+          onEnterBack: play,
+          invalidateOnRefresh: true,
+        });
       });
     }, sectionRef);
 
-    return () => ctx.revert();
+    const imgs = sectionRef.current.querySelectorAll("img");
+    const onLoad = () => ScrollTrigger.refresh();
+    imgs.forEach((img) => {
+      if (!img.complete) {
+        img.addEventListener("load", onLoad, { once: true });
+      }
+    });
+
+    return () => {
+      ctx.revert();
+      imgs.forEach((img) => img.removeEventListener("load", onLoad));
+    };
   }, [children]);
 
   return (
@@ -216,7 +292,6 @@ export default function InstallPhonesBanner({
             </div>
           )}
         </div>
-
         <div className="install-banner__phones" aria-hidden="true">
           <img
             ref={backRef}
@@ -236,7 +311,6 @@ export default function InstallPhonesBanner({
           />
         </div>
       </div>
-
       {children && (
         <div className="install-banner__mobile-content">{children}</div>
       )}

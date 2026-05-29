@@ -3002,9 +3002,9 @@ body {
     display: block;
 
     height: auto;
-    opacity: 1 !important;
+    /* opacity: 1 !important;
     visibility: visible !important;
-    will-change: auto !important;
+    will-change: auto !important; */
 
     filter: drop-shadow(0 1.8rem 3.2rem rgba(0, 0, 0, 0.48));
   }
@@ -3016,7 +3016,7 @@ body {
     left: 14%;
     top: 2.4rem;
 
-    transform: rotate(-5deg) translate3d(0, 0, 0) !important;
+    /* transform: rotate(-5deg) translate3d(0, 0, 0) !important; */
     z-index: 3;
   }
 
@@ -3026,7 +3026,7 @@ body {
     right: 6%;
     top: -0.4rem;
 
-    transform: rotate(5deg) translate3d(0, 0, 0) !important;
+    /* transform: rotate(5deg) translate3d(0, 0, 0) !important; */
     z-index: 4;
   }
 

@@ -1,5 +1,5 @@
 // src/components/landing/InstallPhonesBanner.jsx
-import React, { useRef, useLayoutEffect } from "react";
+import React, { useRef, useLayoutEffect, useEffect, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -18,8 +18,35 @@ export default function InstallPhonesBanner({
   const frontRef = useRef(null);
   const desktopContentRef = useRef(null);
 
+  // 1. Add state to hold the detected scroller
+  const [scroller, setScroller] = useState(null);
+
+  // 2. Detect the scroller safely after paint
+  useEffect(() => {
+    const detectScroller = () => {
+      let activeScroller = window;
+      const customContainer = document.querySelector(".app-shell__content");
+
+      if (customContainer) {
+        const styles = window.getComputedStyle(customContainer);
+        if (styles.overflowY === "auto" || styles.overflowY === "scroll") {
+          activeScroller = customContainer;
+        }
+      }
+      setScroller(activeScroller);
+    };
+
+    // Run once on mount
+    detectScroller();
+    // Re-run on resize in case layout shifts between mobile/desktop
+    window.addEventListener("resize", detectScroller);
+
+    return () => window.removeEventListener("resize", detectScroller);
+  }, []);
+
   useLayoutEffect(() => {
-    if (!sectionRef.current) return;
+    // 3. Wait until section exists AND the scroller has been successfully identified
+    if (!sectionRef.current || !scroller) return;
 
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia();
@@ -152,6 +179,7 @@ export default function InstallPhonesBanner({
         ScrollTrigger.create({
           id: "installPhonesDesktop",
           trigger: sectionEl,
+          scroller: scroller, // 4. Apply detected scroller state (fallback window)
           start: "center center",
           onEnter: play,
           onEnterBack: play,
@@ -166,17 +194,8 @@ export default function InstallPhonesBanner({
         );
         if (reducedMotion.matches) return;
 
-        // THE FIX: Intelligently determine the scroller
-        let activeScroller = window;
-        const customContainer = document.querySelector(".app-shell__content");
-
-        if (customContainer) {
-          // Check if the CSS has actually turned this into a scrollable container
-          const styles = window.getComputedStyle(customContainer);
-          if (styles.overflowY === "auto" || styles.overflowY === "scroll") {
-            activeScroller = customContainer;
-          }
-        }
+        // Note: Synchronous detection code was removed here.
+        // We now rely purely on the `scroller` state passed from React.
 
         const backEl = backRef.current;
         const frontEl = frontRef.current;
@@ -184,7 +203,7 @@ export default function InstallPhonesBanner({
 
         if (!backEl || !frontEl || !sectionEl) return;
 
-        const REST = { back: { x: -185, y: -179 }, front: { x: 16, y: -239 } };
+        const REST = { back: { x: -4, y: -8 }, front: { x: -3, y: -19 } };
         const START = { backY: REST.back.y + 500, frontY: REST.front.y + 520 };
         const phoneDur = 2;
         const tl = gsap.timeline({ paused: true });
@@ -245,8 +264,8 @@ export default function InstallPhonesBanner({
         ScrollTrigger.create({
           id: "installPhonesMobile",
           trigger: sectionEl,
-          scroller: activeScroller, // Uses the intelligently detected scroller
-          start: "top 75%", // Triggers slightly earlier on mobile
+          scroller: scroller, // 5. Use the intelligently detected scroller from state
+          start: "top 75%",
           onEnter: play,
           onEnterBack: play,
           invalidateOnRefresh: true,
@@ -266,7 +285,7 @@ export default function InstallPhonesBanner({
       ctx.revert();
       imgs.forEach((img) => img.removeEventListener("load", onLoad));
     };
-  }, [children]);
+  }, [children, scroller]); // 6. IMPORTANT: Add scroller as a dependency
 
   return (
     <section

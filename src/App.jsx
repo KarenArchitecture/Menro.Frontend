@@ -46,18 +46,21 @@ function PageWrapper({ children, hideMobileNav }) {
 
 export default function App() {
   const { pathname } = useLocation();
-  const NAV_HIDE_PREFIXES = ["/admin", "/checkout", "/landing"];
+  
+  // مسیرهایی که می‌خواهیم منو در آن‌ها مخفی باشد (به جز صفحه اصلی)
+  const NAV_HIDE_PREFIXES = ["/admin", "/checkout"];
 
-  const hideMobileNav = NAV_HIDE_PREFIXES.some((prefix) =>
-    pathname.startsWith(prefix),
-  );
+  // اگر صفحه، صفحه اصلی باشد (/) یا شروعش با یکی از مسیرهای بالا باشد
+  const hideMobileNav = 
+    pathname === "/" || 
+    NAV_HIDE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
   return (
     <DrawerStateProvider>
-      {/* PageWrapper now ONLY contains the Routes */}
       <PageWrapper hideMobileNav={hideMobileNav}>
         <Routes>
-          <Route path="/landing" element={<LandingPage />} />
+          {/* مسیر صفحه اصلی به / تغییر یافت */}
+          <Route path="/" element={<LandingPage />} />
           <Route path="/home" element={<HomePage />} />
 
           {/* New Blog Route */}
@@ -99,3 +102,4 @@ export default function App() {
     </DrawerStateProvider>
   );
 }
+

@@ -2,48 +2,52 @@
 import React, { useEffect, useState } from "react";
 import {
   getRestaurants,
-  approveRestaurant,
-  rejectRestaurant,
+  updateRestaurantStatus,
 } from "../../api/adminRestaurants";
 import RestaurantReviewModal from "./RestaurantReviewModal";
 
 export default function RestaurantsAdminSection() {
   const [restaurants, setRestaurants] = useState([]);
   const [selected, setSelected] = useState(null);
-  const [approvedTab, setApprovedTab] = useState(false); // false = pending, true = approved(history)
   const [loading, setLoading] = useState(false);
 
-  // Load restaurants list from API
-  const loadRestaurants = async () => {
+  const STATUS = {
+    pending: 1,
+    approved: 2,
+    rejected: 3,
+  };
+
+  const [status, setStatus] = useState(STATUS.pending);
+
+  const loadRestaurants = async (currentStatus = status) => {
     setLoading(true);
     try {
-      const res = await getRestaurants(approvedTab ? true : false);
+      const res = await getRestaurants(currentStatus);
       setRestaurants(res.data);
-    } catch (err) {
-      console.error(err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
-    loadRestaurants();
-  }, [approvedTab]);
+    loadRestaurants(status);
+  }, [status]);
 
   const handleApprove = async (id) => {
     try {
-      await approveRestaurant(id);
+      await updateRestaurantStatus(id, STATUS.approved, null);
       setSelected(null);
-      loadRestaurants();
+      loadRestaurants(status);
     } catch (err) {
       console.error("Error approving restaurant:", err);
     }
   };
 
-  const handleReject = async (id) => {
+  const handleReject = async (id, reason) => {
     try {
-      await rejectRestaurant(id);
+      await updateRestaurantStatus(id, STATUS.rejected, reason);
       setSelected(null);
-      loadRestaurants();
+      loadRestaurants(status);
     } catch (err) {
       console.error("Error rejecting restaurant:", err);
     }
@@ -54,19 +58,33 @@ export default function RestaurantsAdminSection() {
       <div className="view-header orders-header">
         <h3>مدیریت رستوران‌ها</h3>
 
+        {/* TAB UI (بدون تغییر CSS) */}
         <div className="orders-tabs">
           <button
-            className={`btn ${!approvedTab ? "btn-primary" : "btn-secondary"}`}
-            onClick={() => setApprovedTab(false)}
+            className={`btn ${
+              status === STATUS.pending ? "btn-primary" : "btn-secondary"
+            }`}
+            onClick={() => setStatus(STATUS.pending)}
           >
             رستوران‌های در انتظار تأیید
           </button>
 
           <button
-            className={`btn ${approvedTab ? "btn-primary" : "btn-secondary"}`}
-            onClick={() => setApprovedTab(true)}
+            className={`btn ${
+              status === STATUS.approved ? "btn-primary" : "btn-secondary"
+            }`}
+            onClick={() => setStatus(STATUS.approved)}
           >
             تایید شده‌ها
+          </button>
+
+          <button
+            className={`btn ${
+              status === STATUS.rejected ? "btn-primary" : "btn-secondary"
+            }`}
+            onClick={() => setStatus(STATUS.rejected)}
+          >
+            رد شده‌ها
           </button>
         </div>
       </div>
@@ -101,15 +119,18 @@ export default function RestaurantsAdminSection() {
               </div>
 
               <div className="order-bar__side">
-                <span className={`status-pill`}>
-                  {r.isApproved ? "تایید شده" : "در انتظار تأیید"}
-                </span>
+                <span className="status-pill">
+                  {r.status === STATUS.approved
+                    ? "تایید شده"
+                    : r.status === STATUS.rejected
+                      ? "رد شده"
+                      : "در انتظار تأیید"}
+                </span>{" "}
               </div>
             </button>
           ))}
       </div>
 
-      {/* modal */}
       <RestaurantReviewModal
         open={Boolean(selected)}
         restaurantId={selected}

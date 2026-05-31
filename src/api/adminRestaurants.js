@@ -1,23 +1,17 @@
 // src/api/adminRestaurants.js
 import adminRestaurantsAxios from "./adminRestaurantsAxios";
 
-export function getRestaurants(approved) {
+export function getRestaurants(status) {
   return adminRestaurantsAxios.get("", {
-    params: { approved },
+    params: { status },
   });
 }
 
-export function approveRestaurant(restaurantId) {
-  return adminRestaurantsAxios.post("/approve", {
+export function updateRestaurantStatus(restaurantId, status) {
+  return adminRestaurantsAxios.post("/status", {
     restaurantId,
-    approve: true,
-  });
-}
-
-export function rejectRestaurant(restaurantId) {
-  return adminRestaurantsAxios.post("/approve", {
-    restaurantId,
-    approve: false,
+    status,
+    rejectReason,
   });
 }
 

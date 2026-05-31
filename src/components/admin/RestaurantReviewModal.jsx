@@ -16,6 +16,19 @@ export default function RestaurantReviewModal({
   const [rejectReason, setRejectReason] = useState("");
   const [rejectError, setRejectError] = useState("");
 
+  const STATUS = {
+    pending: 1,
+    approved: 2,
+    rejected: 3,
+  };
+
+  const currentStatus = Number(restaurant?.status);
+
+  const isPending = currentStatus === STATUS.pending;
+  const isRejected = currentStatus === STATUS.rejected;
+
+  const canDecide = isPending;
+
   // Fetch restaurant details on open
   useEffect(() => {
     if (!open || !restaurantId) return;
@@ -48,8 +61,9 @@ export default function RestaurantReviewModal({
     }
 
     const trimmed = rejectReason.trim();
+
     if (!trimmed) {
-      setRejectError("ثبت توضیح برای رد الزامی است.");
+      setRejectError("ثبت دلیل رد الزامی است.");
       return;
     }
 
@@ -156,9 +170,30 @@ export default function RestaurantReviewModal({
             </>
           )}
         </div>
+        {isRejected && (
+          <div style={{ marginTop: 16 }}>
+            <strong>دلیل رد:</strong>
+            <input
+              type="text"
+              value={restaurant.rejectReason || ""}
+              disabled
+              style={{
+                width: "100%",
+                marginTop: 8,
+                padding: "10px 12px",
+                borderRadius: 8,
+                border: "1px solid rgba(248,113,113,0.6)",
+                background: "rgba(255,255,255,0.06)",
+                color: "rgba(255,255,255,0.75)",
+                fontSize: 14,
+                cursor: "not-allowed",
+              }}
+            />
+          </div>
+        )}
 
         {/* footer */}
-        {!loading && restaurant && !restaurant.isApproved && (
+        {!loading && restaurant && canDecide && (
           <div
             className="modal-footer"
             style={{ display: "flex", flexDirection: "column", gap: 10 }}
@@ -186,10 +221,7 @@ export default function RestaurantReviewModal({
                   }}
                 />
                 {rejectError && (
-                  <div
-                    className="restaurant-reject-error"
-                    style={{ marginTop: 8, color: "#f88" }}
-                  >
+                  <div style={{ marginTop: 8, color: "#f88" }}>
                     {rejectError}
                   </div>
                 )}

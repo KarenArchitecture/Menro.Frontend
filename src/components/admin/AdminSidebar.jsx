@@ -10,33 +10,32 @@ const NAV = [
   { isDivider: true, label: "مدیریت رستوران" },
   { key: "products", label: "مدیریت محصولات", icon: "fas fa-utensils" },
   { key: "categories", label: "دسته‌بندی‌های رستوران", icon: "fas fa-tags" },
-  { key: "music", label: "مدیریت موسیقی", icon: "fas fa-music" },
+  //{ key: "music", label: "مدیریت موسیقی", icon: "fas fa-music" },
 
   { isDivider: true, label: "کسب و کار" },
   { key: "orders", label: "مدیریت سفارش‌ها", icon: "fas fa-receipt" },
-  { key: "financial", label: "مالی", icon: "fas fa-file-invoice-dollar" },
+  //{ key: "financial", label: "مالی", icon: "fas fa-file-invoice-dollar" },
   { key: "ads", label: "رزرو تبلیغات", icon: "fas fa-bullhorn" },
-
-  // Ads Settings (per-restaurant config)
-  {
-    key: "ads-settings",
-    label: "تنظیمات تبلیغات",
-    icon: "fas fa-sliders-h",
-  },
 
   // ✅ فقط برای Admin (منرو)
   { isDivider: true, label: "مدیریت منرو", roles: ["Admin"] },
+  {
+    key: "restaurants",
+    label: "مدیریت رستوران‌ها",
+    icon: "fas fa-utensils",
+    // roles: ["Admin"],
+  },
   {
     key: "category-settings",
     label: "دسته‌بندی‌های عمومی",
     icon: "fas fa-tags",
     roles: ["Admin"],
   },
+  // Ads Settings (per-restaurant config)
   {
-    key: "restaurants",
-    label: "مدیریت رستوران‌ها",
-    icon: "fas fa-utensils",
-    // roles: ["Admin"],
+    key: "ads-settings",
+    label: "تنظیمات تبلیغات",
+    icon: "fas fa-sliders-h",
   },
   {
     key: "ads-requests",
@@ -46,7 +45,7 @@ const NAV = [
   },
 
   { isDivider: true, label: "حساب کاربری" },
-  { key: "theme", label: "مدیریت قالب", icon: "fas fa-palette" },
+  //{ key: "theme", label: "مدیریت قالب", icon: "fas fa-palette" },
   { key: "profile", label: "پروفایل کاربری", icon: "fas fa-user-circle" },
   { key: "restaurant-profile", label: "پروفایل رستوران", icon: "fas fa-store" },
 ];

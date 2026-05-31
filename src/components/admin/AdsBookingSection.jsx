@@ -65,7 +65,7 @@ export default function AdsBookingSection() {
 
       // اسلایدرها را با حداقل مقدار تنظیم می‌کنیم
       setDays(
-        snapToStep(unit1?.minUnits ?? 1, unit1?.minUnits ?? 1, UNIT1_STEP)
+        snapToStep(unit1?.minUnits ?? 1, unit1?.minUnits ?? 1, UNIT1_STEP),
       );
       setClicks(perClick?.minUnits ?? 1000);
     } catch (err) {
@@ -104,7 +104,7 @@ export default function AdsBookingSection() {
         fd,
         {
           headers: { "Content-Type": "multipart/form-data" },
-        }
+        },
       );
 
       const fileName = uploadRes.data;
@@ -116,8 +116,8 @@ export default function AdsBookingSection() {
         bookingMethod === "by_click"
           ? 2 // PerClick
           : placementType === 1
-          ? 1 // Slider -> PerDay
-          : 3; // Banner -> PerView
+            ? 1 // Slider -> PerDay
+            : 3; // Banner -> PerView
 
       const purchasedUnits = bookingMethod === "by_click" ? clicks : days;
 
@@ -165,7 +165,7 @@ export default function AdsBookingSection() {
         err?.response?.data?.title ||
           err?.response?.data?.error ||
           JSON.stringify(err?.response?.data || {}, null, 2) ||
-          "خطایی رخ داد."
+          "خطایی رخ داد.",
       );
     }
   };
@@ -304,7 +304,7 @@ export default function AdsBookingSection() {
           <div className="input-group">
             <input
               type="text"
-              placeholder="مثال: رستوران ما بهترینه"
+              placeholder="شعار تبلیغاتی"
               value={advertisementText}
               onChange={(e) => setAdvertisementText(e.target.value)}
             />

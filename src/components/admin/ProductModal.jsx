@@ -138,7 +138,7 @@ export default function ProductModal({
                 name: a.name || "",
                 price: a.extraPrice?.toString() || "",
               })),
-            }))
+            })),
           );
         } else {
           setHasVariants(false);
@@ -159,7 +159,7 @@ export default function ProductModal({
     if (!foodCategoryId) return;
 
     const exists = categories.some(
-      (c) => Number(c.id) === Number(foodCategoryId)
+      (c) => Number(c.id) === Number(foodCategoryId),
     );
 
     if (!exists) {
@@ -215,13 +215,13 @@ export default function ProductModal({
 
   const updateVariant = (clientId, patch) => {
     setVariants((prev) =>
-      prev.map((v) => (v.clientId === clientId ? { ...v, ...patch } : v))
+      prev.map((v) => (v.clientId === clientId ? { ...v, ...patch } : v)),
     );
   };
 
   const makeDefault = (clientId) => {
     setVariants((prev) =>
-      prev.map((v) => ({ ...v, isDefault: v.clientId === clientId }))
+      prev.map((v) => ({ ...v, isDefault: v.clientId === clientId })),
     );
   };
 
@@ -237,8 +237,8 @@ export default function ProductModal({
                 { id: null, clientId: uid(), name: "", price: "" },
               ],
             }
-          : v
-      )
+          : v,
+      ),
     );
   };
 
@@ -249,11 +249,11 @@ export default function ProductModal({
           ? {
               ...v,
               addons: v.addons.map((a) =>
-                a.clientId === addonClientId ? { ...a, ...patch } : a
+                a.clientId === addonClientId ? { ...a, ...patch } : a,
               ),
             }
-          : v
-      )
+          : v,
+      ),
     );
   };
 
@@ -265,8 +265,8 @@ export default function ProductModal({
               ...v,
               addons: v.addons.filter((a) => a.clientId !== addonClientId),
             }
-          : v
-      )
+          : v,
+      ),
     );
   };
 
@@ -330,104 +330,134 @@ export default function ProductModal({
   useEffect(() => {
     if (!isOpen) resetForm();
   }, [isOpen]);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   // submit
   const onSubmit = async (e) => {
     e.preventDefault();
+
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
     let uploadedFileName = null;
 
-    // ✅ validate discount (cannot abuse)
-    if (hasDiscount) {
-      const v = clamp(toIntDigits(discountPercent), 0, 99);
-      if (v <= 0 || v >= 100) {
-        alert("درصد تخفیف معتبر نیست (۱ تا ۹۹).");
-        return;
-      }
-      if (!discountConfirmed) {
-        alert("لطفاً تخفیف را تأیید کنید.");
-        return;
-      }
-    }
+    try {
+      // -------------------- validation discount --------------------
+      if (hasDiscount) {
+        const v = clamp(toIntDigits(discountPercent), 0, 99);
 
-    if (imageFile) {
-      const formData = new FormData();
-      formData.append("file", imageFile);
+        if (v <= 0 || v >= 100) {
+          alert("درصد تخفیف معتبر نیست (۱ تا ۹۹).");
+          return;
+        }
 
-      try {
+        if (!discountConfirmed) {
+          alert("لطفاً تخفیف را تأیید کنید.");
+          return;
+        }
+      }
+
+      // -------------------- upload image --------------------
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append("file", imageFile);
+
         const uploadRes = await adminFoodAxios.post(
           "/upload-food-image",
           formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
+          { headers: { "Content-Type": "multipart/form-data" } },
         );
 
         uploadedFileName = uploadRes.data;
-      } catch (err) {
-        console.error("خطا در آپلود تصویر:", err);
-        alert("آپلود تصویر ناموفق بود");
-        return;
       }
-    }
 
-    if (hasVariants) {
-      if (variants.length === 0) return alert("حداقل یک نوع تعریف کنید.");
+      // -------------------- validation variants --------------------
+      if (hasVariants) {
+        if (variants.length === 0) return alert("حداقل یک نوع تعریف کنید.");
 
-      const badVariant = variants.find((v) => !v.name || !v.price);
-      if (badVariant) return alert("برای هر نوع، نام و قیمت را وارد کنید.");
+        const badVariant = variants.find((v) => !v.name || !v.price);
+        if (badVariant) return alert("برای هر نوع، نام و قیمت را وارد کنید.");
 
-      for (const v of variants) {
-        for (const a of v.addons) {
-          if (!a.name || !a.price)
-            return alert("لطفاً برای همه مخلفات نام و قیمت وارد کنید.");
+        for (const v of variants) {
+          for (const a of v.addons) {
+            if (!a.name || !a.price) {
+              return alert("لطفاً برای همه مخلفات نام و قیمت وارد کنید.");
+            }
+          }
         }
+      } else {
+        const basePrice = (price || "").trim();
+        if (!basePrice) return alert("قیمت پایه را وارد کنید.");
       }
-    } else {
-      const basePrice = (price || "").trim();
-      if (!basePrice) return alert("قیمت پایه را وارد کنید.");
-    }
 
-    const basePriceValuePayload = !hasVariants ? toIntDigits(price) : null;
+      // -------------------- payload --------------------
+      const basePriceValuePayload = !hasVariants ? toIntDigits(price) : null;
 
-    const payload = {
-      id: productId,
-      name: name.trim(),
-      ingredients: ingredients.trim() || null, // ✅ بهتر از رشته خالی
-      foodCategoryId: Number(foodCategoryId || 0),
-      price: basePriceValuePayload ?? 0,
-      imageName: uploadedFileName || existingImageName || null,
-      hasVariants: hasVariants,
+      const payload = {
+        id: productId,
+        name: name.trim(),
+        ingredients: ingredients.trim() || null,
+        foodCategoryId: Number(foodCategoryId || 0),
+        price: basePriceValuePayload ?? 0,
+        imageName:
+          typeof uploadedFileName === "string"
+            ? uploadedFileName
+            : uploadedFileName?.fileName ||
+              existingImageName?.fileName ||
+              existingImageName ||
+              null,
+        hasVariants,
 
-      // ✅ بهتر: null وقتی تخفیف نداریم
-      discountPercent: hasDiscount
-        ? clamp(toIntDigits(discountPercent), 1, 99)
-        : null,
+        discountPercent: hasDiscount
+          ? clamp(toIntDigits(discountPercent), 1, 99)
+          : null,
 
-      variants: hasVariants
-        ? variants.map((v) => ({
-            id: v.id,
-            name: v.name.trim(),
-            price: toIntDigits(v.price),
-            isDefault: v.isDefault,
-            addons: v.addons.map((a) => ({
-              id: a.id,
-              name: a.name.trim(),
-              extraPrice: toIntDigits(a.price),
-            })),
-          }))
-        : [],
-    };
+        variants: hasVariants
+          ? variants.map((v) => ({
+              name: v.name.trim(),
+              price: toIntDigits(v.price),
+              isDefault: v.isDefault,
+              addons: v.addons.map((a) => ({
+                name: a.name.trim(),
+                extraPrice: toIntDigits(a.price),
+              })),
+            }))
+          : [],
+      };
 
-    try {
+      console.log("SENDING PAYLOAD:");
+      console.log(JSON.stringify(payload, null, 2));
+
+      // -------------------- API CALL (/add or /update) --------------------
+      let response;
+
       if (mode === "create") {
-        await adminFoodAxios.post("/add", payload);
+        response = await adminFoodAxios.post("/add", payload);
       } else if (mode === "edit" && productId) {
-        await adminFoodAxios.put("/update", payload);
+        response = await adminFoodAxios.put("/update", payload);
+      } else {
+        throw new Error("Invalid mode or missing productId");
       }
+
+      console.log("SUCCESS:", response?.data);
 
       onSaved?.();
       onClose?.();
     } catch (err) {
-      console.error("خطا در ذخیره محصول:", err);
+      console.error("SAVE ERROR:", err);
+
+      if (err.response) {
+        console.error("STATUS:", err.response.status);
+        console.error("DATA:", err.response.data);
+        console.error("HEADERS:", err.response.headers);
+
+        alert(JSON.stringify(err.response.data, null, 2));
+      } else {
+        console.error("NO RESPONSE:", err);
+      }
+
       alert("ذخیره محصول ناموفق بود");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -762,7 +792,7 @@ export default function ProductModal({
                                 onChange={(e) => {
                                   const raw = e.target.value.replace(
                                     /[^\d]/g,
-                                    ""
+                                    "",
                                   );
                                   updateAddon(v.clientId, a.clientId, {
                                     price: raw,

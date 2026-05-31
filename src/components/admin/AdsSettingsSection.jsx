@@ -73,11 +73,11 @@ export default function AdsSettingsSection() {
         "billingType types:",
         Array.isArray(list)
           ? list.map((x) => [x.billingType, typeof x.billingType])
-          : list
+          : list,
       );
       console.log(
         "keys:",
-        Array.isArray(list) && list[0] ? Object.keys(list[0]) : null
+        Array.isArray(list) && list[0] ? Object.keys(list[0]) : null,
       );
       // 👆👆
 
@@ -170,7 +170,7 @@ export default function AdsSettingsSection() {
       setDayError(
         isBanner
           ? "حداقل بازدید باید معتبر باشد."
-          : "حداقل روز باید معتبر باشد."
+          : "حداقل روز باید معتبر باشد.",
       );
 
       // Old: always day

@@ -7,7 +7,7 @@ import {
   getFeaturedRestaurants,
   postCarouselClick,
 } from "../../api/restaurantAds";
-import publicAxios from "../../api/publicAxios";
+import resolveFileUrl from "../../utils/resolveFileUrl";
 import StateMessage from "../common/StateMessage";
 import ShimmerRow from "../common/ShimmerRow";
 
@@ -50,33 +50,8 @@ function Carousel() {
     mutationFn: (adId) => postCarouselClick(adId),
   });
 
-  // asset resolver
-  const apiOrigin = new URL(publicAxios.defaults.baseURL).origin;
-  const appOrigin = window.location.origin;
-
-  const toAssetUrl = (url) => {
-    if (!url) {
-      return `${appOrigin}/images/ads/carousel-placeholder.jpg`;
-    }
-
-    if (url.startsWith("http://") || url.startsWith("https://")) {
-      return url;
-    }
-
-    const withSlash = url.startsWith("/")
-      ? url
-      : `/${url}`;
-
-    if (withSlash.startsWith("/img/")) {
-      return `${apiOrigin}${withSlash}`;
-    }
-
-    if (withSlash.startsWith("/images/")) {
-      return `${appOrigin}${withSlash}`;
-    }
-
-    return `${appOrigin}${withSlash}`;
-  };
+  const toAssetUrl = (url) =>
+  resolveFileUrl(url, "/images/ads/carousel-placeholder.jpg");
 
   // autoplay
   useEffect(() => {

@@ -1,6 +1,6 @@
 import React from "react";
 import StarIcon from "../icons/StarIcon";
-import publicAxios from "../../api/publicAxios";
+import resolveFileUrl from "../../utils/resolveFileUrl";
 import { Link } from "react-router-dom";
 
 export default function FoodCard({
@@ -19,19 +19,11 @@ export default function FoodCard({
     restaurantPath,
   } = item || {};
 
-  // Resolve relative URLs from backend (/img/...) or frontend (/images/...)
-  const apiOrigin = new URL(publicAxios.defaults.baseURL).origin;
-  const appOrigin = window.location.origin;
-  const toAssetUrl = (url) => {
-    if (!url) return "/images/food/food-placeholder.png";
-    if (/^https?:\/\//i.test(url)) return url;
-    const withSlash = url.startsWith("/") ? url : `/${url}`;
-    if (withSlash.startsWith("/img/"))     return `${apiOrigin}${withSlash}`;
-    if (withSlash.startsWith("/images/"))  return `${appOrigin}${withSlash}`;
-    return `${appOrigin}${withSlash}`;
-  };
+  const imgSrc = resolveFileUrl(
+    imageUrl,
+    "/images/food/food-placeholder.png"
+  );
 
-  const imgSrc = toAssetUrl(imageUrl);
   const safeRating = typeof rating === "number" ? rating : Number(rating) || 0;
   const displayRestaurantName =
     (restaurantName || item?.restaurant?.name || "نام رستوران").trim();

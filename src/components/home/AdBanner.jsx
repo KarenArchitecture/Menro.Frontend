@@ -1,7 +1,7 @@
 // src/components/home/AdBanner.jsx
 import React, { useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import publicAxios from "../../api/publicAxios";
+import resolveFileUrl from "../../utils/resolveFileUrl";
 import {
   getRandomAdBanner,
   postAdImpression,
@@ -119,19 +119,8 @@ export default function AdBanner({
       }),
   });
 
-  // Resolve image url
-  const apiOrigin = new URL(publicAxios.defaults.baseURL).origin;
-  const appOrigin = window.location.origin;
-
-  const resolveImg = (url) => {
-    if (!url) return undefined;
-    if (url.startsWith("http://") || url.startsWith("https://")) return url;
-
-    const withSlash = url.startsWith("/") ? url : `/${url}`;
-    if (withSlash.startsWith("/img/")) return `${apiOrigin}${withSlash}`;
-    if (withSlash.startsWith("/images/")) return `${appOrigin}${withSlash}`;
-    return `${appOrigin}${withSlash}`;
-  };
+  const resolveImg = (url) =>
+  resolveFileUrl(url, fallbackImage);
 
   // Impression tracking
   const rootRef = useRef(null);

@@ -76,23 +76,45 @@
 
     .icon-wrap {
         position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .icon-wrap .badge {
         position: absolute;
-        top: -6px;
-        right: -6px;
-        width: 18px;
-        height: 18px;
-        border-radius: 999px;
-        background: #e53935;
-        color: #fff;
-        font-size: 10px;
-        font-weight: 800;
-        display: grid;
-        place-items: center;
+        right: -0.5rem;
+
+        width: 1.4rem;
+        height: 1.1rem;
+        padding: 0 0.45rem;
+
+        border-radius: 1rem;
+        background: #EF5254;
+        color: #FAFAF4;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-size: 1rem;
+        line-height: 1;
+        text-indent: 0.12rem;
+
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+        pointer-events: none;
     }
+
+    .icon-wrap.cart {
+        position: relative;
+    }
+
+    .icon-wrap.cart .badge {
+        position: absolute;
+        right: -0.3rem;
+        bottom: -0.2rem;
+    }
+
     .icon-btn {
         border: 0; /* no border */
         background: transparent; /* no background */

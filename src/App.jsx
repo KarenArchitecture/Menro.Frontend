@@ -73,7 +73,8 @@ export default function App() {
       {/* 5. Pass the removePadding prop to the wrapper */}
       <PageWrapper hideMobileNav={hideMobileNav} removePadding={removePadding}>
         <Routes>
-          <Route path="/landing" element={<LandingPage />} />
+          {/* مسیر صفحه اصلی به / تغییر یافت */}
+          <Route path="/" element={<LandingPage />} />
           <Route path="/home" element={<HomePage />} />
           <Route path="/blog" element={<BlogPage />} />
 

@@ -12,7 +12,7 @@ import BurgerPanelSection from "../components/landing/BurgerPanelSection";
 import FAQSection from "../components/landing/FAQSection";
 import BlogSection from "../components/landing/BlogSection";
 import GlassFooter from "../components/common/GlassFooter";
-import FooterFruitsScene from "../components/landing/FooterFruitsScene";
+import FooterFruitsScene from "../components/common/FooterFruitsScene";
 import LandingMobileHeader from "../components/landing/LandingMobileHeader";
 
 export default function LandingPage() {

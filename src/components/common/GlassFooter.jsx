@@ -4,6 +4,8 @@ import TelegramIcon from "../icons/TelegramIcon";
 import InstagramIcon from "../icons/InstagramIcon";
 import WebIcon from "../icons/WebIcon";
 
+import "../../assets/css/glass-footer.css";
+
 export default function GlassFooter() {
   const socials = [
     { id: "rubica", href: "#", label: "Rubica", icon: <RubicaIcon /> },

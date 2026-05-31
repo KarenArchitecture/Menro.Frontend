@@ -1,5 +1,4 @@
 // src/utils/resolveFileUrl.js
-
 function getServerOrigin() {
     const raw =
         import.meta.env.VITE_SERVER_URL ||
@@ -22,7 +21,6 @@ function getServerOrigin() {
     const value = String(path).trim();
     if (!value) return fallback;
 
-    // Already absolute or browser-handled URLs
     if (
         /^https?:\/\//i.test(value) ||
         /^data:/i.test(value) ||
@@ -31,31 +29,25 @@ function getServerOrigin() {
         return value;
     }
 
-    // Protocol-relative URL: //cdn.example.com/file.jpg
     if (value.startsWith("//")) {
         return `${window.location.protocol}${value}`;
     }
 
     const withSlash = value.startsWith("/") ? value : `/${value}`;
-
     const appOrigin = window.location.origin;
     const serverOrigin = getServerOrigin();
 
-    // Backend public path like /api/public/img/a.jpg
     if (withSlash.startsWith("/api/public/")) {
         return `${serverOrigin}${withSlash.replace(/^\/api\/public/i, "")}`;
     }
 
-    // Backend uploaded files
     if (withSlash.startsWith("/img/")) {
         return `${serverOrigin}${withSlash}`;
     }
 
-    // Frontend public folder
     if (withSlash.startsWith("/images/")) {
         return `${appOrigin}${withSlash}`;
     }
 
-    // Default: frontend-relative asset
     return `${appOrigin}${withSlash}`;
 }

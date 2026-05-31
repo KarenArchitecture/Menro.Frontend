@@ -3,6 +3,7 @@
 import React from "react";
 import StarIcon from "../icons/StarIcon";
 import { Link } from "react-router-dom";
+import resolveFileUrl from "../../utils/resolveFileUrl";
 import {
   formatPersianNumber,
   formatPersianRating,
@@ -26,11 +27,15 @@ function RestaurantCard({ restaurant }) {
     slug,
   } = restaurant;
 
-  const coverSrc =
-    bannerImageUrl || "/images/restaurant/restaurant-home-placeholder.png";
+  const coverSrc = resolveFileUrl(
+    bannerImageUrl,
+    "/images/restaurant/restaurant-home-placeholder.png"
+  );
 
-  const logoSrc =
-    logoImageUrl || "/images/restaurant/logo-placeholder.png";
+  const logoSrc = resolveFileUrl(
+    logoImageUrl,
+    "/images/restaurant/logo-placeholder.png"
+  );
 
   const formattedHours = `${toPersianDigits(openTime)} - ${toPersianDigits(closeTime)}`;
 

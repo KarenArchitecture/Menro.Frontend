@@ -120,7 +120,7 @@ export default function AdBanner({
   });
 
   const resolveImg = (url) =>
-  resolveFileUrl(url, fallbackImage);
+    resolveFileUrl(url, fallbackImage);
 
   // Impression tracking
   const rootRef = useRef(null);

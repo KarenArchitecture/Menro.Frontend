@@ -51,7 +51,7 @@ function Carousel() {
   });
 
   const toAssetUrl = (url) =>
-  resolveFileUrl(url, "/images/ads/carousel-placeholder.jpg");
+    resolveFileUrl(url, "/images/ads/carousel-placeholder.jpg");
 
   // autoplay
   useEffect(() => {

@@ -1,4 +1,3 @@
-// src/components/common/SearchBar.jsx
 import React, { useState } from "react";
 import "../../assets/css/search-bar-styles.css";
 
@@ -6,12 +5,27 @@ function SearchBar({
   placeholder = "جستجو رستوران، نوشیدنی، غذا ...",
   className = "",
   onSubmit,
+  value,
+  onChange,
 }) {
-  const [searchTerm, setSearchTerm] = useState("");
+  const isControlled = value !== undefined;
+  const [internalValue, setInternalValue] = useState("");
+
+  const searchTerm = isControlled ? value : internalValue;
+
+  const handleChange = (event) => {
+    const newValue = event.target.value;
+
+    if (!isControlled) {
+      setInternalValue(newValue);
+    }
+
+    onChange?.(newValue);
+  };
 
   const handleSearch = (event) => {
     event.preventDefault();
-    onSubmit?.(searchTerm.trim()); // empty => exits search mode
+    onSubmit?.(searchTerm.trim());
   };
 
   return (
@@ -20,7 +34,7 @@ function SearchBar({
         type="text"
         placeholder={placeholder}
         value={searchTerm}
-        onChange={(event) => setSearchTerm(event.target.value)}
+        onChange={handleChange}
       />
       <button className="icon-button" type="submit" aria-label="search">
         <img src="/images/rounded_magnifer.svg" alt="" />

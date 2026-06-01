@@ -7,7 +7,11 @@ export function getRestaurants(status) {
   });
 }
 
-export function updateRestaurantStatus(restaurantId, status) {
+export function updateRestaurantStatus(
+  restaurantId,
+  status,
+  rejectReason = null,
+) {
   return adminRestaurantsAxios.post("/status", {
     restaurantId,
     status,

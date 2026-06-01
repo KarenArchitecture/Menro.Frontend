@@ -1,4 +1,3 @@
-// src/components/admin/RestaurantReviewModal.jsx
 import { useEffect, useState } from "react";
 import { getRestaurantDetails } from "../../api/adminRestaurants";
 
@@ -22,6 +21,14 @@ export default function RestaurantReviewModal({
     rejected: 3,
   };
 
+  const resetModalState = () => {
+    setRestaurant(null);
+    setLoading(false);
+    setShowRejectInput(false);
+    setRejectReason("");
+    setRejectError("");
+  };
+
   const currentStatus = Number(restaurant?.status);
 
   const isPending = currentStatus === STATUS.pending;
@@ -29,9 +36,11 @@ export default function RestaurantReviewModal({
 
   const canDecide = isPending;
 
-  // Fetch restaurant details on open
   useEffect(() => {
-    if (!open || !restaurantId) return;
+    if (!open || !restaurantId) {
+      resetModalState();
+      return;
+    }
 
     setLoading(true);
 
@@ -46,10 +55,14 @@ export default function RestaurantReviewModal({
 
   if (!open) return null;
 
-  // modal close by clicking outside
+  const handleClose = () => {
+    resetModalState();
+    onClose?.();
+  };
+
   const handleOverlayClick = (e) => {
     if (e.target.id === "restaurant-review-modal") {
-      onClose?.();
+      handleClose();
     }
   };
 
@@ -95,7 +108,7 @@ export default function RestaurantReviewModal({
             بررسی درخواست ثبت رستوران
             {restaurant?.name ? ` — ${restaurant.name}` : ""}
           </h3>
-          <button className="btn btn-icon" onClick={onClose}>
+          <button className="btn btn-icon" onClick={handleClose}>
             <i className="fas fa-times" />
           </button>
         </div>
@@ -105,7 +118,6 @@ export default function RestaurantReviewModal({
 
           {!loading && restaurant && (
             <>
-              {/* Meta fields */}
               <div
                 className="restaurant-meta"
                 style={{
@@ -148,7 +160,6 @@ export default function RestaurantReviewModal({
                 </div>
               </div>
 
-              {/* Description */}
               <div
                 className="restaurant-description"
                 style={{ marginBottom: 8 }}
@@ -170,6 +181,7 @@ export default function RestaurantReviewModal({
             </>
           )}
         </div>
+
         {isRejected && (
           <div style={{ marginTop: 16 }}>
             <strong>دلیل رد:</strong>
@@ -192,7 +204,6 @@ export default function RestaurantReviewModal({
           </div>
         )}
 
-        {/* footer */}
         {!loading && restaurant && canDecide && (
           <div
             className="modal-footer"

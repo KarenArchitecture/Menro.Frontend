@@ -7,12 +7,7 @@ import MusicIcon from "../icons/MusicIcon";
 import CircleIcon from "../icons/CircleIcon";
 import { useNavigate } from "react-router-dom";
 import { toPersianDigits } from "../../utils/persianNumbers";
-
-const BACKEND_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  import.meta.env.VITE_API_URL ||
-  import.meta.env.VITE_SERVER_URL ||
-  "";
+import resolveFileUrl from "../../utils/resolveFileUrl";
 
 function ShopBanner({
   banner,
@@ -30,13 +25,8 @@ function ShopBanner({
     );
   }
 
-  const resolveBannerUrl = (url) => {
-    if (url && url.startsWith("http")) return url;
-    if (!url) return "/images/Restaurant/top-banner.png";
-    return `${BACKEND_URL}/${url.replace(/^\//, "")}`;
-  };
-
-  const bannerUrl = resolveBannerUrl(banner.bannerImageUrl);
+  const bannerUrl =
+    resolveFileUrl(banner.bannerImageUrl) || "/images/Restaurant/top-banner.png";
 
   return (
     <section

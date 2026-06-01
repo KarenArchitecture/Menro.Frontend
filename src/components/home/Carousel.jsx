@@ -203,7 +203,7 @@ function Carousel() {
 
   // loading
   if (isLoading) {
-    return <ShimmerRow height={220} />;
+    return <ShimmerRow height={220} style={{ margin: "2.8rem auto" }} />;
   }
 
   // error

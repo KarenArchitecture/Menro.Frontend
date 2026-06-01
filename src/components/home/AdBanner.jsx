@@ -201,7 +201,7 @@ export default function AdBanner({
   }, [isStatic, ad?.adId, sendImpression]);
 
   // ---- UI states ----
-  if (!isStatic && isLoading) return <ShimmerRow height={height} />;
+  if (!isStatic && isLoading) return <ShimmerRow height={height} style={{ margin: "2.8rem auto" }} />;
 
   if (!isStatic && isError) {
     return (

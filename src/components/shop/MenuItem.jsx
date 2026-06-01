@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { useCart } from "./CartContext";
 import StarIcon from "../icons/StarIcon";
+import resolveFileUrl from "../../utils/resolveFileUrl";
 
 export default function MenuItem({ item, onOpen, layout = "horizontal" }) {
   const cart = useCart();
@@ -29,17 +30,9 @@ export default function MenuItem({ item, onOpen, layout = "horizontal" }) {
   };
 
   // اصلاح منطق ساخت URL
-  const fullImageUrl = useMemo(() => {
-    if (!imageUrl) return "";
+  const fullImageUrl =
+    resolveFileUrl(imageUrl) || "/images/food/food-placeholder.png";
 
-    // اگر URL از قبل کامل است، همان را برگردان
-    if (imageUrl.startsWith("http")) return imageUrl;
-
-    // در غیر این صورت، baseUrl را اضافه کن
-    const apiBase = import.meta.env.VITE_API_URL || "";
-    const baseUrl = apiBase.replace(/\/api\/?$/, "");
-    return `${baseUrl}/${imageUrl.replace(/^\//, "")}`;
-  }, [imageUrl]);
 
   // ---- cart key for this food ----
   const baseKey = cart.keyOf(item);
@@ -95,6 +88,10 @@ export default function MenuItem({ item, onOpen, layout = "horizontal" }) {
           alt={name}
           className="menu-card__img"
           loading="lazy"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = "/images/food/food-placeholder.png";
+          }}
         />
 
         <div className="menu-card__imgShade" aria-hidden />

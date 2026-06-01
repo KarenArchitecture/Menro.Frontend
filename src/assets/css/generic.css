@@ -9,6 +9,17 @@
     font-display: swap;
 }
 
+.fa,
+.fas,
+.far,
+.fal,
+.fab,
+[class^="fa-"],
+[class*=" fa-"] {
+    font-family: "Font Awesome 5 Free", "Font Awesome 5 Brands" !important;
+    font-style: normal;
+}
+
 * {
     font-family: "Estedad" !important;
 }

@@ -229,6 +229,8 @@
 // export default MenuList;
 import React from "react";
 import MenuItem from "./MenuItem";
+import resolveFileUrl from "../../utils/resolveFileUrl";
+
 
 function MenuList({
   menuData = [],
@@ -290,7 +292,7 @@ function MenuList({
 
         try {
           if (isUrl) {
-            const res = await fetch(icon);
+            const res = await fetch(resolveFileUrl(icon));
             const text = await res.text();
             cache[c.id] = text;
           } else {
@@ -299,6 +301,7 @@ function MenuList({
         } catch {
           cache[c.id] = "";
         }
+
       }
 
       setSvgCache(cache);

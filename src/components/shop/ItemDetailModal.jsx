@@ -8,15 +8,14 @@ import MessageIcon from "../icons/MessageIcon";
 import ModalCategoryIcon from "../icons/ModalCategoryIcon";
 import MokhalafatIcon from "../icons/MokhalafatIcon";
 import RestaurantCombosButton from "../common/RestaurantCombosButton";
+import resolveFileUrl from "../../utils/resolveFileUrl";
 
 function ItemDetailModal({ item, onClose }) {
   const cart = useCart();
   const [isActive, setIsActive] = useState(false);
 
-  if (!item) return null;
-
   /* 1) REAL VARIANTS FROM BACKEND */
-  const variations = useMemo(() => item.variants || [], [item]);
+  const variations = useMemo(() => item?.variants || [], [item]);
 
   /* 2) BASE KEY + DEFAULT VARIANT */
   const baseKey = useMemo(() => cart.keyOf(item), [cart, item]);
@@ -35,6 +34,7 @@ function ItemDetailModal({ item, onClose }) {
   /* 3) MAP ADDONS PER VARIANT (backend → frontend shape) */
   const addonsByVar = useMemo(() => {
     const map = {};
+
     variations.forEach((v) => {
       map[v.id] =
         v.addons?.map((a) => ({
@@ -43,6 +43,7 @@ function ItemDetailModal({ item, onClose }) {
           price: a.extraPrice,
         })) || [];
     });
+
     return map;
   }, [variations]);
 
@@ -51,11 +52,14 @@ function ItemDetailModal({ item, onClose }) {
 
   // initialize when item / variants change (and preload from cart)
   useEffect(() => {
+    if (!item) return;
+
     const init = {};
 
     variations.forEach((v) => {
       const key = getVariantKey(v.id);
       const existing = cart.items.get(key);
+
       if (existing?.addons?.length > 0) {
         init[v.id] = new Set(existing.addons);
       } else {
@@ -64,7 +68,7 @@ function ItemDetailModal({ item, onClose }) {
     });
 
     setSelectedAddonsByVar(init);
-  }, [item, variations, baseKey]); // baseKey is used inside getVariantKey
+  }, [item, variations, baseKey]);
 
   /* helpers */
   const fmt = (n) => (Number(n) || 0).toLocaleString("fa-IR");
@@ -72,14 +76,17 @@ function ItemDetailModal({ item, onClose }) {
   const addonSum = (variantId, overrideSet) => {
     const selected = overrideSet || selectedAddonsByVar[variantId] || new Set();
     const list = addonsByVar[variantId] || [];
+
     return list.reduce(
-      (sum, a) => (selected.has(a.id) ? sum + a.price : sum),
+      (sum, a) => (selected.has(a.id) ? sum + Number(a.price || 0) : sum),
       0
     );
   };
 
   /* 5) QUANTITY CHANGE */
   const setVariantQty = (variantId, newQty) => {
+    if (!item) return;
+
     const variant = variations.find((v) => v.id === variantId);
     if (!variant) return;
 
@@ -92,7 +99,7 @@ function ItemDetailModal({ item, onClose }) {
     }
 
     const addonsTotal = addonSum(variantId);
-    const price = variant.price + addonsTotal;
+    const price = Number(variant.price || 0) + addonsTotal;
 
     cart.setQty(
       key,
@@ -114,6 +121,7 @@ function ItemDetailModal({ item, onClose }) {
     setSelectedAddonsByVar((prev) => {
       const oldSet = prev[variantId] || new Set();
       const updated = new Set(oldSet);
+
       updated.has(addonId) ? updated.delete(addonId) : updated.add(addonId);
 
       const nextState = { ...prev, [variantId]: updated };
@@ -124,18 +132,21 @@ function ItemDetailModal({ item, onClose }) {
 
       if (existing?.qty > 0) {
         const variant = variations.find((v) => v.id === variantId);
-        const addonsTotal = addonSum(variantId, updated);
-        const newPrice = variant.price + addonsTotal;
 
-        cart.setQty(
-          key,
-          {
-            ...existing,
-            price: newPrice,
-            addons: Array.from(updated),
-          },
-          existing.qty
-        );
+        if (variant) {
+          const addonsTotal = addonSum(variantId, updated);
+          const newPrice = Number(variant.price || 0) + addonsTotal;
+
+          cart.setQty(
+            key,
+            {
+              ...existing,
+              price: newPrice,
+              addons: Array.from(updated),
+            },
+            existing.qty
+          );
+        }
       }
 
       return nextState;
@@ -144,8 +155,11 @@ function ItemDetailModal({ item, onClose }) {
 
   /* 7) OPEN/CLOSE ANIMATION */
   useEffect(() => {
+    if (!item) return;
+
     const t = setTimeout(() => setIsActive(true), 10);
     document.body.classList.add("modal-open");
+
     return () => {
       clearTimeout(t);
       document.body.classList.remove("modal-open");
@@ -156,6 +170,11 @@ function ItemDetailModal({ item, onClose }) {
     setIsActive(false);
     setTimeout(() => onClose?.(), 250);
   };
+
+  if (!item) return null;
+
+  const modalImageSrc =
+    resolveFileUrl(item.imageUrl) || "/images/food/food-placeholder.png";
 
   /* 8) RENDER */
   const modalUI = (
@@ -178,10 +197,12 @@ function ItemDetailModal({ item, onClose }) {
                     <BackIcon />
                   </button>
                 </div>
+
                 <div className="img-topbar__left">
                   <button className="icon-btn">
                     <MessageIcon />
                   </button>
+
                   <button className="icon-btn">
                     <LikeIcon />
                   </button>
@@ -189,11 +210,14 @@ function ItemDetailModal({ item, onClose }) {
               </nav>
 
               <img
-                src={item.imageUrl.startsWith("http") ? item.imageUrl : `${import.meta.env.VITE_SERVER_URL}${item.imageUrl}`}
+                src={modalImageSrc}
                 alt={item.name}
                 className="modal-hero-img"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "/images/food/food-placeholder.png";
+                }}
               />
-
 
               <div className="modal-info-panel">
                 <h2 className="modal-title">{item.name}</h2>
@@ -223,7 +247,7 @@ function ItemDetailModal({ item, onClose }) {
                 const key = getVariantKey(v.id);
                 const qty = cart.items.get(key)?.qty ?? 0;
                 const addons = addonsByVar[v.id] || [];
-                const unitPrice = v.price + addonSum(v.id);
+                const unitPrice = Number(v.price || 0) + addonSum(v.id);
 
                 return (
                   <div key={v.id} className="variant-block">
@@ -231,6 +255,7 @@ function ItemDetailModal({ item, onClose }) {
                     <div className="variant-row">
                       <div className="variant-pill">
                         <span>{v.name}</span>
+
                         <span>
                           {fmt(unitPrice)} <span>تومان</span>
                         </span>

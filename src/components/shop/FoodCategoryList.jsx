@@ -1,5 +1,6 @@
 // src/components/shop/FoodCategoryList.jsx
 import React, { useMemo, useState, useEffect } from "react";
+import resolveFileUrl from "../../utils/resolveFileUrl";
 
 /* ---------- constant SVG for “همه” (All) ------------------------------- */
 export const ALL_CAT_SVG = `
@@ -46,9 +47,12 @@ const FoodCategoryList = ({
       const cache = {};
       for (const cat of fullCategoryList) {
         if (!cat.svgIcon) continue;
-        if (cat.svgIcon.startsWith("http")) {
+        const isRemoteUrl =
+          cat.svgIcon.startsWith("http") || cat.svgIcon.startsWith("/");
+
+        if (isRemoteUrl) {
           try {
-            const res = await fetch(cat.svgIcon);
+            const res = await fetch(resolveFileUrl(cat.svgIcon));
             const text = await res.text();
             cache[cat.id] = text;
           } catch {
@@ -57,6 +61,7 @@ const FoodCategoryList = ({
         } else {
           cache[cat.id] = cat.svgIcon;
         }
+
       }
       setSvgCache(cache);
     };

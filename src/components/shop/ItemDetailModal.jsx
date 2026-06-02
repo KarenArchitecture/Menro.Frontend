@@ -9,10 +9,37 @@ import ModalCategoryIcon from "../icons/ModalCategoryIcon";
 import MokhalafatIcon from "../icons/MokhalafatIcon";
 import RestaurantCombosButton from "../common/RestaurantCombosButton";
 import resolveFileUrl from "../../utils/resolveFileUrl";
+import StarIcon from "../icons/StarIcon";
 
 function ItemDetailModal({ item, onClose }) {
   const cart = useCart();
   const [isActive, setIsActive] = useState(false);
+
+  /* Helper for consistent Persian digits */
+  const toPersianDigits = (value) => {
+    if (value === null || value === undefined) return "۰";
+    return String(value).replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[digit]);
+  };
+
+  const formatRating = (value) => {
+    const num = Number(value);
+
+    if (Number.isFinite(num) && num > 0) {
+      return toPersianDigits(num.toFixed(1));
+    }
+
+    return toPersianDigits("4.5");
+  };
+
+  const formatVoters = (value) => {
+    const num = Number(value);
+
+    if (Number.isFinite(num) && num >= 0) {
+      return toPersianDigits(num.toLocaleString("en-US"));
+    }
+
+    return "۰";
+  };
 
   /* 1) REAL VARIANTS FROM BACKEND */
   const variations = useMemo(() => item?.variants || [], [item]);
@@ -173,8 +200,43 @@ function ItemDetailModal({ item, onClose }) {
 
   if (!item) return null;
 
+  // console.log("MODAL ITEM FULL:", item);
+  // console.log("MODAL VOTERS CHECK:", {
+  //   voters: item?.voters,
+  //   votersCount: item?.votersCount,
+  //   voterCount: item?.voterCount,
+  //   votes: item?.votes,
+  //   votesCount: item?.votesCount,
+  //   ratingCount: item?.ratingCount,
+  //   ratesCount: item?.ratesCount,
+  //   totalRates: item?.totalRates,
+  // });
+
+
   const modalImageSrc =
     resolveFileUrl(item.imageUrl) || "/images/food/food-placeholder.png";
+
+  const modalRating =
+    item?.rating !== undefined &&
+    item?.rating !== null &&
+    item?.rating !== ""
+      ? item.rating
+      : item?.averageRating !== undefined &&
+        item?.averageRating !== null &&
+        item?.averageRating !== ""
+      ? item.averageRating
+      : 4.5;
+
+  const modalVoters =
+    item?.voters !== undefined &&
+    item?.voters !== null &&
+    item?.voters !== ""
+      ? item.voters
+      : item?.votersCount !== undefined &&
+        item?.votersCount !== null &&
+        item?.votersCount !== ""
+      ? item.votersCount
+      : 0;
 
   /* 8) RENDER */
   const modalUI = (
@@ -193,17 +255,30 @@ function ItemDetailModal({ item, onClose }) {
             <div className="modal-img-wrap">
               <nav className="img-topbar">
                 <div className="img-topbar__right">
-                  <button className="icon-btn" onClick={handleClose}>
+                  <button
+                    type="button"
+                    className="icon-btn modal-top-action"
+                    onClick={handleClose}
+                    aria-label="بستن"
+                  >
                     <BackIcon />
                   </button>
                 </div>
 
                 <div className="img-topbar__left">
-                  <button className="icon-btn">
+                  <button
+                    type="button"
+                    className="icon-btn modal-top-action"
+                    aria-label="پیام"
+                  >
                     <MessageIcon />
                   </button>
 
-                  <button className="icon-btn">
+                  <button
+                    type="button"
+                    className="icon-btn modal-top-action"
+                    aria-label="علاقه‌مندی"
+                  >
                     <LikeIcon />
                   </button>
                 </div>
@@ -223,9 +298,15 @@ function ItemDetailModal({ item, onClose }) {
                 <h2 className="modal-title">{item.name}</h2>
 
                 <div className="modal-rating">
-                  <i className="fas fa-star" />
-                  <span>{item.averageRating?.toFixed(1) ?? "4.5"}</span>
-                  <span>({item.votersCount ?? 0})</span>
+                  <StarIcon />
+
+                  <span className="modal-rating__value">
+                    {formatRating(modalRating)}
+                  </span>
+
+                  <span className="modal-rating__count">
+                    ({formatVoters(modalVoters)})
+                  </span>
                 </div>
 
                 {item.ingredients && (
@@ -269,7 +350,7 @@ function ItemDetailModal({ item, onClose }) {
                           +
                         </button>
 
-                        <span className="qty-display">{qty}</span>
+                        <span className="qty-display">{toPersianDigits(qty)}</span>
 
                         <button
                           className="qty-btn"

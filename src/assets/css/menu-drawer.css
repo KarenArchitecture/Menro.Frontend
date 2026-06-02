@@ -13,12 +13,25 @@
 }
 
 /* blink problem solution */
-.menu-drawer,
+/* .menu-drawer,
 .menu-drawer__panel,
 .menu-drawer__backdrop {
     transform: translateZ(0);
     backface-visibility: hidden;
     will-change: transform, opacity;
+} */
+.menu-drawer__panel,
+.menu-drawer__backdrop {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.menu-drawer--open .menu-drawer__panel {
+    will-change: transform, opacity;
+}
+
+.menu-drawer--open .menu-drawer__backdrop {
+    will-change: opacity;
 }
 /* blink problem solution */
 

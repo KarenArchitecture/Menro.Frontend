@@ -199,9 +199,9 @@ button.icon-btn {
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-end;
-    gap: 12px;
+    gap: 1rem;
     height: 100%;
-    padding-top: 2rem;
+    padding-top: 2.5rem;
 }
 
 .restaurant-name {
@@ -296,6 +296,8 @@ button.icon-btn {
     top: 0;
     z-index: 1000;
     background: #0c0f14; /* same color so it looks seamless */
+    border-bottom: solid 1px #ffffff10;
+    border-top: solid 1px #ffffff10;
 }
 
 .category-bar {
@@ -305,7 +307,6 @@ button.icon-btn {
     overflow-x: auto;
     scrollbar-width: none;
     padding: 1rem 2.5rem 1rem;
-    border-bottom: solid 1px #ffffff10;
     gap: 2rem;
     background-color: #0c0f14;
 }
@@ -455,7 +456,10 @@ button.icon-btn {
     display: inline-flex;
     align-items: center;
     /* gap: 0.5rem; */
-    transition: all 0.35s ease;
+    transition:
+        font-size 0.2s ease,
+        font-weight 0.2s ease,
+        opacity 0.2s ease;
     transform-origin: center;
 }
 
@@ -476,6 +480,8 @@ button.icon-btn {
 }
 
 .category-icon {
+    display: flex;
+    align-items: center;
 }
 
 .menu_nav p {
@@ -655,7 +661,7 @@ button.icon-btn {
     min-width: 0;
     height: 4.2rem;
     background: #1f242b;
-    color: #FAFAF4;
+    color: #fafaf4;
     border: 1px solid rgba(255, 255, 255, 0.04);
     border-radius: 10px;
     padding: 0 1.2rem;
@@ -667,7 +673,9 @@ button.icon-btn {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
     cursor: pointer;
     white-space: nowrap;
-    transition: transform 0.15s ease, filter 0.15s ease;
+    transition:
+        transform 0.15s ease,
+        filter 0.15s ease;
 }
 
 .vaction-pill span {
@@ -728,7 +736,7 @@ button.icon-btn {
 .vaction-pill__label {
     font-size: 1.2rem;
     font-weight: 700;
-    color: #FAFAF4;
+    color: #fafaf4;
     line-height: 1;
 }
 
@@ -838,7 +846,6 @@ button.icon-btn {
 
 .menu_nav--focused .menu_nav-title-holder {
     gap: 0.75rem;
-    transform: scale(1.08);
 }
 
 .menu_nav--focused .menu_nav-icon {
@@ -858,10 +865,21 @@ button.icon-btn {
 }
 
 .menu-section--focused .menu_nav-title-holder {
-    animation: categoryFocusPop 0.35s ease;
+    animation: categoryTitleFadeIn 0.22s ease-out;
 }
 
-@keyframes categoryFocusPop {
+@keyframes categoryTitleFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* @keyframes categoryFocusPop {
     0% {
         opacity: 0;
         transform: translateY(-8px) scale(0.96);
@@ -870,7 +888,7 @@ button.icon-btn {
         opacity: 1;
         transform: translateY(0) scale(1.08);
     }
-}
+} */
 
 .menu_nav-btn:hover {
     background: #2b3139;
@@ -1071,21 +1089,56 @@ button.icon-btn {
 
 .img-topbar {
     position: absolute;
-    top: 8px;
-    inset-inline: 8px; /* right & left, RTL/LTR safe */
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    inset: 16px 16px auto 16px;
     z-index: 3;
-    pointer-events: none; /* let only buttons receive events */
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    pointer-events: none;
 }
 
 .img-topbar__right,
 .img-topbar__left {
     display: flex;
     align-items: center;
-    gap: 8px;
-    pointer-events: auto; /* re-enable for the buttons */
+    gap: 1rem;
+    pointer-events: auto;
+}
+
+.modal-top-action,
+button.modal-top-action {
+    width: 3.4rem;
+    height: 3.4rem;
+    min-width: 3.4rem;
+    min-height: 3.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: 1rem;
+    background: #0c0f14 !important;
+    color: #FAFAF4;
+    box-shadow: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 160ms ease, opacity 160ms ease;
+}
+
+.modal-top-action > svg {
+    display: block;
+    flex-shrink: 0;
+    width: auto;
+    height: auto;
+}
+
+.modal-top-action:active {
+    opacity: 0.88;
+}
+
+.modal-top-action:focus-visible {
+    outline: 2px solid #FAFAF4;
+    outline-offset: 2px;
 }
 
 .img-topbar .shop-icon-wrapper {
@@ -1109,12 +1162,12 @@ button.icon-btn {
     position: absolute;
     inset-inline: 0;
     bottom: 0;
-    padding: 12px 14px;
+    padding: 2.8rem 2.5rem;
     color: #fff;
     z-index: 2;
-    background: #000000b2;
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
+    background: #00000070;
+    border-top-left-radius: 3.4rem;
+    border-top-right-radius: 3.4rem;
 }
 
 .modal-info-top {
@@ -1125,7 +1178,7 @@ button.icon-btn {
 }
 
 .modal-title {
-    font-size: 15px;
+    font-size: 1.5rem;
     font-weight: 700;
 }
 
@@ -1143,14 +1196,20 @@ button.icon-btn {
 .modal-rating {
     display: flex;
     align-items: center;
+    gap: 0.4rem;
     flex-direction: row-reverse;
-    gap: 4px;
 }
 
-.modal-rating i {
-    font-size: 15px;
-    margin-bottom: 3px;
-    color: #ff683c;
+.modal-rating span:first-of-type {
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.modal-rating span:last-of-type {
+    font-size: 1.2rem;
+    font-weight: 400;
+    line-height: 1;
 }
 
 .modal-rating-count {

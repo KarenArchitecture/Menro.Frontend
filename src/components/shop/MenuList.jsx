@@ -423,6 +423,7 @@ function MenuList({
 
               {!isFocusedCategory && (
                 <button
+                  type="button"
                   className="menu_nav-btn"
                   onClick={() => onSeeAll?.(catId, section)}
                 >

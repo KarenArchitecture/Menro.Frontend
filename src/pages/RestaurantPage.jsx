@@ -31,7 +31,7 @@ function RestaurantContent() {
   const [isNearPageBottom, setIsNearPageBottom] = useState(false);
 
   const handleSelectItem = (item) => {
-    setSelectedItem({ id: item.id });
+    setSelectedItem(item);
   };
 
   const handleCloseModal = () => setSelectedItem(null);
@@ -40,6 +40,27 @@ function RestaurantContent() {
     setSearchQuery(query);
     setActiveCategory("all");
   };
+
+  const handleSeeAll = (catId) => {
+    const id = String(catId);
+
+    setSearchQuery("");
+    setActiveCategory(id);
+
+    setTimeout(() => {
+      const topAnchor = document.getElementById("shop-menu-top");
+
+      if (topAnchor) {
+        const y = topAnchor.getBoundingClientRect().top + window.pageYOffset - 12;
+
+        window.scrollTo({
+          top: y,
+          behavior: "smooth",
+        });
+      }
+    }, 80);
+  };
+
 
   const fetchFoodDetails = async (id) => {
     const apiBase = import.meta.env.VITE_API_URL || "";
@@ -181,7 +202,7 @@ function RestaurantContent() {
         onSearchSubmit={handleRestaurantSearch}
       />
 
-      <div className="res-menu-wrapper">
+      <div id="shop-menu-top" className="res-menu-wrapper">
         {!menuLoading && !menuError && (
           <FoodCategoryList
             categories={categoriesWithAll}
@@ -196,6 +217,7 @@ function RestaurantContent() {
           isError={menuError}
           activeCategory={activeCategory}
           onSelectItem={handleSelectItem}
+          onSeeAll={handleSeeAll}
           categories={categoriesWithAll}
           setActiveCategory={setActiveCategory}
           searchQuery={searchQuery}
@@ -211,8 +233,22 @@ function RestaurantContent() {
       )}
 
       {selectedItem && modalData && (
-        <ItemDetailModal item={modalData} onClose={handleCloseModal} />
+        <ItemDetailModal
+          item={{
+            ...selectedItem,
+            ...modalData,
+            voters:
+              selectedItem?.voters ??
+              selectedItem?.votersCount ??
+              modalData?.voters ??
+              modalData?.votersCount,
+            rating: selectedItem?.rating ?? modalData?.rating,
+          }}
+          onClose={handleCloseModal}
+        />
       )}
+
+
 
       <CheckoutBar
         count={cart.count}

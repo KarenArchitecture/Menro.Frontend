@@ -4,6 +4,21 @@ import StarIcon from "../icons/StarIcon";
 import resolveFileUrl from "../../utils/resolveFileUrl";
 
 export default function MenuItem({ item, onOpen, layout = "horizontal" }) {
+  // console.log("CARD ITEM FULL:", item);
+
+  // console.log("CARD VOTERS CHECK:", {
+  //   id: item?.id,
+  //   name: item?.name,
+  //   rating: item?.rating,
+  //   voters: item?.voters,
+  //   votersCount: item?.votersCount,
+  //   voterCount: item?.voterCount,
+  //   votes: item?.votes,
+  //   votesCount: item?.votesCount,
+  //   ratingCount: item?.ratingCount,
+  //   reviewsCount: item?.reviewsCount,
+  // });
+
   const cart = useCart();
 
   const { name, price, imageUrl, rating = 4.5, voters = 0 } = item || {};

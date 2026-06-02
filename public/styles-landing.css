@@ -777,7 +777,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden; /* prevent image edges showing during translate */
+  overflow: visible; /* prevent image edges showing during translate */
   will-change: transform; /* cheap hint (future-proof if you tilt later) */
 }
 

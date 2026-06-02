@@ -36,9 +36,7 @@ export default function InstallPhonesBanner({
       setScroller(activeScroller);
     };
 
-    // Run once on mount
     detectScroller();
-    // Re-run on resize in case layout shifts between mobile/desktop
     window.addEventListener("resize", detectScroller);
 
     return () => window.removeEventListener("resize", detectScroller);
@@ -65,6 +63,7 @@ export default function InstallPhonesBanner({
 
         if (!backEl || !frontEl || !sectionEl || !desktopContentEl) return;
 
+        // Word splitting logic
         const splitTextToWords = (element) => {
           if (element.dataset.splitted)
             return Array.from(element.querySelectorAll(".gsap-word"));
@@ -100,13 +99,20 @@ export default function InstallPhonesBanner({
         };
 
         const words = splitTextToWords(desktopContentEl);
+
         const REST = { back: { x: -185, y: -179 }, front: { x: 16, y: -239 } };
         const START = { backY: REST.back.y + 500, frontY: REST.front.y + 520 };
         const phoneDur = 2;
+
         const tl = gsap.timeline({ paused: true });
 
-        tl.to(
+        // Set static 3D properties once
+        gsap.set([backEl, frontEl], { transformPerspective: 1000, z: 0.01 });
+
+        // Use fromTo for absolute state control
+        tl.fromTo(
           words,
+          { autoAlpha: 0, y: 20, willChange: "opacity, transform" },
           {
             autoAlpha: 1,
             y: 0,
@@ -114,75 +120,62 @@ export default function InstallPhonesBanner({
             duration: 0.8,
             ease: "back.out(1.2)",
             overwrite: "auto",
+            willChange: "auto",
           },
           0,
         );
-        tl.to(
+
+        tl.fromTo(
           backEl,
+          {
+            x: REST.back.x,
+            y: START.backY,
+            autoAlpha: 0,
+            willChange: "transform, opacity",
+          },
           {
             y: REST.back.y,
             autoAlpha: 1,
             duration: phoneDur,
             ease: "power3.out",
             overwrite: "auto",
+            willChange: "auto",
           },
           0,
-        ).to(
+        );
+
+        tl.fromTo(
           frontEl,
+          {
+            x: REST.front.x,
+            y: START.frontY,
+            autoAlpha: 0,
+            willChange: "transform, opacity",
+          },
           {
             y: REST.front.y,
             autoAlpha: 1,
             duration: phoneDur,
             ease: "power3.out",
             overwrite: "auto",
+            willChange: "auto",
           },
           0.1,
         );
 
-        const resetAnimations = () => {
-          tl.pause(0);
-          gsap.set(backEl, {
-            x: REST.back.x,
-            y: START.backY,
-            autoAlpha: 0,
-            transformPerspective: 1000,
-            z: 0.01,
-            willChange: "transform, opacity",
-          });
-          gsap.set(frontEl, {
-            x: REST.front.x,
-            y: START.frontY,
-            autoAlpha: 0,
-            transformPerspective: 1000,
-            z: 0.01,
-            willChange: "transform, opacity",
-          });
-          if (words.length)
-            gsap.set(words, {
-              autoAlpha: 0,
-              y: 20,
-              willChange: "opacity, transform",
-            });
-        };
-
-        const play = () => {
-          resetAnimations();
-          tl.play(0);
-        };
-
-        tl.eventCallback("onComplete", () => {
-          gsap.set([backEl, frontEl, ...words], { willChange: "auto" });
-        });
-
-        resetAnimations();
+        // Force elements to their start states immediately
+        tl.pause(0);
 
         ScrollTrigger.create({
           id: "installPhonesDesktop",
           trigger: sectionEl,
-          scroller: scroller, // 4. Apply detected scroller state (fallback window)
-          start: "center center",
-          onEnter: play,
-          onEnterBack: play,
+          scroller: scroller,
+          start: "top 25%", // Widened start threshold
+          end: "bottom 5%", // Narrowed end threshold
+          onEnter: () => tl.play(0),
+          onEnterBack: () => tl.play(0),
+          onLeave: () => tl.pause(0), // Reset safely out of view
+          onLeaveBack: () => tl.pause(0), // Reset safely out of view
           invalidateOnRefresh: true,
         });
       });
@@ -194,9 +187,6 @@ export default function InstallPhonesBanner({
         );
         if (reducedMotion.matches) return;
 
-        // Note: Synchronous detection code was removed here.
-        // We now rely purely on the `scroller` state passed from React.
-
         const backEl = backRef.current;
         const frontEl = frontRef.current;
         const sectionEl = sectionRef.current;
@@ -206,68 +196,63 @@ export default function InstallPhonesBanner({
         const REST = { back: { x: -4, y: -8 }, front: { x: -3, y: -19 } };
         const START = { backY: REST.back.y + 500, frontY: REST.front.y + 520 };
         const phoneDur = 2;
+
         const tl = gsap.timeline({ paused: true });
 
-        tl.to(
+        // Set static 3D properties once
+        gsap.set([backEl, frontEl], { transformPerspective: 1000, z: 0.01 });
+
+        tl.fromTo(
           backEl,
+          {
+            x: REST.back.x,
+            y: START.backY,
+            autoAlpha: 0,
+            willChange: "transform, opacity",
+          },
           {
             y: REST.back.y,
             autoAlpha: 1,
             duration: phoneDur,
             ease: "power3.out",
             overwrite: "auto",
+            willChange: "auto",
           },
           0,
-        ).to(
+        );
+
+        tl.fromTo(
           frontEl,
+          {
+            x: REST.front.x,
+            y: START.frontY,
+            autoAlpha: 0,
+            willChange: "transform, opacity",
+          },
           {
             y: REST.front.y,
             autoAlpha: 1,
             duration: phoneDur,
             ease: "power3.out",
             overwrite: "auto",
+            willChange: "auto",
           },
           0.1,
         );
 
-        const resetAnimations = () => {
-          tl.pause(0);
-          gsap.set(backEl, {
-            x: REST.back.x,
-            y: START.backY,
-            autoAlpha: 0,
-            transformPerspective: 1000,
-            z: 0.01,
-            willChange: "transform, opacity",
-          });
-          gsap.set(frontEl, {
-            x: REST.front.x,
-            y: START.frontY,
-            autoAlpha: 0,
-            transformPerspective: 1000,
-            z: 0.01,
-            willChange: "transform, opacity",
-          });
-        };
-
-        const play = () => {
-          resetAnimations();
-          tl.play(0);
-        };
-
-        tl.eventCallback("onComplete", () => {
-          gsap.set([backEl, frontEl], { willChange: "auto" });
-        });
-
-        resetAnimations();
+        // Force elements to their start states immediately
+        tl.pause(0);
 
         ScrollTrigger.create({
           id: "installPhonesMobile",
           trigger: sectionEl,
-          scroller: scroller, // 5. Use the intelligently detected scroller from state
-          start: "top 75%",
-          onEnter: play,
-          onEnterBack: play,
+          scroller: scroller,
+          start: "top 65%",
+          end: "bottom 25%",
+          onEnter: () => tl.play(0),
+          onEnterBack: () => tl.play(0),
+          onLeave: () => tl.pause(0),
+          onLeaveBack: () => tl.pause(0),
           invalidateOnRefresh: true,
         });
       });
@@ -285,7 +270,7 @@ export default function InstallPhonesBanner({
       ctx.revert();
       imgs.forEach((img) => img.removeEventListener("load", onLoad));
     };
-  }, [children, scroller]); // 6. IMPORTANT: Add scroller as a dependency
+  }, [children, scroller]);
 
   return (
     <section

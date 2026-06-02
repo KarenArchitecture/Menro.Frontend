@@ -1,7 +1,8 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 
 export default function StatsSection() {
   const sectionRef = useRef(null);
+  const [startAnimation, setStartAnimation] = useState(false);
 
   const stats = [
     {
@@ -30,14 +31,38 @@ export default function StatsSection() {
     },
   ];
 
+  // 1. Intersection Observer: Detect when the section is in view
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setStartAnimation(true);
+          if (sectionRef.current) {
+            observer.unobserve(sectionRef.current);
+          }
+        }
+      },
+      { threshold: 0.2 }, // Trigger when 20% visible
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (sectionRef.current) observer.unobserve(sectionRef.current);
+    };
+  }, []);
+
+  // 2. Prime the numbers immediately (so users don't see the final number before scrolling down)
   useEffect(() => {
     const section = sectionRef.current;
-    if (!section || section.__counted) return; // StrictMode guard
-    section.__counted = true;
+    if (!section || section.__primed) return;
+    section.__primed = true;
 
     const nums = section.querySelectorAll(".stat-number");
 
-    // prime to 0 and stash target/+ position
+    // Prime to 0 and stash target/+ position
     nums.forEach((el) => {
       const original = (el.textContent || "").trim();
       el.dataset.targetText = original;
@@ -47,8 +72,19 @@ export default function StatsSection() {
       el.dataset.plusEnd = plusEnd ? "1" : "0";
       el.textContent = plusStart ? "+0" : plusEnd ? "0+" : "0";
     });
+  }, []);
 
-    // count once
+  // 3. Count Animation: Runs ONLY when startAnimation is true
+  useEffect(() => {
+    if (!startAnimation) return;
+
+    const section = sectionRef.current;
+    if (!section || section.__counted) return;
+    section.__counted = true;
+
+    const nums = section.querySelectorAll(".stat-number");
+
+    // Count once
     nums.forEach((el, i) => {
       const targetText = el.dataset.targetText || "0";
       const plusStart = el.dataset.plusStart === "1";
@@ -78,7 +114,7 @@ export default function StatsSection() {
 
       requestAnimationFrame(tick);
     });
-  }, []);
+  }, [startAnimation]);
 
   // === Cursor-repel on icons ===
   useEffect(() => {
@@ -222,6 +258,7 @@ export default function StatsSection() {
     }
     return Number(out || 0);
   }
+
   function formatNumber(n) {
     return new Intl.NumberFormat("en-US").format(n);
   }

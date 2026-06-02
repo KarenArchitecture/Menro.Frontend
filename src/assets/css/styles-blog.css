@@ -1,11 +1,11 @@
 /* assets/css/styles-blog.css */
 /* Override the app shell padding only for the blog page */
 .app-shell-content {
-  padding: 0 !important; /* Or whatever padding you actually want, e.g., padding-top: 2rem; */
+  padding: 1rem !important; /* Or whatever padding you actually want, e.g., padding-top: 2rem; */
 }
 
 .blog-page-wrapper {
-  background-color: #111214; /* Dark theme background */
+  /* background-color: #111214; Dark theme background */
   color: #ffffff;
   font-family: inherit;
   min-height: 100vh;
@@ -238,17 +238,17 @@
   background-color: #111214;
   padding: 16px;
   border-radius: 16px;
-  border: 1px solid #2a2d32;
+  border: none;
   transition:
     transform 0.2s ease,
     border-color 0.2s ease;
   cursor: pointer;
 }
 
-.category-card:hover {
+/* .category-card:hover {
   transform: translateY(-5px);
   border-color: #4a4d52;
-}
+} */
 
 .category-icon-box {
   width: 50px;
@@ -279,14 +279,14 @@
 /* --- Responsive Adjustments --- */
 @media (max-width: 1024px) {
   .categories-wrapper {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 2fr);
   }
 }
 
 @media (max-width: 600px) {
   .categories-wrapper {
-    grid-template-columns: 1fr;
-    padding: 20px;
+    grid-template-columns: repeat(2, 2fr);
+    padding: 1rem;
   }
 
   .blog-categories-section {
@@ -497,283 +497,157 @@
   }
 }
 /* Update the grid to automatically fit narrow columns (approx 240px-250px wide) */
-/* =========================
-   Footer background section
-   ========================= */
-.footer-bg {
-  position: relative;
-  background-color: #0b0f13;
-  padding: 10rem 2rem 14rem; /* space for fruits + footer + back-to-top */
-  overflow: hidden;
+@media (max-width: 768px) {
+  .blog-hero-section {
+    height: 88vh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding-bottom: 0;
+    overflow: hidden;
+  }
+
+  /* 1. Make sure images are visible and positioned absolutely */
+  .floating-img {
+    display: block !important;
+    position: absolute;
+    z-index: 1; /* Keep behind text */
+  }
+
+  .img-soda {
+    top: 12%;
+    right: -18px;
+    width: 100px;
+    --rot: -5deg;
+  }
+
+  .img-fries {
+    top: 20%;
+    left: 15%;
+    width: 123px;
+    --rot: -7deg;
+  }
+
+  .img-sushi {
+    top: 23%;
+    right: 17%;
+    width: 100px;
+    --rot: 5deg;
+  }
+
+  .img-burger {
+    top: 42%;
+    left: 50%;
+    width: 120px;
+    translate: -50% -50%;
+    --rot: -3deg;
+  }
+
+  .img-ramen {
+    top: 40%;
+    left: -8.4rem;
+    width: 250px;
+    --rot: 1deg;
+  }
+
+  .img-pizza {
+    top: 44%;
+    right: -14rem;
+    width: 30rem;
+    --rot: 2deg;
+  }
+
+  /* 3. Adjust Content (Text & SearchBar) */
+  .blog-hero-content {
+    position: relative;
+    gap: 0;
+    z-index: 10;
+    width: 100%;
+    padding: 0 20px;
+    text-align: center;
+    margin-bottom: 6rem;
+  }
+
+  .hero-title {
+    font-size: 2rem; /* Adjust if needed to match exact font scale */
+    line-height: 1.5;
+    margin-bottom: 24px;
+    font-weight: 900;
+  }
+
+  /* Hide scroll indicator on mobile to keep it clean (optional) */
+  .scroll-indicator {
+    display: none;
+  }
+}
+@media (max-width: 768px) {
+  .landing-desktop-header,
+  .header-wrapper {
+    display: none !important;
+  }
 }
 
-/* Fruits background scene (5 floating icons behind the glass footer) */
-.footer-bg__scene {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 1200px; /* same width as glass footer */
-  height: 100%;
-  z-index: 0; /* behind glass footer */
-  pointer-events: none; /* wrapper doesn't block clicks */
+@media (max-width: 768px) {
+  .blog-categories-section {
+    padding: 16px;
+  }
+
+  .categories-wrapper {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 columns for mobile */
+    gap: 8px;
+    background-color: #181920; /* Dark wrapper background */
+    padding: 16px;
+    border-radius: 20px;
+    direction: rtl; /* Puts the colored box on the right */
+    column-gap: 2rem;
+    row-gap: 3rem;
+  }
+
+  .category-card {
+    background-color: #111217; /* Darker card background */
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .category-icon-box {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .category-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: right;
+    justify-content: center;
+  }
+
+  .category-text h3 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-weight: bold;
+    line-height: 1.2;
+  }
+
+  .category-text p {
+    margin: 0;
+    color: #8c8f9f; /* Muted gray for subtitle */
+    font-size: 9px;
+    line-height: 1.2;
+  }
 }
 
-.footer-bg__scene-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-/* Generic fruit wrapper – JS translates the <img>, wrapper stays fixed */
-.footer-bg__item {
-  position: absolute;
-  pointer-events: auto; /* so hover works on the fruit area */
-}
-
-.footer-bg__item img {
-  display: block;
-  user-select: none;
-  pointer-events: none; /* events stay on wrapper */
-  will-change: transform;
-}
-
-/* ----- Positions (tweak numbers if needed) ----- */
-
-/* Tall orange bread / stick behind footer */
-.footer-bg__item--bread {
-  bottom: 15rem;
-  left: 26%;
-  transform: translateX(-32%);
-}
-
-/* Tomato above the stick, slightly to the right */
-.footer-bg__item--tomato {
-  bottom: 34rem;
-  left: 38%;
-  transform: translateX(-4rem);
-}
-
-/* Cucumber crossing the middle-right */
-.footer-bg__item--cucumber {
-  bottom: 17rem;
-  right: 38%;
-}
-
-/* Oil bottle at top-right */
-.footer-bg__item--oil {
-  bottom: 34rem;
-  right: 20%;
-}
-
-/* Juice glass at the very bottom (this one looked correct) */
-.footer-bg__item--juice {
-  bottom: -10rem; /* sticks out from under the card */
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* Wrapper so glass footer + content sit above fruits */
-.footer-bg__content {
-  position: relative;
-  max-width: 1200px;
-  margin: 0 auto;
-  z-index: 1;
-}
-
-/* =========================
-   Glass footer
-   ========================= */
-.footer-glass {
-  position: relative;
-  width: 1200px;
-  height: 250px;
-  margin: 0 auto;
-  background: #0c0f1499;
-  border: 1px solid #394350;
-  border-radius: 20px;
-  backdrop-filter: blur(60px);
-  -webkit-backdrop-filter: blur(60px);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
-  color: #fff;
-  overflow: visible;
-  padding: 2.8rem 3.2rem 4rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-/* Inner layout */
-.footer-glass__inner {
-  display: flex;
-  flex-direction: column;
-  gap: 4rem;
-}
-
-.footer-glass__top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 9rem;
-  display: flex;
-  margin: 3rem 1.5rem 0 0;
-}
-
-.footer-glass__brand {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100px;
-  height: 40px;
-}
-
-.footer-glass__brand img,
-.footer-glass__brand svg {
-  display: block; /* removes the inline baseline whitespace */
-  height: 100%;
-  width: auto;
-  height: 4rem;
-}
-
-.footer-glass__nav {
-  gap: 3rem;
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-}
-.footer-glass__nav a {
-  color: var(--text);
-  text-decoration: none;
-  opacity: 0.9;
-  line-height: 1; /* or 1.1 if you prefer */
-  display: inline-flex;
-  align-items: center;
-  height: 40px;
-  font-size: 1.6rem;
-  font-weight: 700;
-}
-.footer-glass__nav a:hover {
-  color: var(--accent);
-}
-
-/* Bottom row */
-.footer-glass__bottom {
-  flex-direction: row-reverse;
-  justify-content: flex-start;
-  gap: 16rem;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.footer-glass__copy {
-  font-size: 20px;
-  font-weight: 400;
-  color: #999fa8;
-  margin: 0;
-}
-
-.footer-glass__socials {
-  width: auto;
-  height: auto;
-  display: flex;
-  gap: 2rem;
-}
-.footer-glass__socials a {
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  text-decoration: none;
-  font-size: 2rem;
-  transition: background 0.2s;
-}
-.footer-glass__socials a:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.footer-glass__socials a svg {
-  width: 30px;
-  height: 30px;
-}
-
-/* Back-to-top pill */
-.footer-glass__backtotop {
-  position: absolute;
-  bottom: -18px; /* hang below the footer */
-  left: 50%;
-  transform: translateX(-50%);
-  width: 56px; /* slightly larger for better tap area */
-  height: 56px;
-  border-radius: 16px;
-  background: rgba(15, 15, 16, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  z-index: 6; /* above footer */
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-  width: 100%;
-  height: 100%;
-}
-
-.footer-glass__backtotop:hover {
-  background: rgba(15, 15, 16, 0.65);
-}
-
-.footer-glass__chevron {
-  width: 10px;
-  height: 10px;
-  border-right: 2px solid #fff;
-  border-bottom: 2px solid #fff;
-  transform: rotate(225deg);
-}
-
-/* the “row height” */
-.footer-glass__brand {
-  height: 40px;
-  display: flex;
-  align-items: center;
-  flex: 0 0 auto;
-}
-
-/* the actual svg image */
-.footer-glass__brandImg {
-  height: 40px;
-  width: auto;
-  display: block;
-
-  /* OPTICAL ALIGNMENT (this is what you need) */
-  translate: 0 4px; /* try 2px–8px */
-}
-.footer-glass__button-wrapper {
-  height: 4rem;
-  width: 7rem;
-  bottom: 1%;
-  position: absolute;
-  right: 7%;
-}
-.footer-glass__button-wrapper::before {
-  border-radius: 1rem;
-  content: "";
-  background-color: #000;
-  height: 4.5rem;
-  width: 9rem;
-  bottom: -20%;
-  position: absolute;
-  right: -14%;
-  border-top: 1px solid #394350;
-  border-right: 1px solid #394350;
-  border-left: 1px solid #394350;
-  border-bottom: none;
-}
-
-.footer-wrapper {
-  position: relative;
-  height: 50rem;
-  display: flex;
-  justify-content: start;
-  align-items: end;
-  margin: 0 auto;
+/* Optional: Fallback for very small screens (like iPhone SE) so text doesn't squish */
+@media (max-width: 420px) {
+  .categories-wrapper {
+    grid-template-columns: repeat(2fr);
+  }
 }

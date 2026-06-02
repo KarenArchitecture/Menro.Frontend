@@ -1,5 +1,5 @@
 // components/cards/CostReductionCard.jsx
-import React, { useRef, useLayoutEffect } from "react";
+import React, { useRef, useLayoutEffect, useEffect, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
@@ -17,14 +17,48 @@ export default function CostReductionCard({
   const dotGroupRef = useRef(null);
   const valueRef = useRef(null);
 
+  // 1. Add state to hold the detected scroller
+  const [scroller, setScroller] = useState(null);
+
+  // 2. Detect the scroller safely after paint
+  useEffect(() => {
+    const detectScroller = () => {
+      let activeScroller = window;
+      const customContainer = document.querySelector(".app-shell__content");
+
+      if (customContainer) {
+        const styles = window.getComputedStyle(customContainer);
+        if (styles.overflowY === "auto" || styles.overflowY === "scroll") {
+          activeScroller = customContainer;
+        }
+      }
+      setScroller(activeScroller);
+    };
+
+    detectScroller();
+    window.addEventListener("resize", detectScroller);
+
+    return () => window.removeEventListener("resize", detectScroller);
+  }, []);
+
   useLayoutEffect(() => {
     const card = cardRef.current;
     const path = pathRef.current;
     const dotGroup = dotGroupRef.current;
-    if (!card || !path || !dotGroup) return;
+
+    // 3. Wait until the scroller is identified
+    if (!card || !path || !dotGroup || !scroller) return;
 
     const len = path.getTotalLength();
-    const st = { trigger: card, start: "top 98%", end: "top 30%", scrub: true };
+
+    // 4. Pass the detected scroller to ScrollTrigger
+    const st = {
+      trigger: card,
+      scroller: scroller,
+      start: "top 98%",
+      end: "top 30%",
+      scrub: true,
+    };
 
     const ctx = gsap.context(() => {
       // Count number 0 -> value
@@ -51,15 +85,10 @@ export default function CostReductionCard({
         ease: "none",
         scrollTrigger: st,
       });
-
-      // OPTIONAL: draw the line as it scrolls
-      // path.style.strokeDasharray = len;
-      // path.style.strokeDashoffset = len;
-      // gsap.to(path, { strokeDashoffset: 0, ease: "none", scrollTrigger: st });
     }, cardRef);
 
     return () => ctx.revert();
-  }, [value]);
+  }, [value, scroller]); // 5. Add scroller as a dependency
 
   return (
     <div className={`why-card cost-reduction ${className}`} ref={cardRef}>

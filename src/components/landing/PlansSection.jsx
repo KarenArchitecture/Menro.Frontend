@@ -8,12 +8,11 @@ const SCROLL_FACTOR = 4200;
 const SCROLLBAR_FACTOR = 9000;
 const EPS = 0.001;
 
-// smoother start tuning
-const START_LOCK_TOL = 24;
-const MIN_VISIBLE_BELOW_NAV = 160;
+// Adjusted lock tolerance: Only locks if within 50px of the trigger line
+const START_LOCK_TOL = 50;
 
-function clamp01(v) {
-  return Math.max(0, Math.min(1, v));
+function clamp(v, min, max) {
+  return Math.max(min, Math.min(max, v));
 }
 
 export default function PlansSection({ plans = plansData }) {
@@ -26,10 +25,8 @@ export default function PlansSection({ plans = plansData }) {
     return window.matchMedia("(max-width: 768px)").matches;
   });
 
-  // 0..1 drives the desktop deck
   const progress = useMotionValue(0);
 
-  // lock refs
   const lockedRef = useRef(false);
   const lockTopRef = useRef(0);
   const snappingRef = useRef(false);
@@ -40,6 +37,13 @@ export default function PlansSection({ plans = plansData }) {
 
   const lastOutsideRef = useRef("above");
   const cooldownRef = useRef(null);
+
+  const maxProgressRef = useRef(1);
+
+  useEffect(() => {
+    const total = plans.length || 1;
+    maxProgressRef.current = (total - 0.5) / (total + 1);
+  }, [plans.length]);
 
   useEffect(() => {
     const mql = window.matchMedia("(max-width: 768px)");
@@ -131,6 +135,8 @@ export default function PlansSection({ plans = plansData }) {
     return "inside";
   }, [getNavH]);
 
+  // 🔥 FIXED: Now strictly evaluates the exact boundary.
+  // It will no longer trap the user while they are scrolling past the component.
   const nearLockLine = useCallback(() => {
     const el = sectionRef.current;
     if (!el) return false;
@@ -138,10 +144,7 @@ export default function PlansSection({ plans = plansData }) {
     const rect = el.getBoundingClientRect();
     const navH = getNavH();
 
-    return (
-      rect.top <= navH + START_LOCK_TOL &&
-      rect.bottom >= navH + MIN_VISIBLE_BELOW_NAV
-    );
+    return Math.abs(rect.top - navH) <= START_LOCK_TOL;
   }, [getNavH]);
 
   const getInnerScroller = useCallback((target) => {
@@ -184,7 +187,7 @@ export default function PlansSection({ plans = plansData }) {
       const from = lastOutsideRef.current;
 
       if (forward && from === "above") progress.set(0);
-      if (!forward && from === "below") progress.set(1);
+      if (!forward && from === "below") progress.set(maxProgressRef.current);
 
       cooldownRef.current = null;
       snapToLockTop(smoothSnap);
@@ -212,7 +215,7 @@ export default function PlansSection({ plans = plansData }) {
       snapToLockTop(true);
 
       const seg = 1 / (plans.length + 1);
-      const target = Math.min(1, (index + 0.52) * seg);
+      const target = Math.min(maxProgressRef.current, (index + 0.52) * seg);
 
       animate(progress, target, {
         duration: 0.55,
@@ -232,7 +235,6 @@ export default function PlansSection({ plans = plansData }) {
       if (!sectionRef.current) return;
 
       const forward = e.deltaY > 0;
-
       const inner = getInnerScroller(e.target);
 
       if (lockedRef.current && inner && canConsumeScroll(inner, e.deltaY)) {
@@ -259,9 +261,10 @@ export default function PlansSection({ plans = plansData }) {
         return;
       }
 
+      const maxP = maxProgressRef.current;
       const v = progress.get();
       const atStart = v <= EPS;
-      const atEnd = v >= 1 - EPS;
+      const atEnd = v >= maxP - EPS;
 
       if (atEnd && forward) {
         disengageLock("down");
@@ -276,7 +279,7 @@ export default function PlansSection({ plans = plansData }) {
       e.preventDefault();
 
       const delta = Math.max(-80, Math.min(80, e.deltaY));
-      progress.set(clamp01(v + delta / SCROLL_FACTOR));
+      progress.set(clamp(v + delta / SCROLL_FACTOR, 0, maxP));
 
       window.scrollTo({ top: lockTopRef.current, behavior: "auto" });
     };
@@ -295,7 +298,6 @@ export default function PlansSection({ plans = plansData }) {
       lastTouchYRef.current = y;
 
       const forward = dy > 0;
-
       const inner = getInnerScroller(e.target);
 
       if (lockedRef.current && inner && canConsumeScroll(inner, dy)) {
@@ -322,9 +324,10 @@ export default function PlansSection({ plans = plansData }) {
         return;
       }
 
+      const maxP = maxProgressRef.current;
       const v = progress.get();
       const atStart = v <= EPS;
-      const atEnd = v >= 1 - EPS;
+      const atEnd = v >= maxP - EPS;
 
       if (atEnd && forward) {
         disengageLock("down");
@@ -338,7 +341,7 @@ export default function PlansSection({ plans = plansData }) {
 
       e.preventDefault();
 
-      progress.set(clamp01(v + dy / (SCROLL_FACTOR * 0.9)));
+      progress.set(clamp(v + dy / (SCROLL_FACTOR * 0.9), 0, maxP));
 
       window.scrollTo({ top: lockTopRef.current, behavior: "auto" });
     };
@@ -389,10 +392,6 @@ export default function PlansSection({ plans = plansData }) {
 
       const lockTop = computeLockTop();
 
-      /**
-       * Keep this before updating lastScrollYRef.
-       * This lets scrollbar dragging trigger the lock even if it jumps.
-       */
       const crossedLockLine =
         (prevY < lockTop && curY >= lockTop) ||
         (prevY > lockTop && curY <= lockTop);
@@ -406,12 +405,6 @@ export default function PlansSection({ plans = plansData }) {
         cooldownRef.current = null;
       }
 
-      /**
-       * CASE 1:
-       * Already locked.
-       * Scrollbar drag tries to move the page away from lockTop.
-       * Convert that attempted movement into animation progress.
-       */
       if (lockedRef.current) {
         lockTopRef.current = lockTop;
 
@@ -420,9 +413,10 @@ export default function PlansSection({ plans = plansData }) {
         if (Math.abs(attemptedDelta) > 1) {
           const forward = attemptedDelta > 0;
 
+          const maxP = maxProgressRef.current;
           const v = progress.get();
           const atStart = v <= EPS;
-          const atEnd = v >= 1 - EPS;
+          const atEnd = v >= maxP - EPS;
 
           if (atEnd && forward) {
             disengageLock("down");
@@ -436,7 +430,7 @@ export default function PlansSection({ plans = plansData }) {
 
           const delta = Math.max(-120, Math.min(120, attemptedDelta));
 
-          progress.set(clamp01(v + delta / SCROLLBAR_FACTOR));
+          progress.set(clamp(v + delta / SCROLLBAR_FACTOR, 0, maxP));
 
           lastScrollYRef.current = lockTop;
           snapTo(lockTop, false);
@@ -445,12 +439,6 @@ export default function PlansSection({ plans = plansData }) {
         return;
       }
 
-      /**
-       * CASE 2:
-       * Not locked yet.
-       * Mouse wheel enters through the wheel handler.
-       * Scrollbar dragging enters through this scroll handler.
-       */
       const shouldStartFromScrollbar = crossedLockLine || nearLockLine();
 
       if (!shouldStartFromScrollbar) return;
@@ -463,16 +451,12 @@ export default function PlansSection({ plans = plansData }) {
       if (goingDown) {
         progress.set(0);
       } else {
-        progress.set(1);
+        progress.set(maxProgressRef.current);
       }
 
       lockTopRef.current = lockTop;
       lastScrollYRef.current = lockTop;
 
-      /**
-       * Do not smooth snap here.
-       * Smooth snap can let the scrollbar skip the locked state.
-       */
       snapTo(lockTop, false);
     };
 
@@ -502,7 +486,7 @@ export default function PlansSection({ plans = plansData }) {
       let cur = 0;
 
       for (let i = 0; i < total; i++) {
-        if (v >= (i + 0.5) * seg) cur = i;
+        if (v >= (i + 0.45) * seg) cur = i;
       }
 
       setActiveStep(cur);
@@ -627,13 +611,15 @@ function PlanMotionCard({ index, total, plan, progress, viewportH }) {
   const baseY = index * 32;
   const baseScale = 1 - index * 0.04;
 
-  // Make outY much higher to ensure it fully leaves the screen
   const outY = -(viewportH * 1.5);
+  const isLast = index === total - 1;
+
+  const finalY = isLast ? 0 : outY;
 
   const y = useTransform(
     progress,
     [0, start, mid, end, 1],
-    [baseY, baseY, 0, outY, outY],
+    [baseY, baseY, 0, finalY, finalY],
   );
 
   const scale = useTransform(
@@ -642,7 +628,6 @@ function PlanMotionCard({ index, total, plan, progress, viewportH }) {
     [baseScale, baseScale, 1, 1, 1],
   );
 
-  // Keep zIndex high at the end (60 instead of 0) so it passes IN FRONT of the tabs/header
   const zIndex = useTransform(
     progress,
     [0, start, mid, end, 1],

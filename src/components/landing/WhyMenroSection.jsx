@@ -22,21 +22,26 @@ export default function WhyMenroSection() {
 
   useLayoutEffect(() => {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const isMobile = window.matchMedia("(max-width: 768px)");
 
-    // No animation on mobile
-    if (reducedMotion.matches || isMobile.matches) return;
+    // Only abort if the user prefers reduced motion.
+    // We removed the isMobile check here so GSAP matchMedia can handle it.
+    if (reducedMotion.matches) return;
 
-    const ctx = gsap.context(() => {
-      const section = sectionRef.current;
-      const titles = titlesRef.current;
+    const section = sectionRef.current;
+    const titles = titlesRef.current;
+
+    if (!section || !titles) return;
+
+    // Use gsap.matchMedia() to manage responsive animations and cleanup
+    const mm = gsap.matchMedia();
+
+    // -------------------------
+    // DESKTOP ANIMATIONS (>= 769px)
+    // -------------------------
+    mm.add("(min-width: 769px)", () => {
       const cards = gsap.utils.toArray(".why-card");
 
-      if (!section || !titles) return;
-
-      // Important:
-      // GSAP overrides CSS transform, so we must keep xPercent: -50
-      // to preserve horizontal centering.
+      // Original Desktop Title Animation
       gsap.fromTo(
         titles,
         {
@@ -56,6 +61,7 @@ export default function WhyMenroSection() {
         },
       );
 
+      // Original Desktop Cards Animation
       gsap.to(cards, {
         yPercent: -200,
         ease: "none",
@@ -66,9 +72,49 @@ export default function WhyMenroSection() {
           scrub: true,
         },
       });
-    }, sectionRef);
+    });
 
-    return () => ctx.revert();
+    // -------------------------
+    // MOBILE ANIMATIONS (<= 768px)
+    // -------------------------
+    // Mobile Animations (max-width: 768px)
+    mm.add("(max-width: 768px)", () => {
+      // 1. Create a timeline and attach the ScrollTrigger to it
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          scroller: ".app-shell__content",
+          start: "top 50%",
+          end: "bottom 20%",
+          scrub: 1,
+        },
+      });
+
+      // 2. Move down continuously for the whole scroll duration
+      tl.to(
+        titlesRef.current,
+        {
+          y: "140vh",
+          ease: "none", // Keeps the speed consistent
+          duration: 1, // Represents 100% of the scroll distance
+        },
+        0,
+      ) // The '0' means start exactly at the beginning
+
+        // 3. Fade out ONLY at the end
+        .to(
+          titlesRef.current,
+          {
+            opacity: 0,
+            ease: "none",
+            duration: 0.3, // Takes up 30% of the scroll distance
+          },
+          0.7,
+        ); // The '0.7' means wait until the scroll is 70% complete before starting the fade
+    });
+
+    // Cleanup all matchMedia animations when the component unmounts
+    return () => mm.revert();
   }, []);
 
   return (

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import "../../assets/css/footer-fruits-scene.css";
 
 const FRUITS = [
   {

@@ -5,8 +5,8 @@ import BlogCategories from "../components/blog/BlogCategories";
 import BlogFeed from "../components/blog/BlogFeed";
 import BlogSidebar from "../components/blog/BlogSidebar";
 import GlassFooter from "../components/common/GlassFooter";
-import FooterFruitsScene from "../components/landing/FooterFruitsScene";
-
+import FooterFruitsScene from "../components/common/FooterFruitsScene";
+import MobileHeader from "../components/common/MobileHeader";
 // CSS Imports
 import "../assets/css/styles-blog.css";
 const leftIcons = [
@@ -45,7 +45,7 @@ const BlogPage = () => {
           className="landing-desktop-header"
         />
       </div>
-
+      <MobileHeader />
       <BlogHero />
       <BlogCategories />
 
@@ -58,15 +58,13 @@ const BlogPage = () => {
         </div>
       </section>
 
-      {/* Footer Section */}
-      {/* We wrap it in a relative container so the absolute positioned fruits stay behind the footer */}
-      <div
-        className="footer-wrapper"
-        style={{ position: "relative", marginTop: "100px" }}
-      >
+      <section className="footer-bg blog-footer">
+        {/* Added blog-footer modifier just in case you need specific spacing */}
         <FooterFruitsScene />
-        <GlassFooter />
-      </div>
+        <div className="footer-bg__content">
+          <GlassFooter />
+        </div>
+      </section>
     </div>
   );
 };

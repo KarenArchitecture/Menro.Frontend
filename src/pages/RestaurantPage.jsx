@@ -6,7 +6,10 @@ import AppHeader from "../components/common/AppHeader";
 import ShopBanner from "../components/shop/ShopBanner";
 import MenuList from "../components/shop/MenuList";
 import ItemDetailModal from "../components/shop/ItemDetailModal";
-import MobileNav from "../components/common/MobileNav";
+import ProfileIcon from "../components/icons/ProfileIcon";
+import SearchIcon from "../components/icons/SearchIcon";
+import CartIcon from "../components/icons/CartIcon";
+import CheckoutBar from "../components/shop/CheckoutBar";
 import FoodCategoryList, {
   ALL_CAT_SVG,
 } from "../components/shop/FoodCategoryList";
@@ -14,51 +17,53 @@ import {
   getRestaurantBannerBySlug,
   getRestaurantMenuBySlug,
 } from "../api/restaurants";
-import SearchIcon from "../components/icons/SearchIcon";
-import CartIcon from "../components/icons/CartIcon";
-import ProfileIcon from "../components/icons/ProfileIcon";
-import CheckoutBar from "../components/shop/CheckoutBar";
 import { getRestaurantCategoriesBySlug } from "../api/foodCategories";
-
-//  shared cart context
 import { CartProvider, useCart } from "../components/shop/CartContext";
 
-/* -------- content -------- */
 function RestaurantContent() {
   const navigate = useNavigate();
   const { slug } = useParams();
-
-  /* ---------- CART ---------- */
   const cart = useCart();
 
-  const handleCheckout = () => {
-    const items = Array.from(cart.items.values()); // each variant row from modal
-
-    navigate("/checkout", {
-      state: {
-        restaurantId: banner.id,
-        restaurantSlug: slug,
-        tableCount: banner.tableCount, // banner comes from query below
-        items, // full list from CartContext
-        total: cart.total,
-        count: cart.count,
-      },
-    });
-  };
-
-  /* ---------- UI state ---------- */
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedItem, setSelectedItem] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isNearPageBottom, setIsNearPageBottom] = useState(false);
 
-  /* ---------- OPEN MODAL (store only ID) ---------- */
   const handleSelectItem = (item) => {
-    setSelectedItem({ id: item.id });
+    setSelectedItem(item);
   };
 
-  /* ---------- FETCH MODAL DETAILS ---------- */
+  const handleCloseModal = () => setSelectedItem(null);
+
+  const handleRestaurantSearch = (query) => {
+    setSearchQuery(query);
+    setActiveCategory("all");
+  };
+
+  const handleSeeAll = (catId) => {
+    const id = String(catId);
+
+    setSearchQuery("");
+    setActiveCategory(id);
+
+    setTimeout(() => {
+      const topAnchor = document.getElementById("shop-menu-top");
+
+      if (topAnchor) {
+        const y = topAnchor.getBoundingClientRect().top + window.pageYOffset - 12;
+
+        window.scrollTo({
+          top: y,
+          behavior: "smooth",
+        });
+      }
+    }, 80);
+  };
+
+
   const fetchFoodDetails = async (id) => {
-    const apiBase =
-      import.meta.env.VITE_API_URL;
+    const apiBase = import.meta.env.VITE_API_URL || "";
     const baseUrl = apiBase.replace(/\/api\/?$/, "");
 
     const res = await fetch(`${baseUrl}/api/public/food/${id}/details`);
@@ -66,14 +71,6 @@ function RestaurantContent() {
     return res.json();
   };
 
-  /* ---------- CLOSE MODAL ---------- */
-  const handleCloseModal = () => setSelectedItem(null);
-
-  useEffect(() => {
-    document.body.classList.toggle("has-checkout", cart.count > 0);
-  }, [cart.count]);
-
-  /* ---------- Header icons ---------- */
   const leftIcons = useMemo(
     () => [
       { key: "profile", icon: <ProfileIcon /> },
@@ -94,65 +91,97 @@ function RestaurantContent() {
     { label: "مقالات", href: "#" },
   ];
 
-  /* ---------- DATA: banner ---------- */
   const {
     data: banner,
     isLoading: bannerLoading,
     isError: bannerError,
-    refetch: refetchBanner,
   } = useQuery({
     queryKey: ["restaurantBanner", slug],
     queryFn: () => getRestaurantBannerBySlug(slug),
-    keepPreviousData: false,
+    enabled: !!slug,
     refetchOnWindowFocus: false,
   });
-  
-  useEffect(() => {
-    if (banner) {
-      console.log("Restaurant banner object:", banner);
-    }
-  }, [banner]);
 
-  /* ---------- DATA: restaurant categories ---------- */
-  const {
-    data: categories = [],
-    isLoading: catLoading,
-    isError: catError,
-  } = useQuery({
+  const { data: categories = [] } = useQuery({
     queryKey: ["restaurantCategories", slug],
     queryFn: () => getRestaurantCategoriesBySlug(slug),
     enabled: !!slug,
   });
 
-  /* ---------- BANNER REFRESH ---------- */
-  useEffect(() => {
-    refetchBanner();
-  }, [slug, refetchBanner]);
-
-  /* ---------- DATA: menu list ---------- */
-  const { data: menuData = [], isLoading: menuLoading } = useQuery({
+  const {
+    data: menuData = [],
+    isLoading: menuLoading,
+    isError: menuError,
+  } = useQuery({
     queryKey: ["restaurantMenu", slug],
     queryFn: () => getRestaurantMenuBySlug(slug),
+    enabled: !!slug,
   });
 
-  /* ---------- DATA: modal food details ---------- */
   const { data: modalData, isLoading: modalLoading } = useQuery({
     queryKey: ["foodDetails", selectedItem?.id],
-    queryFn: () => (selectedItem ? fetchFoodDetails(selectedItem.id) : null),
-    enabled: !!selectedItem,
+    queryFn: () => fetchFoodDetails(selectedItem.id),
+    enabled: !!selectedItem?.id,
   });
 
-  /* ---------- CATEGORIES WITH "ALL" ---------- */
   const categoriesWithAll = useMemo(() => {
     const apiCats = categories.map((c) => ({
       id: String(c.id),
       name: c.name,
       svgIcon: c.svgIcon,
     }));
+
     return [{ id: "all", name: "همه", svgIcon: ALL_CAT_SVG }, ...apiCats];
   }, [categories]);
 
-  /* ---------- LOADING ---------- */
+  const handleCheckout = () => {
+    if (!banner) return;
+
+    const items = Array.from(cart.items.values());
+
+    navigate("/checkout", {
+      state: {
+        restaurantId: banner.id,
+        restaurantSlug: slug,
+        tableCount: banner.tableCount,
+        items,
+        total: cart.total,
+        count: cart.count,
+      },
+    });
+  };
+
+  useEffect(() => {
+    document.body.classList.toggle("has-checkout", cart.count > 0);
+    return () => {
+      document.body.classList.remove("has-checkout");
+    };
+  }, [cart.count]);
+
+  useEffect(() => {
+    const checkIfNearBottom = () => {
+      const scrollTop = window.scrollY || window.pageYOffset;
+      const viewportHeight = window.innerHeight;
+      const fullHeight = document.documentElement.scrollHeight;
+      const threshold = 120;
+
+      const nearBottom =
+        scrollTop + viewportHeight >= fullHeight - threshold;
+
+      setIsNearPageBottom(nearBottom);
+    };
+
+    checkIfNearBottom();
+
+    window.addEventListener("scroll", checkIfNearBottom, { passive: true });
+    window.addEventListener("resize", checkIfNearBottom);
+
+    return () => {
+      window.removeEventListener("scroll", checkIfNearBottom);
+      window.removeEventListener("resize", checkIfNearBottom);
+    };
+  }, []);
+
   if (bannerLoading) return <div>Loading...</div>;
   if (bannerError) return <div>Error loading restaurant data</div>;
 
@@ -166,10 +195,15 @@ function RestaurantContent() {
         maxWidth={1140}
       />
 
-      <ShopBanner banner={banner} />
+      <ShopBanner
+        banner={banner}
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        onSearchSubmit={handleRestaurantSearch}
+      />
 
-      <div className="res-menu-wrapper">
-        {!menuLoading && (
+      <div id="shop-menu-top" className="res-menu-wrapper">
+        {!menuLoading && !menuError && (
           <FoodCategoryList
             categories={categoriesWithAll}
             activeCategory={activeCategory}
@@ -178,23 +212,43 @@ function RestaurantContent() {
         )}
 
         <MenuList
+          menuData={menuData}
+          isLoading={menuLoading}
+          isError={menuError}
           activeCategory={activeCategory}
           onSelectItem={handleSelectItem}
+          onSeeAll={handleSeeAll}
           categories={categoriesWithAll}
           setActiveCategory={setActiveCategory}
+          searchQuery={searchQuery}
         />
+
+        {cart.count > 0 && isNearPageBottom && (
+          <div className="checkout-safe-spacer" aria-hidden="true" />
+        )}
       </div>
 
-      {/* ---------- MODAL ---------- */}
       {selectedItem && modalLoading && (
         <div className="modal-loading">در حال بارگذاری...</div>
       )}
 
       {selectedItem && modalData && (
-        <ItemDetailModal item={modalData} onClose={handleCloseModal} />
+        <ItemDetailModal
+          item={{
+            ...selectedItem,
+            ...modalData,
+            voters:
+              selectedItem?.voters ??
+              selectedItem?.votersCount ??
+              modalData?.voters ??
+              modalData?.votersCount,
+            rating: selectedItem?.rating ?? modalData?.rating,
+          }}
+          onClose={handleCloseModal}
+        />
       )}
 
-      <MobileNav />
+
 
       <CheckoutBar
         count={cart.count}
@@ -205,9 +259,9 @@ function RestaurantContent() {
   );
 }
 
-/* -------- Outer page: keep CSS hook + provide the cart -------- */
 function RestaurantPage() {
   usePageStyles("/shop.css");
+
   return (
     <CartProvider>
       <RestaurantContent />

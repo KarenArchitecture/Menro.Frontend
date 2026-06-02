@@ -39,6 +39,7 @@ export default function CheckoutBar({ count = 0, total = 0, onCheckout }) {
   );
 }
 
+
 // ABDOLLAH VERSION //
 
 // import React from "react";

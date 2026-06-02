@@ -41,7 +41,7 @@ const BlogHero = () => {
           بخون، بدون، با منرو <span className="highlight-text">متفاوت باش</span>
         </h1>
 
-        <SearchBar />
+        <SearchBar placeholder="جستجو مقاله ..." />
       </div>
 
       <div className="scroll-indicator">

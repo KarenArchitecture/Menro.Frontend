@@ -1,25 +1,58 @@
 import React, { useMemo } from "react";
 import { useCart } from "./CartContext";
+import StarIcon from "../icons/StarIcon";
+import resolveFileUrl from "../../utils/resolveFileUrl";
 
-export default function MenuItem({ item, onOpen }) {
+export default function MenuItem({ item, onOpen, layout = "horizontal" }) {
+  // console.log("CARD ITEM FULL:", item);
+
+  // console.log("CARD VOTERS CHECK:", {
+  //   id: item?.id,
+  //   name: item?.name,
+  //   rating: item?.rating,
+  //   voters: item?.voters,
+  //   votersCount: item?.votersCount,
+  //   voterCount: item?.voterCount,
+  //   votes: item?.votes,
+  //   votesCount: item?.votesCount,
+  //   ratingCount: item?.ratingCount,
+  //   reviewsCount: item?.reviewsCount,
+  // });
+
   const cart = useCart();
 
   const { name, price, imageUrl, rating = 4.5, voters = 0 } = item || {};
 
+  const toPersianDigits = (value) => {
+    if (value === null || value === undefined) return "";
+
+    return String(value).replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[digit]);
+  };
+
   const formatTomans = (n) => (Number(n) || 0).toLocaleString("fa-IR");
 
-  const apiBase = import.meta.env.VITE_API_URL;
-  // remove "/api" from the end → hit backend root
-  const baseUrl = apiBase.replace(/\/api\/?$/, "");
-  const fullImageUrl = `${baseUrl}${imageUrl}`;
+  const formatRating = (value) => {
+    const num = Number(value) || 0;
+
+    // اگر عدد اعشاری بود، یک رقم اعشار نگه می‌داریم
+    // مثلا 4.5 => ۴.۵
+    // اگر 4 بود => ۴.۰
+    return toPersianDigits(num.toFixed(1));
+  };
+
+  const formatVoters = (value) => {
+    return toPersianDigits((Number(value) || 0).toLocaleString("en-US"));
+  };
+
+  // اصلاح منطق ساخت URL
+  const fullImageUrl =
+    resolveFileUrl(imageUrl) || "/images/food/food-placeholder.png";
+
 
   // ---- cart key for this food ----
   const baseKey = cart.keyOf(item);
-
-  // quantity of the simple (non-variant) item
   const baseQty = cart.getQty(baseKey);
 
-  // total quantity = base item + all variant entries (baseKey__*)
   const totalQty = useMemo(() => {
     let sum = 0;
     for (const [k, val] of cart.items.entries()) {
@@ -43,14 +76,11 @@ export default function MenuItem({ item, onOpen }) {
 
   const dec = (e) => {
     e.stopPropagation();
-
-    // 1) if base item exists, decrement that (old behavior)
     if (baseQty > 0) {
       cart.setQty(baseKey, item, Math.max(0, baseQty - 1));
       return;
     }
 
-    // 2) otherwise, try to decrement one of the variant entries
     for (const [k, val] of cart.items.entries()) {
       if (k.startsWith(`${baseKey}__`) && val.qty > 0) {
         cart.setQty(k, null, val.qty - 1);
@@ -62,21 +92,34 @@ export default function MenuItem({ item, onOpen }) {
   const openModal = () => onOpen?.(item);
 
   return (
-    <article className="menu-card" dir="rtl" onClick={openModal}>
+    <article
+      className={`menu-card ${layout === "vertical" ? "menu-card--vertical" : "menu-card--horizontal"}`}
+      dir="rtl"
+      onClick={openModal}
+    >
       <div className="menu-card__media">
         <img
           src={fullImageUrl}
           alt={name}
           className="menu-card__img"
           loading="lazy"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = "/images/food/food-placeholder.png";
+          }}
         />
 
         <div className="menu-card__imgShade" aria-hidden />
+
         <div className="menu-card__rating">
-          <i className="fas fa-star menu-card__star" aria-hidden />
-          <span className="menu-card__ratingValue">{rating}</span>
+          <StarIcon />
+
+          <span className="menu-card__ratingValue">
+            {formatRating(rating)}
+          </span>
+
           <span className="menu-card__ratingCount">
-            ({voters.toLocaleString("fa-IR")})
+            ({formatVoters(voters)})
           </span>
         </div>
       </div>
@@ -106,7 +149,11 @@ export default function MenuItem({ item, onOpen }) {
               >
                 −
               </button>
-              <span className="menu-card__qtyDisplay">{totalQty}</span>
+
+              <span className="menu-card__qtyDisplay">
+                {toPersianDigits(totalQty)}
+              </span>
+
               <button
                 className="menu-card__qtyBtn menu-card__qtyBtn--inc"
                 onClick={inc}

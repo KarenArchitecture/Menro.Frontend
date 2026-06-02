@@ -519,7 +519,7 @@ body {
 @media (max-width: 768px) {
   .why-static {
     padding: 6rem 1.6rem 6rem;
-    min-height: auto;
+    min-height: 200vh; /* or 300vh, depending on how long you want the scroll to be */
   }
   .why-static__inner,
   .why-static__stage {
@@ -777,7 +777,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden; /* prevent image edges showing during translate */
+  overflow: visible; /* prevent image edges showing during translate */
   will-change: transform; /* cheap hint (future-proof if you tilt later) */
 }
 
@@ -793,7 +793,7 @@ body {
 }
 
 .stat-number {
-  font-size: 3rem;
+  font-size: 2rem;
   font-weight: 900;
   color: var(--accent);
   line-height: 1;
@@ -1058,7 +1058,7 @@ body {
   border: 1px solid #394350;
   border-radius: 16px;
   padding: 0.8rem;
-  z-index: -1;
+  z-index: 1;
 }
 
 .plans__tab {
@@ -1472,7 +1472,7 @@ body {
   font-weight: 800;
   color: #fff;
   z-index: 10;
-  /* opacity: 0; REMOVE THIS LINE */
+  width: 100%; /* Ensure it spans the full container */
 }
 
 /* --- Burger (independent of scene) --- */
@@ -1502,7 +1502,7 @@ body {
   object-fit: cover;
   opacity: 0.9;
   overflow: initial;
-  width: 800px;
+  /* width: 800px; */
   z-index: 99;
 }
 
@@ -2041,279 +2041,6 @@ body {
     border-radius: 16px;
   }
 }
-/* =========================
-   Footer background section
-   ========================= */
-.footer-bg {
-  position: relative;
-  background-color: #0b0f13;
-  padding: 10rem 2rem 14rem; /* space for fruits + footer + back-to-top */
-  overflow: hidden;
-}
-
-/* Fruits background scene (5 floating icons behind the glass footer) */
-.footer-bg__scene {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 1200px; /* same width as glass footer */
-  height: 100%;
-  z-index: 0; /* behind glass footer */
-  pointer-events: none; /* wrapper doesn't block clicks */
-}
-
-.footer-bg__scene-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-/* Generic fruit wrapper – JS translates the <img>, wrapper stays fixed */
-.footer-bg__item {
-  position: absolute;
-  pointer-events: auto; /* so hover works on the fruit area */
-}
-
-.footer-bg__item img {
-  display: block;
-  user-select: none;
-  pointer-events: none; /* events stay on wrapper */
-  will-change: transform;
-}
-
-/* ----- Positions (tweak numbers if needed) ----- */
-
-/* Tall orange bread / stick behind footer */
-.footer-bg__item--bread {
-  bottom: 15rem;
-  left: 26%;
-  transform: translateX(-32%);
-}
-
-/* Tomato above the stick, slightly to the right */
-.footer-bg__item--tomato {
-  bottom: 34rem;
-  left: 38%;
-  transform: translateX(-4rem);
-}
-
-/* Cucumber crossing the middle-right */
-.footer-bg__item--cucumber {
-  bottom: 17rem;
-  right: 38%;
-}
-
-/* Oil bottle at top-right */
-.footer-bg__item--oil {
-  bottom: 34rem;
-  right: 20%;
-}
-
-/* Juice glass at the very bottom (this one looked correct) */
-.footer-bg__item--juice {
-  bottom: -10rem; /* sticks out from under the card */
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* Wrapper so glass footer + content sit above fruits */
-.footer-bg__content {
-  position: relative;
-  max-width: 1200px;
-  margin: 0 auto;
-  z-index: 1;
-}
-
-/* =========================
-   Glass footer
-   ========================= */
-.footer-glass {
-  position: relative;
-  width: 1200px;
-  height: 250px;
-  margin: 17rem auto -6rem 0;
-  background: #0c0f1499;
-  border: 1px solid #394350;
-  border-radius: 20px;
-  backdrop-filter: blur(60px);
-  -webkit-backdrop-filter: blur(60px);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
-  color: #fff;
-  overflow: visible;
-  padding: 2.8rem 3.2rem 4rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-/* Inner layout */
-.footer-glass__inner {
-  display: flex;
-  flex-direction: column;
-  gap: 4rem;
-}
-
-.footer-glass__top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 9rem;
-  display: flex;
-  margin: 3rem 1.5rem 0 0;
-}
-
-.footer-glass__brand {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100px;
-  height: 40px;
-}
-
-.footer-glass__brand img,
-.footer-glass__brand svg {
-  display: block; /* removes the inline baseline whitespace */
-  height: 100%;
-  width: auto;
-  height: 4rem;
-}
-
-.footer-glass__nav {
-  gap: 3rem;
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-}
-.footer-glass__nav a {
-  color: var(--text);
-  text-decoration: none;
-  opacity: 0.9;
-  line-height: 1; /* or 1.1 if you prefer */
-  display: inline-flex;
-  align-items: center;
-  height: 40px;
-  font-size: 1.6rem;
-  font-weight: 700;
-}
-.footer-glass__nav a:hover {
-  color: var(--accent);
-}
-
-/* Bottom row */
-.footer-glass__bottom {
-  flex-direction: row-reverse;
-  justify-content: flex-start;
-  gap: 16rem;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.footer-glass__copy {
-  font-size: 20px;
-  font-weight: 400;
-  color: #999fa8;
-  margin: 0;
-}
-
-.footer-glass__socials {
-  width: auto;
-  height: auto;
-  display: flex;
-  gap: 2rem;
-}
-.footer-glass__socials a {
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  text-decoration: none;
-  font-size: 2rem;
-  transition: background 0.2s;
-}
-.footer-glass__socials a:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.footer-glass__socials a svg {
-  width: 30px;
-  height: 30px;
-}
-
-/* Back-to-top pill */
-.footer-glass__backtotop {
-  position: absolute;
-  bottom: -18px; /* hang below the footer */
-  left: 50%;
-  transform: translateX(-50%);
-  width: 56px; /* slightly larger for better tap area */
-  height: 56px;
-  border-radius: 16px;
-  background: rgba(15, 15, 16, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  z-index: 6; /* above footer */
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-  width: 100%;
-  height: 100%;
-}
-
-.footer-glass__backtotop:hover {
-  background: rgba(15, 15, 16, 0.65);
-}
-
-.footer-glass__chevron {
-  width: 10px;
-  height: 10px;
-  border-right: 2px solid #fff;
-  border-bottom: 2px solid #fff;
-  transform: rotate(225deg);
-}
-
-/* the “row height” */
-.footer-glass__brand {
-  height: 40px;
-  display: flex;
-  align-items: center;
-  flex: 0 0 auto;
-}
-
-/* the actual svg image */
-.footer-glass__brandImg {
-  height: 40px;
-  width: auto;
-  display: block;
-
-  /* OPTICAL ALIGNMENT (this is what you need) */
-  translate: 0 4px; /* try 2px–8px */
-}
-.footer-glass__button-wrapper {
-  height: 4rem;
-  width: 7rem;
-  bottom: 1%;
-  position: absolute;
-  right: 7%;
-}
-.footer-glass__button-wrapper::before {
-  border-radius: 1rem;
-  content: "";
-  background-color: #000;
-  height: 4.5rem;
-  width: 9rem;
-  bottom: -20%;
-  position: absolute;
-  right: -14%;
-  border-top: 1px solid #394350;
-  border-right: 1px solid #394350;
-  border-left: 1px solid #394350;
-  border-bottom: none;
-}
-
-/* src/assets/css/landing-mobile-header.css */
 
 .landing-mobile-header {
   display: none;
@@ -2517,6 +2244,7 @@ body {
 /***************************************
  * Mobile Why Menro Only
  ***************************************/
+
 @media (max-width: 768px) {
   .why-static {
     min-height: auto;
@@ -2530,16 +2258,15 @@ body {
   }
 
   .why-static__titles {
-    position: relative;
-    top: auto;
-    left: auto;
-    transform: none !important;
+    position: relative; /* Change from fixed to relative */
+    top: auto; /* Reset top */
+    /* transform: none !important;  <--- DELETE THIS LINE ENTIRELY */
     width: 100%;
     grid-column: 1 / -1;
     order: 1;
     text-align: center;
     margin-bottom: 1.8rem;
-    z-index: 1;
+    z-index: 1; /* Make sure it's above the cards */
   }
 
   .why-static__title {
@@ -2555,7 +2282,17 @@ body {
     margin-top: 1.2rem;
     color: #999fa8;
   }
-
+  @media (max-width: 768px) {
+    .bp__title {
+      padding: 0 1rem; /* Reduce padding to free up horizontal space */
+      white-space: nowrap; /* Prevent the text from wrapping to a second line */
+      font-size: clamp(
+        1.2rem,
+        6.5vw,
+        2.5rem
+      ); /* Dynamically scale text size based on screen width */
+    }
+  }
   .why-card,
   .pos-a,
   .pos-b,
@@ -2865,7 +2602,7 @@ body {
   }
 
   .stat-number {
-    font-size: 3rem;
+    font-size: 2rem;
     font-weight: 900;
     line-height: 1;
     color: #ff7a59;
@@ -2898,7 +2635,7 @@ body {
   }
 
   .stat-number {
-    font-size: 3rem;
+    font-size: 2rem;
   }
 
   .stat-text {
@@ -2992,9 +2729,9 @@ body {
     display: block;
 
     height: auto;
-    opacity: 1 !important;
+    /* opacity: 1 !important;
     visibility: visible !important;
-    will-change: auto !important;
+    will-change: auto !important; */
 
     filter: drop-shadow(0 1.8rem 3.2rem rgba(0, 0, 0, 0.48));
   }
@@ -3006,7 +2743,7 @@ body {
     left: 14%;
     top: 2.4rem;
 
-    transform: rotate(-5deg) translate3d(0, 0, 0) !important;
+    /* transform: rotate(-5deg) translate3d(0, 0, 0) !important; */
     z-index: 3;
   }
 
@@ -3016,7 +2753,7 @@ body {
     right: 6%;
     top: -0.4rem;
 
-    transform: rotate(5deg) translate3d(0, 0, 0) !important;
+    /* transform: rotate(5deg) translate3d(0, 0, 0) !important; */
     z-index: 4;
   }
 
@@ -3089,7 +2826,7 @@ body {
   }
 
   .install-banner__mobile-content .hero__title {
-    font-size: 3rem;
+    font-size: 2.5rem;
   }
 
   .install-banner__mobile-content .hero__description {
@@ -3222,11 +2959,8 @@ body {
     width: 100%;
     height: auto;
     min-height: 51rem;
-
     margin: 0;
-    border-radius: 0;
     overflow: hidden;
-
     border: 2px solid #029dfb;
     background: #0c0f14;
     box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.38);
@@ -3239,7 +2973,7 @@ body {
   }
 
   .plans-pin--mobile .plan-card__content {
-    min-height: 51rem;
+    max-height: 60rem;
 
     display: flex;
     flex-direction: column;
@@ -3790,370 +3524,7 @@ body {
     max-width: calc(100% - 4.4rem);
   }
 }
-/***************************************
- * Mobile Footer Only
- ***************************************/
-@media (max-width: 768px) {
-  .footer-bg {
-    --footer-glass-bg: rgba(12, 15, 20, 0.6);
-    --footer-glass-border: rgba(255, 255, 255, 0.12);
-    --footer-glass-blur: 2rem;
 
-    position: relative;
-    background: #0b0f13;
-
-    padding: 2px 2rem calc(12.5rem + env(safe-area-inset-bottom));
-    min-height: 10rem;
-    margin-top: 10rem;
-
-    overflow: visible;
-  }
-
-  .footer-bg__content {
-    position: relative;
-    z-index: 2;
-    width: 100%;
-    max-width: 38rem;
-    margin: 0 auto;
-    transform: translateY(-3.6rem);
-  }
-
-  .footer-bg__scene {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    width: 100%;
-    max-width: 42rem;
-    height: 100%;
-    transform: translateX(-50%) translateY(-3.6rem);
-    z-index: 1;
-    pointer-events: none;
-  }
-
-  .footer-bg__scene-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-  }
-
-  .footer-bg__item {
-    position: absolute;
-    pointer-events: none;
-  }
-
-  .footer-bg__item img {
-    display: block;
-    max-width: none;
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
-  }
-
-  .footer-bg__item--bread {
-    top: -1.2rem;
-    left: 5.8rem;
-    bottom: auto;
-    transform: rotate(-1deg);
-  }
-
-  .footer-bg__item--bread img {
-    width: 11rem;
-  }
-
-  .footer-bg__item--tomato {
-    top: -3.2rem;
-    left: 33%;
-    bottom: auto;
-    transform: none;
-  }
-
-  .footer-bg__item--tomato img {
-    width: 8.8rem;
-  }
-
-  .footer-bg__item--oil {
-    top: -2.4rem;
-    right: 5.2rem;
-    bottom: auto;
-    transform: rotate(1deg);
-  }
-
-  .footer-bg__item--oil img {
-    width: 12rem;
-  }
-
-  .footer-bg__item--cucumber {
-    top: 3.8rem;
-    right: 38%;
-    bottom: auto;
-    transform: rotate(-16deg);
-  }
-
-  .footer-bg__item--cucumber img {
-    width: 8rem;
-  }
-
-  .footer-bg__item--juice {
-    bottom: 5.5rem;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-
-  .footer-bg__item--juice img {
-    width: 9.5rem;
-  }
-
-  /***************************************
-   * Glass wrapper becomes invisible on mobile
-   * Top and bottom become separate glass layers
-   ***************************************/
-  .footer-glass {
-    width: 100%;
-    height: auto;
-    min-height: 0;
-
-    margin: 5rem auto 0;
-    padding: 0;
-
-    background: transparent !important;
-    border: 0 !important;
-    border-radius: 0;
-    box-shadow: none !important;
-
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-
-    display: block;
-    overflow: visible;
-  }
-
-  .footer-glass__inner {
-    position: relative;
-    width: 100%;
-
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-
-  /***************************************
-   * Upper glass card
-   ***************************************/
-  .footer-glass__top {
-    position: relative;
-    z-index: 2;
-
-    width: 100%;
-    margin: 0;
-    padding: 2rem 2.4rem 2.6rem;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-
-    gap: 2.2rem;
-
-    border-radius: 1.4rem;
-    border: 1px solid var(--footer-glass-border);
-
-    background: var(--footer-glass-bg);
-    backdrop-filter: blur(var(--footer-glass-blur));
-    -webkit-backdrop-filter: blur(var(--footer-glass-blur));
-
-    box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.36);
-  }
-
-  .footer-glass__brand {
-    width: auto;
-    height: 3.2rem;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .footer-glass__brandImg {
-    height: 3.2rem;
-    width: auto;
-    display: block;
-    translate: none;
-  }
-
-  .footer-glass__nav {
-    width: 100%;
-
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    column-gap: 1.4rem;
-    row-gap: 1.6rem;
-
-    align-items: center;
-    justify-items: center;
-  }
-
-  .footer-glass__nav a {
-    height: auto;
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    color: #ffffff;
-    font-size: 1.25rem;
-    font-weight: 700;
-    line-height: 1.4;
-    text-align: center;
-    white-space: nowrap;
-    text-decoration: none;
-
-    opacity: 1;
-  }
-
-  .footer-glass__nav a:nth-child(5) {
-    grid-column: 1 / 3;
-  }
-
-  .footer-glass__nav a:nth-child(6) {
-    grid-column: 3 / 4;
-  }
-
-  .footer-glass__nav a:nth-child(7) {
-    grid-column: 4 / 5;
-  }
-
-  /***************************************
-   * Lower glass card: behind upper card
-   ***************************************/
-  .footer-glass__bottom {
-    position: relative;
-    z-index: 1;
-
-    width: calc(100% - 6rem);
-    margin: -1.2rem auto 0;
-    padding: 3rem 1.6rem 1.6rem;
-
-    display: flex;
-    flex-direction: column-reverse;
-    align-items: center;
-    justify-content: center;
-
-    gap: 1.3rem;
-
-    border-radius: 0 0 1.2rem 1.2rem;
-    border: 1px solid var(--footer-glass-border);
-    border-top: 0;
-
-    background: var(--footer-glass-bg);
-    backdrop-filter: blur(var(--footer-glass-blur));
-    -webkit-backdrop-filter: blur(var(--footer-glass-blur));
-
-    box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.28);
-  }
-
-  .footer-glass__socials {
-    width: 100%;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    gap: 2.2rem;
-  }
-
-  .footer-glass__socials a {
-    width: 2.6rem;
-    height: 2.6rem;
-
-    display: grid;
-    place-items: center;
-
-    border-radius: 0;
-    background: transparent;
-    text-decoration: none;
-  }
-
-  .footer-glass__socials a svg {
-    width: 2.2rem;
-    height: 2.2rem;
-    opacity: 0.75;
-  }
-
-  .footer-glass__copy {
-    max-width: 100%;
-
-    margin: 0;
-
-    color: #8f98a6;
-    font-size: 1.05rem;
-    font-weight: 500;
-    line-height: 1.7;
-    text-align: center;
-  }
-
-  .footer-glass__button-wrapper {
-    display: none;
-  }
-}
-
-@media (max-width: 420px) {
-  .footer-bg {
-    padding-top: 0.1rem;
-    padding-inline: 1.8rem;
-    padding-bottom: calc(12.5rem + env(safe-area-inset-bottom));
-  }
-
-  .footer-bg__content {
-    max-width: 32rem;
-    transform: translateY(-3.2rem);
-  }
-
-  .footer-bg__scene {
-    transform: translateX(-50%) translateY(-3.2rem);
-  }
-
-  .footer-glass {
-    margin-top: 4.8rem;
-  }
-
-  .footer-glass__top {
-    padding: 1.8rem 2rem 2.4rem;
-  }
-
-  .footer-glass__nav {
-    column-gap: 1rem;
-    row-gap: 1.5rem;
-  }
-
-  .footer-glass__nav a {
-    font-size: 1.15rem;
-  }
-
-  .footer-glass__bottom {
-    width: calc(100% - 5rem);
-    margin-top: -1.1rem;
-  }
-
-  .footer-bg__item--bread img {
-    width: 10rem;
-  }
-
-  .footer-bg__item--tomato img {
-    width: 8rem;
-  }
-
-  .footer-bg__item--oil img {
-    width: 11rem;
-  }
-
-  .footer-bg__item--cucumber img {
-    width: 7rem;
-  }
-
-  .footer-bg__item--juice img {
-    width: 33rem;
-  }
-}
 .pos-i--menro-logo {
   display: flex;
   align-items: center;
@@ -4237,4 +3608,14 @@ body::-webkit-scrollbar {
     /* -100% prevents the ball from spilling outside the right edge of the bar */
     transform: translate(-100%, -50%);
   }
+}
+@media (max-width: 768px) {
+  .bp__title {
+    /* Adjust these values specifically for mobile! */
+    top: 12%;
+    transform: translate(00%, -40%) !important;
+  }
+}
+.app-shell-content {
+  padding: 1rem !important; /* Or whatever padding you actually want, e.g., padding-top: 2rem; */
 }

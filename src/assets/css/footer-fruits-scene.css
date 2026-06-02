@@ -1,0 +1,159 @@
+/* =========================================
+   FooterFruitsScene.css
+   ========================================= */
+
+.footer-bg {
+  position: relative;
+  background-color: #0b0f13;
+  padding-top: 20rem; /* Space for fruits + footer + back-to-top */
+  overflow: hidden;
+}
+
+/* Wrapper so glass footer + content sit above fruits */
+.footer-bg__content {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  z-index: 1;
+}
+
+/* Fruits background scene (5 floating icons behind the glass footer) */
+.footer-bg__scene {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1200px; /* Same width as glass footer */
+  height: 100%;
+  z-index: 0; /* Behind glass footer */
+  pointer-events: none; /* Wrapper doesn't block clicks */
+}
+
+.footer-bg__scene-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Generic fruit wrapper */
+.footer-bg__item {
+  position: absolute;
+  pointer-events: auto; /* So hover works on the fruit area */
+}
+
+.footer-bg__item img {
+  display: block;
+  user-select: none;
+  pointer-events: none; /* Events stay on wrapper */
+  will-change: transform;
+}
+
+/* ----- Desktop Positions ----- */
+.footer-bg__item--bread {
+  bottom: 9rem;
+  left: 16%;
+}
+.footer-bg__item--tomato {
+  bottom: 25rem;
+  left: 34%;
+}
+.footer-bg__item--cucumber {
+  bottom: 10rem;
+  right: 41%;
+}
+.footer-bg__item--oil {
+  bottom: 22rem;
+  right: 24%;
+}
+.footer-bg__item--juice {
+  bottom: -10rem;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/***************************************
+ * Mobile Adjustments
+ ***************************************/
+@media (max-width: 768px) {
+  .footer-bg {
+    --footer-glass-bg: rgba(12, 15, 20, 0.6);
+    --footer-glass-border: rgba(255, 255, 255, 0.12);
+    --footer-glass-blur: 2rem;
+    padding: 1rem;
+    min-height: 10rem;
+    margin-top: 15rem;
+    overflow: visible;
+  }
+
+  .footer-bg__content {
+    width: 100%;
+    max-width: 38rem;
+    transform: translateY(-3.6rem);
+  }
+
+  .footer-bg__scene {
+    width: 100%;
+    max-width: 42rem;
+    transform: translateX(-50%) translateY(-3.6rem);
+  }
+
+  .footer-bg__item {
+    pointer-events: none; /* Disable hover area completely on mobile */
+  }
+
+  .footer-bg__item img {
+    display: block;
+    max-width: none;
+    /* NOTE: !important overrides removed here so JS fade-in works on mobile */
+  }
+
+  /* ----- Mobile Positions ----- */
+  .footer-bg__item--bread {
+    top: -6.2rem;
+    left: 3.8rem;
+    bottom: auto;
+    transform: rotate(-1deg) scale(1.4);
+  }
+  .footer-bg__item--bread img {
+    width: 11rem;
+  }
+
+  .footer-bg__item--tomato {
+    top: -9.2rem;
+    left: 33%;
+    bottom: auto;
+    transform: scale(1.2);
+  }
+  .footer-bg__item--tomato img {
+    width: 8.8rem;
+  }
+
+  .footer-bg__item--oil {
+    top: -10.4rem;
+    right: 1.2rem;
+    bottom: auto;
+    transform: rotate(1deg) scale(1.2);
+  }
+  .footer-bg__item--oil img {
+    width: 12rem;
+  }
+
+  .footer-bg__item--cucumber {
+    top: -3.2rem;
+    right: 27%;
+    bottom: auto;
+    transform: rotate(-16deg) scale(1.2);
+  }
+  .footer-bg__item--cucumber img {
+    width: 8rem;
+  }
+
+  .footer-bg__item--juice {
+    bottom: 7.7rem;
+    left: 50%;
+    transform: translateX(-50%) scale(4.5);
+  }
+  .footer-bg__item--juice img {
+    width: 9.5rem;
+  }
+}

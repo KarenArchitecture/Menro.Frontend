@@ -1,3 +1,5 @@
+// src/components/home/RestaurantList.jsx
+
 import React, { useEffect, useMemo } from "react";
 import SectionHeader from "../common/SectionHeader";
 import RestaurantCard from "./RestaurantCard";
@@ -6,7 +8,6 @@ import { getRandomRestaurants } from "../../api/restaurants";
 import { publicSearch } from "../../api/search";
 import StateMessage from "../common/StateMessage";
 import StarIcon2 from "../icons/StarIcon2";
-import publicAxios from "../../api/publicAxios";
 import ShimmerRow from "../common/ShimmerRow";
 
 const normalizeFa = (s = "") =>
@@ -55,40 +56,6 @@ function RestaurantList({ searchQuery = "", onSearchCount }) {
     staleTime: 60_000,
     retry: 1,
   });
-
-  const apiOrigin = useMemo(
-    () => new URL(publicAxios.defaults.baseURL).origin,
-    []
-  );
-
-  const appOrigin = useMemo(() => window.location.origin, []);
-
-  const toAssetUrl = (url, fallback) => {
-    const candidate = url || fallback;
-
-    if (!candidate) return undefined;
-
-    if (
-      candidate.startsWith("http://") ||
-      candidate.startsWith("https://")
-    ) {
-      return candidate;
-    }
-
-    const withSlash = candidate.startsWith("/")
-      ? candidate
-      : `/${candidate}`;
-
-    if (withSlash.startsWith("/img/")) {
-      return `${apiOrigin}${withSlash}`;
-    }
-
-    if (withSlash.startsWith("/images/")) {
-      return `${appOrigin}${withSlash}`;
-    }
-
-    return `${appOrigin}${withSlash}`;
-  };
 
   useEffect(() => {
     if (!onSearchCount) return;
@@ -149,15 +116,9 @@ function RestaurantList({ searchQuery = "", onSearchCount }) {
                 rating: Number(r.rating) || 0,
                 voters: r.voters || 0,
 
-                bannerImageUrl: toAssetUrl(
-                  r.bannerImageUrl,
-                  "/images/restaurant/restaurant-home-placeholder.png"
-                ),
+                bannerImageUrl: r.bannerImageUrl,
 
-                logoImageUrl: toAssetUrl(
-                  r.logoImageUrl,
-                  "/images/restaurant/logo-placeholder.png"
-                ),
+                logoImageUrl: r.logoImageUrl,
 
                 isOpen: !!r.isOpen,
                 slug: r.slug,

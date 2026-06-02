@@ -9,6 +9,17 @@
   font-display: swap;
 }
 
+.fa,
+.fas,
+.far,
+.fal,
+.fab,
+[class^="fa-"],
+[class*=" fa-"] {
+  font-family: "Font Awesome 5 Free", "Font Awesome 5 Brands" !important;
+  font-style: normal;
+}
+
 * {
   font-family: "Estedad" !important;
 }
@@ -81,10 +92,11 @@ ul {
 }
 
 /* mobile Navigation */
+/* خاردار */
 .mobile-nav {
   width: 100%;
   height: 8rem;
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
   display: flex;
@@ -97,6 +109,13 @@ ul {
     transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
     opacity 520ms cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+@media screen and (max-width: 1024px) {
+  .app-shell__content {
+    padding-bottom: var(--app-shell-pb, 9rem);
+  }
+}
+/* خاردار */
 
 .mobile-nav-list {
   width: 100%;
@@ -852,7 +871,7 @@ ul {
     content: "";
     position: absolute;
     inset: 0;
-    background-image: url("../../../public/images/common/noise.png");
+    background-image: url("/public/images/common/noise.png");
     background-repeat: repeat;
     opacity: 0.35;
     pointer-events: none;
@@ -887,8 +906,9 @@ ul {
     left: 1.2rem;
     right: 1.2rem;
     border-radius: 1.5rem;
-    transform: translateZ(-120px) scale(0.92) rotateX(1.5deg);
-    filter: brightness(0.96) saturate(0.92);
+    /* transform: translateZ(-120px) scale(0.92) rotateX(1.5deg); */
+    /* filter: brightness(0.96) saturate(0.92); */
+    transform: scale(0.92);
     box-shadow: 0 50px 140px rgba(0, 0, 0, 0.55);
     border: 2px solid rgba(255, 255, 255, 0.3);
   }

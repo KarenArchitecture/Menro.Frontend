@@ -20,6 +20,14 @@ const normalizeFa = (s = "") =>
     .replace(/\s+/g, " ")
     .trim();
 
+function normalizeTargetUrl(raw) {
+  const t = raw?.trim();
+  if (!t) return null;
+  if (/^https?:\/\//i.test(t)) return t;
+  if (t.startsWith("/")) return t;
+  return null;
+}
+
 function SearchModeFoods({ q, onSearchCount }) {
   const searchQ = useQuery({
     queryKey: ["foodSearchDb", q],
@@ -38,7 +46,8 @@ function SearchModeFoods({ q, onSearchCount }) {
           restaurantId: x.restaurantId,
           restaurantSlug: x.restaurantSlug,
           restaurantPath:
-            x.targetUrl || (x.restaurantSlug ? `/restaurant/${x.restaurantSlug}` : undefined),
+            normalizeTargetUrl(x.targetUrl) ||
+            (x.restaurantSlug ? `/restaurant/${x.restaurantSlug}` : undefined),
           rating: Number(x.rating) || 0,
           voters: x.voters ?? 0,
         }));
@@ -230,4 +239,3 @@ export default function PopularFoodAndAdBannerLazyList({
     <NormalModeFeed showAds={showAds} />
   );
 }
-

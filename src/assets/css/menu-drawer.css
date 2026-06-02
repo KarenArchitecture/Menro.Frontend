@@ -12,6 +12,16 @@
     pointer-events: none;
 }
 
+/* blink problem solution */
+.menu-drawer,
+.menu-drawer__panel,
+.menu-drawer__backdrop {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: transform, opacity;
+}
+/* blink problem solution */
+
 .menu-drawer--open {
     pointer-events: auto;
 }

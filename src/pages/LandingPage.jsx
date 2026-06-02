@@ -13,7 +13,7 @@ import FAQSection from "../components/landing/FAQSection";
 import BlogSection from "../components/landing/BlogSection";
 import GlassFooter from "../components/common/GlassFooter";
 import FooterFruitsScene from "../components/common/FooterFruitsScene";
-import LandingMobileHeader from "../components/landing/LandingMobileHeader";
+import MobileHeader from "../components/common/MobileHeader";
 
 export default function LandingPage() {
   const leftIcons = [
@@ -72,7 +72,7 @@ export default function LandingPage() {
         className="landing-desktop-header"
       />
 
-      <LandingMobileHeader />
+      <MobileHeader />
 
       <Hero />
       <WhyMenroSection />

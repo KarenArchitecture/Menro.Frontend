@@ -6,7 +6,7 @@ import BlogFeed from "../components/blog/BlogFeed";
 import BlogSidebar from "../components/blog/BlogSidebar";
 import GlassFooter from "../components/common/GlassFooter";
 import FooterFruitsScene from "../components/common/FooterFruitsScene";
-
+import MobileHeader from "../components/common/MobileHeader";
 // CSS Imports
 import "../assets/css/styles-blog.css";
 const leftIcons = [
@@ -45,7 +45,7 @@ const BlogPage = () => {
           className="landing-desktop-header"
         />
       </div>
-
+      <MobileHeader />
       <BlogHero />
       <BlogCategories />
 

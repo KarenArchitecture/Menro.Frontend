@@ -238,17 +238,17 @@
   background-color: #111214;
   padding: 16px;
   border-radius: 16px;
-  border: 1px solid #2a2d32;
+  border: none;
   transition:
     transform 0.2s ease,
     border-color 0.2s ease;
   cursor: pointer;
 }
 
-.category-card:hover {
+/* .category-card:hover {
   transform: translateY(-5px);
   border-color: #4a4d52;
-}
+} */
 
 .category-icon-box {
   width: 50px;
@@ -279,14 +279,14 @@
 /* --- Responsive Adjustments --- */
 @media (max-width: 1024px) {
   .categories-wrapper {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 2fr);
   }
 }
 
 @media (max-width: 600px) {
   .categories-wrapper {
-    grid-template-columns: 1fr;
-    padding: 20px;
+    grid-template-columns: repeat(2, 2fr);
+    padding: 1rem;
   }
 
   .blog-categories-section {
@@ -497,3 +497,157 @@
   }
 }
 /* Update the grid to automatically fit narrow columns (approx 240px-250px wide) */
+@media (max-width: 768px) {
+  .blog-hero-section {
+    height: 88vh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding-bottom: 0;
+    overflow: hidden;
+  }
+
+  /* 1. Make sure images are visible and positioned absolutely */
+  .floating-img {
+    display: block !important;
+    position: absolute;
+    z-index: 1; /* Keep behind text */
+  }
+
+  .img-soda {
+    top: 12%;
+    right: -18px;
+    width: 100px;
+    --rot: -5deg;
+  }
+
+  .img-fries {
+    top: 20%;
+    left: 15%;
+    width: 123px;
+    --rot: -7deg;
+  }
+
+  .img-sushi {
+    top: 23%;
+    right: 17%;
+    width: 100px;
+    --rot: 5deg;
+  }
+
+  .img-burger {
+    top: 42%;
+    left: 50%;
+    width: 120px;
+    translate: -50% -50%;
+    --rot: -3deg;
+  }
+
+  .img-ramen {
+    top: 40%;
+    left: -8.4rem;
+    width: 250px;
+    --rot: 1deg;
+  }
+
+  .img-pizza {
+    top: 44%;
+    right: -14rem;
+    width: 30rem;
+    --rot: 2deg;
+  }
+
+  /* 3. Adjust Content (Text & SearchBar) */
+  .blog-hero-content {
+    position: relative;
+    gap: 0;
+    z-index: 10;
+    width: 100%;
+    padding: 0 20px;
+    text-align: center;
+    margin-bottom: 6rem;
+  }
+
+  .hero-title {
+    font-size: 2rem; /* Adjust if needed to match exact font scale */
+    line-height: 1.5;
+    margin-bottom: 24px;
+    font-weight: 900;
+  }
+
+  /* Hide scroll indicator on mobile to keep it clean (optional) */
+  .scroll-indicator {
+    display: none;
+  }
+}
+@media (max-width: 768px) {
+  .landing-desktop-header,
+  .header-wrapper {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .blog-categories-section {
+    padding: 16px;
+  }
+
+  .categories-wrapper {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 columns for mobile */
+    gap: 8px;
+    background-color: #181920; /* Dark wrapper background */
+    padding: 16px;
+    border-radius: 20px;
+    direction: rtl; /* Puts the colored box on the right */
+    column-gap: 2rem;
+    row-gap: 3rem;
+  }
+
+  .category-card {
+    background-color: #111217; /* Darker card background */
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .category-icon-box {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .category-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: right;
+    justify-content: center;
+  }
+
+  .category-text h3 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-weight: bold;
+    line-height: 1.2;
+  }
+
+  .category-text p {
+    margin: 0;
+    color: #8c8f9f; /* Muted gray for subtitle */
+    font-size: 9px;
+    line-height: 1.2;
+  }
+}
+
+/* Optional: Fallback for very small screens (like iPhone SE) so text doesn't squish */
+@media (max-width: 420px) {
+  .categories-wrapper {
+    grid-template-columns: repeat(2fr);
+  }
+}

@@ -411,7 +411,10 @@ function MenuList({
             <div
               className={`menu_nav ${isFocusedCategory ? "menu_nav--focused" : ""}`}
             >
-              <div className="menu_nav-title-holder">
+              <div
+                key={`${catId}-${section.categoryTitle}`}
+                className="menu_nav-title-holder"
+              >
                 <span
                   className="menu_nav-icon"
                   dangerouslySetInnerHTML={{

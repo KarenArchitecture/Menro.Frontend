@@ -1,10 +1,12 @@
 import React from "react";
+import ReactDOM from "react-dom"; // اضافه شد
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function CheckoutBar({ count = 0, total = 0, onCheckout }) {
   const fmt = (n) => (Number(n) || 0).toLocaleString("fa-IR");
 
-  return (
+  // ابتدا UI را در یک متغیر تعریف می‌کنیم
+  const barUI = (
     <AnimatePresence>
       {count > 0 && (
         <motion.div
@@ -13,6 +15,7 @@ export default function CheckoutBar({ count = 0, total = 0, onCheckout }) {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: "100%", opacity: 0 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
+          style={{ zIndex: 2500 }} // اطمینان از اینکه بالاتر از مودال (1300) است
           role="region"
           aria-label="خلاصه سبد خرید"
         >
@@ -37,6 +40,12 @@ export default function CheckoutBar({ count = 0, total = 0, onCheckout }) {
       )}
     </AnimatePresence>
   );
+
+  // رندر کردن با Portal در انتهای body
+  if (typeof document !== "undefined") {
+    return ReactDOM.createPortal(barUI, document.body);
+  }
+  return null;
 }
 
 

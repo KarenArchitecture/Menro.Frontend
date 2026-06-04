@@ -388,7 +388,7 @@ button.icon-btn {
 
 @media (max-width: 768px) {
     .checkout-safe-spacer {
-        height: 104px;
+        height: 8rem;
     }
 
     .checkout-bar {
@@ -451,16 +451,22 @@ button.icon-btn {
 }
 
 .menu_nav-title-holder {
-    /* display: flex; */
-    gap: 0.7rem;
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    /* gap: 0.5rem; */
-    transition:
-        font-size 0.2s ease,
-        font-weight 0.2s ease,
-        opacity 0.2s ease;
-    transform-origin: center;
+    gap: 0.75rem;
+    animation: menuDrawerTextChange 180ms ease both;
+}
+
+@keyframes menuDrawerTextChange {
+    from {
+        opacity: 0;
+        transform: translateY(0.45rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .menu_nav-icon {
@@ -864,32 +870,6 @@ button.icon-btn {
     text-align: center;
 }
 
-.menu-section--focused .menu_nav-title-holder {
-    animation: categoryTitleFadeIn 0.22s ease-out;
-}
-
-@keyframes categoryTitleFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(6px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* @keyframes categoryFocusPop {
-    0% {
-        opacity: 0;
-        transform: translateY(-8px) scale(0.96);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0) scale(1.08);
-    }
-} */
-
 .menu_nav-btn:hover {
     background: #2b3139;
 }
@@ -1234,13 +1214,12 @@ button.modal-top-action {
     z-index: 1300;
 }
 .checkout-bar {
-    z-index: 2000;
+    z-index: 2500 !important;
     position: fixed;
     left: 0;
     right: 0;
     bottom: 0;
-    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
-    pointer-events: none;
+    pointer-events: none; 
 }
 
 /* Scrollable content body */

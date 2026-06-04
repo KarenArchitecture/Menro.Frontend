@@ -155,7 +155,7 @@ function PageWrapper({ children, hideMobileNav, removePadding }) {
 export default function App() {
   const { pathname } = useLocation();
 
-  const NAV_HIDE_PREFIXES = ["/admin", "/checkout", "/landing"];
+  const NAV_HIDE_PREFIXES = ["/admin", "/checkout", "/landing", "/restaurant"];
 
   // 3. Define routes that should have 0px padding
   const NO_PADDING_PREFIXES = ["/landing", "/blog"];

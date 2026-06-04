@@ -20,14 +20,6 @@
     font-style: normal;
 }
 
-button,
-a,
-input,
-textarea,
-select {
-    -webkit-tap-highlight-color: transparent;
-}
-
 * {
     font-family: "Estedad" !important;
 }
@@ -864,7 +856,7 @@ ul {
     color: #e5e7eb;
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 420px) {
     /* Background layer that reveals behind the page */
     .page-background {
         position: fixed;
@@ -896,29 +888,17 @@ ul {
         backface-visibility: hidden;
         /* border: 2px solid transparent; */
         transition:
-            transform 700ms cubic-bezier(0.22, 1, 0.36, 1),
-            border-radius 700ms cubic-bezier(0.22, 1, 0.36, 1),
-            top 700ms cubic-bezier(0.22, 1, 0.36, 1),
-            left 700ms cubic-bezier(0.22, 1, 0.36, 1),
-            right 700ms cubic-bezier(0.22, 1, 0.36, 1),
-            bottom 700ms cubic-bezier(0.22, 1, 0.36, 1),
-            box-shadow 700ms cubic-bezier(0.22, 1, 0.36, 1),
-            filter 700ms cubic-bezier(0.22, 1, 0.36, 1);
-        will-change:
-            transform, border-radius, top, left, right, bottom, box-shadow,
-            filter;
+            transform 600ms cubic-bezier(0.22, 1, 0.36, 1),
+            border-radius 600ms cubic-bezier(0.22, 1, 0.36, 1),
+            box-shadow 600ms cubic-bezier(0.22, 1, 0.36, 1);
+        will-change: transform;
     }
 
     .app-shell--shifted {
-        top: 1rem;
-        bottom: 1rem;
-        left: 1.2rem;
-        right: 1.2rem;
+        transform: scale(0.92) translate3d(0, 8px, 0);
         border-radius: 1.5rem;
-        /* transform: translateZ(-120px) scale(0.92) rotateX(1.5deg); */
-        /* filter: brightness(0.96) saturate(0.92); */
         transform: scale(0.92);
-        box-shadow: 0 50px 140px rgba(0, 0, 0, 0.55);
+        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
         border: 2px solid rgba(255, 255, 255, 0.3);
     }
 

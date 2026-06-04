@@ -128,7 +128,6 @@ import {
 } from "../src/Context/DrawerStateContext";
 
 // --- Page wrapper for 3D depth animation ---
-// 1. Add removePadding prop
 function PageWrapper({ children, hideMobileNav, removePadding }) {
   const { isDrawerOpen } = useDrawerState();
 
@@ -137,8 +136,6 @@ function PageWrapper({ children, hideMobileNav, removePadding }) {
       <div className={`page-background ${isDrawerOpen ? "is-visible" : ""}`} />
 
       <div className={`app-shell ${isDrawerOpen ? "app-shell--shifted" : ""}`}>
-        {/* 2. Conditionally apply 0px inline padding. 
-               Using `undefined` when false lets your CSS handle the default 9rem. */}
         <div
           className="app-shell__content"
           style={{ paddingBottom: removePadding ? "0px" : undefined }}
@@ -156,25 +153,19 @@ export default function App() {
   const { pathname } = useLocation();
 
   const NAV_HIDE_PREFIXES = ["/admin", "/checkout", "/landing", "/restaurant"];
-
-  // 3. Define routes that should have 0px padding
   const NO_PADDING_PREFIXES = ["/landing", "/blog"];
+  const hideMobileNav =
+    pathname === "/" ||
+    NAV_HIDE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
-  const hideMobileNav = NAV_HIDE_PREFIXES.some((prefix) =>
-    pathname.startsWith(prefix),
-  );
-
-  // 4. Check if current route matches our 0px padding routes
   const removePadding = NO_PADDING_PREFIXES.some((prefix) =>
     pathname.startsWith(prefix),
   );
 
   return (
     <DrawerStateProvider>
-      {/* 5. Pass the removePadding prop to the wrapper */}
       <PageWrapper hideMobileNav={hideMobileNav} removePadding={removePadding}>
         <Routes>
-          {/* مسیر صفحه اصلی به / تغییر یافت */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/home" element={<HomePage />} />
           <Route path="/blog" element={<BlogPage />} />

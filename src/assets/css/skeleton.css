@@ -1,0 +1,148 @@
+/* src/assets/css/skeleton.css */
+/* ===== Shared skeleton shimmer ===== */
+.skeleton-shimmer {
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.skeleton-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    animation: skeleton-shimmer-move 1.2s infinite;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.12),
+        transparent
+    );
+}
+
+@keyframes skeleton-shimmer-move {
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* ===== Restaurant skeleton ===== */
+.card-skeleton {
+    pointer-events: none;
+}
+
+.card-img-skeleton {
+    background: linear-gradient(180deg, #171b21 0%, #101317 100%);
+    overflow: hidden;
+}
+
+.logo-skeleton-wrap {
+    pointer-events: none;
+}
+
+.restaurant-badge-skeleton {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: #222833;
+}
+
+.time-badge-skeleton {
+    width: calc(100% - 6.5rem);
+    height: 28px;
+    border-radius: 0.6rem;
+    align-self: end;
+}
+
+.restaurant-title-skeleton {
+    width: 72%;
+    height: 18px;
+    border-radius: 8px;
+}
+
+.restaurant-meta-skeleton {
+    width: 48%;
+    height: 14px;
+    border-radius: 8px;
+    margin-top: -0.6rem;
+}
+
+/* ===== Food skeleton ===== */
+.food-card-skeleton {
+    pointer-events: none;
+}
+
+.food-image-skeleton {
+    background: linear-gradient(180deg, #171b21 0%, #101317 100%);
+    border-radius: inherit;
+}
+
+.food-rating-chip-skeleton {
+    position: absolute;
+    left: 3.5rem;
+    bottom: 0;
+    width: 58px;
+    height: 22px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.food-title-skeleton {
+    width: 90px;
+    height: 14px;
+    margin: 0 auto 0.5rem;
+    border-radius: 8px;
+}
+
+.food-title-skeleton--short {
+    width: 62px;
+}
+
+.food-cta-skeleton {
+    width: 117px;
+    max-width: 160px;
+    height: 3.6rem;
+    border-radius: 10px;
+}
+
+/* ===== Banner skeleton ===== */
+.banner-skeleton {
+    width: 100%;
+    border-radius: 2rem;
+    background: linear-gradient(180deg, #171b21 0%, #101317 100%);
+}
+
+/* ===== Carousel skeleton ===== */
+.carousel-skeleton {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(180deg, #171b21 0%, #101317 100%);
+}
+
+.carousel-indicators-skeleton {
+    position: absolute;
+    right: 2.5rem;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0.4rem;
+}
+
+.indicator-skeleton {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .skeleton-shimmer::after {
+        animation: none;
+    }
+}

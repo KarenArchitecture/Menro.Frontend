@@ -9,7 +9,8 @@ import {
 } from "../../api/restaurantAds";
 import StateMessage from "../common/StateMessage";
 import { Link } from "react-router-dom";
-import ShimmerRow from "../common/ShimmerRow";
+import SmartImage from "../common/SmartImage";
+import { BannerSkeleton } from "./HomeSkeletons";
 
 // Exclude list for banners (page-scope memory) -> AdIds
 if (!window.__menroBannerExcludeAdIds) window.__menroBannerExcludeAdIds = [];
@@ -190,7 +191,9 @@ export default function AdBanner({
   }, [isStatic, ad?.adId, sendImpression]);
 
   // ---- UI states ----
-  if (!isStatic && isLoading) return <ShimmerRow height={height} style={{ margin: "2.8rem auto" }} />;
+  if (!isStatic && isLoading) {
+    return <BannerSkeleton height={height} />;
+  }
 
   if (!isStatic && isError) {
     return (
@@ -244,14 +247,13 @@ export default function AdBanner({
 
   const ImgWrapper = (
     <div className="banner-content">
-      <img
+      <SmartImage
         src={finalImg}
+        fallback={fallbackImage}
         alt={finalTitle || "Ad banner"}
         className="single-banner-img"
-        onError={(e) => {
-          e.currentTarget.onerror = null;
-          e.currentTarget.src = fallbackImage;
-        }}
+        lazy={true}
+        rootMargin="300px"
       />
       <div className="banner-overlay" aria-hidden="true" />
       {(finalTitle || finalSubtitle) && (

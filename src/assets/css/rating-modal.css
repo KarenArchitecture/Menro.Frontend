@@ -1,0 +1,193 @@
+/* src/components/orders/RatingModal.css */
+
+/* Overlay taking up the whole screen, dimming the background */
+.rm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(13, 13, 18, 0.85); /* Dark transparent backdrop */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* Ensure it stays on top of everything */
+  padding: 20px;
+  box-sizing: border-box;
+  backdrop-filter: blur(4px);
+}
+
+/* The Modal Box */
+.rm-container {
+  background-color: #1a1c23; /* Dark background matching your design */
+  border-radius: 24px;
+  padding: 32px 24px;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Header styling */
+.rm-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 32px;
+  color: white;
+}
+
+.rm-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.rm-header-icon {
+  font-size: 1.2rem;
+  color: white;
+}
+
+/* Stars Wrapper */
+.rm-stars-container {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 40px;
+  direction: ltr; /* Keeps stars rendering Left to Right */
+}
+
+.rm-star-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Star Icons */
+.rm-star {
+  font-size: 2.5rem; /* Large stars */
+  transition: all 0.2s ease-in-out;
+}
+
+.rm-star.inactive {
+  color: #7b8193; /* Grayish blue outline */
+}
+
+.rm-star.active {
+  color: #ff623d; /* Vibrant orange */
+  /* This creates the glowing effect from your screenshot */
+  filter: drop-shadow(0 4px 12px rgba(255, 98, 61, 0.5));
+  transform: scale(1.1);
+}
+
+/* Numbers below stars */
+.rm-star-number {
+  font-size: 1.2rem;
+  font-weight: bold;
+  transition: color 0.2s;
+}
+
+.rm-star-number.inactive-num {
+  color: #7b8193;
+}
+
+.rm-star-number.active-num {
+  color: #ff623d;
+}
+
+/* Submit Button */
+.rm-submit-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 16px;
+  font-family: inherit;
+  font-size: 1.15rem;
+  font-weight: 800;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.rm-submit-btn.active {
+  background-color: #ff623d;
+  color: white;
+  cursor: pointer;
+}
+
+.rm-submit-btn.active:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
+.rm-submit-btn.disabled {
+  background-color: #2d2f38;
+  color: #7b8193;
+  cursor: not-allowed;
+}
+/* --- OPENING ANIMATIONS --- */
+.rm-overlay {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.rm-container {
+  animation: slideUp 0.3s ease-out forwards;
+}
+
+/* --- CLOSING ANIMATIONS --- */
+.rm-overlay.closing {
+  animation: fadeOut 0.3s ease-in forwards;
+}
+
+.rm-container.closing {
+  animation: slideDown 0.3s ease-in forwards;
+}
+
+/* --- KEYFRAMES --- */
+
+/* Background fades in */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Background fades out */
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Modal slides up and fades in */
+@keyframes slideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Modal slides down and fades out */
+@keyframes slideDown {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+}

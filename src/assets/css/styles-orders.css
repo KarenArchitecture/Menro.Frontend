@@ -1,0 +1,428 @@
+.continue-shopping-container {
+  background-color: #17181e; /* Matches the dark background in the image */
+  border-radius: 24px;
+  padding: 24px;
+  width: 100%;
+  max-width: 480px; /* Suitable for mobile layout */
+  margin: 0 auto;
+  color: white;
+  box-sizing: border-box;
+}
+
+/* --- Header --- */
+.cs-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  /* margin-bottom: 28px; */
+}
+
+.cs-logo-wrapper {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background-color: #2d2f38;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.cs-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cs-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cs-title {
+  color: #00e676; /* Vibrant green */
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.cs-date {
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+/* --- Images Row --- */
+.cs-images-row {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch; /* Stretches the +N box to match image height dynamically */
+  gap: 12px; /* Hardcoded from --cs-image-gap */
+  padding: 10px 0;
+  width: 100%;
+}
+
+.cs-images-row::-webkit-scrollbar {
+  display: none;
+}
+
+.cs-image-wrapper {
+  position: relative;
+  width: 56px; /* Hardcoded from --cs-image-size */
+  aspect-ratio: 1 / 1; /* Keeps images square when squished */
+  min-width: 0; /* Lets Flexbox squeeze this element */
+}
+
+.cs-item-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.cs-badge {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  background-color: #ff4c5e; /* Red badge */
+  color: white;
+  font-size: 13px;
+  font-weight: bold;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid #17181e; /* Matches background to create cutout effect */
+}
+
+.cs-more-items {
+  width: 124px; /* Hardcoded: (56px * 2) + 12px gap */
+  min-width: 0; /* Lets Flexbox squeeze this element */
+  background-color: #000000; /* Black box */
+  color: #ffffff; /* White text inside */
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+/* --- Total Section --- */
+.cs-total-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 0 4px;
+}
+
+.cs-total-label {
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+
+.cs-total-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cs-price {
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+
+.cs-currency {
+  color: #ff623d; /* Orange */
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+/* --- Actions --- */
+.cs-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.cs-btn {
+  flex: 1;
+  padding: 16px;
+  border: none;
+  border-radius: 16px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.2s;
+}
+
+.cs-btn:active {
+  opacity: 0.8;
+}
+
+.cs-btn-delete {
+  background-color: #f7f7f7;
+  color: #000;
+}
+
+.cs-btn-continue {
+  background-color: #ff623d; /* Orange */
+  color: white;
+}
+
+/* --- Small Screen Adjustments --- */
+@media (max-width: 400px) {
+  .cs-badge {
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+    bottom: -4px;
+    right: -4px;
+  }
+  .cs-more-items {
+    font-size: 1rem;
+  }
+}
+
+/* =========================================
+   PREVIOUS ORDER CARD (po-)
+   ========================================= */
+.po-container {
+  background-color: #17181e;
+  border-radius: 24px;
+  padding: 24px;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  color: white;
+  box-sizing: border-box;
+}
+
+/* --- Header --- */
+.po-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.po-logo-wrapper {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background-color: #2d2f38;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.po-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.po-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.po-title {
+  color: white; /* Title is white in previous orders */
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.po-tag {
+  color: #ff623d; /* Orange take-out tag */
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.po-date {
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+/* --- Images Row --- */
+.po-images-row {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 12px;
+  padding: 10px 0;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.po-image-wrapper {
+  position: relative;
+  width: 56px;
+  aspect-ratio: 1 / 1;
+  min-width: 0;
+}
+
+.po-item-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.po-badge {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  background-color: #ff4c5e;
+  color: white;
+  font-size: 13px;
+  font-weight: bold;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid #17181e;
+}
+
+/* View Bill Button */
+.po-view-bill-btn {
+  flex-grow: 1; /* Stretches to fill remaining space */
+  background-color: #0d0d12; /* Very dark box */
+  border: none;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  color: white;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  width: 15rem;
+}
+
+.po-view-bill-btn:active {
+  opacity: 0.8;
+}
+
+.po-view-bill-count {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.po-view-bill-text {
+  font-size: 0.95rem;
+  font-weight: bold;
+}
+
+/* --- Total Section --- */
+.po-total-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 0 4px;
+}
+
+.po-total-label {
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+
+.po-total-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.po-price {
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+
+.po-currency {
+  color: #ff623d;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+/* --- Actions / Ratings --- */
+.po-rate-btn {
+  width: 100%;
+  padding: 16px 20px;
+  border: none;
+  border-radius: 16px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.2s;
+  background-color: #ff623d;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.po-rate-btn:active {
+  opacity: 0.8;
+}
+
+.po-rated-box {
+  width: 100%;
+  padding: 16px 20px;
+  background-color: #0d0d12;
+  border-radius: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.po-rated-text {
+  color: white;
+  font-weight: bold;
+  font-size: 1.05rem;
+}
+
+.po-stars {
+  display: flex;
+  gap: 4px;
+  direction: ltr; /* Keeps stars rendering Left-to-Right naturally */
+}
+
+.po-star-filled {
+  color: #ff623d;
+  font-size: 1.1rem;
+}
+
+.po-star-empty {
+  color: #9ca3af;
+  font-size: 1.1rem;
+}
+
+/* --- Small Screen Adjustments --- */
+@media (max-width: 400px) {
+  .po-badge {
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+    bottom: -4px;
+    right: -4px;
+  }
+  .po-view-bill-text {
+    font-size: 0.85rem;
+  }
+  .po-rate-btn,
+  .po-rated-box {
+    padding: 12px 16px;
+    font-size: 1rem;
+  }
+}

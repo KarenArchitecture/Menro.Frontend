@@ -1,0 +1,253 @@
+/* Page Layout Hierarchy */
+.bills-page-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #121418; /* Standard app background */
+  overflow: hidden; /* Prevent full body scroll, handle inside scroll area */
+}
+
+/* --- Updated Header Styles --- */
+.bills-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 16px;
+  padding: 16px 24px;
+  background-color: #121418;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.bills-back-btn {
+  background-color: #1a1d24; /* Dark rounded rectangle matching screenshot */
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.bills-header-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.bills-header-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bills-header-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.bills-header-badge {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ff623d; /* Orange accent */
+  margin-right: 4px; /* Space between title and badge */
+}
+
+.bills-header-date {
+  font-size: 0.85rem;
+  color: #8e929c; /* Subdued gray text */
+  font-weight: 500;
+}
+
+.bills-scroll-area {
+  flex-grow: 1; /* Takes up remaining space */
+  overflow-y: auto; /* Handles its own scrolling */
+  padding: 16px 16px 100px 16px; /* 100px bottom padding to clear the fixed footer */
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bills-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #1e2128;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #333742;
+  z-index: 100;
+}
+
+.bills-footer-label {
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.bills-footer-total {
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+/* --- Card Container --- */
+.bill-card {
+  background: linear-gradient(135deg, #262b33 0%, #161b20 100%);
+  border-radius: 20px;
+  padding: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: #fff;
+}
+
+/* --- Header Layout --- */
+.bill-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.bill-card__image-wrapper {
+  width: 80px;
+  height: 80px;
+  border-radius: 16px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.bill-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bill-card__info {
+  flex: 1;
+  margin-top: 4px;
+}
+
+.bill-card__title {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 0;
+  color: #fff;
+}
+
+.bill-card__rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.rating-score {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.rating-count {
+  color: #8e929c;
+  font-size: 0.85rem;
+}
+
+/* --- Items List (Variants & Addons) --- */
+.bill-card__items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Spacing between rows */
+}
+
+.bill-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Main Category (Dark Background) */
+.variant-row {
+  background-color: #141921;
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+/* Addons (Transparent Background on Gradient) */
+.addon-row {
+  padding: 6px 16px;
+  font-weight: 500;
+}
+
+.addon-name-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.addon-check {
+  background-color: #141921;
+  border-radius: 6px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bill-row__name {
+  font-size: 0.95rem;
+}
+
+/* Quantity and Price Formatting */
+.bill-row__details {
+  display: flex;
+  align-items: center;
+  gap: 16px; /* Spacing between 'x15' and '240,000' */
+}
+
+.bill-row__qty {
+  font-size: 0.9rem;
+  color: #fff;
+}
+
+.bill-row__price {
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.currency {
+  color: #ff623d; /* Match the screenshot orange */
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+
+/* --- Total Section --- */
+.bill-card__total {
+  background-color: #141921;
+  padding: 14px 16px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+}
+
+.total-label {
+  font-size: 0.95rem;
+}

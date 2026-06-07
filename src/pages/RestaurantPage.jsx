@@ -6,9 +6,6 @@ import "../../public/shop.css";
 import ShopBanner from "../components/shop/ShopBanner";
 import MenuList from "../components/shop/MenuList";
 import ItemDetailModal from "../components/shop/ItemDetailModal";
-import ProfileIcon from "../components/icons/ProfileIcon";
-import SearchIcon from "../components/icons/SearchIcon";
-import CartIcon from "../components/icons/CartIcon";
 import CheckoutBar from "../components/shop/CheckoutBar";
 import FoodCategoryList, {
   ALL_CAT_SVG,
@@ -75,26 +72,6 @@ function RestaurantContent() {
     if (!res.ok) throw new Error("Failed loading details");
     return res.json();
   };
-
-  const leftIcons = useMemo(
-    () => [
-      { key: "profile", icon: <ProfileIcon /> },
-      {
-        key: "cart",
-        icon: <CartIcon />,
-        badge: cart.count > 0 ? cart.count : undefined,
-      },
-      { key: "search", icon: <SearchIcon /> },
-    ],
-    [cart.count]
-  );
-
-  const rightLinks = [
-    { label: "منرو", href: "#", active: true },
-    { label: "خانه", href: "#" },
-    { label: "نقشه", href: "#" },
-    { label: "مقالات", href: "#" },
-  ];
 
   const {
     data: banner,
@@ -191,14 +168,6 @@ function RestaurantContent() {
 
   return (
     <div>
-      {/* <AppHeader
-        rightLinks={rightLinks}
-        leftIcons={leftIcons}
-        position="fixed"
-        top={12}
-        maxWidth={1140}
-      /> */}
-
       {bannerLoading ? (
         <ShopBannerSkeleton />
       ) : (

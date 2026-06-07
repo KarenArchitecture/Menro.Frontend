@@ -46,8 +46,8 @@ export default function MenuItem({ item, onOpen, layout = "horizontal" }) {
   };
 
   // اصلاح منطق ساخت URL
-  const fullImageUrl =
-    resolveFileUrl(imageUrl) || "/images/food/food-placeholder.png";
+  const foodImageFallback = "/images/food/food-placeholder.png";
+  const fullImageUrl = resolveFileUrl(imageUrl) || foodImageFallback;
 
 
   // ---- cart key for this food ----
@@ -101,11 +101,10 @@ export default function MenuItem({ item, onOpen, layout = "horizontal" }) {
       <div className="menu-card__media">
         <SmartImage
           src={fullImageUrl}
-          fallback="/images/food/food-placeholder.png"
+          fallback={foodImageFallback}
           alt={name || "تصویر غذا"}
           className="menu-card__img"
           lazy={true}
-          rootMargin="300px"
         />
 
         <div className="menu-card__imgShade" aria-hidden />

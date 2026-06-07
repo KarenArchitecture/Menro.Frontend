@@ -250,12 +250,13 @@ export default function AdBanner({
       <SmartImage
         src={finalImg}
         fallback={fallbackImage}
-        alt={finalTitle || "Ad banner"}
+        alt={finalTitle || "بنر تبلیغاتی"}
         className="single-banner-img"
         lazy={true}
-        rootMargin="300px"
       />
+
       <div className="banner-overlay" aria-hidden="true" />
+
       {(finalTitle || finalSubtitle) && (
         <div className="banner-text banner-text--right">
           {finalTitle && <h2 className="banner-title">{finalTitle}</h2>}
@@ -264,6 +265,7 @@ export default function AdBanner({
       )}
     </div>
   );
+
 
   return (
     <section

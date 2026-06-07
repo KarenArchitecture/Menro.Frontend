@@ -113,7 +113,11 @@ ul {
     opacity: 1;
 }
 
-
+@media (prefers-reduced-motion: reduce) {
+    .smart-image {
+        transition: none;
+    }
+}
 
 /* mobile Navigation */
 /* خاردار */

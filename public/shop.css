@@ -1024,6 +1024,13 @@ button.icon-btn {
     object-fit: cover;
     display: block;
     background-repeat: no-repeat;
+    transition: opacity 220ms ease;
+    opacity: 0;
+    background-color: #101317;
+}
+
+.modal-hero-img.is-ready {
+    opacity: 1;
 }
 
 .modal-open {

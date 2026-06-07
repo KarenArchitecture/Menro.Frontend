@@ -57,10 +57,9 @@ export default function FoodCard({
         <SmartImage
           src={imgSrc}
           fallback="/images/food/food-placeholder.png"
-          alt={name || "تصویر غذا"}
+          alt={name ? `تصویر ${name}` : "تصویر غذا"}
           className="food-img"
           lazy={true}
-          rootMargin="300px"
         />
 
         <div className="rating-chip">

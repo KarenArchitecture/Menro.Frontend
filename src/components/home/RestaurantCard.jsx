@@ -57,7 +57,6 @@ function RestaurantCard({ restaurant }) {
           alt={`عکس رستوران ${name}`}
           className="card-img"
           lazy={true}
-          rootMargin="300px"
         />
 
         {discount > 0 && (
@@ -70,10 +69,9 @@ function RestaurantCard({ restaurant }) {
           <SmartImage
             src={logoSrc}
             fallback={logoFallback}
-            alt={`لوگو رستوران ${name}`}
+            alt={`لوگوی رستوران ${name}`}
             className="restaurant-badge"
             lazy={true}
-            rootMargin="300px"
           />
         </div>
       </div>

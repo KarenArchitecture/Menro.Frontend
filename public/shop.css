@@ -24,6 +24,7 @@ footer,
     overflow: visible;
 }
 
+
 body {
     background-color: #0c0f14;
     color: #fff;
@@ -447,7 +448,6 @@ button.icon-btn {
     margin-bottom: 0.2rem;
     gap: 0.3rem;
     background-color: #0c0f14;
-    transition: all 0.35s ease;
 }
 
 .menu_nav-title-holder {
@@ -2350,4 +2350,18 @@ body.has-checkout {
     transform: translate(-50%, -58%);
     font-size: 11px;
     color: #fff; /* or #fff / whatever fits */
+}
+
+
+svg {
+    animation: debugSvgFreeze 10s linear forwards !important;
+}
+
+@keyframes debugSvgFreeze {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 1;
+    }
 }

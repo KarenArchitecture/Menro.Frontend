@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { useCart } from "./CartContext";
 import StarIcon from "../icons/StarIcon";
 import resolveFileUrl from "../../utils/resolveFileUrl";
+import SmartImage from "../common/SmartImage";
 
 export default function MenuItem({ item, onOpen, layout = "horizontal" }) {
   // console.log("CARD ITEM FULL:", item);
@@ -98,15 +99,13 @@ export default function MenuItem({ item, onOpen, layout = "horizontal" }) {
       onClick={openModal}
     >
       <div className="menu-card__media">
-        <img
+        <SmartImage
           src={fullImageUrl}
-          alt={name}
+          fallback="/images/food/food-placeholder.png"
+          alt={name || "تصویر غذا"}
           className="menu-card__img"
-          loading="lazy"
-          onError={(e) => {
-            e.currentTarget.onerror = null;
-            e.currentTarget.src = "/images/food/food-placeholder.png";
-          }}
+          lazy={true}
+          rootMargin="300px"
         />
 
         <div className="menu-card__imgShade" aria-hidden />

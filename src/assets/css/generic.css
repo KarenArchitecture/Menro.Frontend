@@ -100,6 +100,25 @@ ul {
     }
 }
 
+/* سیستم لود شدن عکس */
+.smart-image {
+    opacity: 0;
+    transition: opacity var(--smart-image-fade-duration, 280ms) ease;
+    will-change: opacity;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+}
+
+.smart-image.is-ready {
+    opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .smart-image {
+        transition: none;
+    }
+}
+
 /* mobile Navigation */
 /* خاردار */
 .mobile-nav {

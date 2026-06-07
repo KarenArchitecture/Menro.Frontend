@@ -3,6 +3,10 @@ import { useNavigate } from "react-router-dom";
 import BillItemCard from "../components/Bills/BillItemCard";
 import "../assets/css/styles-bills.css";
 
+// Utility function to convert numbers to Persian digits
+const toPersianNum = (num) =>
+  Number(num).toLocaleString("fa-IR").replace(/٫/g, ".");
+
 const DUMMY_BILL_ITEMS = [
   {
     id: 1,
@@ -146,7 +150,8 @@ export default function BillsPage() {
       <div className="bills-footer" dir="rtl">
         <span className="bills-footer-label">مجموع کل سفارش</span>
         <span className="bills-footer-total">
-          {orderTotal.toLocaleString()} <span className="currency">تومان</span>
+          {toPersianNum(orderTotal)}{" "}
+          <span className="bill-currency">تومان</span>
         </span>
       </div>
     </div>

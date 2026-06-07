@@ -11,12 +11,13 @@
 .bills-header {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   gap: 16px;
   padding: 16px 24px;
   background-color: #121418;
   flex-shrink: 0;
   z-index: 10;
+  border-bottom: 1px solid #1b2026;
 }
 
 .bills-back-btn {
@@ -36,7 +37,7 @@
 .bills-header-info {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: flex-end;
   gap: 8px;
 }
 
@@ -80,19 +81,19 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: #1e2128;
-  padding: 20px 24px;
+  background-color: #13171e;
+  padding: 20px 36px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid #333742;
+  /* border-top: 1px solid #333742; */
   z-index: 100;
 }
 
 .bills-footer-label {
   color: #fff;
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 1.3rem;
 }
 
 .bills-footer-total {
@@ -121,8 +122,8 @@
 }
 
 .bill-card__image-wrapper {
-  width: 80px;
-  height: 80px;
+  width: 10rem;
+  height: 10rem;
   border-radius: 16px;
   overflow: hidden;
   flex-shrink: 0;
@@ -140,7 +141,7 @@
 }
 
 .bill-card__title {
-  font-size: 1rem;
+  font-size: 1.5rem;
   font-weight: 600;
   line-height: 1.5;
   margin: 0;
@@ -153,11 +154,12 @@
   gap: 4px;
   margin-top: 4px;
   flex-shrink: 0;
+  flex-direction: row-reverse; /* Align rating to the right */
 }
 
 .rating-score {
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 1.2rem;
 }
 
 .rating-count {
@@ -209,7 +211,8 @@
 }
 
 .bill-row__name {
-  font-size: 0.95rem;
+  font-size: 1.2rem;
+  font-weight: 700;
 }
 
 /* Quantity and Price Formatting */
@@ -220,7 +223,7 @@
 }
 
 .bill-row__qty {
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: #fff;
 }
 
@@ -229,12 +232,13 @@
   display: flex;
   align-items: center;
   gap: 4px;
+  font-size: 1.2rem;
 }
 
-.currency {
+.bill-currency {
   color: #ff623d; /* Match the screenshot orange */
-  font-size: 0.85rem;
-  font-weight: 400;
+  font-size: 1.2rem;
+  font-weight: 700;
 }
 
 /* --- Total Section --- */
@@ -250,4 +254,19 @@
 
 .total-label {
   font-size: 0.95rem;
+}
+.addon-check-icon {
+  background-color: #141920;
+  border-radius: 5px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.star-icon {
+  width: 20px;
+  height: 20px;
+  margin-bottom: 1px;
 }

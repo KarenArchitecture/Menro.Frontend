@@ -5,7 +5,7 @@ import ContinueShopping from "../components/orders/ContinueShopping";
 import PreviousOrderCard from "../components/orders/PreviousOrderCard";
 const Orders = () => {
   return (
-    <div style={{ minHeight: "100vh", padding: "20px" }}>
+    <div style={{ minHeight: "100vh" }}>
       <ContinueShopping />
       <PreviousOrderCard />
     </div>

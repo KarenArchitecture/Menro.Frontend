@@ -1,11 +1,12 @@
 import React from "react";
 
-const toPersianNum = (num) => Number(num).toLocaleString("fa-IR");
+const toPersianNum = (num) =>
+  Number(num).toLocaleString("fa-IR").replace(/٫/g, ".");
 
-const CheckIcon = () => (
+const CheckIcon = ({ size = 16, strokeWidth = 2.5 }) => (
   <svg
-    width="12"
-    height="12"
+    width={size}
+    height={size}
     viewBox="0 0 12 12"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -13,22 +14,10 @@ const CheckIcon = () => (
     <path
       d="M10 3L4.5 8.5L2 6"
       stroke="white"
-      strokeWidth="1.5"
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
     />
-  </svg>
-);
-
-const StarIcon = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="#ff623d"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
   </svg>
 );
 
@@ -40,11 +29,17 @@ export default function BillItemCard({ item }) {
         <div className="bill-card__image-wrapper">
           <img src={item.image} alt={item.title} className="bill-card__image" />
         </div>
+
         <div className="bill-card__info">
           <h3 className="bill-card__title">{item.title}</h3>
         </div>
+
         <div className="bill-card__rating">
-          <StarIcon />
+          <img
+            src="/images/checkout-star.svg"
+            alt="rating"
+            className="star-icon"
+          />
           <span className="rating-score">{toPersianNum(item.rating)}</span>
           <span className="rating-count">({toPersianNum(item.reviews)})</span>
         </div>
@@ -66,14 +61,14 @@ export default function BillItemCard({ item }) {
                 {variant.price && (
                   <span className="bill-row__price">
                     {toPersianNum(variant.price)}{" "}
-                    <span className="currency">تومان</span>
+                    <span className="bill-currency">تومان</span>
                   </span>
                 )}
               </div>
             </div>
 
             {/* Sub-items (Addons) */}
-            {variant.addons.map((addon) => (
+            {variant.addons?.map((addon) => (
               <div key={addon.id} className="bill-row addon-row">
                 <div className="addon-name-wrapper">
                   <span className="bill-row__name">{addon.name}</span>
@@ -87,9 +82,13 @@ export default function BillItemCard({ item }) {
                   {addon.price && (
                     <span className="bill-row__price">
                       {toPersianNum(addon.price)}{" "}
-                      <span className="currency">تومان</span>
+                      <span className="bill-currency">تومان</span>
                     </span>
                   )}
+                  {/* Styled entirely via CSS now */}
+                  <div className="addon-check-icon">
+                    <CheckIcon size={14} strokeWidth={2.5} />
+                  </div>
                 </div>
               </div>
             ))}
@@ -100,14 +99,11 @@ export default function BillItemCard({ item }) {
       {/* 3. Total Section */}
       <div className="bill-card__total">
         <span className="total-label">مجموعا</span>
-        <div className="bill-card__total">
-          <span className="total-label">مجموعا</span>
-          <div className="bill-row__details">
-            <span className="bill-row__price total-price">
-              {toPersianNum(item.totalPrice)}{" "}
-              <span className="currency">تومان</span>
-            </span>
-          </div>
+        <div className="bill-row__details">
+          <span className="bill-row__price total-price">
+            {toPersianNum(item.totalPrice)}{" "}
+            <span className="bill-currency">تومان</span>
+          </span>
         </div>
       </div>
     </div>

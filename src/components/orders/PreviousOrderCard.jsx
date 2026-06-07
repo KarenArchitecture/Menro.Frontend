@@ -167,7 +167,14 @@ export default function PreviousOrdersList() {
   ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "20px",
+        padding: "2rem",
+      }}
+    >
       {mockOrders.map((order) => (
         <PreviousOrderCard key={order.id} order={order} />
       ))}

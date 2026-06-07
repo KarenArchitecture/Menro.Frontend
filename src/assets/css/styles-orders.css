@@ -1,7 +1,7 @@
 .continue-shopping-container {
-  background-color: #17181e; /* Matches the dark background in the image */
-  border-radius: 24px;
-  padding: 24px;
+  background-color: #1b2026; /* Matches the dark background in the image */
+  /* border-radius: 24px; */
+  padding: 2rem;
   width: 100%;
   max-width: 480px; /* Suitable for mobile layout */
   margin: 0 auto;
@@ -56,8 +56,9 @@
   flex-direction: row;
   align-items: stretch; /* Stretches the +N box to match image height dynamically */
   gap: 12px; /* Hardcoded from --cs-image-gap */
-  padding: 10px 0;
+  /* padding: 10px 0; */
   width: 100%;
+  margin: 1rem 0 0;
 }
 
 .cs-images-row::-webkit-scrollbar {
@@ -113,7 +114,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin: 1.5rem 1rem;
   padding: 0 4px;
 }
 
@@ -149,7 +150,7 @@
   flex: 1;
   padding: 16px;
   border: none;
-  border-radius: 16px;
+  border-radius: 1rem;
   font-weight: 800;
   font-size: 1.1rem;
   cursor: pointer;
@@ -188,10 +189,13 @@
 /* =========================================
    PREVIOUS ORDER CARD (po-)
    ========================================= */
+
 .po-container {
-  background-color: #17181e;
-  border-radius: 24px;
-  padding: 24px;
+  /* Replace the solid background-color with this linear gradient */
+  background: linear-gradient(180deg, #262b33 0%, #161b20 100%);
+
+  border-radius: 2rem;
+  padding: 1.2rem;
   width: 100%;
   max-width: 480px;
   margin: 0 auto;
@@ -204,7 +208,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 20px;
+  /* margin-bottom: 20px; */
 }
 
 .po-logo-wrapper {
@@ -257,7 +261,7 @@
   gap: 12px;
   padding: 10px 0;
   width: 100%;
-  margin-bottom: 16px;
+  /* margin-bottom: 16px; */
 }
 
 .po-image-wrapper {
@@ -327,7 +331,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin: 1rem 0 0.5rem 0;
   padding: 0 4px;
 }
 
@@ -358,7 +362,7 @@
   width: 100%;
   padding: 16px 20px;
   border: none;
-  border-radius: 16px;
+  border-radius: 1rem;
   font-weight: 800;
   font-size: 1.1rem;
   cursor: pointer;

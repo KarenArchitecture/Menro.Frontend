@@ -24,7 +24,7 @@ export default function AppHeader({
       href: "#",
       active: true,
     },
-    { label: "وب‌اپ", href: "#" },
+    { label: "وب‌اپ", href: "/home" },
     { label: "اشتراک‌ها", href: "#" },
     { label: "درباره‌ما", href: "#" },
   ],

@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import "../../public/shop.css";
+// import "../../public/shop.css";
 // import AppHeader from "../components/common/AppHeader";
 import ShopBanner from "../components/shop/ShopBanner";
 import MenuList from "../components/shop/MenuList";
@@ -53,7 +53,8 @@ function RestaurantContent() {
       const topAnchor = document.getElementById("shop-menu-top");
 
       if (topAnchor) {
-        const y = topAnchor.getBoundingClientRect().top + window.pageYOffset - 12;
+        const y =
+          topAnchor.getBoundingClientRect().top + window.pageYOffset - 12;
 
         window.scrollTo({
           top: y,
@@ -62,7 +63,6 @@ function RestaurantContent() {
       }
     }, 80);
   };
-
 
   const fetchFoodDetails = async (id) => {
     const apiBase = import.meta.env.VITE_API_URL || "";
@@ -147,8 +147,7 @@ function RestaurantContent() {
       const fullHeight = document.documentElement.scrollHeight;
       const threshold = 120;
 
-      const nearBottom =
-        scrollTop + viewportHeight >= fullHeight - threshold;
+      const nearBottom = scrollTop + viewportHeight >= fullHeight - threshold;
 
       setIsNearPageBottom(nearBottom);
     };
@@ -214,7 +213,6 @@ function RestaurantContent() {
         )}
       </div>
 
-
       {selectedItem && modalLoading && (
         <div className="modal-loading">در حال بارگذاری...</div>
       )}
@@ -235,8 +233,6 @@ function RestaurantContent() {
         />
       )}
 
-
-
       <CheckoutBar
         count={cart.count}
         total={cart.total}
@@ -247,7 +243,7 @@ function RestaurantContent() {
 }
 
 function RestaurantPage() {
-
+  usePageStyles("/shop.css");
   return (
     <CartProvider>
       <RestaurantContent />

@@ -1,0 +1,90 @@
+/* Container */
+.bp-container {
+  background-color: #0f1014; /* Standard dark background */
+  min-height: 100vh;
+  color: #ffffff;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif; /* Replace with your primary Persian font */
+}
+
+/* Header Wrapper */
+.bp-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 16px;
+  padding: 20px 24px;
+}
+
+/* Back Button */
+.bp-back-btn {
+  width: 44px;
+  height: 44px;
+  background-color: #1a1b22; /* Dark secondary box color */
+  border: none;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.bp-back-btn:active {
+  background-color: #2a2b32;
+}
+
+/* Header Text Content */
+.bp-header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Top Row (Icons, Title, Badge) */
+.bp-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bp-receipt-icon {
+  color: #ffffff;
+}
+
+.bp-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: #ffffff;
+}
+
+.bp-order-badge {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ff5e00; /* Vibrant Orange from the design */
+}
+
+/* Date Row */
+.bp-date-row {
+  font-size: 14px;
+  color: #8a8d9a; /* Muted gray for date text */
+  text-align: right;
+  font-weight: 500;
+}
+
+/* Responsive adjustment for very small screens */
+@media (max-width: 380px) {
+  .bp-title {
+    font-size: 16px;
+  }
+  .bp-order-badge {
+    font-size: 14px;
+  }
+  .bp-date-row {
+    font-size: 12px;
+  }
+}

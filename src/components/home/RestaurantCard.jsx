@@ -1,9 +1,8 @@
-// src/components/home/RestaurantCard.jsx
-
 import React from "react";
 import StarIcon from "../icons/StarIcon";
 import { Link } from "react-router-dom";
 import resolveFileUrl from "../../utils/resolveFileUrl";
+import SmartImage from "../common/SmartImage";
 import {
   formatPersianNumber,
   formatPersianRating,
@@ -37,6 +36,9 @@ function RestaurantCard({ restaurant }) {
     "/images/restaurant/logo-placeholder.png"
   );
 
+  const coverFallback = "/images/restaurant/restaurant-home-placeholder.png";
+  const logoFallback = "/images/restaurant/logo-placeholder.png";
+
   const formattedHours = `${toPersianDigits(openTime)} - ${toPersianDigits(closeTime)}`;
 
   const formattedDiscount = formatPersianNumber(discount, {
@@ -44,75 +46,54 @@ function RestaurantCard({ restaurant }) {
   });
 
   const formattedRating = formatPersianRating(rating);
-
   const formattedRatingCount = formatPersianNumber(voters);
 
   const cardContent = (
     <>
       <div className="card-img-container">
-        <img
+        <SmartImage
           src={coverSrc}
+          fallback={coverFallback}
           alt={`عکس رستوران ${name}`}
           className="card-img"
-          onError={(e) => {
-            e.currentTarget.onerror = null;
-            e.currentTarget.src = "/images/restaurant/restaurant-home-placeholder.png";
-          }}
+          lazy={true}
         />
 
         {discount > 0 && (
           <div className="discount-bubble">
-            تا{" "}
-            <span className="discount_num">
-              {formattedDiscount}%
-            </span>
-            {" "}درصد تخفیف
+            تا <span className="discount_num">{formattedDiscount}%</span> درصد تخفیف
           </div>
         )}
 
         <div className="logo-container">
-          <img
+          <SmartImage
             src={logoSrc}
-            alt={`لوگو رستوران ${name}`}
+            fallback={logoFallback}
+            alt={`لوگوی رستوران ${name}`}
             className="restaurant-badge"
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = "/images/restaurant/logo-placeholder.png";
-            }}
+            lazy={true}
           />
         </div>
       </div>
 
       <div className="card-body">
         <span className="time-badge">
-          <span className="time-badge__time">
-            {formattedHours}
-          </span>
+          <span className="time-badge__time">{formattedHours}</span>
 
           <span
-            className={`time-badge__status ${
-              isOpen ? "open" : "closed"
-            }`}
+            className={`time-badge__status ${isOpen ? "open" : "closed"}`}
           >
             {isOpen ? "باز است" : "بسته است"}
           </span>
         </span>
 
         <div className="restaurant-header">
-          <h3 className="restaurant-name">
-            {name}
-          </h3>
+          <h3 className="restaurant-name">{name}</h3>
 
           <div className="rating">
             <StarIcon />
-
-            <span className="rate">
-              {formattedRating}
-            </span>
-
-            <span className="rate-voters-num">
-              ({formattedRatingCount})
-            </span>
+            <span className="rate">{formattedRating}</span>
+            <span className="rate-voters-num">({formattedRatingCount})</span>
           </div>
         </div>
 
@@ -125,7 +106,6 @@ function RestaurantCard({ restaurant }) {
 
   if (!slug) {
     console.warn("Restaurant slug is missing:", restaurant);
-
     return <div className="card">{cardContent}</div>;
   }
 

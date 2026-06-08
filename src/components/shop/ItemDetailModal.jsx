@@ -10,6 +10,8 @@ import MokhalafatIcon from "../icons/MokhalafatIcon";
 import RestaurantCombosButton from "../common/RestaurantCombosButton";
 import resolveFileUrl from "../../utils/resolveFileUrl";
 import StarIcon from "../icons/StarIcon";
+import SmartImage from "../common/SmartImage";
+
 
 function ItemDetailModal({ item, onClose }) {
   const cart = useCart();
@@ -213,8 +215,8 @@ function ItemDetailModal({ item, onClose }) {
   // });
 
 
-  const modalImageSrc =
-    resolveFileUrl(item.imageUrl) || "/images/food/food-placeholder.png";
+  const modalImageFallback = "/images/food/food-placeholder.png";
+  const modalImageSrc = resolveFileUrl(item.imageUrl, modalImageFallback);
 
   const modalRating =
     item?.rating !== undefined &&
@@ -284,14 +286,12 @@ function ItemDetailModal({ item, onClose }) {
                 </div>
               </nav>
 
-              <img
+              <SmartImage
                 src={modalImageSrc}
-                alt={item.name}
+                fallback={modalImageFallback}
+                alt={`تصویر ${item.name}`}
                 className="modal-hero-img"
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = "/images/food/food-placeholder.png";
-                }}
+                lazy={false}
               />
 
               <div className="modal-info-panel">

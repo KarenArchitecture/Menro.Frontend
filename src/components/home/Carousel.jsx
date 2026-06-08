@@ -9,7 +9,7 @@ import {
 } from "../../api/restaurantAds";
 import resolveFileUrl from "../../utils/resolveFileUrl";
 import StateMessage from "../common/StateMessage";
-import ShimmerRow from "../common/ShimmerRow";
+import { CarouselSkeleton } from "./HomeSkeletons";
 
 function Carousel() {
   // start from FIRST REAL slide
@@ -178,7 +178,7 @@ function Carousel() {
 
   // loading
   if (isLoading) {
-    return <ShimmerRow height={220} style={{ margin: "2.8rem auto" }} />;
+    return <CarouselSkeleton height={300} />;
   }
 
   // error

@@ -8,7 +8,8 @@ import { getRandomRestaurants } from "../../api/restaurants";
 import { publicSearch } from "../../api/search";
 import StateMessage from "../common/StateMessage";
 import StarIcon2 from "../icons/StarIcon2";
-import ShimmerRow from "../common/ShimmerRow";
+import { RestaurantCardsSkeleton } from "./HomeSkeletons";
+
 
 const normalizeFa = (s = "") =>
   String(s)
@@ -81,9 +82,8 @@ function RestaurantList({ searchQuery = "", onSearchCount }) {
         to={showSeeMore ? "/restaurants" : undefined}
       />
 
-      {isLoading && (
-        <ShimmerRow height={200} style={{ margin: "2.8rem auto" }} />
-      )}
+      {isLoading && <RestaurantCardsSkeleton showHeader={false} />}
+
 
       {isError && (
         <StateMessage kind="error" title="خطا در دریافت رستوران‌ها">

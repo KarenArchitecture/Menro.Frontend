@@ -8,8 +8,7 @@ import {
 import { publicSearch } from "../../api/search";
 import PopularFoodRow from "./PopularFoodRow";
 import AdBanner from "./AdBanner";
-import LoadingSpinner from "../common/LoadingSpinner";
-import ShimmerRow from "../common/ShimmerRow";
+import { FoodCardsSkeleton, BannerSkeleton } from "./HomeSkeletons";
 import StateMessage from "../common/StateMessage";
 
 const normalizeFa = (s = "") =>
@@ -56,7 +55,6 @@ function SearchModeFoods({ q, onSearchCount }) {
     retry: 1,
   });
 
-  // count
   useEffect(() => {
     if (!onSearchCount) return;
     if (q.length < 2) {
@@ -69,7 +67,9 @@ function SearchModeFoods({ q, onSearchCount }) {
 
   if (q.length < 2) return null;
 
-  if (searchQ.isLoading) return <LoadingSpinner />;
+  if (searchQ.isLoading) {
+    return <FoodCardsSkeleton showHeader={false} count={4} />;
+  }
 
   if (searchQ.isError) {
     return (
@@ -83,7 +83,7 @@ function SearchModeFoods({ q, onSearchCount }) {
   }
 
   const foods = searchQ.data ?? [];
-  if (!foods.length) return null; // HomePage shows the global empty message
+  if (!foods.length) return null;
 
   return <PopularFoodRow data={{ categoryTitle: "", foods }} hideTitle isSearchMode />;
 }
@@ -108,36 +108,33 @@ function NormalModeFeed({ showAds }) {
     getNextPageParam: (lastPage, allPages) => {
       if (!lastPage) return undefined;
       const loadedTitles = allPages.map((p) => p?.categoryTitle).filter(Boolean);
+      // Limit to avoid infinite scrolls if the DB is huge (optional safety)
+      if (loadedTitles.length >= 15) return undefined;
       return loadedTitles;
     },
     staleTime: 60_000,
+    refetchOnWindowFocus: false,
     retry: 1,
   });
 
-  // Normalize pages
-  const pages = useMemo(() => {
+  const uniquePages = useMemo(() => {
     const raw = data?.pages ?? [];
     const out = [];
-    for (const entry of raw) {
-      if (Array.isArray(entry)) out.push(...entry);
-      else if (entry) out.push(entry);
-    }
-    return out.filter(Boolean);
-  }, [data]);
-
-  // Deduplicate categories
-  const uniquePages = useMemo(() => {
-    const out = [];
     const seen = new Set();
-    for (const p of pages) {
-      const key = p?.categoryTitle || "__no_title__";
-      if (!seen.has(key)) {
-        out.push(p);
-        seen.add(key);
+    
+    for (const entry of raw) {
+      const items = Array.isArray(entry) ? entry : [entry];
+      for (const p of items) {
+        if (!p) continue;
+        const key = p.categoryTitle || "__no_title__";
+        if (!seen.has(key)) {
+          out.push(p);
+          seen.add(key);
+        }
       }
     }
     return out;
-  }, [pages]);
+  }, [data?.pages]);
 
   const feed = useMemo(() => {
     const blocks = [];
@@ -145,28 +142,50 @@ function NormalModeFeed({ showAds }) {
 
     uniquePages.forEach((page, idx) => {
       blocks.push({ type: "popular", payload: page, key: `cat-${page.categoryTitle ?? idx}` });
-      if (showAds && (idx + 1) % 2 === 0) blocks.push({ type: "ad", key: `ad-${idx}` });
+      if (showAds && (idx + 1) % 2 === 0) {
+        blocks.push({ type: "ad", key: `ad-slot-${idx}` });
+      }
     });
 
     return blocks;
   }, [uniquePages, showAds]);
 
-  // Infinite load observer
+  // ✅ Fixed Observer with proper guards and dependencies
   useEffect(() => {
-    if (!loadMoreRef.current || !hasNextPage) return;
+    // If no more pages or already fetching, don't even start the observer
+    if (!hasNextPage || isLoading) return;
 
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !isFetchingNextPage) fetchNextPage();
-      },
-      { threshold: 0, rootMargin: "800px 0px" }
+    const observerCallback = (entries) => {
+      const first = entries[0];
+      if (first.isIntersecting && hasNextPage && !isFetchingNextPage && !isLoading) {
+        fetchNextPage();
+      }
+    };
+
+    const io = new IntersectionObserver(observerCallback, {
+      threshold: 0.1,
+      rootMargin: "600px 0px", // Pre-fetch before user reaches the very end
+    });
+
+    const currentTarget = loadMoreRef.current;
+    if (currentTarget) {
+      io.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) io.unobserve(currentTarget);
+      io.disconnect();
+    };
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, isLoading]);
+
+  if (isLoading) {
+    return (
+      <>
+        <FoodCardsSkeleton count={4} title="غذاهای پرطرفدار" />
+        {showAds && <BannerSkeleton height={260} />}
+      </>
     );
-
-    io.observe(loadMoreRef.current);
-    return () => io.disconnect();
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
-
-  if (isLoading) return <LoadingSpinner />;
+  }
 
   if (isError) {
     return (
@@ -179,7 +198,7 @@ function NormalModeFeed({ showAds }) {
     );
   }
 
-  if (!pages.length) {
+  if (!uniquePages.length) {
     return (
       <StateMessage kind="empty" title="موردی یافت نشد">
         هیچ <span className="state-message-subject">آیتم محبوبی</span> برای نمایش وجود ندارد.
@@ -200,21 +219,26 @@ function NormalModeFeed({ showAds }) {
               slotKey={block.key}
               height={260}
               overlay={0.5}
-              objectPosition="center"
             />
           </div>
         )
       )}
 
+      {/* ✅ Persistent Loading Skeletons for Next Pages */}
       {isFetchingNextPage && (
-        <>
-          <PopularFoodRow isLoading />
-          {showAds && <ShimmerRow height={260} style={{ margin: "2.8rem auto" }} />}
-        </>
+        <div style={{ marginTop: "2.8rem" }}>
+          <FoodCardsSkeleton showHeader={false} count={4} />
+          {showAds && <BannerSkeleton height={260} />}
+        </div>
       )}
 
+      {/* Target for Infinite Scroll */}
       {hasNextPage && (
-        <div ref={loadMoreRef} style={{ height: 1, marginTop: -1 }} aria-hidden="true" />
+        <div 
+          ref={loadMoreRef} 
+          style={{ height: "50px", visibility: "hidden" }} 
+          aria-hidden="true" 
+        />
       )}
     </>
   );
@@ -228,7 +252,6 @@ export default function PopularFoodAndAdBannerLazyList({
   const q = useMemo(() => normalizeFa(searchQuery), [searchQuery]);
   const isSearchMode = Boolean(q);
 
-  // when not searching, reset count to null (same behavior as before)
   useEffect(() => {
     if (!isSearchMode) onSearchCount?.(null);
   }, [isSearchMode, onSearchCount]);

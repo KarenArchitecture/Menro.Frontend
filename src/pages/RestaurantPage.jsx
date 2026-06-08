@@ -1,14 +1,11 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import usePageStyles from "../hooks/usePageStyles";
-import AppHeader from "../components/common/AppHeader";
+// import "../../public/shop.css";
+// import AppHeader from "../components/common/AppHeader";
 import ShopBanner from "../components/shop/ShopBanner";
 import MenuList from "../components/shop/MenuList";
 import ItemDetailModal from "../components/shop/ItemDetailModal";
-import ProfileIcon from "../components/icons/ProfileIcon";
-import SearchIcon from "../components/icons/SearchIcon";
-import CartIcon from "../components/icons/CartIcon";
 import CheckoutBar from "../components/shop/CheckoutBar";
 import FoodCategoryList, {
   ALL_CAT_SVG,
@@ -19,6 +16,11 @@ import {
 } from "../api/restaurants";
 import { getRestaurantCategoriesBySlug } from "../api/foodCategories";
 import { CartProvider, useCart } from "../components/shop/CartContext";
+import {
+  ShopBannerSkeleton,
+  CategoryBarSkeleton,
+  ShopMenuSkeleton,
+} from "../components/shop/ShopSkeletons";
 
 function RestaurantContent() {
   const navigate = useNavigate();
@@ -51,7 +53,8 @@ function RestaurantContent() {
       const topAnchor = document.getElementById("shop-menu-top");
 
       if (topAnchor) {
-        const y = topAnchor.getBoundingClientRect().top + window.pageYOffset - 12;
+        const y =
+          topAnchor.getBoundingClientRect().top + window.pageYOffset - 12;
 
         window.scrollTo({
           top: y,
@@ -61,7 +64,6 @@ function RestaurantContent() {
     }, 80);
   };
 
-
   const fetchFoodDetails = async (id) => {
     const apiBase = import.meta.env.VITE_API_URL || "";
     const baseUrl = apiBase.replace(/\/api\/?$/, "");
@@ -70,26 +72,6 @@ function RestaurantContent() {
     if (!res.ok) throw new Error("Failed loading details");
     return res.json();
   };
-
-  const leftIcons = useMemo(
-    () => [
-      { key: "profile", icon: <ProfileIcon /> },
-      {
-        key: "cart",
-        icon: <CartIcon />,
-        badge: cart.count > 0 ? cart.count : undefined,
-      },
-      { key: "search", icon: <SearchIcon /> },
-    ],
-    [cart.count]
-  );
-
-  const rightLinks = [
-    { label: "منرو", href: "#", active: true },
-    { label: "خانه", href: "#" },
-    { label: "نقشه", href: "#" },
-    { label: "مقالات", href: "#" },
-  ];
 
   const {
     data: banner,
@@ -165,8 +147,7 @@ function RestaurantContent() {
       const fullHeight = document.documentElement.scrollHeight;
       const threshold = 120;
 
-      const nearBottom =
-        scrollTop + viewportHeight >= fullHeight - threshold;
+      const nearBottom = scrollTop + viewportHeight >= fullHeight - threshold;
 
       setIsNearPageBottom(nearBottom);
     };
@@ -182,49 +163,53 @@ function RestaurantContent() {
     };
   }, []);
 
-  if (bannerLoading) return <div>Loading...</div>;
   if (bannerError) return <div>Error loading restaurant data</div>;
 
   return (
     <div>
-      <AppHeader
-        rightLinks={rightLinks}
-        leftIcons={leftIcons}
-        position="fixed"
-        top={12}
-        maxWidth={1140}
-      />
-
-      <ShopBanner
-        banner={banner}
-        searchValue={searchQuery}
-        onSearchChange={setSearchQuery}
-        onSearchSubmit={handleRestaurantSearch}
-      />
+      {bannerLoading ? (
+        <ShopBannerSkeleton />
+      ) : (
+        <ShopBanner
+          banner={banner}
+          searchQuery={searchQuery}
+          onSearch={handleRestaurantSearch}
+        />
+      )}
 
       <div id="shop-menu-top" className="res-menu-wrapper">
-        {!menuLoading && !menuError && (
+        {menuLoading ? (
+          <CategoryBarSkeleton count={5} />
+        ) : !menuError ? (
           <FoodCategoryList
             categories={categoriesWithAll}
             activeCategory={activeCategory}
             setActiveCategory={setActiveCategory}
           />
+        ) : null}
+
+        {menuLoading ? (
+          <ShopMenuSkeleton
+            sectionCount={2}
+            cardsPerSection={4}
+            vertical={activeCategory !== "all" || searchQuery.trim().length > 0}
+          />
+        ) : (
+          <MenuList
+            menuData={menuData}
+            isLoading={menuLoading}
+            isError={menuError}
+            activeCategory={activeCategory}
+            onSelectItem={handleSelectItem}
+            onSeeAll={handleSeeAll}
+            categories={categoriesWithAll}
+            setActiveCategory={setActiveCategory}
+            searchQuery={searchQuery}
+          />
         )}
 
-        <MenuList
-          menuData={menuData}
-          isLoading={menuLoading}
-          isError={menuError}
-          activeCategory={activeCategory}
-          onSelectItem={handleSelectItem}
-          onSeeAll={handleSeeAll}
-          categories={categoriesWithAll}
-          setActiveCategory={setActiveCategory}
-          searchQuery={searchQuery}
-        />
-
         {cart.count > 0 && isNearPageBottom && (
-          <div className="checkout-safe-spacer" aria-hidden="true" />
+          <div className="checkout-safe-spacer" />
         )}
       </div>
 
@@ -248,8 +233,6 @@ function RestaurantContent() {
         />
       )}
 
-
-
       <CheckoutBar
         count={cart.count}
         total={cart.total}
@@ -261,7 +244,6 @@ function RestaurantContent() {
 
 function RestaurantPage() {
   usePageStyles("/shop.css");
-
   return (
     <CartProvider>
       <RestaurantContent />

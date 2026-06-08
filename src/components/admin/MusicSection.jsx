@@ -76,16 +76,17 @@ export default function MusicSection() {
   const removeFromPlaylist = async (id) => {
     const target = playlist.find((p) => p.id === id);
 
+    // optimistic update
     setPlaylist((prev) => prev.filter((p) => p.id !== id));
 
     try {
       await deleteTrack(id);
-    } catch {
-      // rollback simple fail-safe
+    } catch (err) {
+      // rollback
       setPlaylist((prev) => [...prev, target]);
+      alert("حذف ناموفق بود");
     }
   };
-
   // -------- upload flow (real backend sync) ----------
   const onUploadFiles = async (files) => {
     if (!files?.length) return;
@@ -115,12 +116,12 @@ export default function MusicSection() {
         // optional empty or omit entirely
         // formData.append("CoverFile", null);
 
-        await createTrack(formData);
+        const res = await createTrack(formData);
 
         setPlaylist((prev) => [
           ...prev,
           {
-            id: uid(),
+            id: res.data.id,
             title: file.name.replace(/\.[^/.]+$/, ""),
             artist: "—",
             source: "upload",

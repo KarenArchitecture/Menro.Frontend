@@ -8,7 +8,6 @@ import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./Context/AuthContext.jsx";
 
 import "@fortawesome/fontawesome-free/css/all.min.css";
-
 import "./assets/css/generic.css";
 import "./assets/css/styles.css";
 

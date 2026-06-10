@@ -1,13 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { getTracks, createTrack, deleteTrack } from "../../api/music";
+//import { setTarget } from "framer-motion";
 
 const MAX_TRACKS = 50;
 
-const uid = () => Math.random().toString(36).slice(2, 10);
-
 export default function MusicSection() {
   const [activeTab, setActiveTab] = useState("search");
-  const [playlist, setPlaylist] = useState([]);
+
+  const [tracks, setTracks] = useState([]); // آرشیو موسیقی
+  const [playlistTracks, setPlaylistTracks] = useState([]); // پلی لیست
 
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
@@ -16,33 +17,45 @@ export default function MusicSection() {
 
   const searchResults = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return playlist.filter((p) => p.source === "online");
-    return playlist.filter(
+
+    if (!q) return tracks;
+
+    return tracks.filter(
       (s) =>
         (s.title || "").toLowerCase().includes(q) ||
         (s.artist || "").toLowerCase().includes(q),
     );
-  }, [query, playlist]);
+  }, [query, tracks]);
 
-  const capacityText = `${playlist.length} / ${MAX_TRACKS}`;
-  const hasCapacity = playlist.length < MAX_TRACKS;
+  const capacityText = `${playlistTracks.length} / ${MAX_TRACKS}`;
+  const hasCapacity = playlistTracks.length < MAX_TRACKS;
 
   // -------- fetch from backend ----------
   useEffect(() => {
     const load = async () => {
       setLoadingTracks(true);
+
       try {
         const res = await getTracks();
+
         const mapped = res.data.map((t) => ({
           id: t.id,
           title: t.title,
           artist: t.artist || "—",
-          source: "online",
-          audioFileName: t.audioFileName,
+          duration: t.duration,
+          isActive: t.isActive,
+
+          source: "archive",
+
+          audioFileName: null,
           coverFileName: t.coverFileName,
-          artworkUrl: t.coverUrl || "",
+
+          artworkUrl: t.coverFileName,
         }));
-        setPlaylist(mapped);
+
+        setTracks(mapped);
+      } catch (err) {
+        console.error(err);
       } finally {
         setLoadingTracks(false);
       }
@@ -54,36 +67,46 @@ export default function MusicSection() {
   // -------- cleanup ----------
   useEffect(() => {
     return () => {
-      playlist.forEach((t) => t.objectUrl && URL.revokeObjectURL(t.objectUrl));
+      playlistTracks.forEach((t) => {
+        if (t.objectUrl) {
+          URL.revokeObjectURL(t.objectUrl);
+        }
+      });
     };
-  }, [playlist]);
+  }, [playlistTracks]);
 
-  // -------- actions ----------
   const addToPlaylist = (track) => {
-    if (!hasCapacity) return alert("ظرفیت پلی‌لیست پر شده است.");
+    if (!hasCapacity) {
+      alert("ظرفیت پلی‌لیست پر شده است.");
+      return;
+    }
 
-    const exists = playlist.some(
-      (p) =>
-        (p.title || "").toLowerCase() === (track.title || "").toLowerCase() &&
-        (p.artist || "").toLowerCase() === (track.artist || "").toLowerCase(),
-    );
+    const exists = playlistTracks.some((p) => p.id === track.id);
 
-    if (exists) return alert("این آهنگ قبلاً اضافه شده است.");
+    if (exists) {
+      alert("این آهنگ قبلاً در پلی‌لیست وجود دارد.");
+      return;
+    }
 
-    setPlaylist((prev) => [...prev, { ...track, id: track.id || uid() }]);
+    setPlaylistTracks((prev) => [...prev, track]);
   };
 
-  const removeFromPlaylist = async (id) => {
-    const target = playlist.find((p) => p.id === id);
+  const removeFromPlaylist = (id) => {
+    setPlaylistTracks((prev) => prev.filter((p) => p.id !== id));
+  };
 
-    // optimistic update
-    setPlaylist((prev) => prev.filter((p) => p.id !== id));
+  // delete track from db
+  const deleteTrackFromArchive = async (id) => {
+    const target = tracks.find((t) => t.id === id);
+
+    setTracks((prev) => prev.filter((t) => t.id !== id));
 
     try {
       await deleteTrack(id);
-    } catch (err) {
-      // rollback
-      setPlaylist((prev) => [...prev, target]);
+
+      setPlaylistTracks((prev) => prev.filter((p) => p.id !== id));
+    } catch {
+      setTracks((prev) => [...prev, target]);
       alert("حذف ناموفق بود");
     }
   };
@@ -97,10 +120,10 @@ export default function MusicSection() {
 
     if (!audioFiles.length) return;
 
-    if (!hasCapacity) return;
+    //if (!hasCapacity) return;
 
     for (const file of audioFiles) {
-      if (!hasCapacity) break;
+      //if (!hasCapacity) break;
 
       try {
         const formData = new FormData();
@@ -118,16 +141,19 @@ export default function MusicSection() {
 
         const res = await createTrack(formData);
 
-        setPlaylist((prev) => [
+        setTracks((prev) => [
           ...prev,
           {
             id: res.data.id,
-            title: file.name.replace(/\.[^/.]+$/, ""),
-            artist: "—",
-            source: "upload",
-            audioFileName: file.name,
-            coverFileName: null,
-            objectUrl: URL.createObjectURL(file),
+            title: res.data.title,
+            artist: res.data.artist,
+            duration: res.data.duration,
+            isActive: res.data.isActive,
+
+            source: "archive",
+
+            coverFileName: res.data.coverFileName,
+            artworkUrl: res.data.coverFileName,
           },
         ]);
       } catch (err) {
@@ -146,9 +172,9 @@ export default function MusicSection() {
   // -------- UI ----------
   return (
     <div className="music-flex">
-      {/* LEFT */}
+      {/* RIGHT */}
       <div className="panel music-pane">
-        <h3>مدیریت پلی‌لیست ادمین</h3>
+        <h3>آرشیو موسیقی</h3>
 
         <div className="music-tab-bar">
           <button
@@ -157,7 +183,7 @@ export default function MusicSection() {
             }`}
             onClick={() => setActiveTab("search")}
           >
-            <i className="fas fa-search" /> جستجو آنلاین
+            <i className="fas fa-search" /> مدیریت آرشیو
           </button>
 
           <button
@@ -195,13 +221,29 @@ export default function MusicSection() {
                     </div>
                   </div>
 
-                  <button
+                  {/* <button
                     className="btn btn-secondary btn-sm"
                     onClick={() => addToPlaylist(r)}
                     disabled={!hasCapacity}
                   >
                     <i className="fas fa-plus"></i>
-                  </button>
+                  </button> */}
+                  <div className="row-actions">
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => addToPlaylist(r)}
+                      // disabled={!hasCapacity}
+                    >
+                      <i className="fas fa-plus" />
+                    </button>
+
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() => deleteTrackFromArchive(r.id)}
+                    >
+                      <i className="fas fa-trash" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -224,7 +266,7 @@ export default function MusicSection() {
         )}
       </div>
 
-      {/* RIGHT */}
+      {/* LEFT */}
       <div className="panel playlist-panel">
         <div className="view-header">
           <h3>پلی‌لیست ادمین</h3>
@@ -236,11 +278,11 @@ export default function MusicSection() {
             <div className="empty-hint">در حال دریافت لیست...</div>
           )}
 
-          {!loadingTracks && playlist.length === 0 && (
+          {!loadingTracks && playlistTracks.length === 0 && (
             <div className="empty-hint">لیستی وجود ندارد</div>
           )}
 
-          {playlist.map((s) => (
+          {playlistTracks.map((s) => (
             <div key={s.id} className="playlist-item">
               <div className="song-info">
                 <i className="fas fa-grip-vertical drag-handle"></i>
@@ -260,6 +302,12 @@ export default function MusicSection() {
               </div>
 
               <div className="row-actions">
+                {/* <button
+                  className="btn btn-icon btn-danger"
+                  onClick={() => removeFromPlaylist(s.id)}
+                >
+                  <i className="fas fa-trash" />
+                </button> */}
                 <button
                   className="btn btn-icon btn-danger"
                   onClick={() => removeFromPlaylist(s.id)}

@@ -1,13 +1,26 @@
 import apiClient from "./apiClient";
 
-// GET
-export const getTracks = () => apiClient.get("/music-tracks");
+/* ARCHIVE */
+export const getTracks = () => apiClient.get("/admin/music/archive");
 
-// CREATE (multipart/form-data)
 export const createTrack = (formData) =>
-  apiClient.post("/music-tracks", formData, {
+  apiClient.post("/admin/music/archive", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 
-// DELETE
-export const deleteTrack = (id) => apiClient.delete(`/music-tracks/${id}`);
+export const deleteTrack = (id) =>
+  apiClient.delete(`/admin/music/archive/${id}`);
+
+/* PLAYLIST */
+export const getPlaylists = () => apiClient.get("/admin/music/playlist");
+
+export const getPlaylist = (playlistId) =>
+  apiClient.get(`/admin/music/playlist/${playlistId}`);
+
+export const addTrackToPlaylist = (playlistId, dto) =>
+  apiClient.post(`/admin/music/playlist/${playlistId}/tracks`, dto);
+
+export const removeTrackFromPlaylist = (playlistId, playlistTrackId) =>
+  apiClient.delete(
+    `/admin/music/playlist/${playlistId}/tracks/${playlistTrackId}`,
+  );

@@ -3,6 +3,8 @@ import apiClient from "./apiClient";
 /* ARCHIVE */
 export const getTracks = () => apiClient.get("/admin/music/archive");
 
+export const getTrack = (id) => apiClient.get(`/admin/music/archive/${id}`);
+
 export const createTrack = (formData) =>
   apiClient.post("/admin/music/archive", formData, {
     headers: { "Content-Type": "multipart/form-data" },

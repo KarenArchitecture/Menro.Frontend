@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import {
   getTracks,
+  getTrack,
   createTrack,
   deleteTrack,
   getPlaylists,
@@ -20,6 +21,12 @@ export default function MusicSection() {
 
   const [playlists, setPlaylists] = useState([]);
   const [selectedPlaylistId, setSelectedPlaylistId] = useState(null);
+
+  // playing music
+  const audioRef = useRef(null);
+  const audioCacheRef = useRef({});
+  const [playingTrackId, setPlayingTrackId] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const [query, setQuery] = useState("");
   const [searchUrl, setSearchUrl] = useState("");
@@ -266,10 +273,55 @@ export default function MusicSection() {
     }
   };
 
-  const handlePlayTrack = (trackId) => {
-    console.log("Play track:", trackId);
-  };
+  const handlePlayTrack = async (musicTrackId) => {
+    try {
+      if (playingTrackId === musicTrackId && audioRef.current) {
+        if (audioRef.current.paused) {
+          await audioRef.current.play();
+          setPlayingTrackId(musicTrackId);
+          setIsPlaying(true);
+        } else {
+          audioRef.current.pause();
+          setIsPlaying(false);
+        }
 
+        return;
+      }
+
+      if (!audioCacheRef.current[musicTrackId]) {
+        const res = await getTrack(musicTrackId);
+
+        audioCacheRef.current[musicTrackId] = res.data.audioUrl;
+      }
+
+      const audioUrl = audioCacheRef.current[musicTrackId];
+
+      if (!audioUrl) {
+        alert("فایل صوتی یافت نشد");
+        return;
+      }
+
+      if (!audioRef.current) {
+        audioRef.current = new Audio();
+      }
+
+      audioRef.current.pause();
+      audioRef.current.src = audioUrl;
+
+      audioRef.current.onended = () => {
+        setPlayingTrackId(null);
+        setIsPlaying(false);
+      };
+
+      await audioRef.current.play();
+
+      setPlayingTrackId(musicTrackId);
+      setIsPlaying(true);
+    } catch (err) {
+      console.error(err);
+      alert("خطا در پخش موسیقی");
+    }
+  };
   return (
     <div
       style={{
@@ -371,6 +423,15 @@ export default function MusicSection() {
                     <div key={r.id} className="search-result-item">
                       <div className="song-info">
                         <i className="fas fa-music"></i>
+                        {r.artworkUrl ? (
+                          <img
+                            src={r.artworkUrl}
+                            className="song-artwork"
+                            alt=""
+                          />
+                        ) : (
+                          <div className="song-artwork placeholder-art" />
+                        )}
 
                         <div>
                           <span className="song-title">{r.title}</span>
@@ -392,7 +453,13 @@ export default function MusicSection() {
                           title="پخش آهنگ"
                           onClick={() => handlePlayTrack(r.id)}
                         >
-                          <i className="fas fa-play" />
+                          <i
+                            className={
+                              playingTrackId === r.id && isPlaying
+                                ? "fas fa-pause"
+                                : "fas fa-play"
+                            }
+                          />
                         </button>
 
                         <button
@@ -455,14 +522,12 @@ export default function MusicSection() {
         <div className="panel playlist-panel">
           <div className="view-header">
             <h3>پلی‌لیست ادمین</h3>
-            <span className="playlist-capacity">{playlistCapacityText}</span>
-          </div>
-
-          <div className="playlist">
             {loadingPlaylist && (
               <div className="empty-hint">در حال دریافت پلی‌لیست...</div>
             )}
+          </div>
 
+          <div className="playlist">
             {!loadingPlaylist && playlistTracks.length === 0 && (
               <div className="empty-hint">لیستی وجود ندارد</div>
             )}
@@ -488,6 +553,20 @@ export default function MusicSection() {
                 </div>
 
                 <div className="row-actions">
+                  <button
+                    type="button"
+                    className="btn btn-icon btn-secondary"
+                    title="پخش آهنگ"
+                    onClick={() => handlePlayTrack(s.musicTrackId)}
+                  >
+                    <i
+                      className={
+                        playingTrackId === s.musicTrackId && isPlaying
+                          ? "fas fa-pause"
+                          : "fas fa-play"
+                      }
+                    />
+                  </button>
                   <button
                     type="button"
                     className="btn btn-icon btn-danger"

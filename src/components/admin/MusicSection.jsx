@@ -16,17 +16,19 @@ export default function MusicSection() {
 
   const [tracks, setTracks] = useState([]);
   const [playlistTracks, setPlaylistTracks] = useState([]);
+  const [requestedTracks, setRequestedTracks] = useState([]);
+
+  const [playlists, setPlaylists] = useState([]);
+  const [selectedPlaylistId, setSelectedPlaylistId] = useState(null);
 
   const [query, setQuery] = useState("");
+  const [searchUrl, setSearchUrl] = useState("");
+
   const [searching, setSearching] = useState(false);
 
   const [loadingArchive, setLoadingArchive] = useState(false);
   const [loadingPlaylist, setLoadingPlaylist] = useState(false);
 
-  const [playlists, setPlaylists] = useState([]);
-  const [selectedPlaylistId, setSelectedPlaylistId] = useState(null);
-
-  /* ---------------- FILTER ---------------- */
   const searchResults = useMemo(() => {
     const q = query.trim().toLowerCase();
 
@@ -39,9 +41,10 @@ export default function MusicSection() {
     );
   }, [query, tracks]);
 
-  const capacityText = `${playlistTracks.length} / ${MAX_TRACKS}`;
+  const archiveCapacityText = `${tracks.length} / ${MAX_TRACKS}`;
+  const playlistCapacityText = `${playlistTracks.length} / ${MAX_TRACKS}`;
+  const hasArchiveCapacity = tracks.length < MAX_TRACKS;
 
-  /* ---------------- HELPERS ---------------- */
   const refreshPlaylist = async (playlistId) => {
     if (!playlistId) return;
 
@@ -51,7 +54,7 @@ export default function MusicSection() {
       const res = await getPlaylist(playlistId);
 
       const mapped = res.data.tracks.map((t) => ({
-        id: t.id, // playlistTrackId
+        id: t.id,
         musicTrackId: t.musicTrackId,
         title: t.title,
         artist: t.artist || "—",
@@ -69,9 +72,8 @@ export default function MusicSection() {
     }
   };
 
-  /* ---------------- ARCHIVE LOAD ---------------- */
   useEffect(() => {
-    const load = async () => {
+    const loadTracks = async () => {
       setLoadingArchive(true);
 
       try {
@@ -96,10 +98,9 @@ export default function MusicSection() {
       }
     };
 
-    load();
+    loadTracks();
   }, []);
 
-  /* ---------------- PLAYLISTS LOAD ---------------- */
   useEffect(() => {
     const loadPlaylists = async () => {
       try {
@@ -111,7 +112,7 @@ export default function MusicSection() {
 
         if (firstId) {
           setSelectedPlaylistId(firstId);
-          refreshPlaylist(firstId);
+          await refreshPlaylist(firstId);
         }
       } catch (err) {
         console.error(err);
@@ -121,14 +122,12 @@ export default function MusicSection() {
     loadPlaylists();
   }, []);
 
-  /* ---------------- SELECTED PLAYLIST CHANGE ---------------- */
   useEffect(() => {
     if (!selectedPlaylistId) return;
 
     refreshPlaylist(selectedPlaylistId);
   }, [selectedPlaylistId]);
 
-  /* ---------------- ADD ---------------- */
   const addToPlaylist = async (track) => {
     if (!selectedPlaylistId) return;
 
@@ -143,7 +142,6 @@ export default function MusicSection() {
     }
   };
 
-  /* ---------------- REMOVE ---------------- */
   const removeFromPlaylist = async (playlistTrackId) => {
     if (!selectedPlaylistId) return;
 
@@ -157,7 +155,6 @@ export default function MusicSection() {
     }
   };
 
-  /* ---------------- DELETE ARCHIVE TRACKS ---------------- */
   const deleteTrackFromArchive = async (id) => {
     const backup = tracks.find((t) => t.id === id);
 
@@ -173,15 +170,26 @@ export default function MusicSection() {
     }
   };
 
-  /* ---------------- UPLOAD ---------------- */
   const onUploadFiles = async (files) => {
     if (!files?.length) return;
 
-    const audioFiles = Array.from(files).filter((f) =>
+    let audioFiles = Array.from(files).filter((f) =>
       f.type.startsWith("audio/"),
     );
 
     if (!audioFiles.length) return;
+
+    const remainingCapacity = MAX_TRACKS - tracks.length;
+
+    if (audioFiles.length > remainingCapacity) {
+      alert(
+        `ظرفیت آرشیو محدود است. شما فقط می‌توانید ${remainingCapacity} فایل دیگر به آرشیو اضافه کنید.`,
+      );
+
+      audioFiles = audioFiles.slice(0, remainingCapacity);
+
+      if (!audioFiles.length) return;
+    }
 
     for (const file of audioFiles) {
       try {
@@ -219,147 +227,363 @@ export default function MusicSection() {
     setTimeout(() => setSearching(false), 250);
   };
 
+  const handleOnlineSearch = (e) => {
+    e.preventDefault();
+
+    if (!searchUrl.trim()) {
+      alert("لطفا لینک را وارد کنید.");
+      return;
+    }
+
+    console.log("Searching URL:", searchUrl);
+
+    alert(
+      `در حال جستجوی لینک: ${searchUrl}\n(اتصال به API در اینجا قرار میگیرد)`,
+    );
+
+    setSearchUrl("");
+  };
+
+  const handleApproveRequest = async (track) => {
+    if (!hasArchiveCapacity) {
+      alert("ظرفیت آرشیو پر شده است.");
+      return;
+    }
+
+    try {
+      setRequestedTracks((prev) => prev.filter((t) => t.id !== track.id));
+      setTracks((prev) => [...prev, track]);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleRejectRequest = async (trackId) => {
+    try {
+      setRequestedTracks((prev) => prev.filter((t) => t.id !== trackId));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handlePlayTrack = (trackId) => {
+    console.log("Play track:", trackId);
+  };
+
   return (
-    <div className="music-flex">
-      {/* RIGHT Archive */}
-      <div className="panel music-pane">
-        <h3>آرشیو موسیقی</h3>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "24px",
+        width: "100%",
+      }}
+    >
+      <div className="music-flex">
+        <div className="panel music-pane">
+          <div className="view-header">
+            <h3>آرشیو موسیقی</h3>
+            <span className="playlist-capacity">{archiveCapacityText}</span>
+          </div>
 
-        <div className="music-tab-bar">
-          <button
-            className={`music-tab-btn ${
-              activeTab === "search" ? "active" : ""
-            }`}
-            onClick={() => setActiveTab("search")}
-          >
-            <i className="fas fa-search" /> مدیریت آرشیو
-          </button>
+          <div className="music-tab-bar" style={{ marginTop: "12px" }}>
+            <button
+              type="button"
+              className={`music-tab-btn ${
+                activeTab === "search" ? "active" : ""
+              }`}
+              onClick={() => setActiveTab("search")}
+            >
+              <i className="fas fa-archive" /> مدیریت آرشیو
+            </button>
 
-          <button
-            className={`music-tab-btn ${
-              activeTab === "upload" ? "active" : ""
-            }`}
-            onClick={() => setActiveTab("upload")}
-          >
-            <i className="fas fa-upload" /> آپلود فایل
-          </button>
+            <button
+              type="button"
+              className={`music-tab-btn ${
+                activeTab === "online" ? "active" : ""
+              }`}
+              onClick={() => setActiveTab("online")}
+            >
+              <i className="fas fa-globe" /> جستجوی آنلاین آهنگ
+            </button>
+          </div>
+
+          {activeTab === "search" && (
+            <div className="music-tab-content">
+              <form
+                className="input-group-inline"
+                onSubmit={handleSearchSubmit}
+              >
+                <input
+                  type="text"
+                  value={query}
+                  placeholder="جستجو در آرشیو..."
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={searching}
+                >
+                  {searching ? "..." : "جستجو"}
+                </button>
+              </form>
+
+              <div style={{ marginTop: "12px", marginBottom: "12px" }}>
+                <input
+                  type="file"
+                  id="file-upload-archive"
+                  accept="audio/*"
+                  multiple
+                  style={{ display: "none" }}
+                  onChange={(e) => {
+                    onUploadFiles(e.target.files);
+                    e.target.value = null;
+                  }}
+                />
+
+                <label
+                  htmlFor="file-upload-archive"
+                  className="btn btn-secondary"
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: "8px",
+                    cursor: "pointer",
+                    margin: 0,
+                  }}
+                >
+                  <i className="fas fa-cloud-upload-alt" />
+                  بارگذاری فایل جدید از سیستم
+                </label>
+              </div>
+
+              <div className="search-results" style={{ marginTop: 12 }}>
+                {loadingArchive && (
+                  <div className="empty-hint">در حال دریافت آرشیو...</div>
+                )}
+
+                {!loadingArchive &&
+                  searchResults.map((r) => (
+                    <div key={r.id} className="search-result-item">
+                      <div className="song-info">
+                        <i className="fas fa-music"></i>
+
+                        <div>
+                          <span className="song-title">{r.title}</span>
+
+                          <span className="song-artist">{r.artist}</span>
+                        </div>
+                      </div>
+
+                      <div
+                        className="row-actions"
+                        style={{
+                          display: "flex",
+                          gap: "4px",
+                        }}
+                      >
+                        <button
+                          type="button"
+                          className="btn btn-icon btn-secondary"
+                          title="پخش آهنگ"
+                          onClick={() => handlePlayTrack(r.id)}
+                        >
+                          <i className="fas fa-play" />
+                        </button>
+
+                        <button
+                          type="button"
+                          className="btn btn-icon btn-secondary"
+                          title="افزودن به پلی‌لیست"
+                          onClick={() => addToPlaylist(r)}
+                        >
+                          <i className="fas fa-plus" />
+                        </button>
+
+                        <button
+                          type="button"
+                          className="btn btn-icon btn-danger"
+                          title="حذف از آرشیو"
+                          onClick={() => deleteTrackFromArchive(r.id)}
+                        >
+                          <i className="fas fa-trash" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === "online" && (
+            <div className="music-tab-content">
+              <form
+                className="input-group-inline"
+                onSubmit={handleOnlineSearch}
+              >
+                <input
+                  type="url"
+                  value={searchUrl}
+                  placeholder="لینک آهنگ را وارد کنید..."
+                  onChange={(e) => setSearchUrl(e.target.value)}
+                  dir="ltr"
+                />
+
+                <button type="submit" className="btn btn-primary">
+                  <i className="fas fa-search" /> جستجو
+                </button>
+              </form>
+
+              <small
+                className="muted"
+                style={{
+                  display: "block",
+                  marginTop: 8,
+                }}
+              >
+                لینک مستقیم فایل صوتی یا صفحه آهنگ را قرار داده و جستجو را
+                بزنید.
+              </small>
+            </div>
+          )}
         </div>
 
-        {activeTab === "search" && (
-          <div className="music-tab-content">
-            <form className="input-group-inline" onSubmit={handleSearchSubmit}>
-              <input
-                type="text"
-                value={query}
-                placeholder="جستجو..."
-                onChange={(e) => setQuery(e.target.value)}
-              />
-              <button className="btn btn-primary" disabled={searching}>
-                {searching ? "..." : "جستجو"}
-              </button>
-            </form>
+        <div className="panel playlist-panel">
+          <div className="view-header">
+            <h3>پلی‌لیست ادمین</h3>
+            <span className="playlist-capacity">{playlistCapacityText}</span>
+          </div>
 
-            <div className="search-results" style={{ marginTop: 12 }}>
-              {searchResults.map((r) => (
-                <div key={r.id} className="search-result-item">
+          <div className="playlist">
+            {loadingPlaylist && (
+              <div className="empty-hint">در حال دریافت پلی‌لیست...</div>
+            )}
+
+            {!loadingPlaylist && playlistTracks.length === 0 && (
+              <div className="empty-hint">لیستی وجود ندارد</div>
+            )}
+
+            {playlistTracks.map((s) => (
+              <div key={s.id} className="playlist-item">
+                <div className="song-info">
+                  <i className="fas fa-grip-vertical drag-handle"></i>
+
+                  {s.artworkUrl ? (
+                    <img src={s.artworkUrl} className="song-artwork" alt="" />
+                  ) : (
+                    <div className="song-artwork placeholder-art" />
+                  )}
+
+                  <div>
+                    <span className="song-title">{s.title}</span>
+
+                    <span className="song-artist">
+                      {s.artist} · ({s.source})
+                    </span>
+                  </div>
+                </div>
+
+                <div className="row-actions">
+                  <button
+                    type="button"
+                    className="btn btn-icon btn-danger"
+                    onClick={() => removeFromPlaylist(s.id)}
+                  >
+                    <i className="fas fa-trash" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="panel w-full">
+        <div className="view-header" style={{ marginBottom: "16px" }}>
+          <h3>آهنگ‌های درخواستی</h3>
+
+          <span className="playlist-capacity">
+            {requestedTracks.length} درخواست
+          </span>
+        </div>
+
+        <div className="requests-list">
+          {requestedTracks.length === 0 ? (
+            <div
+              className="empty-hint"
+              style={{
+                padding: "32px 0",
+                border: "1px dashed #444",
+                borderRadius: "8px",
+              }}
+            >
+              هیچ آهنگ درخواستی جدیدی وجود ندارد
+            </div>
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "12px",
+              }}
+            >
+              {requestedTracks.map((track) => (
+                <div
+                  key={track.id}
+                  className="search-result-item"
+                  style={{
+                    padding: "12px",
+                    border: "1px solid #333",
+                    borderRadius: "8px",
+                  }}
+                >
                   <div className="song-info">
-                    <i className="fas fa-music"></i>
+                    <div
+                      className="song-artwork placeholder-art"
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                      }}
+                    />
+
                     <div>
-                      <span className="song-title">{r.title}</span>
-                      <span className="song-artist">{r.artist}</span>
+                      <span className="song-title">
+                        {track.title || "نامشخص"}
+                      </span>
+
+                      <span className="song-artist">
+                        {track.artist || "هنرمند نامشخص"}
+                      </span>
                     </div>
                   </div>
 
-                  {/* <button
-                    className="btn btn-secondary btn-sm"
-                    onClick={() => addToPlaylist(r)}
-                    disabled={!hasCapacity}
-                  >
-                    <i className="fas fa-plus"></i>
-                  </button> */}
                   <div className="row-actions">
                     <button
+                      type="button"
                       className="btn btn-secondary btn-sm"
-                      onClick={() => addToPlaylist(r)}
-                      // disabled={!hasCapacity}
+                      onClick={() => handleApproveRequest(track)}
                     >
-                      <i className="fas fa-plus" />
+                      <i className="fas fa-check" />
+                      <span>تایید</span>
                     </button>
 
                     <button
+                      type="button"
                       className="btn btn-danger btn-sm"
-                      onClick={() => deleteTrackFromArchive(r.id)}
+                      onClick={() => handleRejectRequest(track.id)}
                     >
-                      <i className="fas fa-trash" />
+                      <i className="fas fa-times" />
+                      <span>رد</span>
                     </button>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
-        )}
-
-        {activeTab === "upload" && (
-          <div className="music-tab-content">
-            <input
-              type="file"
-              className="file-input"
-              accept="audio/*"
-              multiple
-              onChange={(e) => onUploadFiles(e.target.files)}
-            />
-            <small className="muted" style={{ display: "block", marginTop: 8 }}>
-              ظرفیت فعلی: {capacityText}
-            </small>
-          </div>
-        )}
-      </div>
-
-      {/* LEFT, Playlist */}
-      <div className="panel playlist-panel">
-        <div className="view-header">
-          <h3>پلی‌لیست ادمین</h3>
-          <span className="playlist-capacity">{capacityText}</span>
-        </div>
-
-        <div className="playlist">
-          {loadingPlaylist && (
-            <div className="empty-hint">در حال دریافت پلی‌لیست...</div>
           )}
-
-          {!loadingPlaylist && playlistTracks.length === 0 && (
-            <div className="empty-hint">لیستی وجود ندارد</div>
-          )}
-
-          {playlistTracks.map((s) => (
-            <div key={s.id} className="playlist-item">
-              <div className="song-info">
-                <i className="fas fa-grip-vertical drag-handle"></i>
-
-                {s.artworkUrl ? (
-                  <img src={s.artworkUrl} className="song-artwork" />
-                ) : (
-                  <div className="song-artwork placeholder-art" />
-                )}
-
-                <div>
-                  <span className="song-title">{s.title}</span>
-                  <span className="song-artist">
-                    {s.artist} · ({s.source})
-                  </span>
-                </div>
-              </div>
-
-              <div className="row-actions">
-                <button
-                  className="btn btn-icon btn-danger"
-                  onClick={() => removeFromPlaylist(s.id)}
-                >
-                  <i className="fas fa-trash" />
-                </button>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
     </div>

@@ -24,7 +24,6 @@ footer,
     overflow: visible;
 }
 
-
 body {
     background-color: #0c0f14;
     color: #fff;
@@ -1105,11 +1104,13 @@ button.modal-top-action {
     border: none;
     border-radius: 1rem;
     background: #0c0f14 !important;
-    color: #FAFAF4;
+    color: #fafaf4;
     box-shadow: none;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
-    transition: background-color 160ms ease, opacity 160ms ease;
+    transition:
+        background-color 160ms ease,
+        opacity 160ms ease;
 }
 
 .modal-top-action > svg {
@@ -1124,7 +1125,7 @@ button.modal-top-action {
 }
 
 .modal-top-action:focus-visible {
-    outline: 2px solid #FAFAF4;
+    outline: 2px solid #fafaf4;
     outline-offset: 2px;
 }
 
@@ -1226,7 +1227,7 @@ button.modal-top-action {
     left: 0;
     right: 0;
     bottom: 0;
-    pointer-events: none; 
+    pointer-events: none;
 }
 
 /* Scrollable content body */
@@ -1439,7 +1440,10 @@ button.modal-top-action {
 .addon-row.checked {
     background: rgba(255, 106, 61, 0.08);
 }
-
+.addon-price-amount {
+    display: flex;
+    gap: 1rem;
+}
 .addon-price input {
     appearance: none;
     width: 18px;
@@ -1467,13 +1471,13 @@ button.modal-top-action {
     display: flex;
     align-items: center;
 }
-.addon-price .amount {
-    color: #ff683c;
+.addon-amount {
+    color: #fafaf4;
     font-size: 10px;
     font-weight: 700;
 }
-.addon-price .currency {
-    color: #fafaf4;
+.addon-currency {
+    color: #ff683c;
     opacity: 0.9;
     font-size: 10px;
     font-weight: 700;
@@ -1507,11 +1511,14 @@ button.modal-top-action {
     align-items: baseline;
     gap: 6px;
 }
-.variant-price .amount {
+.variant-price {
     font-weight: 800;
 }
-.variant-price .currency {
+.variant-currency {
     opacity: 0.85;
+    color: #ff683c;
+    font-weight: 800;
+    font-size: 1rem;
 }
 
 /* qty controls already defined in your CSS; keep them */
@@ -1525,6 +1532,58 @@ button.modal-top-action {
 }
 .checkout-bar {
     z-index: 2000;
+}
+
+/* Horizontal Scrollable Qty Picker */
+.addon-qty-scroll {
+    display: flex;
+    align-items: center;
+    width: 110px; /* Adjust based on exact design preference */
+    height: 38px;
+    background: #11161c; /* Match variant dark background */
+    border-radius: 10px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    /* Hide scrollbars */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.addon-qty-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.addon-qty-item {
+    flex: 0 0 38px; /* Square buttons */
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    scroll-snap-align: center;
+    color: #4a5568; /* Faded gray for unselected */
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    transition:
+        background-color 0.2s,
+        color 0.2s;
+}
+
+/* Highlight for '0' */
+.addon-qty-item.active-0 {
+    background: #f3f5f7;
+    color: #0b1015;
+    border-radius: 10px;
+}
+
+/* Highlight for numbers > 0 */
+.addon-qty-item.active-n {
+    background: #ff6a3d;
+    color: #fff;
+    border-radius: 10px;
 }
 
 /* Bottom Navigation */
@@ -2358,7 +2417,6 @@ body.has-checkout {
     font-size: 11px;
     color: #fff; /* or #fff / whatever fits */
 }
-
 
 svg {
     animation: debugSvgFreeze 10s linear forwards !important;

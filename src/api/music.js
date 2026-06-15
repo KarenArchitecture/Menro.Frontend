@@ -10,6 +10,9 @@ export const createTrack = (formData) =>
     headers: { "Content-Type": "multipart/form-data" },
   });
 
+export const updateTrack = (id, dto) =>
+  apiClient.put(`/admin/music/archive/${id}`, dto);
+
 export const deleteTrack = (id) =>
   apiClient.delete(`/admin/music/archive/${id}`);
 
@@ -22,6 +25,14 @@ export const getPlaylists = () => apiClient.get("/admin/music/playlist");
 
 export const getPlaylist = (playlistId) =>
   apiClient.get(`/admin/music/playlist/${playlistId}`);
+
+export const renamePlaylist = (playlistId, dto) =>
+  apiClient.put(`/admin/music/playlist/${playlistId}/rename`, dto);
+
+export const activatePlaylist = (playlistId) =>
+  apiClient.put(`/admin/music/playlist/${playlistId}/activate`);
+
+/* PLAYLIST TRACKS */
 
 export const addTrackToPlaylist = (playlistId, dto) =>
   apiClient.post(`/admin/music/playlist/${playlistId}/tracks`, dto);

@@ -7,8 +7,11 @@ import {
   createPlaylist,
   getPlaylists,
   getPlaylist,
+  renamePlaylist,
   addTrackToPlaylist,
   removeTrackFromPlaylist,
+  activatePlaylist,
+  updateTrack,
 } from "../../api/music";
 
 const MAX_TRACKS = 50;
@@ -19,6 +22,20 @@ const formatTime = (seconds) => {
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
   return `${m}:${s < 10 ? "0" : ""}${s}`;
+};
+
+// for tracks duration
+const formatDuration = (duration) => {
+  if (!duration) return "--:--";
+
+  const parts = duration.split(":");
+
+  if (parts.length !== 3) return duration;
+
+  const minutes = parts[1];
+  const seconds = parts[2].split(".")[0];
+
+  return `${minutes}:${seconds}`;
 };
 
 export default function MusicSection() {
@@ -105,30 +122,7 @@ export default function MusicSection() {
     };
   }, []);
 
-  const refreshPlaylist = async (playlistId) => {
-    if (!playlistId) return;
-    setLoadingPlaylist(true);
-
-    try {
-      const res = await getPlaylist(playlistId);
-      const mapped = res.data.tracks.map((t) => ({
-        id: t.id,
-        musicTrackId: t.musicTrackId,
-        title: t.name,
-        artist: t.artist || "—",
-        duration: t.duration,
-        artworkUrl: t.coverUrl,
-        audioUrl: t.audioUrl,
-        source: "playlist",
-      }));
-      setPlaylistTracks(mapped);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingPlaylist(false);
-    }
-  };
-
+  // fetch archive tracks
   useEffect(() => {
     const loadTracks = async () => {
       setLoadingArchive(true);
@@ -154,15 +148,19 @@ export default function MusicSection() {
     loadTracks();
   }, []);
 
+  // fetch playlists list
   useEffect(() => {
     const loadPlaylists = async () => {
       try {
         const res = await getPlaylists();
         setPlaylists(res.data || []);
-        const firstId = res.data?.[0]?.id;
-        if (firstId) {
-          setSelectedPlaylistId(firstId);
-          await refreshPlaylist(firstId);
+        const activePlaylist = res.data?.find((x) => x.isActive);
+
+        const playlistId = activePlaylist?.id ?? res.data?.[0]?.id;
+
+        if (playlistId) {
+          setSelectedPlaylistId(playlistId);
+          await refreshPlaylist(playlistId);
         }
       } catch (err) {
         console.error(err);
@@ -171,30 +169,76 @@ export default function MusicSection() {
     loadPlaylists();
   }, []);
 
+  // refresh playlists
+  const refreshPlaylist = async (playlistId) => {
+    if (!playlistId) return;
+    setLoadingPlaylist(true);
+
+    try {
+      const res = await getPlaylist(playlistId);
+      const mapped = res.data.tracks.map((t) => ({
+        id: t.id,
+        musicTrackId: t.musicTrackId,
+        title: t.title,
+        artist: t.artist || "—",
+        duration: t.duration,
+        artworkUrl: t.coverUrl,
+        audioUrl: t.audioUrl,
+        source: "playlist",
+      }));
+      setPlaylistTracks(mapped);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingPlaylist(false);
+    }
+  };
   useEffect(() => {
     if (!selectedPlaylistId) return;
     refreshPlaylist(selectedPlaylistId);
   }, [selectedPlaylistId]);
 
-  // -------------------------
-  // Local/Static Handlers
-  // -------------------------
-  const handleEditTrackName = (trackId, currentTitle) => {
+  // rename archive tracks
+  const handleEditTrackName = async (trackId, currentTitle) => {
     const newTitle = prompt("نام جدید آهنگ را وارد کنید:", currentTitle);
-    if (newTitle && newTitle.trim() !== "") {
+
+    if (!newTitle || !newTitle.trim()) return;
+
+    try {
+      const track = tracks.find((x) => x.id === trackId);
+
+      if (!track) return;
+
+      await updateTrack(trackId, {
+        title: newTitle.trim(),
+      });
+
+      // update archive ui
       setTracks((prev) =>
-        prev.map((t) => (t.id === trackId ? { ...t, title: newTitle } : t)),
-      );
-      setPlaylistTracks((prev) =>
         prev.map((t) =>
-          t.musicTrackId === trackId || t.id === trackId
-            ? { ...t, title: newTitle }
+          t.id === trackId
+            ? {
+                ...t,
+                title: newTitle.trim(),
+              }
             : t,
         ),
       );
+
+      // refresh current playlist so titles sync with backend
+      if (selectedPlaylistId) {
+        await refreshPlaylist(selectedPlaylistId);
+      }
+    } catch (err) {
+      console.error(err);
+
+      alert(err?.response?.data?.message ?? "خطا در ویرایش نام آهنگ");
     }
   };
 
+  // -------------------------
+  // Local/Static Handlers
+  // -------------------------
   const movePlaylistTrack = (index, direction) => {
     const newOrder = [...playlistTracks];
     if (direction === "up" && index > 0) {
@@ -247,21 +291,30 @@ export default function MusicSection() {
         setSelectedPlaylistId(newPlaylist.id);
 
         setPlaylistTracks([]);
-      }
+      } else {
+        await renamePlaylist(editingPlaylistId, {
+          name,
+        });
 
-      // rename رو بعدا وصل می‌کنیم
-      else {
         setPlaylists((prev) =>
-          prev.map((p) => (p.id === editingPlaylistId ? { ...p, name } : p)),
+          prev.map((p) =>
+            p.id === editingPlaylistId
+              ? {
+                  ...p,
+                  name,
+                }
+              : p,
+          ),
         );
       }
 
       setPlaylistFormName("");
+      setEditingPlaylistId(null);
       setShowPlaylistModal(false);
     } catch (err) {
       console.error(err);
 
-      alert(err?.response?.data?.message ?? "خطا در ایجاد پلی‌لیست");
+      alert(err?.response?.data?.message ?? "خطا در ذخیره پلی‌لیست");
     }
   };
 
@@ -735,7 +788,7 @@ export default function MusicSection() {
                               className="song-artist"
                               style={{ fontSize: "12px", color: "#888" }}
                             >
-                              {r.artist} • {formatTime(r.duration)}
+                              {r.artist} • {formatDuration(r.duration)}
                             </span>
                           </div>
                         </div>
@@ -846,7 +899,24 @@ export default function MusicSection() {
                     justifyContent: "space-between",
                     alignItems: "center",
                   }}
-                  onClick={() => setSelectedPlaylistId(pl.id)}
+                  onClick={async () => {
+                    try {
+                      await activatePlaylist(pl.id);
+
+                      setSelectedPlaylistId(pl.id);
+
+                      setPlaylists((prev) =>
+                        prev.map((x) => ({
+                          ...x,
+                          isActive: x.id === pl.id,
+                        })),
+                      );
+
+                      await refreshPlaylist(pl.id);
+                    } catch (err) {
+                      console.error(err);
+                    }
+                  }}
                 >
                   <span
                     style={{
@@ -1078,7 +1148,7 @@ export default function MusicSection() {
                             className="song-artist"
                             style={{ fontSize: "12px", color: "#888" }}
                           >
-                            {s.artist} • {formatTime(s.duration)}
+                            {s.artist} • {formatDuration(s.duration)}
                           </span>
                         </div>
                       </div>
@@ -1087,15 +1157,6 @@ export default function MusicSection() {
                         className="row-actions"
                         style={{ display: "flex", gap: "4px" }}
                       >
-                        {/* دکمه ویرایش محلی */}
-                        <button
-                          type="button"
-                          className="btn btn-icon btn-secondary"
-                          title="ویرایش نام"
-                          onClick={() => handleEditTrackName(s.id, s.title)}
-                        >
-                          <i className="fas fa-pencil-alt" />
-                        </button>
                         <button
                           type="button"
                           className="btn btn-icon btn-danger"

@@ -1,6 +1,5 @@
 // components/landing/BurgerPanelSection.jsx
 import React, { useRef, useState, useEffect } from "react";
-import { createPortal } from "react-dom";
 import {
   motion,
   useScroll,
@@ -76,11 +75,14 @@ export default function BurgerPanelSection({
     ["0vh", "-120vh"],
   );
 
-  // ===== Panel: portal + fixed + smooth fade + de-tilt =====
+  // ===== Panel & Wrapper: simulated sticky + smooth fade + de-tilt =====
   const { scrollYProgress: sectionProg } = useScroll({
     ...scrollConfig,
     offset: ["start start", "end end"],
   });
+
+  // Simulated Sticky: translates the wrapper down exactly as the user scrolls up
+  const wrapperY = useTransform(sectionProg, [0, 1], ["0vh", "200vh"]);
 
   const panelOpacity = useTransform(
     sectionProg,
@@ -98,7 +100,7 @@ export default function BurgerPanelSection({
     perspective(700px) translate3d(-50%, -50%, 0) rotateX(${panelRotateX})
   `;
 
-  // Mount into portal slightly before/after to avoid mount pop
+  // Mount logic to avoid mount pop
   const [active, setActive] = useState(false);
 
   useMotionValueEvent(sectionProg, "change", (v) => {
@@ -122,15 +124,8 @@ export default function BurgerPanelSection({
     <motion.div
       className="bp__panel"
       style={{
-        position: "fixed",
-        left: "50%",
-        top: "60%",
         transform: panelTransform,
-        transformOrigin: "0 100%",
-        willChange: "transform, opacity",
         opacity: panelOpacity,
-        zIndex: 10,
-        pointerEvents: "none",
       }}
     >
       {meshSrc && (
@@ -145,55 +140,53 @@ export default function BurgerPanelSection({
 
   return (
     <section ref={sectionRef} className="bp" style={{ height: "300vh" }}>
-      <motion.h2
-        className="bp__title"
+      {/* 
+        NEW: Simulated Sticky Wrapper
+        Uses position: relative and translates dynamically via Framer Motion 
+        to bypass CSS overflow conflicts. 
+      */}
+      <motion.div
+        className="bp__sticky-wrapper"
         style={{
-          position: "fixed",
-          top: "18%",
-          left: "50%",
-          x: "0%", // Perfectly centered horizontally
-          y: "-50%", // Pushed up slightly
-          zIndex: 60,
-          opacity: panelOpacity,
-          pointerEvents: "none",
+          position: "relative",
+          height: "100vh",
+          overflow: "hidden",
+          y: wrapperY,
         }}
       >
-        {title}
-      </motion.h2>
+        <motion.h2 className="bp__title" style={{ opacity: panelOpacity }}>
+          {title}
+        </motion.h2>
 
-      <div
-        ref={sceneRef}
-        className="bp__scene"
-        style={{ position: "relative", zIndex: 100 }}
-      >
-        <div className="bp__stage">
-          <motion.div
-            ref={burgerRef}
-            className="bp__burger"
-            style={{
-              opacity: burgerOpacity,
-              y: burgerY,
-            }}
-          >
-            {haloSrc ? (
-              <img
-                className="bp__glow"
-                src={haloSrc}
-                alt=""
-                aria-hidden="true"
-              />
-            ) : (
-              <div className="bp__glow" aria-hidden="true" />
-            )}
+        <div
+          ref={sceneRef}
+          className="bp__scene"
+          style={{ position: "relative", zIndex: 100 }}
+        >
+          <div className="bp__stage">
+            <motion.div
+              ref={burgerRef}
+              className="bp__burger"
+              style={{ opacity: burgerOpacity, y: burgerY }}
+            >
+              {haloSrc ? (
+                <img
+                  className="bp__glow"
+                  src={haloSrc}
+                  alt=""
+                  aria-hidden="true"
+                />
+              ) : (
+                <div className="bp__glow" aria-hidden="true" />
+              )}
+              <img className="bp__burgerImg" src={burgerSrc} alt={burgerAlt} />
+            </motion.div>
 
-            <img className="bp__burgerImg" src={burgerSrc} alt={burgerAlt} />
-          </motion.div>
-
-          {active &&
-            typeof document !== "undefined" &&
-            createPortal(PanelOverlay, document.body)}
+            {/* Render the panel directly here */}
+            {active && PanelOverlay}
+          </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

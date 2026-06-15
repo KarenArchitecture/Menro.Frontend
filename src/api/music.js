@@ -14,6 +14,10 @@ export const deleteTrack = (id) =>
   apiClient.delete(`/admin/music/archive/${id}`);
 
 /* PLAYLIST */
+
+export const createPlaylist = (dto) =>
+  apiClient.post("/admin/music/playlist", dto);
+
 export const getPlaylists = () => apiClient.get("/admin/music/playlist");
 
 export const getPlaylist = (playlistId) =>

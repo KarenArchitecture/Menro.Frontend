@@ -15,6 +15,7 @@ import {
 } from "../../api/music";
 
 const MAX_TRACKS = 50;
+const MAX_PLAYLISTS = 10; // ظرفیت پلی لیست ها
 
 // تابع کمکی برای فرمت زمان (ثانیه به دقیقه:ثانیه)
 const formatTime = (seconds) => {
@@ -22,20 +23,6 @@ const formatTime = (seconds) => {
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
   return `${m}:${s < 10 ? "0" : ""}${s}`;
-};
-
-// for tracks duration
-const formatDuration = (duration) => {
-  if (!duration) return "--:--";
-
-  const parts = duration.split(":");
-
-  if (parts.length !== 3) return duration;
-
-  const minutes = parts[1];
-  const seconds = parts[2].split(".")[0];
-
-  return `${minutes}:${seconds}`;
 };
 
 export default function MusicSection() {
@@ -48,15 +35,25 @@ export default function MusicSection() {
   const [playlists, setPlaylists] = useState([]);
   const [selectedPlaylistId, setSelectedPlaylistId] = useState(null);
 
-  // Modal State برای پلی لیست (استاتیک)
+  // Modal State برای پلی لیست
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
-  const [playlistModalMode, setPlaylistModalMode] = useState("add"); // 'add' | 'edit'
+  const [playlistModalMode, setPlaylistModalMode] = useState("add");
   const [playlistFormName, setPlaylistFormName] = useState("");
   const [editingPlaylistId, setEditingPlaylistId] = useState(null);
+
+  // Modal State برای ادیت آهنگ
+  const [showTrackModal, setShowTrackModal] = useState(false);
+  const [trackFormName, setTrackFormName] = useState("");
+  const [editingTrackId, setEditingTrackId] = useState(null);
+
+  // Modal State برای هشدارهای عمومی (جایگزین alert)
+  const [alertMessage, setAlertMessage] = useState("");
 
   // Playing music
   const audioRef = useRef(null);
   const audioCacheRef = useRef({});
+  const isSeekingRef = useRef(false); // جلوگیری از تداخل حین کلیک و کشیدن نوار
+
   const [playingTrackId, setPlayingTrackId] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -64,14 +61,17 @@ export default function MusicSection() {
 
   const [query, setQuery] = useState("");
   const [searchUrl, setSearchUrl] = useState("");
-  const [playlistQuery, setPlaylistQuery] = useState(""); // سرچ استاتیک داخل پلی لیست
+  const [playlistQuery, setPlaylistQuery] = useState("");
 
   const [searching, setSearching] = useState(false);
 
   const [loadingArchive, setLoadingArchive] = useState(false);
   const [loadingPlaylist, setLoadingPlaylist] = useState(false);
 
-  // فیلتر آرشیو
+  // Modal State برای حذف پلی‌لیست
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [playlistToDelete, setPlaylistToDelete] = useState(null);
+
   const searchResults = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return tracks;
@@ -82,13 +82,12 @@ export default function MusicSection() {
     );
   }, [query, tracks]);
 
-  // فیلتر استاتیک پلی‌لیست
   const filteredPlaylistTracks = useMemo(() => {
     const q = playlistQuery.trim().toLowerCase();
     if (!q) return playlistTracks;
     return playlistTracks.filter(
       (s) =>
-        (s.name || "").toLowerCase().includes(q) ||
+        (s.title || "").toLowerCase().includes(q) ||
         (s.artist || "").toLowerCase().includes(q),
     );
   }, [playlistQuery, playlistTracks]);
@@ -96,14 +95,18 @@ export default function MusicSection() {
   const archiveCapacityText = `${tracks.length} / ${MAX_TRACKS}`;
   const hasArchiveCapacity = tracks.length < MAX_TRACKS;
 
-  // آپدیت زمان پخش آهنگ برای پلیر سراسری
   useEffect(() => {
     if (!audioRef.current) {
       audioRef.current = new Audio();
     }
     const audio = audioRef.current;
 
-    const updateTime = () => setCurrentTime(audio.currentTime);
+    const updateTime = () => {
+      // فقط زمانی که کاربر در حال کشیدن نوار نیست تایم آپدیت شود
+      if (!isSeekingRef.current) {
+        setCurrentTime(audio.currentTime);
+      }
+    };
     const updateDuration = () => setDuration(audio.duration);
     const handleEnded = () => {
       setPlayingTrackId(null);
@@ -121,6 +124,29 @@ export default function MusicSection() {
       audio.removeEventListener("ended", handleEnded);
     };
   }, []);
+
+  const refreshPlaylist = async (playlistId) => {
+    if (!playlistId) return;
+    setLoadingPlaylist(true);
+    try {
+      const res = await getPlaylist(playlistId);
+      const mapped = res.data.tracks.map((t) => ({
+        id: t.id,
+        musicTrackId: t.musicTrackId,
+        title: t.title,
+        artist: t.artist || "—",
+        duration: t.duration,
+        artworkUrl: t.coverUrl,
+        audioUrl: t.audioUrl,
+        source: "playlist",
+      }));
+      setPlaylistTracks(mapped);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingPlaylist(false);
+    }
+  };
 
   // fetch archive tracks
   useEffect(() => {
@@ -154,13 +180,10 @@ export default function MusicSection() {
       try {
         const res = await getPlaylists();
         setPlaylists(res.data || []);
-        const activePlaylist = res.data?.find((x) => x.isActive);
-
-        const playlistId = activePlaylist?.id ?? res.data?.[0]?.id;
-
-        if (playlistId) {
-          setSelectedPlaylistId(playlistId);
-          await refreshPlaylist(playlistId);
+        const firstId = res.data?.[0]?.id;
+        if (firstId) {
+          setSelectedPlaylistId(firstId);
+          await refreshPlaylist(firstId);
         }
       } catch (err) {
         console.error(err);
@@ -198,47 +221,36 @@ export default function MusicSection() {
     refreshPlaylist(selectedPlaylistId);
   }, [selectedPlaylistId]);
 
-  // rename archive tracks
-  const handleEditTrackName = async (trackId, currentTitle) => {
-    const newTitle = prompt("نام جدید آهنگ را وارد کنید:", currentTitle);
-
-    if (!newTitle || !newTitle.trim()) return;
-
-    try {
-      const track = tracks.find((x) => x.id === trackId);
-
-      if (!track) return;
-
-      await updateTrack(trackId, {
-        title: newTitle.trim(),
-      });
-
-      // update archive ui
-      setTracks((prev) =>
-        prev.map((t) =>
-          t.id === trackId
-            ? {
-                ...t,
-                title: newTitle.trim(),
-              }
-            : t,
-        ),
-      );
-
-      // refresh current playlist so titles sync with backend
-      if (selectedPlaylistId) {
-        await refreshPlaylist(selectedPlaylistId);
-      }
-    } catch (err) {
-      console.error(err);
-
-      alert(err?.response?.data?.message ?? "خطا در ویرایش نام آهنگ");
-    }
-  };
-
   // -------------------------
   // Local/Static Handlers
   // -------------------------
+
+  // مودال ویرایش آهنگ
+  const openEditTrackModal = (trackId, currentTitle) => {
+    setEditingTrackId(trackId);
+    setTrackFormName(currentTitle || "");
+    setShowTrackModal(true);
+  };
+
+  const submitTrackModal = (e) => {
+    e.preventDefault();
+    if (!trackFormName.trim()) return;
+
+    setTracks((prev) =>
+      prev.map((t) =>
+        t.id === editingTrackId ? { ...t, title: trackFormName } : t,
+      ),
+    );
+    setPlaylistTracks((prev) =>
+      prev.map((t) =>
+        t.musicTrackId === editingTrackId || t.id === editingTrackId
+          ? { ...t, title: trackFormName }
+          : t,
+      ),
+    );
+    setShowTrackModal(false);
+  };
+
   const movePlaylistTrack = (index, direction) => {
     const newOrder = [...playlistTracks];
     if (direction === "up" && index > 0) {
@@ -256,6 +268,10 @@ export default function MusicSection() {
   };
 
   const openAddPlaylistModal = () => {
+    if (playlists.length >= MAX_PLAYLISTS) {
+      setAlertMessage("ظرفیت ساخت پلی‌لیست پر شده است.");
+      return;
+    }
     setPlaylistModalMode("add");
     setPlaylistFormName("");
     setShowPlaylistModal(true);
@@ -264,69 +280,45 @@ export default function MusicSection() {
   const openEditPlaylistModal = (pl) => {
     setPlaylistModalMode("edit");
     setEditingPlaylistId(pl.id);
-    setPlaylistFormName(pl.name || `پلی‌لیست ${pl.id}`);
+    setPlaylistFormName(pl.title || pl.name || `پلی‌لیست ${pl.id}`);
     setShowPlaylistModal(true);
   };
 
-  const submitPlaylistModal = async (e) => {
+  const submitPlaylistModal = (e) => {
     e.preventDefault();
+    if (!playlistFormName.trim()) return;
 
-    const name = playlistFormName.trim();
-
-    if (!name) return;
-
-    try {
-      if (playlistModalMode === "add") {
-        const res = await createPlaylist({
-          name,
-        });
-
-        const newPlaylist = {
-          id: res.data.id,
-          name: res.data.name,
-        };
-
-        setPlaylists((prev) => [...prev, newPlaylist]);
-
-        setSelectedPlaylistId(newPlaylist.id);
-
-        setPlaylistTracks([]);
-      } else {
-        await renamePlaylist(editingPlaylistId, {
-          name,
-        });
-
-        setPlaylists((prev) =>
-          prev.map((p) =>
-            p.id === editingPlaylistId
-              ? {
-                  ...p,
-                  name,
-                }
-              : p,
-          ),
-        );
-      }
-
-      setPlaylistFormName("");
-      setEditingPlaylistId(null);
-      setShowPlaylistModal(false);
-    } catch (err) {
-      console.error(err);
-
-      alert(err?.response?.data?.message ?? "خطا در ذخیره پلی‌لیست");
+    if (playlistModalMode === "add") {
+      const newPl = { id: Date.now().toString(), title: playlistFormName };
+      setPlaylists([...playlists, newPl]);
+      setSelectedPlaylistId(newPl.id);
+      setPlaylistTracks([]);
+    } else {
+      setPlaylists(
+        playlists.map((p) =>
+          p.id === editingPlaylistId ? { ...p, title: playlistFormName } : p,
+        ),
+      );
     }
+    setShowPlaylistModal(false);
+  };
+  const handleDeletePlaylist = (id) => {
+    setPlaylistToDelete(id);
+    setShowDeleteModal(true);
   };
 
-  const handleDeletePlaylist = (id) => {
-    if (window.confirm("آیا از حذف این پلی‌لیست اطمینان دارید؟")) {
-      const filtered = playlists.filter((p) => p.id !== id);
-      setPlaylists(filtered);
-      if (selectedPlaylistId === id) {
-        setSelectedPlaylistId(filtered[0]?.id || null);
-        setPlaylistTracks([]);
-      }
+  const confirmDeletePlaylist = () => {
+    if (!playlistToDelete) return;
+
+    const filtered = playlists.filter((p) => p.id !== playlistToDelete);
+    setPlaylists(filtered);
+    if (selectedPlaylistId === playlistToDelete) {
+      setSelectedPlaylistId(filtered[0]?.id || null);
+      setPlaylistTracks([]);
     }
+
+    setShowDeleteModal(false);
+    setPlaylistToDelete(null);
   };
 
   // -------------------------
@@ -335,9 +327,7 @@ export default function MusicSection() {
   const addToPlaylist = async (track) => {
     if (!selectedPlaylistId) return;
     try {
-      await addTrackToPlaylist(selectedPlaylistId, {
-        musicTrackId: track.id,
-      });
+      await addTrackToPlaylist(selectedPlaylistId, { musicTrackId: track.id });
       await refreshPlaylist(selectedPlaylistId);
     } catch (err) {
       console.error(err);
@@ -351,7 +341,7 @@ export default function MusicSection() {
       await refreshPlaylist(selectedPlaylistId);
     } catch (err) {
       console.error(err);
-      alert("حذف از پلی‌لیست ناموفق بود");
+      setAlertMessage("حذف از پلی‌لیست ناموفق بود");
     }
   };
 
@@ -363,7 +353,7 @@ export default function MusicSection() {
       setPlaylistTracks((prev) => prev.filter((p) => p.musicTrackId !== id));
     } catch {
       setTracks((prev) => [...prev, backup]);
-      alert("حذف ناموفق بود");
+      setAlertMessage("حذف ناموفق بود");
     }
   };
 
@@ -376,8 +366,8 @@ export default function MusicSection() {
 
     const remainingCapacity = MAX_TRACKS - tracks.length;
     if (audioFiles.length > remainingCapacity) {
-      alert(
-        `ظرفیت آرشیو محدود است. شما فقط می‌توانید ${remainingCapacity} فایل دیگر به آرشیو اضافه کنید.`,
+      setAlertMessage(
+        `ظرفیت آرشیو محدود است. فقط ${remainingCapacity} فایل دیگر مجاز است.`,
       );
       audioFiles = audioFiles.slice(0, remainingCapacity);
       if (!audioFiles.length) return;
@@ -406,7 +396,7 @@ export default function MusicSection() {
         ]);
       } catch (err) {
         console.error(err);
-        alert("خطا در آپلود موسیقی");
+        setAlertMessage("خطا در آپلود موسیقی");
       }
     }
   };
@@ -420,18 +410,16 @@ export default function MusicSection() {
   const handleOnlineSearch = (e) => {
     e.preventDefault();
     if (!searchUrl.trim()) {
-      alert("لطفا لینک را وارد کنید.");
+      setAlertMessage("لطفا لینک را وارد کنید.");
       return;
     }
-    alert(
-      `در حال جستجوی لینک: ${searchUrl}\n(اتصال به API در اینجا قرار میگیرد)`,
-    );
+    setAlertMessage(`در حال جستجوی لینک: ${searchUrl}`);
     setSearchUrl("");
   };
 
   const handleApproveRequest = async (track) => {
     if (!hasArchiveCapacity) {
-      alert("ظرفیت آرشیو پر شده است.");
+      setAlertMessage("ظرفیت آرشیو پر شده است.");
       return;
     }
     try {
@@ -470,7 +458,7 @@ export default function MusicSection() {
 
       const audioUrl = audioCacheRef.current[musicTrackId];
       if (!audioUrl) {
-        alert("فایل صوتی یافت نشد");
+        setAlertMessage("فایل صوتی یافت نشد");
         return;
       }
 
@@ -482,7 +470,7 @@ export default function MusicSection() {
       setIsPlaying(true);
     } catch (err) {
       console.error(err);
-      alert("خطا در پخش موسیقی");
+      setAlertMessage("خطا در پخش موسیقی");
     }
   };
 
@@ -497,11 +485,20 @@ export default function MusicSection() {
     }
   };
 
-  const handleSeek = (e) => {
+  // رفع مشکل پرش و دبل ایونت در Range
+  const handleSeekMouseDown = () => {
+    isSeekingRef.current = true;
+  };
+
+  const handleSeekChange = (e) => {
+    setCurrentTime(Number(e.target.value)); // فقط آپدیت UI هنگام کشیدن
+  };
+
+  const handleSeekMouseUp = (e) => {
     if (audioRef.current) {
-      audioRef.current.currentTime = e.target.value;
-      setCurrentTime(e.target.value);
+      audioRef.current.currentTime = Number(e.target.value); // اعمال روی فایل صوتی در لحظه رها کردن
     }
+    isSeekingRef.current = false;
   };
 
   return (
@@ -514,7 +511,7 @@ export default function MusicSection() {
       }}
     >
       {/* ---------------------------------
-          Global Player (بالای همه بخش‌ها)
+          Global Player
       --------------------------------- */}
       <div
         className="panel global-player"
@@ -522,31 +519,70 @@ export default function MusicSection() {
           padding: "16px",
           display: "flex",
           alignItems: "center",
-          gap: "16px",
+          gap: "24px",
           background: "#1e1e1e",
           borderRadius: "8px",
           border: "1px solid #333",
         }}
       >
-        <button
-          type="button"
-          className="btn btn-icon btn-primary"
-          onClick={toggleGlobalPlay}
-          disabled={!playingTrackId}
+        <div
           style={{
-            width: 48,
-            height: 48,
-            borderRadius: "50%",
-            background: "#ff9800",
-            color: "#fff",
-            border: "none",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            direction: "ltr",
           }}
         >
-          <i
-            className={isPlaying ? "fas fa-pause" : "fas fa-play"}
-            style={{ fontSize: "20px" }}
-          />
-        </button>
+          <button
+            className="btn btn-icon btn-secondary"
+            title="بر زدن"
+            onClick={() => {}}
+            style={{ background: "transparent", border: "none", color: "#aaa" }}
+          >
+            <i className="fas fa-random" />
+          </button>
+          <button
+            className="btn btn-icon btn-secondary"
+            title="قبلی"
+            onClick={() => {}}
+            style={{ background: "transparent", border: "none", color: "#aaa" }}
+          >
+            <i className="fas fa-step-backward" style={{ fontSize: "18px" }} />
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-icon btn-primary"
+            onClick={toggleGlobalPlay}
+            disabled={!playingTrackId}
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: "50%",
+              background: "#ff9800",
+              color: "#fff",
+              border: "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <i
+              className={isPlaying ? "fas fa-pause" : "fas fa-play"}
+              style={{ fontSize: "20px" }}
+            />
+          </button>
+
+          <button
+            className="btn btn-icon btn-secondary"
+            title="بعدی"
+            onClick={() => {}}
+            style={{ background: "transparent", border: "none", color: "#aaa" }}
+          >
+            <i className="fas fa-step-forward" style={{ fontSize: "18px" }} />
+          </button>
+        </div>
+
         <div
           style={{
             flex: 1,
@@ -588,7 +624,11 @@ export default function MusicSection() {
             min="0"
             max={duration || 0}
             value={currentTime}
-            onChange={handleSeek}
+            onMouseDown={handleSeekMouseDown}
+            onChange={handleSeekChange}
+            onMouseUp={handleSeekMouseUp}
+            onTouchStart={handleSeekMouseDown}
+            onTouchEnd={handleSeekMouseUp}
             disabled={!playingTrackId}
             style={{ width: "100%", accentColor: "#ff9800", cursor: "pointer" }}
           />
@@ -671,17 +711,17 @@ export default function MusicSection() {
                     margin: 0,
                   }}
                 >
-                  <i className="fas fa-cloud-upload-alt" />
-                  بارگذاری فایل جدید از سیستم
+                  <i className="fas fa-cloud-upload-alt" /> بارگذاری فایل جدید
+                  از سیستم
                 </label>
               </div>
 
-              {/* اعمال Max-Height روی جستجوها */}
+              {/* همسان‌سازی ارتفاع با پلی‌لیست */}
               <div
                 className="search-results"
                 style={{
                   marginTop: 12,
-                  maxHeight: "350px",
+                  maxHeight: "400px",
                   overflowY: "auto",
                   paddingRight: "8px",
                 }}
@@ -714,9 +754,8 @@ export default function MusicSection() {
                           <i
                             className="fas fa-music"
                             style={{ color: "#555" }}
-                          ></i>
+                          />
 
-                          {/* کاور با قابلیت کلیک برای پخش (Overlay) */}
                           <div
                             style={{
                               position: "relative",
@@ -774,7 +813,6 @@ export default function MusicSection() {
                           <div
                             style={{ display: "flex", flexDirection: "column" }}
                           >
-                            {/* رنگ نارنجی در صورت پخش */}
                             <span
                               className="song-title"
                               style={{
@@ -788,7 +826,7 @@ export default function MusicSection() {
                               className="song-artist"
                               style={{ fontSize: "12px", color: "#888" }}
                             >
-                              {r.artist} • {formatDuration(r.duration)}
+                              {r.artist} • {formatTime(r.duration)}
                             </span>
                           </div>
                         </div>
@@ -801,7 +839,7 @@ export default function MusicSection() {
                             type="button"
                             className="btn btn-icon btn-secondary"
                             title="ویرایش نام"
-                            onClick={() => handleEditTrackName(r.id, r.title)}
+                            onClick={() => openEditTrackModal(r.id, r.title)}
                           >
                             <i className="fas fa-pencil-alt" />
                           </button>
@@ -846,41 +884,64 @@ export default function MusicSection() {
                   <i className="fas fa-search" /> جستجو
                 </button>
               </form>
-              <small
-                className="muted"
-                style={{ display: "block", marginTop: 8 }}
-              >
-                لینک مستقیم فایل صوتی یا صفحه آهنگ را قرار داده و جستجو را
-                بزنید.
-              </small>
             </div>
           )}
         </div>
 
         {/* ---------------------------------
-            پلی‌لیست ادمین (همراه با سایدبار)
+            پلی‌لیست ادمین
         --------------------------------- */}
         <div
           className="panel playlist-panel"
           style={{ flex: "1.5", display: "flex", flexDirection: "column" }}
         >
-          <div className="view-header" style={{ marginBottom: "16px" }}>
-            <h3>مدیریت پلی‌لیست‌ها</h3>
+          <div
+            className="view-header"
+            style={{
+              marginBottom: "16px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+              }}
+            >
+              <h3 style={{ margin: 0 }}>مدیریت پلی‌لیست‌ها</h3>
+              <span
+                className="playlist-capacity"
+                style={{ fontSize: "13px", color: "#888" }}
+              >
+                {playlists.length} / {MAX_PLAYLISTS}
+              </span>
+            </div>
             <button
               className="btn btn-primary btn-sm"
               onClick={openAddPlaylistModal}
+              disabled={playlists.length >= MAX_PLAYLISTS}
             >
               <i className="fas fa-plus" /> پلی‌لیست جدید
             </button>
           </div>
 
-          <div style={{ display: "flex", gap: "16px", flex: 1 }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "16px",
+              flex: 1,
+              flexDirection: "row-reverse",
+            }}
+          >
             {/* Sidebar برای لیست پلی‌لیست‌ها */}
             <div
               style={{
                 width: "35%",
-                borderLeft: "1px solid #333",
-                paddingLeft: "12px",
+                borderRight: "1px solid #333",
+                paddingRight: "12px",
                 overflowY: "auto",
                 maxHeight: "400px",
               }}
@@ -899,63 +960,55 @@ export default function MusicSection() {
                     justifyContent: "space-between",
                     alignItems: "center",
                   }}
-                  onClick={async () => {
-                    try {
-                      await activatePlaylist(pl.id);
-
-                      setSelectedPlaylistId(pl.id);
-
-                      setPlaylists((prev) =>
-                        prev.map((x) => ({
-                          ...x,
-                          isActive: x.id === pl.id,
-                        })),
-                      );
-
-                      await refreshPlaylist(pl.id);
-                    } catch (err) {
-                      console.error(err);
-                    }
-                  }}
+                  onClick={() => setSelectedPlaylistId(pl.id)}
                 >
                   <span
+                    title={pl.title || pl.name || "پلی‌لیست"} // Shows full name on hover
                     style={{
                       fontWeight:
                         selectedPlaylistId === pl.id ? "bold" : "normal",
                       color:
                         selectedPlaylistId === pl.id ? "#ff9800" : "inherit",
+                      // Truncation styles:
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      flex: 1, // Allows the span to take up available space
+                      minWidth: 0, // Critical for truncation inside a flexbox
+                      marginInlineEnd: "10px", // Adds space between the text and buttons
                     }}
                   >
-                    {pl.name || "پلی‌لیست"}
+                    {pl.title || pl.name || "پلی‌لیست"}
                   </span>
 
-                  {selectedPlaylistId === pl.id && (
-                    <div style={{ display: "flex", gap: "6px" }}>
-                      <button
-                        className="btn btn-icon btn-secondary"
-                        style={{ width: 24, height: 24, padding: 0 }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openEditPlaylistModal(pl);
-                        }}
-                      >
-                        <i
-                          className="fas fa-pencil-alt"
-                          style={{ fontSize: 10 }}
-                        />
-                      </button>
-                      <button
-                        className="btn btn-icon btn-danger"
-                        style={{ width: 24, height: 24, padding: 0 }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeletePlaylist(pl.id);
-                        }}
-                      >
-                        <i className="fas fa-trash" style={{ fontSize: 10 }} />
-                      </button>
-                    </div>
-                  )}
+                  {/* دکمه‌های ادیت/حذف همیشه نمایش داده شوند */}
+                  <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
+                    {" "}
+                    {/* flexShrink: 0 prevents buttons from compressing */}
+                    <button
+                      className="btn btn-icon btn-secondary"
+                      style={{ width: 24, height: 24, padding: 0 }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditPlaylistModal(pl);
+                      }}
+                    >
+                      <i
+                        className="fas fa-pencil-alt"
+                        style={{ fontSize: 10 }}
+                      />
+                    </button>
+                    <button
+                      className="btn btn-icon btn-danger"
+                      style={{ width: 24, height: 24, padding: 0 }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeletePlaylist(pl.id);
+                      }}
+                    >
+                      <i className="fas fa-trash" style={{ fontSize: 10 }} />
+                    </button>
+                  </div>
                 </div>
               ))}
               {playlists.length === 0 && (
@@ -974,7 +1027,6 @@ export default function MusicSection() {
                 gap: "12px",
               }}
             >
-              {/* فیلد سرچ استاتیک برای پلی‌لیست */}
               <input
                 type="text"
                 placeholder="جستجو در این پلی‌لیست..."
@@ -994,14 +1046,13 @@ export default function MusicSection() {
                 className="playlist"
                 style={{
                   overflowY: "auto",
-                  maxHeight: "350px",
+                  maxHeight: "400px",
                   paddingRight: "8px",
                 }}
               >
                 {loadingPlaylist && (
                   <div className="empty-hint">در حال دریافت...</div>
                 )}
-
                 {!loadingPlaylist && filteredPlaylistTracks.length === 0 && (
                   <div className="empty-hint">آهنگی یافت نشد</div>
                 )}
@@ -1026,7 +1077,6 @@ export default function MusicSection() {
                           alignItems: "center",
                         }}
                       >
-                        {/* دکمه‌های جابجایی Up/Down به جای Drag */}
                         <div
                           style={{
                             display: "flex",
@@ -1077,7 +1127,6 @@ export default function MusicSection() {
                           </button>
                         </div>
 
-                        {/* کاور با Play/Pause Overlay */}
                         <div
                           style={{
                             position: "relative",
@@ -1148,7 +1197,7 @@ export default function MusicSection() {
                             className="song-artist"
                             style={{ fontSize: "12px", color: "#888" }}
                           >
-                            {s.artist} • {formatDuration(s.duration)}
+                            {s.artist} • {formatTime(s.duration)}
                           </span>
                         </div>
                       </div>
@@ -1157,6 +1206,14 @@ export default function MusicSection() {
                         className="row-actions"
                         style={{ display: "flex", gap: "4px" }}
                       >
+                        <button
+                          type="button"
+                          className="btn btn-icon btn-secondary"
+                          title="ویرایش نام"
+                          onClick={() => openEditTrackModal(s.id, s.title)}
+                        >
+                          <i className="fas fa-pencil-alt" />
+                        </button>
                         <button
                           type="button"
                           className="btn btn-icon btn-danger"
@@ -1185,7 +1242,6 @@ export default function MusicSection() {
           </span>
         </div>
 
-        {/* Max-Height روی لیست درخواست‌ها */}
         <div
           className="requests-list"
           style={{ maxHeight: "300px", overflowY: "auto" }}
@@ -1254,6 +1310,77 @@ export default function MusicSection() {
       </div>
 
       {/* ---------------------------------
+          مودال تایید حذف پلی‌لیست
+      --------------------------------- */}
+      {showDeleteModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              background: "#222",
+              padding: "24px",
+              borderRadius: "8px",
+              width: "320px",
+              border: "1px solid #444",
+              textAlign: "center",
+            }}
+          >
+            <h4 style={{ margin: "0 0 16px 0", color: "#fff" }}>
+              حذف پلی‌لیست
+            </h4>
+            <p
+              style={{
+                color: "#ccc",
+                marginBottom: "24px",
+                fontSize: "14px",
+              }}
+            >
+              آیا از حذف این پلی‌لیست اطمینان دارید؟
+            </p>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                gap: "12px",
+              }}
+            >
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setPlaylistToDelete(null);
+                }}
+              >
+                خیر
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={confirmDeletePlaylist}
+                style={{
+                  background: "#f44336",
+                  color: "#fff",
+                  border: "none",
+                }}
+              >
+                بله، حذف شود
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ---------------------------------
           مودال ساخت/ویرایش پلی‌لیست
       --------------------------------- */}
       {showPlaylistModal && (
@@ -1268,7 +1395,6 @@ export default function MusicSection() {
             zIndex: 9999,
           }}
         >
-          {/* playlist mini-modal */}
           <div
             style={{
               background: "#222",
@@ -1323,6 +1449,126 @@ export default function MusicSection() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ---------------------------------
+          مودال ویرایش نام آهنگ
+      --------------------------------- */}
+      {showTrackModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              background: "#222",
+              padding: "24px",
+              borderRadius: "8px",
+              width: "320px",
+              border: "1px solid #444",
+            }}
+          >
+            <h4 style={{ margin: "0 0 16px 0", color: "#fff" }}>
+              ویرایش نام آهنگ
+            </h4>
+            <form onSubmit={submitTrackModal}>
+              <input
+                type="text"
+                value={trackFormName}
+                onChange={(e) => setTrackFormName(e.target.value)}
+                placeholder="نام جدید آهنگ را وارد کنید..."
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  marginBottom: "16px",
+                  borderRadius: "4px",
+                  border: "1px solid #444",
+                  background: "#111",
+                  color: "#fff",
+                }}
+                autoFocus
+              />
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: "8px",
+                }}
+              >
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowTrackModal(false)}
+                >
+                  لغو
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={!trackFormName.trim()}
+                >
+                  ذخیره
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ---------------------------------
+          مودال هشدار (Alert) جایگزین پیش‌فرض
+      --------------------------------- */}
+      {!!alertMessage && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              background: "#222",
+              padding: "24px",
+              borderRadius: "8px",
+              width: "320px",
+              border: "1px solid #444",
+              textAlign: "center",
+            }}
+          >
+            <h4 style={{ margin: "0 0 16px 0", color: "#fff" }}>پیام</h4>
+            <p
+              style={{
+                color: "#ccc",
+                marginBottom: "24px",
+                fontSize: "14px",
+                lineHeight: "1.5",
+              }}
+            >
+              {alertMessage}
+            </p>
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setAlertMessage("")}
+              >
+                متوجه شدم
+              </button>
+            </div>
           </div>
         </div>
       )}

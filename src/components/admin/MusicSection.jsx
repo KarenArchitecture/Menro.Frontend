@@ -11,7 +11,8 @@ import {
   addTrackToPlaylist,
   removeTrackFromPlaylist,
   activatePlaylist,
-  updateTrack,
+  renameTrack,
+  deletePlaylist,
 } from "../../api/music";
 
 const MAX_TRACKS = 50;
@@ -23,6 +24,20 @@ const formatTime = (seconds) => {
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
   return `${m}:${s < 10 ? "0" : ""}${s}`;
+};
+
+// for tracks duration
+const formatDuration = (duration) => {
+  if (!duration) return "--:--";
+
+  const parts = duration.split(":");
+
+  if (parts.length !== 3) return duration;
+
+  const minutes = parts[1];
+  const seconds = parts[2].split(".")[0];
+
+  return `${minutes}:${seconds}`;
 };
 
 export default function MusicSection() {
@@ -40,6 +55,7 @@ export default function MusicSection() {
   const [playlistModalMode, setPlaylistModalMode] = useState("add");
   const [playlistFormName, setPlaylistFormName] = useState("");
   const [editingPlaylistId, setEditingPlaylistId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Modal State برای ادیت آهنگ
   const [showTrackModal, setShowTrackModal] = useState(false);
@@ -125,29 +141,6 @@ export default function MusicSection() {
     };
   }, []);
 
-  const refreshPlaylist = async (playlistId) => {
-    if (!playlistId) return;
-    setLoadingPlaylist(true);
-    try {
-      const res = await getPlaylist(playlistId);
-      const mapped = res.data.tracks.map((t) => ({
-        id: t.id,
-        musicTrackId: t.musicTrackId,
-        title: t.title,
-        artist: t.artist || "—",
-        duration: t.duration,
-        artworkUrl: t.coverUrl,
-        audioUrl: t.audioUrl,
-        source: "playlist",
-      }));
-      setPlaylistTracks(mapped);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingPlaylist(false);
-    }
-  };
-
   // fetch archive tracks
   useEffect(() => {
     const loadTracks = async () => {
@@ -175,20 +168,23 @@ export default function MusicSection() {
   }, []);
 
   // fetch playlists list
-  useEffect(() => {
-    const loadPlaylists = async () => {
-      try {
-        const res = await getPlaylists();
-        setPlaylists(res.data || []);
-        const firstId = res.data?.[0]?.id;
-        if (firstId) {
-          setSelectedPlaylistId(firstId);
-          await refreshPlaylist(firstId);
-        }
-      } catch (err) {
-        console.error(err);
+  const loadPlaylists = async () => {
+    try {
+      const res = await getPlaylists();
+      setPlaylists(res.data || []);
+
+      const activePlaylist = res.data?.find((x) => x.isActive);
+      const playlistId = activePlaylist?.id ?? res.data?.[0]?.id;
+
+      if (playlistId) {
+        setSelectedPlaylistId(playlistId);
+        await refreshPlaylist(playlistId);
       }
-    };
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  useEffect(() => {
     loadPlaylists();
   }, []);
 
@@ -196,7 +192,6 @@ export default function MusicSection() {
   const refreshPlaylist = async (playlistId) => {
     if (!playlistId) return;
     setLoadingPlaylist(true);
-
     try {
       const res = await getPlaylist(playlistId);
       const mapped = res.data.tracks.map((t) => ({
@@ -232,23 +227,34 @@ export default function MusicSection() {
     setShowTrackModal(true);
   };
 
-  const submitTrackModal = (e) => {
+  const submitTrackModal = async (e) => {
     e.preventDefault();
-    if (!trackFormName.trim()) return;
 
-    setTracks((prev) =>
-      prev.map((t) =>
-        t.id === editingTrackId ? { ...t, title: trackFormName } : t,
-      ),
-    );
-    setPlaylistTracks((prev) =>
-      prev.map((t) =>
-        t.musicTrackId === editingTrackId || t.id === editingTrackId
-          ? { ...t, title: trackFormName }
-          : t,
-      ),
-    );
-    setShowTrackModal(false);
+    const title = trackFormName.trim();
+
+    if (!title) return;
+
+    try {
+      await renameTrack(editingTrackId, {
+        title,
+      });
+
+      setTracks((prev) =>
+        prev.map((t) => (t.id === editingTrackId ? { ...t, title } : t)),
+      );
+
+      if (selectedPlaylistId) {
+        await refreshPlaylist(selectedPlaylistId);
+      }
+
+      setShowTrackModal(false);
+      setTrackFormName("");
+      setEditingTrackId(null);
+    } catch (err) {
+      console.error(err);
+
+      alert(err?.response?.data?.message ?? "خطا در تغییر نام آهنگ");
+    }
   };
 
   const movePlaylistTrack = (index, direction) => {
@@ -284,41 +290,84 @@ export default function MusicSection() {
     setShowPlaylistModal(true);
   };
 
-  const submitPlaylistModal = (e) => {
+  const submitPlaylistModal = async (e) => {
     e.preventDefault();
-    if (!playlistFormName.trim()) return;
 
-    if (playlistModalMode === "add") {
-      const newPl = { id: Date.now().toString(), title: playlistFormName };
-      setPlaylists([...playlists, newPl]);
-      setSelectedPlaylistId(newPl.id);
-      setPlaylistTracks([]);
-    } else {
-      setPlaylists(
-        playlists.map((p) =>
-          p.id === editingPlaylistId ? { ...p, title: playlistFormName } : p,
-        ),
-      );
+    const name = playlistFormName.trim();
+
+    if (!name) return;
+
+    try {
+      if (playlistModalMode === "add") {
+        const res = await createPlaylist({
+          name,
+        });
+
+        const newPlaylist = {
+          id: res.data.id,
+          name: res.data.name,
+        };
+
+        setPlaylists((prev) => [...prev, newPlaylist]);
+
+        setSelectedPlaylistId(newPlaylist.id);
+
+        setPlaylistTracks([]);
+      } else {
+        await renamePlaylist(editingPlaylistId, {
+          name,
+        });
+
+        setPlaylists((prev) =>
+          prev.map((p) =>
+            p.id === editingPlaylistId
+              ? {
+                  ...p,
+                  name,
+                }
+              : p,
+          ),
+        );
+      }
+
+      setPlaylistFormName("");
+      setEditingPlaylistId(null);
+      setShowPlaylistModal(false);
+    } catch (err) {
+      console.error(err);
+
+      alert(err?.response?.data?.message ?? "خطا در ذخیره پلی‌لیست");
     }
-    setShowPlaylistModal(false);
   };
   const handleDeletePlaylist = (id) => {
     setPlaylistToDelete(id);
     setShowDeleteModal(true);
   };
 
-  const confirmDeletePlaylist = () => {
+  const handleConfirmDeletePlaylist = async () => {
     if (!playlistToDelete) return;
 
-    const filtered = playlists.filter((p) => p.id !== playlistToDelete);
-    setPlaylists(filtered);
-    if (selectedPlaylistId === playlistToDelete) {
-      setSelectedPlaylistId(filtered[0]?.id || null);
-      setPlaylistTracks([]);
-    }
+    try {
+      setDeleting(true);
 
-    setShowDeleteModal(false);
-    setPlaylistToDelete(null);
+      await deletePlaylist(playlistToDelete);
+
+      setShowDeleteModal(false);
+      setPlaylistToDelete(null);
+
+      await loadPlaylists();
+
+      // اگر پلی‌لیست فعال حذف شد
+      if (selectedPlaylistId === playlistToDelete) {
+        setSelectedPlaylistId(null);
+        setPlaylistTracks([]);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("حذف پلی‌لیست انجام نشد");
+    } finally {
+      setDeleting(false);
+    }
   };
 
   // -------------------------
@@ -826,7 +875,7 @@ export default function MusicSection() {
                               className="song-artist"
                               style={{ fontSize: "12px", color: "#888" }}
                             >
-                              {r.artist} • {formatTime(r.duration)}
+                              {r.artist} • {formatDuration(r.duration)}
                             </span>
                           </div>
                         </div>
@@ -960,7 +1009,24 @@ export default function MusicSection() {
                     justifyContent: "space-between",
                     alignItems: "center",
                   }}
-                  onClick={() => setSelectedPlaylistId(pl.id)}
+                  onClick={async () => {
+                    try {
+                      await activatePlaylist(pl.id);
+
+                      setSelectedPlaylistId(pl.id);
+
+                      setPlaylists((prev) =>
+                        prev.map((x) => ({
+                          ...x,
+                          isActive: x.id === pl.id,
+                        })),
+                      );
+
+                      await refreshPlaylist(pl.id);
+                    } catch (err) {
+                      console.error(err);
+                    }
+                  }}
                 >
                   <span
                     title={pl.title || pl.name || "پلی‌لیست"} // Shows full name on hover
@@ -981,10 +1047,7 @@ export default function MusicSection() {
                     {pl.title || pl.name || "پلی‌لیست"}
                   </span>
 
-                  {/* دکمه‌های ادیت/حذف همیشه نمایش داده شوند */}
                   <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
-                    {" "}
-                    {/* flexShrink: 0 prevents buttons from compressing */}
                     <button
                       className="btn btn-icon btn-secondary"
                       style={{ width: 24, height: 24, padding: 0 }}
@@ -1197,7 +1260,7 @@ export default function MusicSection() {
                             className="song-artist"
                             style={{ fontSize: "12px", color: "#888" }}
                           >
-                            {s.artist} • {formatTime(s.duration)}
+                            {s.artist} • {formatDuration(s.duration)}
                           </span>
                         </div>
                       </div>
@@ -1206,14 +1269,6 @@ export default function MusicSection() {
                         className="row-actions"
                         style={{ display: "flex", gap: "4px" }}
                       >
-                        <button
-                          type="button"
-                          className="btn btn-icon btn-secondary"
-                          title="ویرایش نام"
-                          onClick={() => openEditTrackModal(s.id, s.title)}
-                        >
-                          <i className="fas fa-pencil-alt" />
-                        </button>
                         <button
                           type="button"
                           className="btn btn-icon btn-danger"
@@ -1366,7 +1421,7 @@ export default function MusicSection() {
               <button
                 type="button"
                 className="btn btn-danger"
-                onClick={confirmDeletePlaylist}
+                onClick={handleConfirmDeletePlaylist}
                 style={{
                   background: "#f44336",
                   color: "#fff",

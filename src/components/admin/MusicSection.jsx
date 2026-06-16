@@ -65,10 +65,20 @@ export default function MusicSection() {
   // Modal State برای هشدارهای عمومی (جایگزین alert)
   const [alertMessage, setAlertMessage] = useState("");
 
-  // Playing music
+  //for playlist track preview from archive
+  const previewAudioRef = useRef(new Audio());
+  const [previewTrackId, setPreviewTrackId] = useState(null);
+  const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
+
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewTrackTitle, setPreviewTrackTitle] = useState("");
+  const [previewCurrentTime, setPreviewCurrentTime] = useState(0);
+  const [previewDuration, setPreviewDuration] = useState(0);
+
+  // Playing music (main player from playlist)
   const audioRef = useRef(null);
   const audioCacheRef = useRef({});
-  const isSeekingRef = useRef(false); // جلوگیری از تداخل حین کلیک و کشیدن نوار
+  const isSeekingRef = useRef(false);
 
   const [playingTrackId, setPlayingTrackId] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -487,25 +497,111 @@ export default function MusicSection() {
     }
   };
 
-  const handlePlayTrack = async (musicTrackId) => {
+  //for playing track preview from archive
+  const handlePreviewTrack = async (musicTrackId) => {
     try {
-      if (playingTrackId === musicTrackId && audioRef.current) {
-        if (audioRef.current.paused) {
-          await audioRef.current.play();
-          setIsPlaying(true);
+      const track = tracks.find((x) => x.id === musicTrackId);
+
+      // همان آهنگ قبلی
+      if (previewTrackId === musicTrackId && previewAudioRef.current) {
+        if (previewAudioRef.current.paused) {
+          await previewAudioRef.current.play();
+
+          setPreviewTrackTitle(track?.title ?? "پیش‌نمایش آهنگ");
+          setShowPreviewModal(true);
+          setIsPreviewPlaying(true);
         } else {
-          audioRef.current.pause();
-          setIsPlaying(false);
+          previewAudioRef.current.pause();
+          setIsPreviewPlaying(false);
         }
+
         return;
       }
 
+      // لود از کش یا API
       if (!audioCacheRef.current[musicTrackId]) {
         const res = await getTrack(musicTrackId);
         audioCacheRef.current[musicTrackId] = res.data.audioUrl;
       }
 
       const audioUrl = audioCacheRef.current[musicTrackId];
+
+      if (!audioUrl) {
+        setAlertMessage("فایل صوتی یافت نشد");
+        return;
+      }
+
+      // پخش آهنگ جدید
+      previewAudioRef.current.pause();
+      previewAudioRef.current.src = audioUrl;
+
+      await previewAudioRef.current.play();
+
+      setPreviewTrackId(musicTrackId);
+      setPreviewTrackTitle(track?.title ?? "پیش‌نمایش آهنگ");
+
+      setShowPreviewModal(true);
+      setIsPreviewPlaying(true);
+    } catch (err) {
+      console.error(err);
+      setAlertMessage("خطا در پخش موسیقی");
+    }
+  };
+  useEffect(() => {
+    const audio = previewAudioRef.current;
+
+    const onTimeUpdate = () => {
+      setPreviewCurrentTime(audio.currentTime);
+    };
+
+    const onLoadedMetadata = () => {
+      setPreviewDuration(audio.duration || 0);
+    };
+
+    const onEnded = () => {
+      setIsPreviewPlaying(false);
+    };
+
+    audio.addEventListener("timeupdate", onTimeUpdate);
+    audio.addEventListener("loadedmetadata", onLoadedMetadata);
+    audio.addEventListener("ended", onEnded);
+
+    return () => {
+      audio.removeEventListener("timeupdate", onTimeUpdate);
+      audio.removeEventListener("loadedmetadata", onLoadedMetadata);
+      audio.removeEventListener("ended", onEnded);
+    };
+  }, []);
+  //close preview modal
+  const closePreviewModal = () => {
+    previewAudioRef.current.pause();
+
+    setShowPreviewModal(false);
+    setPreviewTrackId(null);
+    setIsPreviewPlaying(false);
+
+    setPreviewCurrentTime(0);
+    setPreviewDuration(0);
+  };
+  // seek
+  const handlePreviewSeek = (e) => {
+    const value = Number(e.target.value);
+
+    previewAudioRef.current.currentTime = value;
+
+    setPreviewCurrentTime(value);
+  };
+
+  // play from playlist
+  const playPlaylistTrack = async (musicTrackId) => {
+    try {
+      if (!audioCacheRef.current[musicTrackId]) {
+        const res = await getTrack(musicTrackId);
+        audioCacheRef.current[musicTrackId] = res.data.audioUrl;
+      }
+
+      const audioUrl = audioCacheRef.current[musicTrackId];
+
       if (!audioUrl) {
         setAlertMessage("فایل صوتی یافت نشد");
         return;
@@ -515,6 +611,7 @@ export default function MusicSection() {
       audioRef.current.src = audioUrl;
 
       await audioRef.current.play();
+
       setPlayingTrackId(musicTrackId);
       setIsPlaying(true);
     } catch (err) {
@@ -523,13 +620,23 @@ export default function MusicSection() {
     }
   };
 
-  const toggleGlobalPlay = () => {
-    if (!audioRef.current || !playingTrackId) return;
+  const toggleGlobalPlay = async () => {
+    if (!audioRef.current) return;
+
+    if (!playingTrackId) {
+      const firstTrack = playlistTracks?.[0];
+
+      if (!firstTrack) return;
+
+      await playPlaylistTrack(firstTrack.musicTrackId);
+      return;
+    }
+
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current.play();
+      await audioRef.current.play();
       setIsPlaying(true);
     }
   };
@@ -603,7 +710,6 @@ export default function MusicSection() {
             type="button"
             className="btn btn-icon btn-primary"
             onClick={toggleGlobalPlay}
-            disabled={!playingTrackId}
             style={{
               width: 48,
               height: 48,
@@ -651,10 +757,8 @@ export default function MusicSection() {
           >
             <span>
               {playingTrackId
-                ? tracks.find((t) => t.id === playingTrackId)?.title ||
-                  playlistTracks.find((t) => t.musicTrackId === playingTrackId)
-                    ?.title ||
-                  "در حال پخش..."
+                ? playlistTracks.find((t) => t.musicTrackId === playingTrackId)
+                    ?.title || "در حال پخش..."
                 : "آهنگی در حال پخش نیست"}
             </span>
             <span
@@ -678,12 +782,10 @@ export default function MusicSection() {
             onMouseUp={handleSeekMouseUp}
             onTouchStart={handleSeekMouseDown}
             onTouchEnd={handleSeekMouseUp}
-            disabled={!playingTrackId}
             style={{ width: "100%", accentColor: "#ff9800", cursor: "pointer" }}
           />
         </div>
       </div>
-
       <div
         className="music-flex"
         style={{ display: "flex", gap: "24px", alignItems: "flex-start" }}
@@ -781,7 +883,7 @@ export default function MusicSection() {
 
                 {!loadingArchive &&
                   searchResults.map((r) => {
-                    const isTrackPlaying = playingTrackId === r.id;
+                    const isTrackPlaying = previewTrackId === r.id;
                     return (
                       <div
                         key={r.id}
@@ -814,7 +916,7 @@ export default function MusicSection() {
                               overflow: "hidden",
                               cursor: "pointer",
                             }}
-                            onClick={() => handlePlayTrack(r.id)}
+                            onClick={() => handlePreviewTrack(r.id)}
                           >
                             {r.artworkUrl ? (
                               <img
@@ -850,7 +952,7 @@ export default function MusicSection() {
                             >
                               <i
                                 className={
-                                  isTrackPlaying && isPlaying
+                                  isTrackPlaying && isPreviewPlaying
                                     ? "fas fa-pause"
                                     : "fas fa-play"
                                 }
@@ -1364,6 +1466,20 @@ export default function MusicSection() {
         </div>
       </div>
 
+      {/* ------------------------------------------------------------------
+      ----------------------------------------------------------------------
+      ----------------------------------------------------------------------
+      ----------------------------------------------------------------------
+      ----------------------------------------------------------------------
+      ----------------------------------------------------------------------
+      -------------------------------MODALS---------------------------------
+      ----------------------------------------------------------------------
+      ----------------------------------------------------------------------
+      ----------------------------------------------------------------------
+      ----------------------------------------------------------------------
+      ----------------------------------------------------------------------
+      -------------------------------------------------------------------*/}
+
       {/* ---------------------------------
           مودال تایید حذف پلی‌لیست
       --------------------------------- */}
@@ -1434,7 +1550,6 @@ export default function MusicSection() {
           </div>
         </div>
       )}
-
       {/* ---------------------------------
           مودال ساخت/ویرایش پلی‌لیست
       --------------------------------- */}
@@ -1578,9 +1693,118 @@ export default function MusicSection() {
           </div>
         </div>
       )}
-
       {/* ---------------------------------
-          مودال هشدار (Alert) جایگزین پیش‌فرض
+          مودال پیش نمایش آهنگ
+      --------------------------------- */}
+      {showPreviewModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              background: "#222",
+              padding: "24px",
+              borderRadius: "8px",
+              width: "420px",
+              border: "1px solid #444",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "16px",
+              }}
+            >
+              <h4
+                style={{
+                  margin: 0,
+                  color: "#fff",
+                }}
+              >
+                پیش‌نمایش آهنگ
+              </h4>
+
+              <button className="btn btn-secondary" onClick={closePreviewModal}>
+                ✕
+              </button>
+            </div>
+
+            <div
+              style={{
+                color: "#ff9800",
+                fontWeight: "bold",
+                marginBottom: "16px",
+              }}
+            >
+              {previewTrackTitle}
+            </div>
+
+            <input
+              type="range"
+              min="0"
+              max={previewDuration || 0}
+              value={previewCurrentTime}
+              onChange={handlePreviewSeek}
+              style={{
+                width: "100%",
+                accentColor: "#ff9800",
+              }}
+            />
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginTop: "8px",
+                color: "#aaa",
+                fontSize: "12px",
+                direction: "ltr",
+              }}
+            >
+              <span>{formatTime(previewCurrentTime)}</span>
+              <span>{formatTime(previewDuration)}</span>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                marginTop: "20px",
+              }}
+            >
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={async () => {
+                  if (previewAudioRef.current.paused) {
+                    await previewAudioRef.current.play();
+                    setIsPreviewPlaying(true);
+                  } else {
+                    previewAudioRef.current.pause();
+                    setIsPreviewPlaying(false);
+                  }
+                }}
+              >
+                <i
+                  className={isPreviewPlaying ? "fas fa-pause" : "fas fa-play"}
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ---------------------------------
+          مودال هشدار
       --------------------------------- */}
       {!!alertMessage && (
         <div

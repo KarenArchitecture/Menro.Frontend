@@ -13,6 +13,7 @@ import {
   activatePlaylist,
   renameTrack,
   deletePlaylist,
+  reorderPlaylistTrack,
 } from "../../api/music";
 
 const MAX_TRACKS = 50;
@@ -295,22 +296,6 @@ export default function MusicSection() {
 
       alert(err?.response?.data?.message ?? "خطا در تغییر نام آهنگ");
     }
-  };
-
-  const movePlaylistTrack = (index, direction) => {
-    const newOrder = [...playlistTracks];
-    if (direction === "up" && index > 0) {
-      [newOrder[index - 1], newOrder[index]] = [
-        newOrder[index],
-        newOrder[index - 1],
-      ];
-    } else if (direction === "down" && index < newOrder.length - 1) {
-      [newOrder[index + 1], newOrder[index]] = [
-        newOrder[index],
-        newOrder[index + 1],
-      ];
-    }
-    setPlaylistTracks(newOrder);
   };
 
   const openAddPlaylistModal = () => {
@@ -758,6 +743,19 @@ export default function MusicSection() {
       audioRef.current.currentTime = Number(e.target.value); // اعمال روی فایل صوتی در لحظه رها کردن
     }
     isSeekingRef.current = false;
+  };
+
+  // reorder tracks in playlist
+  const movePlaylistTrack = async (index, direction) => {
+    try {
+      const track = filteredPlaylistTracks[index];
+
+      await reorderPlaylistTrack(selectedPlaylistId, track.id, direction);
+
+      await refreshPlaylist(selectedPlaylistId);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -1234,7 +1232,7 @@ export default function MusicSection() {
                   }}
                 >
                   <span
-                    title={pl.title || pl.name || "پلی‌لیست"} // Shows full name on hover
+                    title={pl.name || "پلی‌لیست"} // Shows full name on hover
                     style={{
                       fontWeight:
                         selectedPlaylistId === pl.id ? "bold" : "normal",
@@ -1251,7 +1249,12 @@ export default function MusicSection() {
                   >
                     {pl.title || pl.name || "پلی‌لیست"}
                   </span>
-
+                  <span
+                    className="playlist-capacity"
+                    style={{ fontSize: "13px", color: "#888" }}
+                  >
+                    {pl.tracks}
+                  </span>
                   <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
                     <button
                       className="btn btn-icon btn-secondary"

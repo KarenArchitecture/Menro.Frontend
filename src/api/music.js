@@ -44,3 +44,11 @@ export const removeTrackFromPlaylist = (playlistId, playlistTrackId) =>
   apiClient.delete(
     `/admin/music/playlist/${playlistId}/tracks/${playlistTrackId}`,
   );
+
+export const reorderPlaylistTrack = (playlistId, playlistTrackId, direction) =>
+  apiClient.put(
+    `/admin/music/playlist/${playlistId}/tracks/${playlistTrackId}/move`,
+    {
+      direction,
+    },
+  );

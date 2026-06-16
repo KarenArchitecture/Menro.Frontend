@@ -97,6 +97,17 @@ export default function MusicSection() {
   const [loadingArchive, setLoadingArchive] = useState(false);
   const [loadingPlaylist, setLoadingPlaylist] = useState(false);
 
+  // handlers for ending tracks
+  const playlistTracksRef = useRef([]);
+  const playingPlaylistTrackIdRef = useRef(null);
+  useEffect(() => {
+    playlistTracksRef.current = playlistTracks;
+  }, [playlistTracks]);
+
+  useEffect(() => {
+    playingPlaylistTrackIdRef.current = playingPlaylistTrackId;
+  }, [playingPlaylistTrackId]);
+
   // Modal State برای حذف پلی‌لیست
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [playlistToDelete, setPlaylistToDelete] = useState(null);
@@ -137,7 +148,22 @@ export default function MusicSection() {
       }
     };
     const updateDuration = () => setDuration(audio.duration);
-    const handleEnded = () => {
+    const handleEnded = async () => {
+      const tracks = playlistTracksRef.current;
+      const currentPlaylistTrackId = playingPlaylistTrackIdRef.current;
+
+      const currentIndex = tracks.findIndex(
+        (x) => x.id === currentPlaylistTrackId,
+      );
+
+      const nextTrack = tracks[currentIndex + 1];
+
+      if (nextTrack) {
+        await playPlaylistTrack(nextTrack.id, nextTrack.musicTrackId);
+        return;
+      }
+
+      // آخر پلی‌لیست
       setPlayingTrackId(null);
       setPlayingPlaylistTrackId(null);
       setIsPlaying(false);
@@ -202,7 +228,7 @@ export default function MusicSection() {
     loadPlaylists();
   }, []);
 
-  // refresh playlists
+  // fetch playlists
   const refreshPlaylist = async (playlistId) => {
     if (!playlistId) return;
     setLoadingPlaylist(true);
@@ -688,15 +714,45 @@ export default function MusicSection() {
     }
   };
 
-  // رفع مشکل پرش و دبل ایونت در Range
+  // PLAYER HELPERS (NEXT/PREVIOUS/SHUFFLE)
+  const getCurrentPlaylistTrackIndex = () => {
+    return playlistTracks.findIndex((x) => x.id === playingPlaylistTrackId);
+  };
+  const playNextTrack = async () => {
+    const currentIndex = getCurrentPlaylistTrackIndex();
+
+    if (currentIndex === -1) {
+      const firstTrack = playlistTracks?.[0];
+
+      if (!firstTrack) return;
+
+      await playPlaylistTrack(firstTrack.id, firstTrack.musicTrackId);
+      return;
+    }
+
+    const nextTrack = playlistTracks[currentIndex + 1];
+
+    if (!nextTrack) return;
+
+    await playPlaylistTrack(nextTrack.id, nextTrack.musicTrackId);
+  };
+  const playPreviousTrack = async () => {
+    const currentIndex = getCurrentPlaylistTrackIndex();
+
+    if (currentIndex <= 0) return;
+
+    const previousTrack = playlistTracks[currentIndex - 1];
+
+    await playPlaylistTrack(previousTrack.id, previousTrack.musicTrackId);
+  };
+
+  // seek helpers
   const handleSeekMouseDown = () => {
     isSeekingRef.current = true;
   };
-
   const handleSeekChange = (e) => {
     setCurrentTime(Number(e.target.value)); // فقط آپدیت UI هنگام کشیدن
   };
-
   const handleSeekMouseUp = (e) => {
     if (audioRef.current) {
       audioRef.current.currentTime = Number(e.target.value); // اعمال روی فایل صوتی در لحظه رها کردن
@@ -747,7 +803,7 @@ export default function MusicSection() {
           <button
             className="btn btn-icon btn-secondary"
             title="قبلی"
-            onClick={() => {}}
+            onClick={playPreviousTrack}
             style={{ background: "transparent", border: "none", color: "#aaa" }}
           >
             <i className="fas fa-step-backward" style={{ fontSize: "18px" }} />
@@ -778,7 +834,7 @@ export default function MusicSection() {
           <button
             className="btn btn-icon btn-secondary"
             title="بعدی"
-            onClick={() => {}}
+            onClick={playNextTrack}
             style={{ background: "transparent", border: "none", color: "#aaa" }}
           >
             <i className="fas fa-step-forward" style={{ fontSize: "18px" }} />

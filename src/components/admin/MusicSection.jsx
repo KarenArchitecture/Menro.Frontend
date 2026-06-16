@@ -44,11 +44,14 @@ export default function MusicSection() {
   const [activeTab, setActiveTab] = useState("search");
 
   const [tracks, setTracks] = useState([]);
-  const [playlistTracks, setPlaylistTracks] = useState([]);
   const [requestedTracks, setRequestedTracks] = useState([]);
 
   const [playlists, setPlaylists] = useState([]);
   const [selectedPlaylistId, setSelectedPlaylistId] = useState(null);
+
+  // for playing track (from playlist)
+  const [playlistTracks, setPlaylistTracks] = useState([]);
+  const [playingPlaylistTrackId, setPlayingPlaylistTrackId] = useState(null);
 
   // Modal State برای پلی لیست
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
@@ -136,6 +139,7 @@ export default function MusicSection() {
     const updateDuration = () => setDuration(audio.duration);
     const handleEnded = () => {
       setPlayingTrackId(null);
+      setPlayingPlaylistTrackId(null);
       setIsPlaying(false);
       setCurrentTime(0);
     };
@@ -497,7 +501,7 @@ export default function MusicSection() {
     }
   };
 
-  //for playing track preview from archive
+  //playing track preview from archive
   const handlePreviewTrack = async (musicTrackId) => {
     try {
       const track = tracks.find((x) => x.id === musicTrackId);
@@ -535,6 +539,11 @@ export default function MusicSection() {
       previewAudioRef.current.pause();
       previewAudioRef.current.src = audioUrl;
 
+      // check if other player is playing
+      if (audioRef.current && !audioRef.current.paused) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      }
       await previewAudioRef.current.play();
 
       setPreviewTrackId(musicTrackId);
@@ -593,8 +602,31 @@ export default function MusicSection() {
   };
 
   // play from playlist
-  const playPlaylistTrack = async (musicTrackId) => {
+  const playPlaylistTrack = async (playlistTrackId, musicTrackId) => {
     try {
+      // همان آهنگ انتخاب شده
+      if (playingPlaylistTrackId === playlistTrackId && audioRef.current) {
+        if (audioRef.current.paused) {
+          // اگر Preview در حال پخش بود متوقفش کن
+          if (previewAudioRef.current && !previewAudioRef.current.paused) {
+            previewAudioRef.current.pause();
+            setIsPreviewPlaying(false);
+          }
+
+          await audioRef.current.play();
+
+          setPlayingPlaylistTrackId(playlistTrackId);
+          setPlayingTrackId(musicTrackId);
+          setIsPlaying(true);
+        } else {
+          audioRef.current.pause();
+          setIsPlaying(false);
+        }
+
+        return;
+      }
+
+      // آهنگ جدید
       if (!audioCacheRef.current[musicTrackId]) {
         const res = await getTrack(musicTrackId);
         audioCacheRef.current[musicTrackId] = res.data.audioUrl;
@@ -607,11 +639,18 @@ export default function MusicSection() {
         return;
       }
 
+      // اگر Preview در حال پخش بود متوقفش کن
+      if (previewAudioRef.current && !previewAudioRef.current.paused) {
+        previewAudioRef.current.pause();
+        setIsPreviewPlaying(false);
+      }
+
       audioRef.current.pause();
       audioRef.current.src = audioUrl;
 
       await audioRef.current.play();
 
+      setPlayingPlaylistTrackId(playlistTrackId);
       setPlayingTrackId(musicTrackId);
       setIsPlaying(true);
     } catch (err) {
@@ -623,12 +662,14 @@ export default function MusicSection() {
   const toggleGlobalPlay = async () => {
     if (!audioRef.current) return;
 
-    if (!playingTrackId) {
+    // هنوز هیچ آهنگی انتخاب نشده
+    if (!playingPlaylistTrackId) {
       const firstTrack = playlistTracks?.[0];
 
       if (!firstTrack) return;
 
-      await playPlaylistTrack(firstTrack.musicTrackId);
+      await playPlaylistTrack(firstTrack.id, firstTrack.musicTrackId);
+
       return;
     }
 
@@ -636,6 +677,12 @@ export default function MusicSection() {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
+      // اگر Preview در حال پخش بود متوقفش کن
+      if (previewAudioRef.current && !previewAudioRef.current.paused) {
+        previewAudioRef.current.pause();
+        setIsPreviewPlaying(false);
+      }
+
       await audioRef.current.play();
       setIsPlaying(true);
     }
@@ -1223,7 +1270,7 @@ export default function MusicSection() {
                 )}
 
                 {filteredPlaylistTracks.map((s, index) => {
-                  const isTrackPlaying = playingTrackId === s.musicTrackId;
+                  const isTrackPlaying = playingPlaylistTrackId === s.id;
                   return (
                     <div
                       key={s.id}
@@ -1301,7 +1348,9 @@ export default function MusicSection() {
                             overflow: "hidden",
                             cursor: "pointer",
                           }}
-                          onClick={() => handlePlayTrack(s.musicTrackId)}
+                          onClick={() =>
+                            playPlaylistTrack(s.id, s.musicTrackId)
+                          }
                         >
                           {s.artworkUrl ? (
                             <img
@@ -1468,15 +1517,7 @@ export default function MusicSection() {
 
       {/* ------------------------------------------------------------------
       ----------------------------------------------------------------------
-      ----------------------------------------------------------------------
-      ----------------------------------------------------------------------
-      ----------------------------------------------------------------------
-      ----------------------------------------------------------------------
       -------------------------------MODALS---------------------------------
-      ----------------------------------------------------------------------
-      ----------------------------------------------------------------------
-      ----------------------------------------------------------------------
-      ----------------------------------------------------------------------
       ----------------------------------------------------------------------
       -------------------------------------------------------------------*/}
 

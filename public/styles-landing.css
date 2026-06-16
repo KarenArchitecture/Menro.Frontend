@@ -1490,7 +1490,7 @@ body {
 .bp__title {
   position: absolute; /* Changed from fixed */
   top: 18%;
-  /* left: 50%; */
+  /* right: -50%; */
   transform: translateY(-50%);
   z-index: 60;
   pointer-events: none;
@@ -2314,202 +2314,213 @@ body {
     .bp__title {
       padding: 0 1rem; /* Reduce padding to free up horizontal space */
       white-space: nowrap; /* Prevent the text from wrapping to a second line */
-      font-size: clamp(
-        1.2rem,
-        6.5vw,
-        2.5rem
-      ); /* Dynamically scale text size based on screen width */
+      font-size: clamp(1.2rem, 6.5vw, 2.5rem);
+
+      position: absolute; /* Changed from fixed */
+      top: 28%;
+      right: 0% !important;
+      /* transform: translateY(-50%); */
+      z-index: 60;
+      pointer-events: none;
+
+      margin: 0;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 2rem;
+      /* font-size: 5rem; */
+      font-weight: 800;
+      color: #fff;
+      width: 100%;
     }
   }
-  .why-card,
-  .pos-a,
-  .pos-b,
-  .pos-c,
-  .pos-d,
-  .pos-e,
-  .pos-f,
-  .pos-g,
-  .pos-h,
-  .pos-i,
-  .cost-reduction,
-  .sales-boost {
-    position: relative !important;
-    top: auto !important;
-    right: auto !important;
-    bottom: auto !important;
-    left: auto !important;
-    transform: none !important;
-    margin: 0 !important;
-    z-index: 1;
-  }
-
-  .pos-b,
-  .pos-c,
-  .pos-d,
-  .pos-e {
-    grid-column: 1 / -1;
-    width: 100% !important;
-    max-width: 34.8rem;
-    height: auto !important;
-    min-height: 12.8rem;
-    padding: 1.8rem 2rem;
-  }
-
-  .pos-b {
-    order: 2;
-  }
-
-  .pos-f {
-    order: 4;
-    grid-column: 2 / 3;
-    justify-self: center;
-  }
-
-  .pos-d {
-    order: 5;
-  }
-
-  .pos-g {
-    order: 6;
-    grid-column: 1 / 2;
-    justify-self: center;
-  }
-
-  .pos-h {
-    order: 7;
-    grid-column: 2 / 3;
-    justify-self: center;
-  }
-
-  .pos-e {
-    order: 8;
-  }
-
-  .pos-a,
-  .pos-c {
-    display: none;
-  }
-
-  .info-card {
-    width: 100%;
-    height: auto;
-  }
-
-  .info-card__header {
-    flex-direction: row-reverse;
-    gap: 1rem;
-  }
-
-  .info-icon {
-    width: 2.4rem;
-    height: 2.4rem;
-  }
-
-  .info-icon svg {
-    width: 100%;
-    height: 100%;
-  }
-
-  .info-title {
-    font-size: 1.9rem;
-    font-weight: 800;
-  }
-
-  .info-desc {
-    font-size: 1.25rem;
-    line-height: 1.9;
-    padding-top: 1.4rem;
-    text-align: right;
-    justify-content: flex-start;
-  }
-
-  .pos-f,
-  .pos-g,
-  .pos-i {
-    width: 9rem !important;
-    height: 9rem !important;
-    min-height: 9rem;
-    border-radius: 1.4rem;
-    display: grid;
-    place-items: center;
-    padding: 1rem;
-  }
-
-  .pos-i {
-    margin-top: 1rem !important;
-  }
-
-  .pos-f {
-    margin-top: -1.5rem !important;
-  }
-
-  .pos-g {
-    margin-top: 0.5rem !important;
-  }
-
-  .icon-card__title {
-    font-size: 1rem;
-    font-weight: 700;
-    text-align: center;
-  }
-
-  .big-icon svg {
-    width: 4rem;
-    height: 4rem;
-  }
-
-  #why-menro
-    > div.why-card.icon-card.why-card.why-card--panel.pos-i
-    > div
-    > div.icon-card__title {
-    font-size: 2rem;
-    color: #ff683c;
-  }
-
-  .cost-reduction {
-    width: 14rem !important;
-    height: 14rem !important;
-    min-height: 14rem;
-    padding: 1rem;
-    overflow: visible;
-    border: none;
-  }
-
-  .cost-reduction__icon {
-    width: 4rem;
-    height: 4rem;
-    top: 1rem;
-    left: 1rem;
-    align-items: center;
-    border-radius: 5px;
-  }
-
-  .cost-reduction .kpi {
-    font-size: 1.4rem;
-    left: 1rem;
-    bottom: 1rem;
-  }
-
-  .cost-reduction .badge {
-    width: auto;
-    height: auto;
-    right: -2rem;
-    bottom: 1rem;
-    font-size: 1rem;
-    padding: 0.6rem 0.8rem;
-    border-radius: 0.8rem;
-    white-space: nowrap;
-  }
-
-  #why-menro
-    > div.why-card.cost-reduction.why-card.why-card--chart.pos-h
-    > svg {
-    width: 15rem;
-    height: 10rem;
-  }
+}
+.why-card,
+.pos-a,
+.pos-b,
+.pos-c,
+.pos-d,
+.pos-e,
+.pos-f,
+.pos-g,
+.pos-h,
+.pos-i,
+.cost-reduction,
+.sales-boost {
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+  z-index: 1;
 }
 
-@media (max-width: 420px) {
+.pos-b,
+.pos-c,
+.pos-d,
+.pos-e {
+  grid-column: 1 / -1;
+  width: 100% !important;
+  max-width: 34.8rem;
+  height: auto !important;
+  min-height: 12.8rem;
+  padding: 1.8rem 2rem;
+}
+
+.pos-b {
+  order: 2;
+}
+
+.pos-f {
+  order: 4;
+  grid-column: 2 / 3;
+  justify-self: center;
+}
+
+.pos-d {
+  order: 5;
+}
+
+.pos-g {
+  order: 6;
+  grid-column: 1 / 2;
+  justify-self: center;
+}
+
+.pos-h {
+  order: 7;
+  grid-column: 2 / 3;
+  justify-self: center;
+}
+
+.pos-e {
+  order: 8;
+}
+
+.pos-a,
+.pos-c {
+  display: none;
+}
+
+.info-card {
+  width: 100%;
+  height: auto;
+}
+
+.info-card__header {
+  flex-direction: row-reverse;
+  gap: 1rem;
+}
+
+.info-icon {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+.info-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.info-title {
+  font-size: 1.9rem;
+  font-weight: 800;
+}
+
+.info-desc {
+  font-size: 1.25rem;
+  line-height: 1.9;
+  padding-top: 1.4rem;
+  text-align: right;
+  justify-content: flex-start;
+}
+
+.pos-f,
+.pos-g,
+.pos-i {
+  width: 9rem !important;
+  height: 9rem !important;
+  min-height: 9rem;
+  border-radius: 1.4rem;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.pos-i {
+  margin-top: 1rem !important;
+}
+
+.pos-f {
+  margin-top: -1.5rem !important;
+}
+
+.pos-g {
+  margin-top: 0.5rem !important;
+}
+
+.icon-card__title {
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.big-icon svg {
+  width: 4rem;
+  height: 4rem;
+}
+
+#why-menro
+  > div.why-card.icon-card.why-card.why-card--panel.pos-i
+  > div
+  > div.icon-card__title {
+  font-size: 2rem;
+  color: #ff683c;
+}
+
+.cost-reduction {
+  width: 14rem !important;
+  height: 14rem !important;
+  min-height: 14rem;
+  padding: 1rem;
+  overflow: visible;
+  border: none;
+}
+
+.cost-reduction__icon {
+  width: 4rem;
+  height: 4rem;
+  top: 1rem;
+  left: 1rem;
+  align-items: center;
+  border-radius: 5px;
+}
+
+.cost-reduction .kpi {
+  font-size: 1.4rem;
+  left: 1rem;
+  bottom: 1rem;
+}
+
+.cost-reduction .badge {
+  width: auto;
+  height: auto;
+  right: -2rem;
+  bottom: 1rem;
+  font-size: 1rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.8rem;
+  white-space: nowrap;
+}
+
+#why-menro > div.why-card.cost-reduction.why-card.why-card--chart.pos-h > svg {
+  width: 15rem;
+  height: 10rem;
+}
+
+@media (max-width: 425px) {
   .why-static {
     padding-inline: 2.2rem;
     gap: 7rem 2rem;
@@ -3001,7 +3012,7 @@ body {
   }
 
   .plans-pin--mobile .plan-card__content {
-    max-height: 60rem;
+    max-height: 50rem;
 
     display: flex;
     flex-direction: column;
@@ -3637,13 +3648,16 @@ body::-webkit-scrollbar {
     transform: translate(-100%, -50%);
   }
 }
-@media (max-width: 768px) {
-  .bp__title {
-    /* Adjust these values specifically for mobile! */
-    top: 12%;
-    transform: translate(00%, -40%) !important;
-  }
-}
+
 .app-shell-content {
   padding: 1rem !important; /* Or whatever padding you actually want, e.g., padding-top: 2rem; */
+}
+.bp__title.is-off,
+.bp__panel.is-off {
+  pointer-events: none;
+}
+
+.bp__title.is-fixed,
+.bp__panel.is-fixed {
+  pointer-events: none;
 }

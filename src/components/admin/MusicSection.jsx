@@ -14,6 +14,9 @@ import {
   renameTrack,
   deletePlaylist,
   reorderPlaylistTrack,
+  getTrackRequests,
+  rejectTrackRequest,
+  approveTrackRequest,
 } from "../../api/music";
 
 const MAX_TRACKS = 50;
@@ -42,13 +45,15 @@ const formatDuration = (duration) => {
 };
 
 export default function MusicSection() {
+  // fethcing tools
   const [activeTab, setActiveTab] = useState("search");
-
-  const [tracks, setTracks] = useState([]);
-  const [requestedTracks, setRequestedTracks] = useState([]);
-
   const [playlists, setPlaylists] = useState([]);
   const [selectedPlaylistId, setSelectedPlaylistId] = useState(null);
+  const [tracks, setTracks] = useState([]);
+
+  // for requests
+  const [requestedTracks, setRequestedTracks] = useState([]);
+  const [loadingRequests, setLoadingRequests] = useState(false);
 
   // for playing track (from playlist)
   const [playlistTracks, setPlaylistTracks] = useState([]);
@@ -182,33 +187,33 @@ export default function MusicSection() {
     };
   }, []);
 
-  // fetch archive tracks
+  // fetch archive
+  const loadTracks = async () => {
+    setLoadingArchive(true);
+    try {
+      const res = await getTracks();
+      const mapped = res.data.map((t) => ({
+        id: t.id,
+        title: t.title,
+        artist: t.artist || "—",
+        duration: t.duration,
+        isActive: t.isActive,
+        source: "archive",
+        coverFileName: t.coverFileName,
+        artworkUrl: t.coverFileName,
+      }));
+      setTracks(mapped);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingArchive(false);
+    }
+  };
   useEffect(() => {
-    const loadTracks = async () => {
-      setLoadingArchive(true);
-      try {
-        const res = await getTracks();
-        const mapped = res.data.map((t) => ({
-          id: t.id,
-          title: t.title,
-          artist: t.artist || "—",
-          duration: t.duration,
-          isActive: t.isActive,
-          source: "archive",
-          coverFileName: t.coverFileName,
-          artworkUrl: t.coverFileName,
-        }));
-        setTracks(mapped);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoadingArchive(false);
-      }
-    };
     loadTracks();
   }, []);
 
-  // fetch playlists list
+  // fetch playlists
   const loadPlaylists = async () => {
     try {
       const res = await getPlaylists();
@@ -229,7 +234,7 @@ export default function MusicSection() {
     loadPlaylists();
   }, []);
 
-  // fetch playlists
+  // fetch playlist
   const refreshPlaylist = async (playlistId) => {
     if (!playlistId) return;
     setLoadingPlaylist(true);
@@ -257,6 +262,23 @@ export default function MusicSection() {
     refreshPlaylist(selectedPlaylistId);
   }, [selectedPlaylistId]);
 
+  // fetck track requests
+  const fetchTrackRequests = async () => {
+    try {
+      setLoadingRequests(true);
+
+      const response = await getTrackRequests();
+
+      setRequestedTracks(response.data ?? []);
+    } catch (error) {
+      console.error("Failed to load track requests", error);
+    } finally {
+      setLoadingRequests(false);
+    }
+  };
+  useEffect(() => {
+    fetchTrackRequests();
+  }, []);
   // -------------------------
   // Local/Static Handlers
   // -------------------------
@@ -492,13 +514,17 @@ export default function MusicSection() {
   };
 
   const handleApproveRequest = async (track) => {
-    if (!hasArchiveCapacity) {
-      setAlertMessage("ظرفیت آرشیو پر شده است.");
-      return;
-    }
     try {
+      // 1. optimistic UI update (حذف از لیست درخواست‌ها)
       setRequestedTracks((prev) => prev.filter((t) => t.id !== track.id));
-      setTracks((prev) => [...prev, track]);
+
+      // 2. call backend
+      await approveTrackRequest(track.id);
+
+      // 3. refresh playlist (خیلی مهم طبق طراحی تو)
+      if (selectedPlaylistId) {
+        await refreshPlaylist(selectedPlaylistId);
+      }
     } catch (err) {
       console.error(err);
     }
@@ -506,9 +532,13 @@ export default function MusicSection() {
 
   const handleRejectRequest = async (trackId) => {
     try {
+      await rejectTrackRequest(trackId);
+
       setRequestedTracks((prev) => prev.filter((t) => t.id !== trackId));
     } catch (err) {
       console.error(err);
+
+      setAlertMessage("خطا در رد درخواست");
     }
   };
 

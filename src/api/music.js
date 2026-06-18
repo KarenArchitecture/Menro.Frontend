@@ -52,3 +52,13 @@ export const reorderPlaylistTrack = (playlistId, playlistTrackId, direction) =>
       direction,
     },
   );
+
+/* REQUESTS */
+
+export const getTrackRequests = () => apiClient.get("/admin/music/requests");
+
+export const rejectTrackRequest = (requestId) =>
+  apiClient.post(`/admin/music/requests/${requestId}/reject`);
+
+export const approveTrackRequest = (requestId) =>
+  apiClient.post(`/admin/music/requests/${requestId}/approve`);

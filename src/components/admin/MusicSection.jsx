@@ -17,6 +17,8 @@ import {
   getTrackRequests,
   rejectTrackRequest,
   approveTrackRequest,
+  advanceTrack,
+  previousTrack,
 } from "../../api/music";
 
 const MAX_TRACKS = 50;
@@ -141,52 +143,6 @@ export default function MusicSection() {
   const archiveCapacityText = `${tracks.length} / ${MAX_TRACKS}`;
   const hasArchiveCapacity = tracks.length < MAX_TRACKS;
 
-  useEffect(() => {
-    if (!audioRef.current) {
-      audioRef.current = new Audio();
-    }
-    const audio = audioRef.current;
-
-    const updateTime = () => {
-      // فقط زمانی که کاربر در حال کشیدن نوار نیست تایم آپدیت شود
-      if (!isSeekingRef.current) {
-        setCurrentTime(audio.currentTime);
-      }
-    };
-    const updateDuration = () => setDuration(audio.duration);
-    const handleEnded = async () => {
-      const tracks = playlistTracksRef.current;
-      const currentPlaylistTrackId = playingPlaylistTrackIdRef.current;
-
-      const currentIndex = tracks.findIndex(
-        (x) => x.id === currentPlaylistTrackId,
-      );
-
-      const nextTrack = tracks[currentIndex + 1];
-
-      if (nextTrack) {
-        await playPlaylistTrack(nextTrack.id, nextTrack.musicTrackId);
-        return;
-      }
-
-      // آخر پلی‌لیست
-      setPlayingTrackId(null);
-      setPlayingPlaylistTrackId(null);
-      setIsPlaying(false);
-      setCurrentTime(0);
-    };
-
-    audio.addEventListener("timeupdate", updateTime);
-    audio.addEventListener("loadedmetadata", updateDuration);
-    audio.addEventListener("ended", handleEnded);
-
-    return () => {
-      audio.removeEventListener("timeupdate", updateTime);
-      audio.removeEventListener("loadedmetadata", updateDuration);
-      audio.removeEventListener("ended", handleEnded);
-    };
-  }, []);
-
   // fetch archive
   const loadTracks = async () => {
     setLoadingArchive(true);
@@ -236,10 +192,13 @@ export default function MusicSection() {
 
   // fetch playlist
   const refreshPlaylist = async (playlistId) => {
-    if (!playlistId) return;
+    if (!playlistId) return [];
+
     setLoadingPlaylist(true);
+
     try {
       const res = await getPlaylist(playlistId);
+
       const mapped = res.data.tracks.map((t) => ({
         id: t.id,
         musicTrackId: t.musicTrackId,
@@ -250,9 +209,13 @@ export default function MusicSection() {
         audioUrl: t.audioUrl,
         source: "playlist",
       }));
+
       setPlaylistTracks(mapped);
+
+      return mapped;
     } catch (err) {
       console.error(err);
+      return [];
     } finally {
       setLoadingPlaylist(false);
     }
@@ -283,7 +246,7 @@ export default function MusicSection() {
   // Local/Static Handlers
   // -------------------------
 
-  // مودال ویرایش آهنگ
+  // for MODALS
   const openEditTrackModal = (trackId, currentTitle) => {
     setEditingTrackId(trackId);
     setTrackFormName(currentTitle || "");
@@ -386,11 +349,27 @@ export default function MusicSection() {
       alert(err?.response?.data?.message ?? "خطا در ذخیره پلی‌لیست");
     }
   };
+
+  // -------------------------
+  // Existing Handlers
+  // -------------------------
+  // add to playlist
+  const addToPlaylist = async (track) => {
+    if (!selectedPlaylistId) return;
+    try {
+      await addTrackToPlaylist(selectedPlaylistId, { musicTrackId: track.id });
+      await refreshPlaylist(selectedPlaylistId);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // DELETE from Archive/Playist
+  // remove playlist
   const handleDeletePlaylist = (id) => {
     setPlaylistToDelete(id);
     setShowDeleteModal(true);
   };
-
   const handleConfirmDeletePlaylist = async () => {
     if (!playlistToDelete) return;
 
@@ -416,31 +395,69 @@ export default function MusicSection() {
       setDeleting(false);
     }
   };
-
-  // -------------------------
-  // Existing Handlers
-  // -------------------------
-  const addToPlaylist = async (track) => {
-    if (!selectedPlaylistId) return;
-    try {
-      await addTrackToPlaylist(selectedPlaylistId, { musicTrackId: track.id });
-      await refreshPlaylist(selectedPlaylistId);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
+  // remove track from playlist
   const removeFromPlaylist = async (playlistTrackId) => {
     if (!selectedPlaylistId) return;
+
     try {
+      const oldTracks = [...playlistTracksRef.current];
+
+      const removedIndex = oldTracks.findIndex((x) => x.id === playlistTrackId);
+
+      const isCurrentlyPlaying =
+        playlistTrackId === playingPlaylistTrackIdRef.current;
+
       await removeTrackFromPlaylist(selectedPlaylistId, playlistTrackId);
-      await refreshPlaylist(selectedPlaylistId);
+
+      // لیست جدید را مستقیم بگیر
+      const updatedTracks = await refreshPlaylist(selectedPlaylistId);
+
+      // اگر آهنگ حذف شده در حال پخش نبود
+      if (!isCurrentlyPlaying) return;
+
+      // پلی‌لیست خالی شده
+      if (!updatedTracks.length) {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.src = "";
+        }
+
+        setPlayingTrackId(null);
+        setPlayingPlaylistTrackId(null);
+        setIsPlaying(false);
+        setCurrentTime(0);
+
+        return;
+      }
+
+      // آهنگی که باید جایگزین شود
+      let trackToPlay = updatedTracks[removedIndex];
+
+      // اگر آخرین آهنگ حذف شده بود
+      if (!trackToPlay) {
+        trackToPlay = updatedTracks[updatedTracks.length - 1];
+      }
+
+      if (!trackToPlay) return;
+
+      // ریست کامل پلیر
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current.src = "";
+      }
+
+      setPlayingTrackId(null);
+      setPlayingPlaylistTrackId(null);
+      setIsPlaying(false);
+
+      await playPlaylistTrack(trackToPlay.id, trackToPlay.musicTrackId);
     } catch (err) {
       console.error(err);
       setAlertMessage("حذف از پلی‌لیست ناموفق بود");
     }
   };
-
+  // delete from archive
   const deleteTrackFromArchive = async (id) => {
     const backup = tracks.find((t) => t.id === id);
     setTracks((prev) => prev.filter((t) => t.id !== id));
@@ -513,6 +530,7 @@ export default function MusicSection() {
     setSearchUrl("");
   };
 
+  // track requests approve/reject
   const handleApproveRequest = async (track) => {
     try {
       // 1. optimistic UI update (حذف از لیست درخواست‌ها)
@@ -529,7 +547,6 @@ export default function MusicSection() {
       console.error(err);
     }
   };
-
   const handleRejectRequest = async (trackId) => {
     try {
       await rejectTrackRequest(trackId);
@@ -622,7 +639,7 @@ export default function MusicSection() {
       audio.removeEventListener("ended", onEnded);
     };
   }, []);
-  //close preview modal
+  //--close preview modal
   const closePreviewModal = () => {
     previewAudioRef.current.pause();
 
@@ -633,7 +650,7 @@ export default function MusicSection() {
     setPreviewCurrentTime(0);
     setPreviewDuration(0);
   };
-  // seek
+  //--seek
   const handlePreviewSeek = (e) => {
     const value = Number(e.target.value);
 
@@ -642,11 +659,95 @@ export default function MusicSection() {
     setPreviewCurrentTime(value);
   };
 
+  // Global Player Functionality
+  useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+    }
+    const audio = audioRef.current;
+
+    const updateTime = () => {
+      // فقط زمانی که کاربر در حال کشیدن نوار نیست تایم آپدیت شود
+      if (!isSeekingRef.current) {
+        setCurrentTime(audio.currentTime);
+      }
+    };
+    const updateDuration = () => setDuration(audio.duration);
+
+    const handleEnded = async () => {
+      const tracks = playlistTracksRef.current;
+      const currentId = playingPlaylistTrackIdRef.current;
+
+      const currentIndex = tracks.findIndex((x) => x.id === currentId);
+
+      // آهنگ فعلی دیگر در پلی‌لیست وجود ندارد
+      if (currentIndex === -1) {
+        setPlayingTrackId(null);
+        setPlayingPlaylistTrackId(null);
+        setIsPlaying(false);
+        setCurrentTime(0);
+        return;
+      }
+
+      const nextTrack = tracks[currentIndex + 1];
+
+      if (!nextTrack) {
+        setPlayingTrackId(null);
+        setPlayingPlaylistTrackId(null);
+        setIsPlaying(false);
+        setCurrentTime(0);
+        return;
+      }
+
+      await syncAndPlay(nextTrack);
+    };
+
+    audio.addEventListener("timeupdate", updateTime);
+    audio.addEventListener("loadedmetadata", updateDuration);
+    audio.addEventListener("ended", handleEnded);
+
+    return () => {
+      audio.removeEventListener("timeupdate", updateTime);
+      audio.removeEventListener("loadedmetadata", updateDuration);
+      audio.removeEventListener("ended", handleEnded);
+    };
+  }, []);
+  const toggleGlobalPlay = async () => {
+    if (!audioRef.current) return;
+
+    // هنوز هیچ آهنگی انتخاب نشده
+    if (!playingPlaylistTrackId) {
+      const firstTrack = playlistTracks?.[0];
+
+      if (!firstTrack) return;
+
+      await playPlaylistTrack(firstTrack.id, firstTrack.musicTrackId);
+
+      return;
+    }
+
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      // اگر Preview در حال پخش بود متوقفش کن
+      if (previewAudioRef.current && !previewAudioRef.current.paused) {
+        previewAudioRef.current.pause();
+        setIsPreviewPlaying(false);
+      }
+
+      await audioRef.current.play();
+      setIsPlaying(true);
+    }
+  };
   // play from playlist
   const playPlaylistTrack = async (playlistTrackId, musicTrackId) => {
     try {
       // همان آهنگ انتخاب شده
-      if (playingPlaylistTrackId === playlistTrackId && audioRef.current) {
+      if (
+        playingPlaylistTrackIdRef.current === playlistTrackId &&
+        audioRef.current
+      ) {
         if (audioRef.current.paused) {
           // اگر Preview در حال پخش بود متوقفش کن
           if (previewAudioRef.current && !previewAudioRef.current.paused) {
@@ -700,48 +801,37 @@ export default function MusicSection() {
     }
   };
 
-  const toggleGlobalPlay = async () => {
-    if (!audioRef.current) return;
+  // PLAYER HELPERS (NEXT/PREVIOUS/SHUFFLE)
+  const syncAndPlay = async (track, direction = "next") => {
+    if (!track) return;
 
-    // هنوز هیچ آهنگی انتخاب نشده
-    if (!playingPlaylistTrackId) {
-      const firstTrack = playlistTracks?.[0];
-
-      if (!firstTrack) return;
-
-      await playPlaylistTrack(firstTrack.id, firstTrack.musicTrackId);
-
-      return;
+    if (direction === "prev") {
+      await previousTrack({
+        playlistTrackId: track.id,
+      });
+    } else {
+      await advanceTrack({
+        playlistTrackId: track.id,
+      });
     }
 
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      // اگر Preview در حال پخش بود متوقفش کن
-      if (previewAudioRef.current && !previewAudioRef.current.paused) {
-        previewAudioRef.current.pause();
-        setIsPreviewPlaying(false);
-      }
+    await playPlaylistTrack(track.id, track.musicTrackId);
 
-      await audioRef.current.play();
-      setIsPlaying(true);
+    if (selectedPlaylistId) {
+      await refreshPlaylist(selectedPlaylistId);
     }
   };
 
-  // PLAYER HELPERS (NEXT/PREVIOUS/SHUFFLE)
   const getCurrentPlaylistTrackIndex = () => {
     return playlistTracks.findIndex((x) => x.id === playingPlaylistTrackId);
   };
+
   const playNextTrack = async () => {
     const currentIndex = getCurrentPlaylistTrackIndex();
 
     if (currentIndex === -1) {
       const firstTrack = playlistTracks?.[0];
-
-      if (!firstTrack) return;
-
-      await playPlaylistTrack(firstTrack.id, firstTrack.musicTrackId);
+      await syncAndPlay(firstTrack);
       return;
     }
 
@@ -749,8 +839,9 @@ export default function MusicSection() {
 
     if (!nextTrack) return;
 
-    await playPlaylistTrack(nextTrack.id, nextTrack.musicTrackId);
+    await syncAndPlay(nextTrack, "next");
   };
+
   const playPreviousTrack = async () => {
     const currentIndex = getCurrentPlaylistTrackIndex();
 
@@ -758,7 +849,7 @@ export default function MusicSection() {
 
     const previousTrack = playlistTracks[currentIndex - 1];
 
-    await playPlaylistTrack(previousTrack.id, previousTrack.musicTrackId);
+    await syncAndPlay(previousTrack, "prev");
   };
 
   // seek helpers
@@ -1008,9 +1099,9 @@ export default function MusicSection() {
                   paddingRight: "8px",
                 }}
               >
-                {loadingArchive && (
+                {/* {loadingArchive && (
                   <div className="empty-hint">در حال دریافت آرشیو...</div>
-                )}
+                )} */}
 
                 {!loadingArchive &&
                   searchResults.map((r) => {
@@ -1351,9 +1442,9 @@ export default function MusicSection() {
                   paddingRight: "8px",
                 }}
               >
-                {loadingPlaylist && (
+                {/* {loadingPlaylist && (
                   <div className="empty-hint">در حال دریافت...</div>
-                )}
+                )} */}
                 {!loadingPlaylist && filteredPlaylistTracks.length === 0 && (
                   <div className="empty-hint">آهنگی یافت نشد</div>
                 )}

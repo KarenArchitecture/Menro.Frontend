@@ -54,7 +54,8 @@ export const reorderPlaylistTrack = (playlistId, playlistTrackId, direction) =>
   );
 
 /* MUSIC PLAYER */
-
+export const setCurrentTrack = (dto) =>
+  apiClient.put("/admin/music/player/current-track", dto);
 export const advanceTrack = (dto) =>
   apiClient.put("/admin/music/player/advance", dto);
 export const previousTrack = (dto) =>

@@ -17,6 +17,7 @@ import {
   getTrackRequests,
   rejectTrackRequest,
   approveTrackRequest,
+  setCurrentTrack,
   advanceTrack,
   previousTrack,
 } from "../../api/music";
@@ -51,6 +52,11 @@ export default function MusicSection() {
   const [activeTab, setActiveTab] = useState("search");
   const [playlists, setPlaylists] = useState([]);
   const [selectedPlaylistId, setSelectedPlaylistId] = useState(null);
+  const selectedPlaylistIdRef = useRef(selectedPlaylistId);
+
+  useEffect(() => {
+    selectedPlaylistIdRef.current = selectedPlaylistId;
+  }, [selectedPlaylistId]);
   const [tracks, setTracks] = useState([]);
 
   // for requests
@@ -676,31 +682,31 @@ export default function MusicSection() {
     const updateDuration = () => setDuration(audio.duration);
 
     const handleEnded = async () => {
+      console.log("🔥 END EVENT FIRED");
+
       const tracks = playlistTracksRef.current;
       const currentId = playingPlaylistTrackIdRef.current;
 
       const currentIndex = tracks.findIndex((x) => x.id === currentId);
 
-      // آهنگ فعلی دیگر در پلی‌لیست وجود ندارد
-      if (currentIndex === -1) {
-        setPlayingTrackId(null);
-        setPlayingPlaylistTrackId(null);
-        setIsPlaying(false);
-        setCurrentTime(0);
-        return;
-      }
+      if (currentIndex === -1) return;
 
       const nextTrack = tracks[currentIndex + 1];
 
-      if (!nextTrack) {
-        setPlayingTrackId(null);
-        setPlayingPlaylistTrackId(null);
-        setIsPlaying(false);
-        setCurrentTime(0);
-        return;
-      }
+      if (!nextTrack) return;
 
-      await syncAndPlay(nextTrack);
+      try {
+        await syncAndPlay(nextTrack, "next");
+
+        // 🔥 force UI consistency after ended
+        if (selectedPlaylistIdRef.current) {
+          await refreshPlaylist(selectedPlaylistIdRef.current);
+        }
+
+        console.log("🔥 SYNC COMPLETED (ended)");
+      } catch (e) {
+        console.log("💀 SYNC FAILED:", e);
+      }
     };
 
     audio.addEventListener("timeupdate", updateTime);
@@ -742,24 +748,24 @@ export default function MusicSection() {
     }
   };
   //--play from playlist
-  const playPlaylistTrack = async (playlistTrackId, musicTrackId) => {
+  const playPlaylistTrack = async (
+    playlistTrackId,
+    musicTrackId,
+    syncPlayerState = true,
+  ) => {
     try {
-      // همان آهنگ انتخاب شده
-      if (
+      const isSameTrack =
         playingPlaylistTrackIdRef.current === playlistTrackId &&
-        audioRef.current
-      ) {
+        audioRef.current;
+      // SAME TRACK => فقط toggle play/pause
+      if (isSameTrack) {
         if (audioRef.current.paused) {
-          // اگر Preview در حال پخش بود متوقفش کن
           if (previewAudioRef.current && !previewAudioRef.current.paused) {
             previewAudioRef.current.pause();
             setIsPreviewPlaying(false);
           }
 
           await audioRef.current.play();
-
-          setPlayingPlaylistTrackId(playlistTrackId);
-          setPlayingTrackId(musicTrackId);
           setIsPlaying(true);
         } else {
           audioRef.current.pause();
@@ -769,7 +775,15 @@ export default function MusicSection() {
         return;
       }
 
-      // آهنگ جدید
+      // NEW TRACK => اینجا sync انجام میشه
+      if (syncPlayerState) {
+        await setCurrentTrack({
+          playlistId: selectedPlaylistId,
+          playlistTrackId,
+        });
+      }
+
+      // cache
       if (!audioCacheRef.current[musicTrackId]) {
         const res = await getTrack(musicTrackId);
         audioCacheRef.current[musicTrackId] = res.data.audioUrl;
@@ -782,7 +796,6 @@ export default function MusicSection() {
         return;
       }
 
-      // اگر Preview در حال پخش بود متوقفش کن
       if (previewAudioRef.current && !previewAudioRef.current.paused) {
         previewAudioRef.current.pause();
         setIsPreviewPlaying(false);
@@ -801,24 +814,35 @@ export default function MusicSection() {
       setAlertMessage("خطا در پخش موسیقی");
     }
   };
-  //--central helper for changing playing track
+  //--central helper for changing playing track *****
   const syncAndPlay = async (track, direction = "next") => {
-    if (!track) return;
+    console.log("🚀 syncAndPlay START", { track, direction });
 
-    if (direction === "prev") {
-      await previousTrack({
-        playlistTrackId: track.id,
-      });
-    } else {
-      await advanceTrack({
-        playlistTrackId: track.id,
-      });
-    }
+    try {
+      if (direction === "prev") {
+        console.log("⬅ previousTrack API");
+        await previousTrack({ playlistTrackId: track.id });
+      } else {
+        console.log("➡ advanceTrack API");
+        await advanceTrack({ playlistTrackId: track.id });
+      }
 
-    await playPlaylistTrack(track.id, track.musicTrackId);
+      console.log("🔄 BEFORE refresh");
 
-    if (selectedPlaylistId) {
-      await refreshPlaylist(selectedPlaylistId);
+      if (selectedPlaylistIdRef.current) {
+        await refreshPlaylist(selectedPlaylistIdRef.current);
+        console.log("✅ refresh DONE");
+      } else {
+        console.log("❌ selectedPlaylistId is NULL");
+      }
+
+      console.log("▶ BEFORE play");
+
+      await playPlaylistTrack(track.id, track.musicTrackId, false);
+
+      console.log("🎵 PLAY DONE");
+    } catch (err) {
+      console.log("💀 syncAndPlay ERROR:", err);
     }
   };
   //--??
@@ -831,7 +855,7 @@ export default function MusicSection() {
 
     if (currentIndex === -1) {
       const firstTrack = playlistTracks?.[0];
-      await syncAndPlay(firstTrack);
+      await syncAndPlay(firstTrack, "next");
       return;
     }
 

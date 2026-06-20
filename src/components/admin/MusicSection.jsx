@@ -659,7 +659,8 @@ export default function MusicSection() {
     setPreviewCurrentTime(value);
   };
 
-  // Global Player Functionality
+  // PLAYER HELPERS (PLAY/NEXT/PREVIOUS/SHUFFLE)
+  //--global Player Functionality
   useEffect(() => {
     if (!audioRef.current) {
       audioRef.current = new Audio();
@@ -740,7 +741,7 @@ export default function MusicSection() {
       setIsPlaying(true);
     }
   };
-  // play from playlist
+  //--play from playlist
   const playPlaylistTrack = async (playlistTrackId, musicTrackId) => {
     try {
       // همان آهنگ انتخاب شده
@@ -800,8 +801,7 @@ export default function MusicSection() {
       setAlertMessage("خطا در پخش موسیقی");
     }
   };
-
-  // PLAYER HELPERS (NEXT/PREVIOUS/SHUFFLE)
+  //--central helper for changing playing track
   const syncAndPlay = async (track, direction = "next") => {
     if (!track) return;
 
@@ -821,11 +821,11 @@ export default function MusicSection() {
       await refreshPlaylist(selectedPlaylistId);
     }
   };
-
+  //--??
   const getCurrentPlaylistTrackIndex = () => {
     return playlistTracks.findIndex((x) => x.id === playingPlaylistTrackId);
   };
-
+  //--play next track from playlist
   const playNextTrack = async () => {
     const currentIndex = getCurrentPlaylistTrackIndex();
 
@@ -841,7 +841,7 @@ export default function MusicSection() {
 
     await syncAndPlay(nextTrack, "next");
   };
-
+  //--play previous track from playlist
   const playPreviousTrack = async () => {
     const currentIndex = getCurrentPlaylistTrackIndex();
 
@@ -866,7 +866,7 @@ export default function MusicSection() {
     isSeekingRef.current = false;
   };
 
-  // reorder tracks in playlist
+  // re-order tracks in playlist
   const movePlaylistTrack = async (index, direction) => {
     try {
       const track = filteredPlaylistTracks[index];

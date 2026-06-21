@@ -57,7 +57,7 @@ export default function MenuItem({ item, onOpen, layout = "horizontal" }) {
   const totalQty = useMemo(() => {
     let sum = 0;
     for (const [k, val] of cart.items.entries()) {
-      if (k === baseKey || k.startsWith(`${baseKey}__`)) {
+      if (k.startsWith(baseKey)) {
         sum += val.qty;
       }
     }
@@ -77,16 +77,11 @@ export default function MenuItem({ item, onOpen, layout = "horizontal" }) {
 
   const dec = (e) => {
     e.stopPropagation();
+
     if (baseQty > 0) {
       cart.setQty(baseKey, item, Math.max(0, baseQty - 1));
-      return;
-    }
-
-    for (const [k, val] of cart.items.entries()) {
-      if (k.startsWith(`${baseKey}__`) && val.qty > 0) {
-        cart.setQty(k, null, val.qty - 1);
-        break;
-      }
+    } else {
+      cart.setQty(baseKey, null, 0);
     }
   };
 

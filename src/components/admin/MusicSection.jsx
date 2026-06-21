@@ -20,6 +20,7 @@ import {
   setCurrentTrack,
   advanceTrack,
   previousTrack,
+  getPlayerState,
 } from "../../api/music";
 
 const MAX_TRACKS = 50;
@@ -96,6 +97,7 @@ export default function MusicSection() {
   const audioRef = useRef(null);
   const audioCacheRef = useRef({});
   const isSeekingRef = useRef(false);
+  const [playerState, setPlayerState] = useState(null);
 
   const [playingTrackId, setPlayingTrackId] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -149,7 +151,21 @@ export default function MusicSection() {
   const archiveCapacityText = `${tracks.length} / ${MAX_TRACKS}`;
   const hasArchiveCapacity = tracks.length < MAX_TRACKS;
 
-  // fetch archive
+  /* --- FETCH DATA --- */
+  //--fetch music player
+  const loadPlayerState = async () => {
+    try {
+      const res = await getPlayerState();
+
+      setPlayerState(res.data);
+
+      return res.data;
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
+  };
+  //--fetch archive
   const loadTracks = async () => {
     setLoadingArchive(true);
     try {
@@ -174,19 +190,38 @@ export default function MusicSection() {
   useEffect(() => {
     loadTracks();
   }, []);
-
-  // fetch playlists
+  //--fetch playlists
   const loadPlaylists = async () => {
     try {
-      const res = await getPlaylists();
-      setPlaylists(res.data || []);
+      const [playlistRes, player] = await Promise.all([
+        getPlaylists(),
+        loadPlayerState(),
+      ]);
 
-      const activePlaylist = res.data?.find((x) => x.isActive);
-      const playlistId = activePlaylist?.id ?? res.data?.[0]?.id;
+      const playlists = playlistRes.data || [];
 
-      if (playlistId) {
-        setSelectedPlaylistId(playlistId);
-        await refreshPlaylist(playlistId);
+      setPlaylists(playlists);
+
+      const playlistId =
+        player?.playlistId ??
+        playlists.find((x) => x.isActive)?.id ??
+        playlists?.[0]?.id;
+
+      if (!playlistId) return;
+
+      setSelectedPlaylistId(playlistId);
+
+      const tracks = await refreshPlaylist(playlistId);
+
+      if (player?.currentPlaylistTrackId) {
+        const currentTrack = tracks.find(
+          (x) => x.id === player.currentPlaylistTrackId,
+        );
+
+        if (currentTrack) {
+          setPlayingPlaylistTrackId(currentTrack.id);
+          setPlayingTrackId(currentTrack.musicTrackId);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -195,8 +230,7 @@ export default function MusicSection() {
   useEffect(() => {
     loadPlaylists();
   }, []);
-
-  // fetch playlist
+  //--fetch playlist
   const refreshPlaylist = async (playlistId) => {
     if (!playlistId) return [];
 
@@ -230,8 +264,7 @@ export default function MusicSection() {
     if (!selectedPlaylistId) return;
     refreshPlaylist(selectedPlaylistId);
   }, [selectedPlaylistId]);
-
-  // fetck track requests
+  //--fetck track requests
   const fetchTrackRequests = async () => {
     try {
       setLoadingRequests(true);
@@ -719,32 +752,75 @@ export default function MusicSection() {
       audio.removeEventListener("ended", handleEnded);
     };
   }, []);
+  // const toggleGlobalPlay = async () => {
+  //   console.log("🔥 GLOBAL PLAY CLICKED");
+
+  //   if (!audioRef.current) return;
+
+  //   const audio = audioRef.current;
+
+  //   // 1. اگر چیزی در حال پخش نیست → bootstrap واقعی
+  //   if (!isPlaying && !playingPlaylistTrackId) {
+  //     console.log("🚀 BOOTSTRAP PLAY");
+
+  //     const trackId = playerState?.currentPlaylistTrackId;
+
+  //     let track =
+  //       playlistTracks.find((x) => x.id === trackId) || playlistTracks?.[0];
+
+  //     if (!track) {
+  //       console.log("❌ NO TRACK AVAILABLE");
+  //       return;
+  //     }
+
+  //     await playPlaylistTrack(track.id, track.musicTrackId, false);
+  //     return;
+  //   }
+
+  //   // 2. pause/resume
+  //   if (isPlaying) {
+  //     audio.pause();
+  //     setIsPlaying(false);
+  //     return;
+  //   }
+
+  //   const playPromise = audio.play();
+
+  //   if (playPromise?.catch) {
+  //     playPromise.catch((e) => {
+  //       console.log("PLAY ERROR:", e);
+  //     });
+  //   }
+
+  //   setIsPlaying(true);
+  // };
+
   const toggleGlobalPlay = async () => {
-    if (!audioRef.current) return;
+    const audio = audioRef.current;
+    if (!audio) return;
 
-    // هنوز هیچ آهنگی انتخاب نشده
-    if (!playingPlaylistTrackId) {
-      const firstTrack = playlistTracks?.[0];
+    const currentTrack =
+      playlistTracks.find(
+        (x) => x.id === playerState?.currentPlaylistTrackId,
+      ) || playlistTracks[0];
 
-      if (!firstTrack) return;
+    if (!currentTrack) return;
 
-      await playPlaylistTrack(firstTrack.id, firstTrack.musicTrackId);
-
+    if (!audio.src) {
+      await playTrack(currentTrack);
       return;
     }
 
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      // اگر Preview در حال پخش بود متوقفش کن
-      if (previewAudioRef.current && !previewAudioRef.current.paused) {
-        previewAudioRef.current.pause();
-        setIsPreviewPlaying(false);
+    if (audio.paused) {
+      try {
+        await audio.play();
+        setIsPlaying(true);
+      } catch (e) {
+        console.log(e);
       }
-
-      await audioRef.current.play();
-      setIsPlaying(true);
+    } else {
+      audio.pause();
+      setIsPlaying(false);
     }
   };
   //--play from playlist
@@ -754,28 +830,25 @@ export default function MusicSection() {
     syncPlayerState = true,
   ) => {
     try {
-      const isSameTrack =
-        playingPlaylistTrackIdRef.current === playlistTrackId &&
-        audioRef.current;
-      // SAME TRACK => فقط toggle play/pause
-      if (isSameTrack) {
-        if (audioRef.current.paused) {
-          if (previewAudioRef.current && !previewAudioRef.current.paused) {
-            previewAudioRef.current.pause();
-            setIsPreviewPlaying(false);
-          }
+      const audio = audioRef.current;
+      if (!audio) return;
 
-          await audioRef.current.play();
+      console.log("▶ PLAY TRACK:", playlistTrackId);
+
+      const isSameTrack = playingPlaylistTrackIdRef.current === playlistTrackId;
+
+      if (isSameTrack) {
+        if (audio.paused) {
+          const p = audio.play();
+          if (p?.catch) p.catch(console.log);
           setIsPlaying(true);
         } else {
-          audioRef.current.pause();
+          audio.pause();
           setIsPlaying(false);
         }
-
         return;
       }
 
-      // NEW TRACK => اینجا sync انجام میشه
       if (syncPlayerState) {
         await setCurrentTrack({
           playlistId: selectedPlaylistId,
@@ -783,67 +856,51 @@ export default function MusicSection() {
         });
       }
 
-      // cache
-      if (!audioCacheRef.current[musicTrackId]) {
-        const res = await getTrack(musicTrackId);
-        audioCacheRef.current[musicTrackId] = res.data.audioUrl;
+      const audioUrl =
+        audioCacheRef.current[musicTrackId] ??
+        (await getTrack(musicTrackId)).data.audioUrl;
+
+      audioCacheRef.current[musicTrackId] = audioUrl;
+
+      if (!audioUrl) return;
+
+      // ⛔ مهم: STOP everything BEFORE switching src
+      audio.pause();
+      audio.currentTime = 0;
+
+      // ⛔ جلوگیری از race
+      await new Promise((r) => requestAnimationFrame(r));
+
+      audio.src = audioUrl;
+
+      const p = audio.play();
+
+      if (p?.catch) {
+        p.catch((e) => {
+          console.log("PLAY FAILED:", e);
+        });
       }
-
-      const audioUrl = audioCacheRef.current[musicTrackId];
-
-      if (!audioUrl) {
-        setAlertMessage("فایل صوتی یافت نشد");
-        return;
-      }
-
-      if (previewAudioRef.current && !previewAudioRef.current.paused) {
-        previewAudioRef.current.pause();
-        setIsPreviewPlaying(false);
-      }
-
-      audioRef.current.pause();
-      audioRef.current.src = audioUrl;
-
-      await audioRef.current.play();
 
       setPlayingPlaylistTrackId(playlistTrackId);
       setPlayingTrackId(musicTrackId);
       setIsPlaying(true);
     } catch (err) {
       console.error(err);
-      setAlertMessage("خطا در پخش موسیقی");
     }
   };
   //--central helper for changing playing track *****
-  const syncAndPlay = async (track, direction = "next") => {
-    console.log("🚀 syncAndPlay START", { track, direction });
+  const syncAndPlay = async (track, direction) => {
+    if (!track) return;
 
-    try {
-      if (direction === "prev") {
-        console.log("⬅ previousTrack API");
-        await previousTrack({ playlistTrackId: track.id });
-      } else {
-        console.log("➡ advanceTrack API");
-        await advanceTrack({ playlistTrackId: track.id });
-      }
-
-      console.log("🔄 BEFORE refresh");
-
-      if (selectedPlaylistIdRef.current) {
-        await refreshPlaylist(selectedPlaylistIdRef.current);
-        console.log("✅ refresh DONE");
-      } else {
-        console.log("❌ selectedPlaylistId is NULL");
-      }
-
-      console.log("▶ BEFORE play");
-
-      await playPlaylistTrack(track.id, track.musicTrackId, false);
-
-      console.log("🎵 PLAY DONE");
-    } catch (err) {
-      console.log("💀 syncAndPlay ERROR:", err);
+    if (direction === "prev") {
+      await previousTrack({ playlistTrackId: track.id });
+    } else {
+      await advanceTrack({ playlistTrackId: track.id });
     }
+
+    await refreshPlaylist(selectedPlaylistIdRef.current);
+
+    await playTrack(track);
   };
   //--??
   const getCurrentPlaylistTrackIndex = () => {
@@ -874,6 +931,42 @@ export default function MusicSection() {
     const previousTrack = playlistTracks[currentIndex - 1];
 
     await syncAndPlay(previousTrack, "prev");
+  };
+  //--experimental => central bootstrap and audio manager
+  const ensureTrackLoaded = async (track) => {
+    if (!track) return false;
+
+    const audio = audioRef.current;
+    if (!audio) return false;
+
+    const url =
+      audioCacheRef.current[track.musicTrackId] ??
+      (await getTrack(track.musicTrackId)).data.audioUrl;
+
+    audioCacheRef.current[track.musicTrackId] = url;
+
+    audio.pause();
+    audio.src = url;
+    audio.load();
+
+    await new Promise((r) => requestAnimationFrame(r));
+
+    return true;
+  };
+  const playTrack = async (track) => {
+    if (!track) return;
+
+    const ok = await ensureTrackLoaded(track);
+    if (!ok) return;
+
+    try {
+      await audioRef.current.play();
+      setIsPlaying(true);
+      setPlayingTrackId(track.musicTrackId);
+      setPlayingPlaylistTrackId(track.id);
+    } catch (e) {
+      console.log("PLAY FAILED:", e);
+    }
   };
 
   // seek helpers
@@ -1002,10 +1095,8 @@ export default function MusicSection() {
             }}
           >
             <span>
-              {playingTrackId
-                ? playlistTracks.find((t) => t.musicTrackId === playingTrackId)
-                    ?.title || "در حال پخش..."
-                : "آهنگی در حال پخش نیست"}
+              {playlistTracks.find((t) => t.id === playingPlaylistTrackId)
+                ?.title || "آهنگی در حال پخش نیست"}
             </span>
             <span
               style={{

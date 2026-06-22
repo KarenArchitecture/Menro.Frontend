@@ -6,6 +6,7 @@ import RestaurantPage from "./pages/RestaurantPage";
 import RestaurantsBrowsePage from "./pages/RestaurantsBrowsePage";
 import RecentOrdersBrowsePage from "./pages/RecentOrdersBrowsePage";
 import PopularFoodsBrowsePage from "./pages/PopularFoodsBrowsePage";
+import MusicPage from "./pages/MusicPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -59,6 +60,7 @@ export default function App() {
     "/landing",
     "/restaurant",
     "/orders/bill",
+    "/music",
   ];
 
   // 3. Added "/orders/bill" so the app shell doesn't add blank padding at the bottom
@@ -86,6 +88,7 @@ export default function App() {
             element={<PopularFoodsBrowsePage />}
           />
           <Route path="/restaurant/:slug" element={<RestaurantPage />} />
+          <Route path="/music" element={<MusicPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

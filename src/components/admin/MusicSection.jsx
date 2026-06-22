@@ -1507,9 +1507,24 @@ export default function MusicSection() {
                     </button>
                     <button
                       className="btn btn-icon btn-danger"
-                      style={{ width: 24, height: 24, padding: 0 }}
+                      style={{
+                        width: 24,
+                        height: 24,
+                        padding: 0,
+                        opacity: pl.isActive ? 0.4 : 1,
+                        cursor: pl.isActive ? "not-allowed" : "pointer",
+                      }}
+                      disabled={pl.isActive}
+                      title={
+                        pl.isActive
+                          ? "پلی‌لیست فعال قابل حذف نیست"
+                          : "حذف پلی‌لیست"
+                      }
                       onClick={(e) => {
                         e.stopPropagation();
+
+                        if (pl.isActive) return;
+
                         handleDeletePlaylist(pl.id);
                       }}
                     >

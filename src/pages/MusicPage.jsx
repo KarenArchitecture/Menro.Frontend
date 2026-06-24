@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import MusicTrack from "../components/music/MusicTrack";
 import MusicRequestModal from "../components/music/MusicRequestModal";
+import OrderSuccessModal from "../components/common/OrderSuccessModal";
 import {
   playlistTracks,
   requestModalTracks,
@@ -11,10 +12,26 @@ export default function MusicPage() {
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTrackId, setSelectedTrackId] = useState(null);
+  const [showMusicSuccess, setShowMusicSuccess] = useState(false);
 
-  const closeModal = () => {
+  const handleOpenRequestModal = () => {
+    setIsRequestModalOpen(true);
+  };
+
+  const handleCloseRequestModal = () => {
     setIsRequestModalOpen(false);
     setSearchQuery("");
+  };
+
+  const handleRequestTrack = (track) => {
+    setSelectedTrackId(track.id);
+    setIsRequestModalOpen(false);
+    setSearchQuery("");
+    setShowMusicSuccess(true);
+  };
+
+  const handleCloseMusicSuccess = () => {
+    setShowMusicSuccess(false);
   };
 
   return (
@@ -43,7 +60,10 @@ export default function MusicPage() {
         </div>
       </header>
 
-      <main className="music-page__content" aria-hidden={isRequestModalOpen}>
+      <main
+        className="music-page__content"
+        aria-hidden={isRequestModalOpen || showMusicSuccess}
+      >
         <section className="music-page__list" aria-label="لیست آهنگ‌ها">
           {playlistTracks.map((track) => (
             <MusicTrack
@@ -59,47 +79,57 @@ export default function MusicPage() {
             />
           ))}
         </section>
-
-        <div className="music-page__footer">
-          {isRequestModalOpen ? (
-            <div className="music-page__search">
-              <img
-                src="/images/music/search-icon.svg"
-                alt=""
-                aria-hidden="true"
-                className="music-page__search-icon"
-              />
-              <input
-                className="music-page__search-input"
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="نام موسیقی را در لیست جستجو کنید..."
-              />
-            </div>
-          ) : (
-            <button
-              className="music-page__request-btn"
-              type="button"
-              onClick={() => setIsRequestModalOpen(true)}
-            >
-              درخواست موسیقی
-            </button>
-          )}
-        </div>
       </main>
+
+      <footer className="music-page__footer">
+        {isRequestModalOpen ? (
+          <div className="music-page__search">
+            <img
+              src="/images/music/search-icon.svg"
+              alt=""
+              aria-hidden="true"
+              className="music-page__search-icon"
+            />
+            <input
+              className="music-page__search-input"
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="نام موسیقی را در لیست جستجو کنید..."
+            />
+          </div>
+        ) : (
+          <button
+            className="music-page__request-btn"
+            type="button"
+            onClick={handleOpenRequestModal}
+          >
+            درخواست موسیقی
+          </button>
+        )}
+      </footer>
 
       <MusicRequestModal
         open={isRequestModalOpen}
         tracks={requestModalTracks}
         searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        onClose={closeModal}
+        onClose={handleCloseRequestModal}
         selectedTrackId={selectedTrackId}
         remainingRequests={1}
-        onRequestTrack={(track) => {
-          setSelectedTrackId(track.id);
-        }}
+        onRequestTrack={handleRequestTrack}
+      />
+
+      <OrderSuccessModal
+        open={showMusicSuccess}
+        variant="music"
+        iconSrc="/images/music/music-request-success.png"
+        title={
+          <>
+            درخواست شما با موفقیت <span>ثبت شد</span>
+          </>
+        }
+        subtitle="لطفا منتظر تایید رستوران برای درخواستتان بمانید"
+        onClose={handleCloseMusicSuccess}
       />
     </div>
   );

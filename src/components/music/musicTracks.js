@@ -32,24 +32,29 @@ const ARTIST_POOL = [
   "سیروان خسروی",
 ];
 
-const STATUS_POOL = [
-  null,
-  "requested",
-  "mineRequested",
-  null,
-  null,
-  "requested",
-];
-
-function buildTracks({ prefix, count, seed = 0, activeIndex = -1 }) {
+function buildTracks({
+  prefix,
+  count,
+  seed = 0,
+  activeIndex = -1,
+  requestedIndexes = [],
+  mineRequestedIndexes = [],
+}) {
   return Array.from({ length: count }, (_, index) => {
     const i = index + seed;
+
+    let status = null;
+    if (mineRequestedIndexes.includes(index)) status = "mineRequested";
+    else if (requestedIndexes.includes(index)) status = "requested";
+
     return {
       id: `${prefix}-${index + 1}`,
-      title: `${TITLE_POOL[i % TITLE_POOL.length]}${index % 4 === 0 ? ` ${index + 1}` : ""}`,
+      title: `${TITLE_POOL[i % TITLE_POOL.length]}${
+        index % 4 === 0 ? ` ${index + 1}` : ""
+      }`,
       subtitle: ARTIST_POOL[i % ARTIST_POOL.length],
       image: COVER,
-      status: STATUS_POOL[i % STATUS_POOL.length],
+      status,
       active: index === activeIndex,
       requestable: true,
     };
@@ -61,6 +66,8 @@ export const playlistTracks = buildTracks({
   count: 100,
   seed: 0,
   activeIndex: 0,
+  mineRequestedIndexes: [0], // one mineRequested track for now
+  requestedIndexes: [5, 11, 18],
 });
 
 export const requestModalTracks = buildTracks({
@@ -68,4 +75,6 @@ export const requestModalTracks = buildTracks({
   count: 100,
   seed: 7,
   activeIndex: -1,
+  requestedIndexes: [], // none in the modal initially
+  mineRequestedIndexes: [], // none in the modal initially
 });

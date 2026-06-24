@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
+import OrderSuccessModal from "../common/OrderSuccessModal";
 
 const formatIR = (n) => Number(n || 0).toLocaleString("fa-IR");
 
@@ -7,7 +8,6 @@ export default function CheckoutFooter({
   items = [],
   discount = 0,
   onConfirm,
-  // new prop
   tableCount = 0,
 }) {
   const [isPickingTable, setIsPickingTable] = useState(false);
@@ -15,14 +15,14 @@ export default function CheckoutFooter({
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  /* ------------------------ dynamic table options ------------------------ */
-  // ensure tableCount is a number >= 0
+  const [successVariant, setSuccessVariant] = useState("checkout");
+  const [invoiceNumber, setInvoiceNumber] = useState(null);
+
   const numericTableCount = Number(tableCount) || 0;
 
   const tableOptions = useMemo(() => {
     const opts = [];
 
-    // add numbered tables 1..N
     for (let i = 1; i <= numericTableCount; i += 1) {
       opts.push({
         id: i,
@@ -30,7 +30,6 @@ export default function CheckoutFooter({
       });
     }
 
-    // always add بیرون‌بر at the end
     opts.push({
       id: null,
       label: "بیرون‌بر",
@@ -39,11 +38,12 @@ export default function CheckoutFooter({
     return opts;
   }, [numericTableCount]);
 
-  /* ------------------------ handlers ------------------------ */
   const handleSuccessContinue = () => {
     setShowSuccess(false);
     setSelectedTable(null);
     setIsPickingTable(false);
+    setSuccessVariant("checkout");
+    setInvoiceNumber(null);
   };
 
   const handlePayClick = async () => {
@@ -58,10 +58,14 @@ export default function CheckoutFooter({
     try {
       setIsSubmitting(true);
 
-      if (onConfirm) {
-        await onConfirm(selectedTable);
-      }
+      const result = onConfirm ? await onConfirm(selectedTable) : null;
 
+      const backendType = result?.successType || result?.type || "checkout";
+      const nextInvoiceNumber =
+        result?.invoiceNumber ?? result?.invoice ?? null;
+
+      setSuccessVariant(backendType === "invoice" ? "invoice" : "checkout");
+      setInvoiceNumber(nextInvoiceNumber);
       setShowSuccess(true);
     } catch (err) {
       console.error("Error while confirming order:", err);
@@ -79,31 +83,24 @@ export default function CheckoutFooter({
     setSelectedTable(id);
   };
 
-  /* ------------------------ UI state ------------------------ */
   const isChoosingTable = isPickingTable && selectedTable === undefined;
   const payDisabled = isChoosingTable || isSubmitting;
 
   const payLabel = !isPickingTable
     ? "پرداخت"
     : selectedTable === undefined
-    ? "میز خود را انتخاب کنید"
-    : "تایید و پرداخت";
+      ? "میز خود را انتخاب کنید"
+      : "تایید و پرداخت";
 
-  /* ------------------------ render ------------------------ */
   return (
     <>
-      {/* overlay behind footer when picking table */}
       {isPickingTable && (
         <div className="table-overlay" onClick={handleCloseTableSelector} />
       )}
 
-      {/* fixed footer */}
       <div
-        className={`checkout-footer ${
-          isPickingTable ? "is-picking-table" : ""
-        }`}
+        className={`checkout-footer ${isPickingTable ? "is-picking-table" : ""}`}
       >
-        {/* discount input */}
         <div className="discount-wrapper">
           <input
             type="text"
@@ -112,7 +109,6 @@ export default function CheckoutFooter({
           />
         </div>
 
-        {/* total + pay button */}
         <div className="footer-main">
           <div className="footer-total">
             <div className="footer-total-label">قیمت کل</div>
@@ -133,7 +129,6 @@ export default function CheckoutFooter({
           </div>
         </div>
 
-        {/* inline table selector */}
         <div
           className={
             "table-selector-inline" + (isPickingTable ? " is-open" : "")
@@ -149,7 +144,7 @@ export default function CheckoutFooter({
                   (selectedTable === opt.id ? " is-active" : "") +
                   (opt.id === null ? " is-wide" : "")
                 }
-                onClick={() => setSelectedTable(opt.id)}
+                onClick={() => handleTableClick(opt.id)}
               >
                 {opt.label}
               </button>
@@ -158,65 +153,46 @@ export default function CheckoutFooter({
         </div>
       </div>
 
-      {/* success modal */}
-      {showSuccess && (
-        <div className="order-success-backdrop">
-          <div className="order-success-modal">
-            <img
-              src="/images/checkout-success.png"
-              alt="سفارش با موفقیت ثبت شد"
-              className="order-success-icon"
-            />
-
-            <h2 className="order-success-title">
+      <OrderSuccessModal
+        open={showSuccess}
+        variant={successVariant}
+        iconSrc={
+          successVariant === "invoice"
+            ? "/images/checkout-success-check.png"
+            : "/images/checkout-success.png"
+        }
+        title={
+          successVariant === "invoice" ? (
+            <>
               سفارش شما <span>ثبت شد</span>
-            </h2>
-
-            {items.length > 0 && (
-              <div className="order-success-items">
-                {items.map((item) => (
-                  <div key={item.id} className="order-success-row">
-                    <div className="order-success-row-left">
-                      <div className="item-title">{item.title}</div>
-                      {item.subtitle && (
-                        <div className="item-sub">{item.subtitle}</div>
-                      )}
-                    </div>
-                    <div className="order-success-row-right">
-                      <span className="price">{formatIR(item.price)}</span>
-                      <span className="currency">تومان</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="order-success-summary">
-              <div className="order-success-summary-row discount">
-                <span className="label">تخفیف</span>
-                <span className="value">
-                  {discount ? formatIR(discount) : "۰"}
-                  <span className="currency"> تومان</span>
-                </span>
-              </div>
-              <div className="order-success-summary-row total">
-                <span className="label">مجموع سفارش</span>
-                <span className="value">
-                  {formatIR(total)}
-                  <span className="currency"> تومان</span>
-                </span>
-              </div>
-            </div>
-
-            <button
-              className="order-success-cta"
-              onClick={handleSuccessContinue}
-            >
-              تایید و ادامه
-            </button>
-          </div>
-        </div>
-      )}
+            </>
+          ) : (
+            <>
+              سفارش در انتظار <span>پرداخت حضوری شماست</span>
+            </>
+          )
+        }
+        subtitle=""
+        items={items}
+        discount={discount}
+        total={total}
+        invoiceNumber={invoiceNumber}
+        primaryActionTo={successVariant === "invoice" ? "/bills" : ""}
+        primaryActionLabel={
+          successVariant === "invoice" ? (
+            <>
+              شماره فاکتور{" "}
+              <span className="order-success-modal__invoice-number">
+                {invoiceNumber ?? "—"}
+              </span>
+            </>
+          ) : (
+            "تایید و ادامه"
+          )
+        }
+        formatPrice={formatIR}
+        onClose={handleSuccessContinue}
+      />
     </>
   );
 }

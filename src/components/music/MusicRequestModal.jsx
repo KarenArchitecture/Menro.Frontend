@@ -8,21 +8,39 @@ export default function MusicRequestModal({
   open,
   tracks = [],
   searchQuery = "",
-  onSearchChange,
   onClose,
   onRequestTrack,
   selectedTrackId = null,
   remainingRequests = 1,
-  limitReachedIconSrc = "/images/music/limit-alert-icon.svg",
-  infoIconSrc = "/images/music/info-alert-icon.svg",
+  limitReachedIconSrc = "/images/music/red-clock-icon.svg",
+  infoIconSrc = "/images/music/orange-clock-icon.svg",
   closeIconSrc = "/images/music/close-icon.svg",
 }) {
-  const [expanded, setExpanded] = useState(false);
-  const listRef = useRef(null);
+  const [mounted, setMounted] = useState(open);
+  const [phase, setPhase] = useState(open ? "open" : "closed");
+  const sheetRef = useRef(null);
 
   useEffect(() => {
-    if (open) setExpanded(false);
-  }, [open]);
+    if (open) {
+      setMounted(true);
+      setPhase("entering");
+
+      const id = requestAnimationFrame(() => {
+        setPhase("open");
+        if (sheetRef.current) {
+          sheetRef.current.scrollTop = 0;
+        }
+      });
+
+      return () => cancelAnimationFrame(id);
+    }
+
+    if (mounted) {
+      setPhase("exiting");
+      const timeout = window.setTimeout(() => setMounted(false), 260);
+      return () => window.clearTimeout(timeout);
+    }
+  }, [open, mounted]);
 
   useEffect(() => {
     if (!open) return;
@@ -58,30 +76,10 @@ export default function MusicRequestModal({
     });
   }, [tracks, searchQuery]);
 
-  const handleWheel = (e) => {
-    const list = listRef.current;
-    if (!list) return;
-
-    const atTop = list.scrollTop <= 0;
-    const atBottom =
-      list.scrollTop + list.clientHeight >= list.scrollHeight - 1;
-
-    // scroll up -> expand
-    if (!expanded && e.deltaY < 0) {
-      setExpanded(true);
-      return;
-    }
-
-    // scroll down while expanded and list reaches an edge -> collapse
-    if (expanded && e.deltaY > 0 && (atTop || atBottom)) {
-      setExpanded(false);
-    }
-  };
-
-  if (!open) return null;
+  if (!mounted) return null;
 
   return (
-    <div className="music-modal">
+    <div className={`music-modal ${phase}`}>
       <button
         type="button"
         className="music-modal__backdrop"
@@ -89,41 +87,42 @@ export default function MusicRequestModal({
         onClick={onClose}
       />
 
-      <div
-        className={`music-modal__alerts ${expanded ? "is-expanded" : "is-collapsed"}`}
-        aria-hidden="true"
+      <section
+        ref={sheetRef}
+        className={`music-sheet ${phase === "open" ? "is-open" : ""}`}
+        aria-label="درخواست موسیقی"
       >
-        {hasSelection ? (
-          <div className="music-sheet__alert music-sheet__alert--danger">
-            <img
-              src={limitReachedIconSrc}
-              alt=""
-              aria-hidden="true"
-              className="music-sheet__alert-icon"
-            />
-            <span>
-              تعداد درخواست های موسیقی امروز شما از این رستوران تمام شده
-            </span>
-          </div>
-        ) : (
-          <div className="music-sheet__alert music-sheet__alert--info">
-            <img
-              src={infoIconSrc}
-              alt=""
-              aria-hidden="true"
-              className="music-sheet__alert-icon"
-            />
-            <span>
-              شما در روز قادر به درخواست{" "}
-              <span className="music-sheet__limit-number">
-                {remainingRequests}
-              </span>{" "}
-              موسیقی از این رستوران هستید.
-            </span>
-          </div>
-        )}
+        <div className="music-sheet__header">
+          {hasSelection ? (
+            <div className="music-sheet__alert music-sheet__alert--danger">
+              <img
+                src={limitReachedIconSrc}
+                alt=""
+                aria-hidden="true"
+                className="music-sheet__alert-icon"
+              />
+              <span>
+                تعداد درخواست های موسیقی امروز شما از این رستوران تمام شده
+              </span>
+            </div>
+          ) : (
+            <div className="music-sheet__alert music-sheet__alert--info">
+              <img
+                src={infoIconSrc}
+                alt=""
+                aria-hidden="true"
+                className="music-sheet__alert-icon"
+              />
+              <span>
+                شما در روز قادر به درخواست{" "}
+                <span className="music-sheet__limit-number">
+                  {remainingRequests}
+                </span>{" "}
+                موسیقی از این رستوران هستید.
+              </span>
+            </div>
+          )}
 
-        {expanded && (
           <button
             type="button"
             className="music-modal__close"
@@ -132,39 +131,31 @@ export default function MusicRequestModal({
           >
             <img src={closeIconSrc} alt="" aria-hidden="true" />
           </button>
-        )}
-      </div>
-
-      <section
-        className={`music-sheet ${expanded ? "is-expanded" : ""}`}
-        onWheel={handleWheel}
-      >
-        <div className="music-sheet__handle">
-          <span className="music-sheet__grabber" />
         </div>
 
-        <div
-          ref={listRef}
-          className="music-sheet__list"
-          aria-label="لیست درخواست موسیقی"
-        >
-          {filteredTracks.map((track) => (
-            <MusicTrack
-              key={track.id}
-              title={track.title}
-              subtitle={track.subtitle}
-              image={track.image}
-              status={track.status}
-              active={selectedTrackId === track.id || track.active}
-              showRequestButton
-              requestButtonLabel="درخواست"
-              requestButtonDisabled={hasSelection}
-              onRequestClick={() => onRequestTrack?.(track)}
-              onActionClick={() => {
-                // later: copy / backend action
-              }}
-            />
-          ))}
+        <div className="music-sheet__list">
+          {filteredTracks.map((track) => {
+            const modalStatus =
+              selectedTrackId === track.id ? "mineRequested" : null;
+
+            return (
+              <MusicTrack
+                key={track.id}
+                title={track.title}
+                subtitle={track.subtitle}
+                image={track.image}
+                status={modalStatus}
+                active={selectedTrackId === track.id || track.active}
+                showRequestButton
+                requestButtonLabel="درخواست"
+                requestButtonDisabled={hasSelection}
+                onRequestClick={() => onRequestTrack?.(track)}
+                onActionClick={() => {
+                  // later: copy / backend action
+                }}
+              />
+            );
+          })}
         </div>
       </section>
     </div>

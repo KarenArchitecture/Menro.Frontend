@@ -58,7 +58,7 @@ export default function CheckoutPage() {
         subtitle: item.subtext,
         price: item.options.reduce((s, o) => s + o.unitPrice * o.qty, 0),
       })),
-    [cart]
+    [cart],
   );
 
   const changeQty = (itemId, optionId, delta) => {
@@ -73,7 +73,7 @@ export default function CheckoutPage() {
             return { ...op, qty: nextQty };
           }),
         };
-      })
+      }),
     );
   };
 

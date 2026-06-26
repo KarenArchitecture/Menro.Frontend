@@ -88,7 +88,8 @@ export default function App() {
             element={<PopularFoodsBrowsePage />}
           />
           <Route path="/restaurant/:slug" element={<RestaurantPage />} />
-          <Route path="/music" element={<MusicPage />} />
+          {/* <Route path="/music" element={<MusicPage />} /> */}
+          <Route path="/restaurant/:slug/music" element={<MusicPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

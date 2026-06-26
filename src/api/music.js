@@ -71,3 +71,11 @@ export const rejectTrackRequest = (requestId) =>
 
 export const approveTrackRequest = (requestId) =>
   apiClient.post(`/admin/music/requests/${requestId}/approve`);
+
+/* PUBLIC MUSIC */
+
+export const getPublicMusic = (restaurantId) =>
+  apiClient.get(`/public/music/${restaurantId}`);
+
+export const requestTrack = (restaurantId, dto) =>
+  apiClient.post(`/public/music/${restaurantId}/request`, dto);

@@ -74,7 +74,15 @@ export default function MusicTrack({
 
       <div className="music-track__content">
         <div className="music-track__title-col">
-          <h3 className="music-track__title">{title}</h3>
+          <h3
+            className="music-track__title"
+            style={{
+              color: active ? "#ff9800" : "inherit",
+              fontWeight: active ? "bold" : "normal",
+            }}
+          >
+            {title}
+          </h3>{" "}
           <p className="music-track__subtitle">{subtitle}</p>
         </div>
 

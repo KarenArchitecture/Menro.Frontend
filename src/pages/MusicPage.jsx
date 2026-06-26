@@ -1,20 +1,63 @@
-import React, { useState } from "react";
+// MusicPage.jsx
+
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+
 import MusicTrack from "../components/music/MusicTrack";
 import MusicRequestModal from "../components/music/MusicRequestModal";
 import OrderSuccessModal from "../components/common/OrderSuccessModal";
-import {
-  playlistTracks,
-  requestModalTracks,
-} from "../components/music/musicTracks";
+
 import "../assets/css/styles-music.css";
 
+import { getPublicMusic, requestTrack } from "../api/music";
+
 export default function MusicPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const restaurantId = location.state?.restaurantId;
+
+  const [loading, setLoading] = useState(true);
+
+  const [tracks, setTracks] = useState([]);
+  const [remainingRequests, setRemainingRequests] = useState(0);
+
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTrackId, setSelectedTrackId] = useState(null);
   const [showMusicSuccess, setShowMusicSuccess] = useState(false);
 
+  useEffect(() => {
+    if (!restaurantId) {
+      navigate(-1);
+      return;
+    }
+
+    fetchMusic();
+  }, [restaurantId]);
+
+  const fetchMusic = async () => {
+    try {
+      setLoading(true);
+
+      const res = await getPublicMusic(restaurantId);
+
+      setTracks(res.data.tracks ?? []);
+      setRemainingRequests(res.data.remainingRequests ?? 0);
+
+      const myRequestedTrack = res.data.tracks?.find((x) => x.status === 2);
+
+      setSelectedTrackId(myRequestedTrack?.id ?? null);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleOpenRequestModal = () => {
+    if (remainingRequests <= 0) return;
+
     setIsRequestModalOpen(true);
   };
 
@@ -23,16 +66,41 @@ export default function MusicPage() {
     setSearchQuery("");
   };
 
-  const handleRequestTrack = (track) => {
-    setSelectedTrackId(track.id);
-    setIsRequestModalOpen(false);
-    setSearchQuery("");
-    setShowMusicSuccess(true);
+  const handleRequestTrack = async (track) => {
+    try {
+      await requestTrack(restaurantId, {
+        musicTrackId: track.id,
+      });
+
+      setIsRequestModalOpen(false);
+      setSearchQuery("");
+      setShowMusicSuccess(true);
+
+      await fetchMusic();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleCloseMusicSuccess = () => {
     setShowMusicSuccess(false);
   };
+
+  const handleCopyTrack = async (track) => {
+    try {
+      await navigator.clipboard.writeText(`${track.title} - ${track.subtitle}`);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="music-page" dir="rtl">
+        در حال بارگذاری...
+      </div>
+    );
+  }
 
   return (
     <div
@@ -40,7 +108,12 @@ export default function MusicPage() {
       dir="rtl"
     >
       <header className="music-page__header">
-        <button className="music-page__back" type="button" aria-label="بازگشت">
+        <button
+          className="music-page__back"
+          type="button"
+          aria-label="بازگشت"
+          onClick={() => navigate(-1)}
+        >
           <img
             src="/images/music/back-music-icon.svg"
             alt=""
@@ -56,6 +129,7 @@ export default function MusicPage() {
             aria-hidden="true"
             className="music-page__header-icon"
           />
+
           <h1 className="music-page__title">موسیقی در حال پخش</h1>
         </div>
       </header>
@@ -65,17 +139,21 @@ export default function MusicPage() {
         aria-hidden={isRequestModalOpen || showMusicSuccess}
       >
         <section className="music-page__list" aria-label="لیست آهنگ‌ها">
-          {playlistTracks.map((track) => (
+          {tracks.map((track) => (
             <MusicTrack
               key={track.id}
               title={track.title}
               subtitle={track.subtitle}
-              image={track.image}
-              status={track.status}
-              active={track.active}
-              onActionClick={() => {
-                // later: copy action
-              }}
+              image={track.imageUrl}
+              status={
+                track.status === "Requested"
+                  ? "requested"
+                  : track.status === "MineRequested"
+                    ? "mineRequested"
+                    : null
+              }
+              active={track.isCurrentTrack}
+              onActionClick={() => handleCopyTrack(track)}
             />
           ))}
         </section>
@@ -90,6 +168,7 @@ export default function MusicPage() {
               aria-hidden="true"
               className="music-page__search-icon"
             />
+
             <input
               className="music-page__search-input"
               type="text"
@@ -102,6 +181,7 @@ export default function MusicPage() {
           <button
             className="music-page__request-btn"
             type="button"
+            disabled={remainingRequests <= 0}
             onClick={handleOpenRequestModal}
           >
             درخواست موسیقی
@@ -111,11 +191,11 @@ export default function MusicPage() {
 
       <MusicRequestModal
         open={isRequestModalOpen}
-        tracks={requestModalTracks}
+        tracks={tracks}
         searchQuery={searchQuery}
         onClose={handleCloseRequestModal}
         selectedTrackId={selectedTrackId}
-        remainingRequests={1}
+        remainingRequests={remainingRequests}
         onRequestTrack={handleRequestTrack}
       />
 

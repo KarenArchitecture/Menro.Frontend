@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 // import "../../public/shop.css";
 // import AppHeader from "../components/common/AppHeader";
+import usePageStyles from "../hooks/usePageStyles";
 import ShopBanner from "../components/shop/ShopBanner";
 import MenuList from "../components/shop/MenuList";
 import ItemDetailModal from "../components/shop/ItemDetailModal";

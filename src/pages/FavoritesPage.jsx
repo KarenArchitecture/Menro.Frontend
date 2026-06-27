@@ -6,10 +6,22 @@ import FavoritesHeader from "../components/favorites/FavoritesHeader";
 export default function FavoritesPage() {
   // TEMP MOCK (later → API)
   const favorites = [
-    { id: 1, name: "قهوه مدل دوم", price: 870000 },
-    { id: 2, name: "قهوه با نام طولانی ...", price: 870000 },
-    { id: 3, name: "موهیتو", price: 120000 },
-    { id: 4, name: "لاته", price: 95000 },
+    {
+      id: 1,
+      name: "قهوه مدل دوم",
+      price: 870000,
+      imageUrl: "/images/foods/coffee1.jpg",
+      restaurantName: "کافه منرو",
+      rating: 4.5,
+    },
+    {
+      id: 2,
+      name: "قهوه با نام طولانی ...",
+      price: 870000,
+      imageUrl: "/images/foods/coffee2.jpg",
+      restaurantName: "کافه منرو",
+      rating: 4.2,
+    },
   ];
 
   if (!favorites.length) {

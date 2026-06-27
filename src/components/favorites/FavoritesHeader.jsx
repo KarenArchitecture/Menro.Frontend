@@ -6,7 +6,7 @@ export default function FavoritesHeader() {
   return (
     <div className="favorites-header">
       <button className="favorites-header__back" onClick={() => navigate(-1)}>
-        <img src="/images/icons/back.svg" alt="back" />
+        <img src="/images/back-curve-icon.svg" alt="back" />
       </button>
 
       <div className="favorites-header__title">

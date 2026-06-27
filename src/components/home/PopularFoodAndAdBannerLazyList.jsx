@@ -7,7 +7,7 @@ import {
 } from "../../api/foods";
 import { publicSearch } from "../../api/search";
 import PopularFoodRow from "./PopularFoodRow";
-import AdBanner from "./AdBanner";
+import AdBanner from "../common/AdBanner";
 import { FoodCardsSkeleton, BannerSkeleton } from "./HomeSkeletons";
 import StateMessage from "../common/StateMessage";
 
@@ -63,7 +63,13 @@ function SearchModeFoods({ q, onSearchCount }) {
     }
     if (searchQ.isLoading || searchQ.isError) return;
     onSearchCount((searchQ.data ?? []).length);
-  }, [onSearchCount, q.length, searchQ.isLoading, searchQ.isError, searchQ.data]);
+  }, [
+    onSearchCount,
+    q.length,
+    searchQ.isLoading,
+    searchQ.isError,
+    searchQ.data,
+  ]);
 
   if (q.length < 2) return null;
 
@@ -85,7 +91,13 @@ function SearchModeFoods({ q, onSearchCount }) {
   const foods = searchQ.data ?? [];
   if (!foods.length) return null;
 
-  return <PopularFoodRow data={{ categoryTitle: "", foods }} hideTitle isSearchMode />;
+  return (
+    <PopularFoodRow
+      data={{ categoryTitle: "", foods }}
+      hideTitle
+      isSearchMode
+    />
+  );
 }
 
 function NormalModeFeed({ showAds }) {
@@ -107,7 +119,9 @@ function NormalModeFeed({ showAds }) {
         : getPopularFoodByRandomCategoryExcluding(pageParam),
     getNextPageParam: (lastPage, allPages) => {
       if (!lastPage) return undefined;
-      const loadedTitles = allPages.map((p) => p?.categoryTitle).filter(Boolean);
+      const loadedTitles = allPages
+        .map((p) => p?.categoryTitle)
+        .filter(Boolean);
       // Limit to avoid infinite scrolls if the DB is huge (optional safety)
       if (loadedTitles.length >= 15) return undefined;
       return loadedTitles;
@@ -121,7 +135,7 @@ function NormalModeFeed({ showAds }) {
     const raw = data?.pages ?? [];
     const out = [];
     const seen = new Set();
-    
+
     for (const entry of raw) {
       const items = Array.isArray(entry) ? entry : [entry];
       for (const p of items) {
@@ -141,7 +155,11 @@ function NormalModeFeed({ showAds }) {
     if (showAds) blocks.push({ type: "ad", key: "ad-start" });
 
     uniquePages.forEach((page, idx) => {
-      blocks.push({ type: "popular", payload: page, key: `cat-${page.categoryTitle ?? idx}` });
+      blocks.push({
+        type: "popular",
+        payload: page,
+        key: `cat-${page.categoryTitle ?? idx}`,
+      });
       if (showAds && (idx + 1) % 2 === 0) {
         blocks.push({ type: "ad", key: `ad-slot-${idx}` });
       }
@@ -157,7 +175,12 @@ function NormalModeFeed({ showAds }) {
 
     const observerCallback = (entries) => {
       const first = entries[0];
-      if (first.isIntersecting && hasNextPage && !isFetchingNextPage && !isLoading) {
+      if (
+        first.isIntersecting &&
+        hasNextPage &&
+        !isFetchingNextPage &&
+        !isLoading
+      ) {
         fetchNextPage();
       }
     };
@@ -201,7 +224,8 @@ function NormalModeFeed({ showAds }) {
   if (!uniquePages.length) {
     return (
       <StateMessage kind="empty" title="موردی یافت نشد">
-        هیچ <span className="state-message-subject">آیتم محبوبی</span> برای نمایش وجود ندارد.
+        هیچ <span className="state-message-subject">آیتم محبوبی</span> برای
+        نمایش وجود ندارد.
       </StateMessage>
     );
   }
@@ -215,13 +239,9 @@ function NormalModeFeed({ showAds }) {
           </div>
         ) : (
           <div key={block.key} className="fade-in">
-            <AdBanner
-              slotKey={block.key}
-              height={260}
-              overlay={0.5}
-            />
+            <AdBanner slotKey={block.key} height={260} overlay={0.5} />
           </div>
-        )
+        ),
       )}
 
       {/* ✅ Persistent Loading Skeletons for Next Pages */}
@@ -234,10 +254,10 @@ function NormalModeFeed({ showAds }) {
 
       {/* Target for Infinite Scroll */}
       {hasNextPage && (
-        <div 
-          ref={loadMoreRef} 
-          style={{ height: "50px", visibility: "hidden" }} 
-          aria-hidden="true" 
+        <div
+          ref={loadMoreRef}
+          style={{ height: "50px", visibility: "hidden" }}
+          aria-hidden="true"
         />
       )}
     </>

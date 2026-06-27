@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import BlogCard from "../common/BlogCard";
-import AdBanner from "../home/AdBanner";
+import AdBanner from "../common/AdBanner";
 import { blogs } from "./blogData";
 
 const suggestedTags = Array.from({ length: 8 }, (_, index) => ({

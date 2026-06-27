@@ -1,6 +1,6 @@
 import React from "react";
 // Make sure to adjust this import path to point correctly to your AdBanner component
-import AdBanner from "../home/AdBanner";
+import AdBanner from "../common/AdBanner";
 
 const BlogSidebar = () => {
   // Creating an array of 8 tags: alternating 4 "منرو" and 4 "آموزش آشپزی"

@@ -7,11 +7,11 @@ import {
   postAdImpression,
   postAdClick,
 } from "../../api/restaurantAds";
-import StateMessage from "../common/StateMessage";
+import StateMessage from "./StateMessage";
 import { Link } from "react-router-dom";
-import SmartImage from "../common/SmartImage";
-import { BannerSkeleton } from "./HomeSkeletons";
-
+import SmartImage from "./SmartImage";
+import { BannerSkeleton } from "../home/HomeSkeletons";
+import "../../assets/css/styles-adbanner.css";
 // Exclude list for banners (page-scope memory) -> AdIds
 if (!window.__menroBannerExcludeAdIds) window.__menroBannerExcludeAdIds = [];
 
@@ -120,8 +120,7 @@ export default function AdBanner({
       }),
   });
 
-  const resolveImg = (url) =>
-    resolveFileUrl(url, fallbackImage);
+  const resolveImg = (url) => resolveFileUrl(url, fallbackImage);
 
   // Impression tracking
   const rootRef = useRef(null);
@@ -265,7 +264,6 @@ export default function AdBanner({
       )}
     </div>
   );
-
 
   return (
     <section

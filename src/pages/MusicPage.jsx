@@ -56,7 +56,7 @@ export default function MusicPage() {
   };
 
   const handleOpenRequestModal = () => {
-    if (remainingRequests <= 0) return;
+    //if (remainingRequests <= 0) return;
 
     setIsRequestModalOpen(true);
   };
@@ -181,7 +181,7 @@ export default function MusicPage() {
           <button
             className="music-page__request-btn"
             type="button"
-            disabled={remainingRequests <= 0}
+            //disabled={remainingRequests <= 0}
             onClick={handleOpenRequestModal}
           >
             درخواست موسیقی

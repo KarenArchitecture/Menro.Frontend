@@ -3,13 +3,15 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+// child components / and modals
 import MusicTrack from "../components/music/MusicTrack";
 import MusicRequestModal from "../components/music/MusicRequestModal";
 import OrderSuccessModal from "../components/common/OrderSuccessModal";
-import { useMusicSignalR } from "../hooks/useMusicSignalR";
 import { useModal } from "../components/common/GlobalModal";
 
 import "../assets/css/styles-music.css";
+
+import { useMusicSignalR } from "../hooks/useMusicSignalR";
 
 import { getPublicMusic, requestTrack } from "../api/music";
 
@@ -22,7 +24,7 @@ export default function MusicPage() {
   const [loading, setLoading] = useState(true);
 
   const [tracks, setTracks] = useState([]);
-  const [remainingRequests, setRemainingRequests] = useState(0);
+  // const [remainingRequests, setRemainingRequests] = useState(0);
 
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -31,6 +33,26 @@ export default function MusicPage() {
 
   const { showModal } = useModal();
 
+  const fetchMusic = async () => {
+    try {
+      setLoading(true);
+
+      const res = await getPublicMusic(restaurantId);
+
+      setTracks(res.data.tracks ?? []);
+      // setRemainingRequests(res.data.remainingRequests ?? 0);
+
+      const myRequestedTrack = res.data.tracks?.find(
+        (x) => x.status === "MineRequested",
+      );
+      setSelectedTrackId(myRequestedTrack?.id ?? null);
+      console.log(res.data.tracks);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
     if (!restaurantId) {
       navigate(-1);
@@ -39,25 +61,6 @@ export default function MusicPage() {
 
     fetchMusic();
   }, [restaurantId]);
-
-  const fetchMusic = async () => {
-    try {
-      setLoading(true);
-
-      const res = await getPublicMusic(restaurantId);
-
-      setTracks(res.data.tracks ?? []);
-      setRemainingRequests(res.data.remainingRequests ?? 0);
-
-      const myRequestedTrack = res.data.tracks?.find((x) => x.status === 2);
-
-      setSelectedTrackId(myRequestedTrack?.id ?? null);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleOpenRequestModal = () => {
     //if (remainingRequests <= 0) return;
@@ -72,30 +75,34 @@ export default function MusicPage() {
 
   // SignalR
   useMusicSignalR(restaurantId, {
-    onCreated: (data) => {
-      console.log("NEW REQUEST:", data);
-    },
+    // onCreated: (data) => {
+    //   setTracks((prev) => {
+    //     const exists = prev.some((t) => t.id === data.musicTrackId);
+    //     if (exists) return prev;
+
+    //     return [
+    //       ...prev,
+    //       {
+    //         id: data.musicTrackId,
+    //         status: "Requested",
+    //       },
+    //     ];
+    //   });
+    // },
 
     onApproved: async (data) => {
-      console.log("APPROVED EVENT RECEIVED:", data);
-
       showModal({
-        title: "درخواست موسیقی تأیید شد",
-        message:
-          "درخواست موسیقی شما توسط رستوران تأیید شد و به صف پخش اضافه گردید.",
-        buttonText: "متوجه شدم",
+        title: "درخواست تأیید شد",
+        message: "موسیقی شما به صف اضافه شد",
       });
 
       await fetchMusic();
     },
 
-    onRejected: (data) => {
-      console.log("REJECTED EVENT RECEIVED:", data);
-
+    onRejected: async (data) => {
       showModal({
-        title: "درخواست موسیقی رد شد",
-        message: "متأسفانه رستوران درخواست موسیقی شما را تأیید نکرد.",
-        buttonText: "متوجه شدم",
+        title: "رد شد",
+        message: "درخواست شما تأیید نشد",
       });
     },
   });
@@ -110,7 +117,7 @@ export default function MusicPage() {
       setSearchQuery("");
       setShowMusicSuccess(true);
 
-      await fetchMusic();
+      //await fetchMusic();
     } catch (err) {
       console.error(err);
     }
@@ -229,7 +236,7 @@ export default function MusicPage() {
         searchQuery={searchQuery}
         onClose={handleCloseRequestModal}
         selectedTrackId={selectedTrackId}
-        remainingRequests={remainingRequests}
+        //remainingRequests={remainingRequests}
         onRequestTrack={handleRequestTrack}
       />
 

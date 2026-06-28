@@ -1,6 +1,6 @@
 // src/hooks/useMusicSignalR.js
 import { useEffect } from "react";
-import { musicConnection } from "../utils/signalr";
+import { getMusicConnection } from "../utils/signalr";
 
 export function useMusicSignalR(
   restaurantId,
@@ -9,41 +9,33 @@ export function useMusicSignalR(
   useEffect(() => {
     if (!restaurantId) return;
 
-    const handleCreated = (data) => {
-      console.log("CREATED:", data);
-      onCreated?.(data);
-    };
+    const connection = getMusicConnection();
 
-    const handleApproved = (data) => {
-      console.log("APPROVED:", data);
-      onApproved?.(data);
-    };
+    const handleCreated = (data) => onCreated?.(data);
+    const handleApproved = (data) => onApproved?.(data);
+    const handleRejected = (data) => onRejected?.(data);
 
-    const handleRejected = (data) => {
-      console.log("REJECTED:", data);
-      onRejected?.(data);
-    };
-
-    const setup = async () => {
-      musicConnection.on("RequestCreated", handleCreated);
-      musicConnection.on("RequestApproved", handleApproved);
-      musicConnection.on("RequestRejected", handleRejected);
-
-      if (musicConnection.state === "Disconnected") {
-        await musicConnection.start();
+    const start = async () => {
+      if (connection.state === "Disconnected") {
+        await connection.start();
       }
 
-      await musicConnection.invoke("JoinRestaurant", restaurantId);
+      connection.on("RequestCreated", handleCreated);
+      connection.on("RequestApproved", handleApproved);
+      connection.on("RequestRejected", handleRejected);
 
-      console.log("JOINED:", restaurantId);
+      await connection.invoke("JoinRestaurant", restaurantId);
     };
 
-    setup();
+    start();
 
     return () => {
-      musicConnection.off("RequestCreated", handleCreated);
-      musicConnection.off("RequestApproved", handleApproved);
-      musicConnection.off("RequestRejected", handleRejected);
+      connection.off("RequestCreated", handleCreated);
+      connection.off("RequestApproved", handleApproved);
+      connection.off("RequestRejected", handleRejected);
+
+      // مهم: leave group
+      connection.invoke("LeaveRestaurant", restaurantId).catch(() => {});
     };
   }, [restaurantId, onCreated, onApproved, onRejected]);
 }

@@ -1753,9 +1753,32 @@ export default function MusicSection() {
       <div className="panel w-full">
         <div className="view-header" style={{ marginBottom: "16px" }}>
           <h3>آهنگ‌های درخواستی</h3>
-          <span className="playlist-capacity">
-            {requestedTracks.length} درخواست
-          </span>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+            }}
+          >
+            <span className="playlist-capacity">
+              {requestedTracks.length} درخواست
+            </span>
+
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={fetchTrackRequests}
+              disabled={loadingRequests}
+              title="بروزرسانی"
+            >
+              <i
+                className={`fas fa-sync-alt ${
+                  loadingRequests ? "fa-spin" : ""
+                }`}
+              />
+            </button>
+          </div>
         </div>
 
         <div

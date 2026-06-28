@@ -68,7 +68,7 @@ export default function AdminPage() {
       showModal({
         title: "درخواست جدید موسیقی",
         message: "یک درخواست جدید موسیقی از طرف مشتری ثبت شده است.",
-        buttonText: "مشاهده",
+        buttonText: "متوجه شدم",
         onConfirm: () => {
           setActiveTab("music");
           localStorage.setItem("admin-active-tab", "music");

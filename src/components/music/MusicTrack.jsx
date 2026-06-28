@@ -1,8 +1,9 @@
+// MusicTrack.jsx
 import React from "react";
 
 export default function MusicTrack({
   title,
-  subtitle = "عرفان طهماسبی",
+  subtitle,
   image,
   status = null, // null | "requested" | "mineRequested"
   active = false,
@@ -83,7 +84,8 @@ export default function MusicTrack({
           >
             {title}
           </h3>{" "}
-          <p className="music-track__subtitle">{subtitle}</p>
+          {/* <p className="music-track__subtitle">{subtitle}</p> */}
+          {subtitle && <p className="music-track__subtitle">{subtitle}</p>}
         </div>
 
         {statusText && (

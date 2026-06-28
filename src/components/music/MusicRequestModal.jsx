@@ -64,7 +64,7 @@ export default function MusicRequestModal({
     };
   }, [open, onClose]);
 
-  const hasSelection = Boolean(selectedTrackId);
+  // const hasSelection = Boolean(selectedTrackId);
 
   const filteredTracks = useMemo(() => {
     const q = normalizeText(searchQuery);
@@ -93,7 +93,7 @@ export default function MusicRequestModal({
         aria-label="درخواست موسیقی"
       >
         <div className="music-sheet__header">
-          {hasSelection ? (
+          {/* {hasSelection ? (
             <div className="music-sheet__alert music-sheet__alert--danger">
               <img
                 src={limitReachedIconSrc}
@@ -121,7 +121,7 @@ export default function MusicRequestModal({
                 موسیقی از این رستوران هستید.
               </span>
             </div>
-          )}
+          )} */}
 
           <button
             type="button"
@@ -148,7 +148,8 @@ export default function MusicRequestModal({
                 active={selectedTrackId === track.id || track.active}
                 showRequestButton
                 requestButtonLabel="درخواست"
-                requestButtonDisabled={hasSelection}
+                // requestButtonDisabled={hasSelection}
+                requestButtonDisabled={false}
                 onRequestClick={() => onRequestTrack?.(track)}
                 onActionClick={() => {
                   // later: copy / backend action

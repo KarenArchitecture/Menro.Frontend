@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./Context/AuthContext.jsx";
+import { ModalProvider } from "./components/common/GlobalModal";
 
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
@@ -19,7 +20,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
-          <App />
+          <ModalProvider>
+            <App />
+          </ModalProvider>
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>

@@ -6,6 +6,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import MusicTrack from "../components/music/MusicTrack";
 import MusicRequestModal from "../components/music/MusicRequestModal";
 import OrderSuccessModal from "../components/common/OrderSuccessModal";
+import { useMusicSignalR } from "../hooks/useMusicSignalR";
+import { useModal } from "../components/common/GlobalModal";
 
 import "../assets/css/styles-music.css";
 
@@ -26,6 +28,8 @@ export default function MusicPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTrackId, setSelectedTrackId] = useState(null);
   const [showMusicSuccess, setShowMusicSuccess] = useState(false);
+
+  const { showModal } = useModal();
 
   useEffect(() => {
     if (!restaurantId) {
@@ -65,6 +69,36 @@ export default function MusicPage() {
     setIsRequestModalOpen(false);
     setSearchQuery("");
   };
+
+  // SignalR
+  useMusicSignalR(restaurantId, {
+    onCreated: (data) => {
+      console.log("NEW REQUEST:", data);
+    },
+
+    onApproved: async (data) => {
+      console.log("APPROVED EVENT RECEIVED:", data);
+
+      showModal({
+        title: "درخواست موسیقی تأیید شد",
+        message:
+          "درخواست موسیقی شما توسط رستوران تأیید شد و به صف پخش اضافه گردید.",
+        buttonText: "متوجه شدم",
+      });
+
+      await fetchMusic();
+    },
+
+    onRejected: (data) => {
+      console.log("REJECTED EVENT RECEIVED:", data);
+
+      showModal({
+        title: "درخواست موسیقی رد شد",
+        message: "متأسفانه رستوران درخواست موسیقی شما را تأیید نکرد.",
+        buttonText: "متوجه شدم",
+      });
+    },
+  });
 
   const handleRequestTrack = async (track) => {
     try {

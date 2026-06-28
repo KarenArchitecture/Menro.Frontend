@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import { useCart } from "./CartContext";
 
 import BackIcon from "../icons/BackIcon";
+import FavoriteButton from "../common/FavoriteButton";
 import LikeIcon from "../icons/LikeIcon";
 import MessageIcon from "../icons/MessageIcon";
 import ModalCategoryIcon from "../icons/ModalCategoryIcon";
@@ -312,13 +313,7 @@ function ItemDetailModal({ item, onClose }) {
                     <MessageIcon />
                   </button>
 
-                  <button
-                    type="button"
-                    className="icon-btn modal-top-action"
-                    aria-label="علاقه‌مندی"
-                  >
-                    <LikeIcon />
-                  </button>
+                  <FavoriteButton foodId={item.id} initialLiked={item.isFavorite} />
                 </div>
               </nav>
 

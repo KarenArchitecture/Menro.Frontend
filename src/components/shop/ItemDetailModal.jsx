@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import { useCart } from "./CartContext";
 
 import BackIcon from "../icons/BackIcon";
-import FavoriteButton from "../common/FavoriteButton";
+import { useFavoriteIds, useToggleFavorite } from "../../hooks/useFavorites";
 import LikeIcon from "../icons/LikeIcon";
 import MessageIcon from "../icons/MessageIcon";
 import ModalCategoryIcon from "../icons/ModalCategoryIcon";
@@ -64,6 +64,26 @@ function ItemDetailModal({ item, onClose }) {
   const cart = useCart();
   const [isActive, setIsActive] = useState(false);
 
+  /* ─────────────────────────────
+     FAVORITE HOOKS (FIXED)
+  ───────────────────────────── */
+  const {
+    data: favoriteIds = [],
+    isLoading: favoriteLoading,
+  } = useFavoriteIds();
+
+  const toggleFavorite = useToggleFavorite();
+
+  const isFavorite = favoriteIds.includes(item?.id);
+
+  const handleToggleFavorite = () => {
+    if (!item?.id) return;
+
+    if (toggleFavorite.isPending) return;
+
+    toggleFavorite.mutate(item.id);
+  };
+
   const formatRating = (value) => {
     const num = Number(value);
     if (Number.isFinite(num) && num > 0) {
@@ -110,7 +130,7 @@ function ItemDetailModal({ item, onClose }) {
     return map;
   }, [variations]);
 
-  /* 4) ADDONS SELECTION STATE (Now stores objects with qty) */
+  /* 4) ADDONS STATE */
   const [selectedAddonsByVar, setSelectedAddonsByVar] = useState({});
 
   useEffect(() => {
@@ -126,7 +146,6 @@ function ItemDetailModal({ item, onClose }) {
 
       if (existing?.addons?.length > 0) {
         existing.addons.forEach((addon) => {
-          // Backward compatibility: check if addon is just an ID string or a proper object
           if (typeof addon === "object") {
             init[v.id][addon.id] = addon;
           } else {
@@ -147,10 +166,8 @@ function ItemDetailModal({ item, onClose }) {
     setSelectedAddonsByVar(init);
   }, [item, variations, baseKey]);
 
-  /* helpers */
   const fmt = (n) => (Number(n) || 0).toLocaleString("fa-IR");
 
-  // Updated to calculate using quantity
   const addonSum = (variantId, overrideState) => {
     const selected = overrideState || selectedAddonsByVar[variantId] || {};
     return Object.values(selected).reduce(
@@ -159,7 +176,6 @@ function ItemDetailModal({ item, onClose }) {
     );
   };
 
-  /* 5) QUANTITY CHANGE */
   const setVariantQty = (variantId, newQty) => {
     if (!item) return;
 
@@ -192,34 +208,31 @@ function ItemDetailModal({ item, onClose }) {
     );
   };
 
-  /* 6) HANDLE ADDON QTY CHANGE (Replaces toggleAddon) */
   const handleAddonQtyChange = (variantId, addon, newQty) => {
     setSelectedAddonsByVar((prev) => {
-      const currentVariantAddons = prev[variantId] || {};
-      let nextVariantState;
+      const current = prev[variantId] || {};
+      let next;
 
       if (newQty === 0) {
-        // Remove from state if 0
-        const { [addon.id]: removed, ...rest } = currentVariantAddons;
-        nextVariantState = rest;
+        const { [addon.id]: removed, ...rest } = current;
+        next = rest;
       } else {
-        // Add or update qty
-        nextVariantState = {
-          ...currentVariantAddons,
+        next = {
+          ...current,
           [addon.id]: { ...addon, qty: newQty },
         };
       }
 
-      const nextState = { ...prev, [variantId]: nextVariantState };
+      const nextState = { ...prev, [variantId]: next };
 
-      // Synchronize with cart immediately if the parent item is already in cart
       const key = getVariantKey(variantId);
       const existing = cart.items.get(key);
 
       if (existing?.qty > 0) {
         const variant = variations.find((v) => v.id === variantId);
+
         if (variant) {
-          const addonsTotal = addonSum(variantId, nextVariantState);
+          const addonsTotal = addonSum(variantId, next);
           const newPrice = Number(variant.price || 0) + addonsTotal;
 
           cart.setQty(
@@ -227,7 +240,7 @@ function ItemDetailModal({ item, onClose }) {
             {
               ...existing,
               price: newPrice,
-              addons: Object.values(nextVariantState),
+              addons: Object.values(next),
             },
             existing.qty,
           );
@@ -238,7 +251,6 @@ function ItemDetailModal({ item, onClose }) {
     });
   };
 
-  /* 7) OPEN/CLOSE ANIMATION */
   useEffect(() => {
     if (!item) return;
 
@@ -264,22 +276,13 @@ function ItemDetailModal({ item, onClose }) {
   const modalRating =
     item?.rating !== undefined && item?.rating !== null && item?.rating !== ""
       ? item.rating
-      : item?.averageRating !== undefined &&
-          item?.averageRating !== null &&
-          item?.averageRating !== ""
-        ? item.averageRating
-        : 4.5;
+      : item?.averageRating ?? 4.5;
 
   const modalVoters =
     item?.voters !== undefined && item?.voters !== null && item?.voters !== ""
       ? item.voters
-      : item?.votersCount !== undefined &&
-          item?.votersCount !== null &&
-          item?.votersCount !== ""
-        ? item.votersCount
-        : 0;
+      : item?.votersCount ?? 0;
 
-  /* 8) RENDER */
   const modalUI = (
     <>
       <div
@@ -289,7 +292,6 @@ function ItemDetailModal({ item, onClose }) {
 
       <div className={`bottom-modal ${isActive ? "active" : ""}`} dir="rtl">
         <div className="sheet-body modal-content">
-          {/* HEADER */}
           <div className="modal-hero">
             <div className="modal-img-wrap">
               <nav className="img-topbar">
@@ -298,7 +300,6 @@ function ItemDetailModal({ item, onClose }) {
                     type="button"
                     className="icon-btn modal-top-action"
                     onClick={handleClose}
-                    aria-label="بستن"
                   >
                     <BackIcon />
                   </button>
@@ -308,21 +309,26 @@ function ItemDetailModal({ item, onClose }) {
                   <button
                     type="button"
                     className="icon-btn modal-top-action"
-                    aria-label="پیام"
                   >
                     <MessageIcon />
                   </button>
 
-                  <FavoriteButton foodId={item.id} initialLiked={item.isFavorite} />
+                  <button
+                    type="button"
+                    className="icon-btn modal-top-action"
+                    onClick={handleToggleFavorite}
+                    disabled={favoriteLoading || toggleFavorite.isPending}
+                  >
+                      <LikeIcon active={isFavorite} />
+                  </button>
                 </div>
               </nav>
 
               <SmartImage
                 src={modalImageSrc}
                 fallback={modalImageFallback}
-                alt={`تصویر ${item.name}`}
+                alt={item.name}
                 className="modal-hero-img"
-                lazy={false}
               />
 
               <div className="modal-info-panel">
@@ -330,12 +336,8 @@ function ItemDetailModal({ item, onClose }) {
 
                 <div className="modal-rating">
                   <StarIcon />
-                  <span className="modal-rating__value">
-                    {formatRating(modalRating)}
-                  </span>
-                  <span className="modal-rating__count">
-                    ({formatVoters(modalVoters)})
-                  </span>
+                  <span>{formatRating(modalRating)}</span>
+                  <span>({formatVoters(modalVoters)})</span>
                 </div>
 
                 {item.ingredients && (
@@ -345,101 +347,54 @@ function ItemDetailModal({ item, onClose }) {
             </div>
           </div>
 
-          {/* VARIANTS + ADDONS */}
           <div className="variant-list">
             <div className="modal-section">
               <div className="section-head">
                 <ModalCategoryIcon />
-                <p className="section-label">نوع</p>
+                <p>نوع</p>
               </div>
 
               {variations.map((v) => {
                 const key = getVariantKey(v.id);
                 const qty = cart.items.get(key)?.qty ?? 0;
                 const addons = addonsByVar[v.id] || [];
-                const unitPrice = Number(v.price || 0) + addonSum(v.id);
 
                 return (
-                  <div key={v.id} className="variant-block">
-                    {/* VARIANT ROW */}
+                  <div key={v.id}>
                     <div className="variant-row">
-                      <div className="variant-pill">
-                        <span className="variant-name">{v.name}</span>
-                        <span className="variant-price">
-                          {fmt(unitPrice)}{" "}
-                          <span className="variant-currency">تومان</span>
-                        </span>
-                      </div>
+                      <span>{v.name}</span>
 
-                      <div className="qty-group">
-                        <button
-                          className="qty-btn"
-                          onClick={() => setVariantQty(v.id, qty + 1)}
-                        >
+                      <div>
+                        <button onClick={() => setVariantQty(v.id, qty + 1)}>
                           +
                         </button>
-                        <span className="qty-display">
-                          {toPersianDigits(qty)}
-                        </span>
-                        <button
-                          className="qty-btn"
-                          onClick={() => setVariantQty(v.id, qty - 1)}
-                        >
-                          −
+                        <span>{qty}</span>
+                        <button onClick={() => setVariantQty(v.id, qty - 1)}>
+                          -
                         </button>
                       </div>
                     </div>
 
-                    {/* ADDONS LIST */}
                     {addons.length > 0 && (
-                      <div className="modal-subsection">
-                        <div className="subsection-head">
-                          <MokhalafatIcon />
-                          <span>مخلفات</span>
-                        </div>
+                      <ul>
+                        {addons.map((a) => {
+                          const currentQty =
+                            selectedAddonsByVar[v.id]?.[a.id]?.qty || 0;
 
-                        <ul className="addons-list">
-                          {addons.map((a) => {
-                            const currentQty =
-                              selectedAddonsByVar[v.id]?.[a.id]?.qty || 0;
+                          return (
+                            <li key={a.id}>
+                              <span>{a.name}</span>
 
-                            // Show base price if qty is 0, else show multiplied price
-                            const displayPrice =
-                              currentQty === 0 ? a.price : a.price * currentQty;
-
-                            return (
-                              <li
-                                key={a.id}
-                                className={`addon-row ${
-                                  currentQty > 0 ? "checked" : ""
-                                }`}
-                              >
-                                <div className="addon-name">{a.name}</div>
-                                <div className="addon-price-amount">
-                                  <div className="addon-price">
-                                    <span className="addon-amount">
-                                      {toPersianDigits(fmt(displayPrice))}
-                                    </span>
-                                    <span className="addon-currency">
-                                      تومان
-                                    </span>
-                                  </div>
-
-                                  <div className="addon-control">
-                                    <AddonScrollPicker
-                                      value={currentQty}
-                                      onChange={(newQty) =>
-                                        handleAddonQtyChange(v.id, a, newQty)
-                                      }
-                                      max={10}
-                                    />
-                                  </div>
-                                </div>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      </div>
+                              <AddonScrollPicker
+                                value={currentQty}
+                                onChange={(q) =>
+                                  handleAddonQtyChange(v.id, a, q)
+                                }
+                              />
+                            </li>
+                          );
+                        })}
+                      </ul>
                     )}
                   </div>
                 );

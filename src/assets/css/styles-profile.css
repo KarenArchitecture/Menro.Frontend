@@ -236,3 +236,73 @@
 .action-card:active {
   transform: scale(0.97);
 }
+/* ===== FIX FOOD CARD FOR GRID ===== */
+
+/* make card behave vertically */
+.favorites-grid .food-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* fix image ratio (VERY IMPORTANT) */
+.favorites-grid .food-card-image {
+  width: 100%;
+  aspect-ratio: 1 / 1; /* square like design */
+  height: auto;
+  border-radius: 1.4rem;
+  overflow: hidden;
+}
+
+/* fix image */
+.favorites-grid .food-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* tighten spacing */
+.favorites-grid .food-info {
+  margin-top: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+/* fix title */
+.favorites-grid .food-title {
+  font-size: 1.05rem;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* ✅ PRICE FIX */
+.favorites-grid .food-price {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #d17842;
+  margin: 0;
+}
+
+.favorites-grid .food-price span {
+  font-size: 0.8rem;
+  color: #fff;
+  margin-right: 4px;
+}
+
+/* CTA row spacing */
+.favorites-grid .food-price-row {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* button full width */
+.favorites-grid .add-btn {
+  width: 100%;
+  height: 3rem;
+  font-size: 0.9rem;
+  border-radius: 0.8rem;
+}

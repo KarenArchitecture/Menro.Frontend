@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-// child components / and modals
 import MusicTrack from "../components/music/MusicTrack";
 import MusicRequestModal from "../components/music/MusicRequestModal";
 import OrderSuccessModal from "../components/common/OrderSuccessModal";
@@ -21,10 +20,8 @@ export default function MusicPage() {
 
   const restaurantId = location.state?.restaurantId;
 
-  const [loading, setLoading] = useState(true);
-
   const [tracks, setTracks] = useState([]);
-  // const [remainingRequests, setRemainingRequests] = useState(0);
+  const [playback, setPlayback] = useState(null);
 
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,24 +32,24 @@ export default function MusicPage() {
 
   const fetchMusic = async () => {
     try {
-      setLoading(true);
-
       const res = await getPublicMusic(restaurantId);
 
       setTracks(res.data.tracks ?? []);
-      // setRemainingRequests(res.data.remainingRequests ?? 0);
+
+      setPlayback({
+        currentTrackId: res.data.currentTrackId,
+      });
 
       const myRequestedTrack = res.data.tracks?.find(
         (x) => x.status === "MineRequested",
       );
+
       setSelectedTrackId(myRequestedTrack?.id ?? null);
-      console.log(res.data.tracks);
     } catch (error) {
       console.error(error);
-    } finally {
-      setLoading(false);
     }
   };
+
   useEffect(() => {
     if (!restaurantId) {
       navigate(-1);
@@ -63,8 +60,6 @@ export default function MusicPage() {
   }, [restaurantId]);
 
   const handleOpenRequestModal = () => {
-    //if (remainingRequests <= 0) return;
-
     setIsRequestModalOpen(true);
   };
 
@@ -73,24 +68,18 @@ export default function MusicPage() {
     setSearchQuery("");
   };
 
-  // SignalR
   useMusicSignalR(restaurantId, {
-    // onCreated: (data) => {
-    //   setTracks((prev) => {
-    //     const exists = prev.some((t) => t.id === data.musicTrackId);
-    //     if (exists) return prev;
+    onPlaybackChanged: (data) => {
+      console.log("PLAYBACK EVENT:", data);
 
-    //     return [
-    //       ...prev,
-    //       {
-    //         id: data.musicTrackId,
-    //         status: "Requested",
-    //       },
-    //     ];
-    //   });
-    // },
+      setPlayback(data);
+    },
 
-    onApproved: async (data) => {
+    onPlaylistChanged: async () => {
+      await fetchMusic();
+    },
+
+    onApproved: async () => {
       showModal({
         title: "درخواست تأیید شد",
         message: "موسیقی شما به صف اضافه شد",
@@ -99,7 +88,7 @@ export default function MusicPage() {
       await fetchMusic();
     },
 
-    onRejected: async (data) => {
+    onRejected: async () => {
       showModal({
         title: "رد شد",
         message: "درخواست شما تأیید نشد",
@@ -116,8 +105,6 @@ export default function MusicPage() {
       setIsRequestModalOpen(false);
       setSearchQuery("");
       setShowMusicSuccess(true);
-
-      //await fetchMusic();
     } catch (err) {
       console.error(err);
     }
@@ -134,14 +121,6 @@ export default function MusicPage() {
       console.error(error);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="music-page" dir="rtl">
-        در حال بارگذاری...
-      </div>
-    );
-  }
 
   return (
     <div
@@ -193,7 +172,7 @@ export default function MusicPage() {
                     ? "mineRequested"
                     : null
               }
-              active={track.isCurrentTrack}
+              active={playback?.currentTrackId === track.id}
               onActionClick={() => handleCopyTrack(track)}
             />
           ))}
@@ -222,7 +201,6 @@ export default function MusicPage() {
           <button
             className="music-page__request-btn"
             type="button"
-            //disabled={remainingRequests <= 0}
             onClick={handleOpenRequestModal}
           >
             درخواست موسیقی
@@ -236,7 +214,6 @@ export default function MusicPage() {
         searchQuery={searchQuery}
         onClose={handleCloseRequestModal}
         selectedTrackId={selectedTrackId}
-        //remainingRequests={remainingRequests}
         onRequestTrack={handleRequestTrack}
       />
 

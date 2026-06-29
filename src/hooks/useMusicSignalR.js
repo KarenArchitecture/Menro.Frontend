@@ -4,7 +4,13 @@ import { getMusicConnection } from "../utils/signalr";
 
 export function useMusicSignalR(
   restaurantId,
-  { onCreated, onApproved, onRejected } = {},
+  {
+    onCreated,
+    onApproved,
+    onRejected,
+    onPlaybackChanged,
+    onPlaylistChanged,
+  } = {},
 ) {
   useEffect(() => {
     if (!restaurantId) return;
@@ -14,6 +20,8 @@ export function useMusicSignalR(
     const handleCreated = (data) => onCreated?.(data);
     const handleApproved = (data) => onApproved?.(data);
     const handleRejected = (data) => onRejected?.(data);
+    const handlePlaybackChanged = (data) => onPlaybackChanged?.(data);
+    const handlePlaylistChanged = () => onPlaylistChanged?.();
 
     const start = async () => {
       if (connection.state === "Disconnected") {
@@ -23,6 +31,8 @@ export function useMusicSignalR(
       connection.on("RequestCreated", handleCreated);
       connection.on("RequestApproved", handleApproved);
       connection.on("RequestRejected", handleRejected);
+      connection.on("PlaybackChanged", handlePlaybackChanged);
+      connection.on("PlaylistChanged", handlePlaylistChanged);
 
       await connection.invoke("JoinRestaurant", restaurantId);
     };
@@ -33,9 +43,17 @@ export function useMusicSignalR(
       connection.off("RequestCreated", handleCreated);
       connection.off("RequestApproved", handleApproved);
       connection.off("RequestRejected", handleRejected);
+      connection.off("PlaybackChanged", handlePlaybackChanged);
+      connection.off("PlaylistChanged", handlePlaylistChanged);
 
-      // مهم: leave group
       connection.invoke("LeaveRestaurant", restaurantId).catch(() => {});
     };
-  }, [restaurantId, onCreated, onApproved, onRejected]);
+  }, [
+    restaurantId,
+    onCreated,
+    onApproved,
+    onRejected,
+    onPlaybackChanged,
+    onPlaylistChanged,
+  ]);
 }

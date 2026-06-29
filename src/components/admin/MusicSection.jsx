@@ -213,10 +213,8 @@ export default function MusicSection() {
 
       const tracks = await refreshPlaylist(playlistId);
 
-      if (player?.currentPlaylistTrackId) {
-        const currentTrack = tracks.find(
-          (x) => x.id === player.currentPlaylistTrackId,
-        );
+      if (player?.currentTrackId) {
+        const currentTrack = tracks.find((x) => x.id === player.currentTrackId);
 
         if (currentTrack) {
           setPlayingPlaylistTrackId(currentTrack.id);
@@ -230,7 +228,7 @@ export default function MusicSection() {
   useEffect(() => {
     loadPlaylists();
   }, []);
-  //--fetch playlist
+  //--fetch playlist/
   const refreshPlaylist = async (playlistId) => {
     if (!playlistId) return [];
 
@@ -247,6 +245,7 @@ export default function MusicSection() {
         duration: t.duration,
         artworkUrl: t.coverUrl,
         audioUrl: t.audioUrl,
+        isRequestedTrack: t.isRequestedTrack,
         source: "playlist",
       }));
 
@@ -752,57 +751,14 @@ export default function MusicSection() {
       audio.removeEventListener("ended", handleEnded);
     };
   }, []);
-  // const toggleGlobalPlay = async () => {
-  //   console.log("🔥 GLOBAL PLAY CLICKED");
-
-  //   if (!audioRef.current) return;
-
-  //   const audio = audioRef.current;
-
-  //   // 1. اگر چیزی در حال پخش نیست → bootstrap واقعی
-  //   if (!isPlaying && !playingPlaylistTrackId) {
-  //     console.log("🚀 BOOTSTRAP PLAY");
-
-  //     const trackId = playerState?.currentPlaylistTrackId;
-
-  //     let track =
-  //       playlistTracks.find((x) => x.id === trackId) || playlistTracks?.[0];
-
-  //     if (!track) {
-  //       console.log("❌ NO TRACK AVAILABLE");
-  //       return;
-  //     }
-
-  //     await playPlaylistTrack(track.id, track.musicTrackId, false);
-  //     return;
-  //   }
-
-  //   // 2. pause/resume
-  //   if (isPlaying) {
-  //     audio.pause();
-  //     setIsPlaying(false);
-  //     return;
-  //   }
-
-  //   const playPromise = audio.play();
-
-  //   if (playPromise?.catch) {
-  //     playPromise.catch((e) => {
-  //       console.log("PLAY ERROR:", e);
-  //     });
-  //   }
-
-  //   setIsPlaying(true);
-  // };
 
   const toggleGlobalPlay = async () => {
     const audio = audioRef.current;
     if (!audio) return;
 
     const currentTrack =
-      playlistTracks.find(
-        (x) => x.id === playerState?.currentPlaylistTrackId,
-      ) || playlistTracks[0];
+      playlistTracks.find((x) => x.id === playerState?.currentTrackId) ||
+      playlistTracks[0];
 
     if (!currentTrack) return;
 
@@ -1706,20 +1662,41 @@ export default function MusicSection() {
                         </div>
 
                         <div
-                          style={{ display: "flex", flexDirection: "column" }}
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                          }}
                         >
-                          <span
-                            className="song-title"
+                          <div
                             style={{
-                              color: isTrackPlaying ? "#ff9800" : "inherit",
-                              fontWeight: isTrackPlaying ? "bold" : "normal",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
                             }}
                           >
-                            {s.title}
-                          </span>
+                            <span
+                              className="song-title"
+                              style={{
+                                color: isTrackPlaying ? "#ff9800" : "inherit",
+                                fontWeight: isTrackPlaying ? "bold" : "normal",
+                              }}
+                            >
+                              {s.title}
+                            </span>
+
+                            {s.isRequestedTrack && (
+                              <span className="music-track__status music-track__status--requested">
+                                درخواستی
+                              </span>
+                            )}
+                          </div>
+
                           <span
                             className="song-artist"
-                            style={{ fontSize: "12px", color: "#888" }}
+                            style={{
+                              fontSize: "12px",
+                              color: "#888",
+                            }}
                           >
                             {s.artist} • {formatDuration(s.duration)}
                           </span>

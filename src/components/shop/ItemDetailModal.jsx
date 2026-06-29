@@ -11,6 +11,7 @@ import RestaurantCombosButton from "../common/RestaurantCombosButton";
 import resolveFileUrl from "../../utils/resolveFileUrl";
 import StarIcon from "../icons/StarIcon";
 import SmartImage from "../common/SmartImage";
+import { useFavoriteIds, useToggleFavorite } from "../../hooks/useFavorites";
 
 /* Helper for consistent Persian digits */
 const toPersianDigits = (value) => {
@@ -62,6 +63,29 @@ const AddonScrollPicker = ({ value = 0, onChange, max = 99 }) => {
 function ItemDetailModal({ item, onClose }) {
   const cart = useCart();
   const [isActive, setIsActive] = useState(false);
+
+  const {
+    data: favoriteIds = [],
+    isLoading: favoriteLoading,
+  } = useFavoriteIds();
+
+  const toggleFavorite = useToggleFavorite();
+
+  const isFavorite = favoriteIds.includes(item?.id);
+
+  console.log({
+    foodId: item?.id,
+    favoriteIds,
+    isFavorite,
+  });
+
+  const handleToggleFavorite = () => {
+    if (!item?.id) return;
+
+    if (toggleFavorite.isPending) return;
+
+    toggleFavorite.mutate(item.id);
+  };
 
   const formatRating = (value) => {
     const num = Number(value);
@@ -316,8 +340,10 @@ function ItemDetailModal({ item, onClose }) {
                     type="button"
                     className="icon-btn modal-top-action"
                     aria-label="علاقه‌مندی"
+                    onClick={handleToggleFavorite}
+                    disabled={favoriteLoading || toggleFavorite.isPending}
                   >
-                    <LikeIcon />
+                    <LikeIcon active={isFavorite} />
                   </button>
                 </div>
               </nav>

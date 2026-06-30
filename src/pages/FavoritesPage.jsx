@@ -3,6 +3,7 @@ import FoodCard from "../components/home/FoodCard";
 import StateMessage from "../components/common/StateMessage";
 import "../assets/css/styles-favorites.css";
 import FavoritesHeader from "../components/favorites/FavoritesHeader";
+import { useFavoriteFoods } from "../hooks/useFavorites";
 export default function FavoritesPage() {
   // TEMP MOCK (later → API)
   const favorites = [
@@ -24,6 +25,18 @@ export default function FavoritesPage() {
     },
   ];
 
+  const {
+    data,
+    isLoading,
+    error,
+  } = useFavoriteFoods();
+
+  console.log(
+    "Favorite First Item:",
+    JSON.stringify(data?.[0], null, 2)
+  );
+  console.log("Favorites Error:", error);
+
   if (!favorites.length) {
     return (
       <StateMessage kind="empty" title="علاقه‌مندی خالیه">
@@ -32,7 +45,10 @@ export default function FavoritesPage() {
     );
   }
 
+  
+
   return (
+    
     <div className="favorites-page">
       <FavoritesHeader />
 

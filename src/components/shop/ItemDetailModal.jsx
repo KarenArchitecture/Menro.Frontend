@@ -12,6 +12,8 @@ import resolveFileUrl from "../../utils/resolveFileUrl";
 import StarIcon from "../icons/StarIcon";
 import SmartImage from "../common/SmartImage";
 import { useFavoriteIds, useToggleFavorite } from "../../hooks/useFavorites";
+import useRequireLogin from "../../hooks/useRequireLogin";
+import LoginRequiredModal from "../common/LoginRequiredModal";
 
 /* Helper for consistent Persian digits */
 const toPersianDigits = (value) => {
@@ -65,6 +67,13 @@ function ItemDetailModal({ item, onClose }) {
   const [isActive, setIsActive] = useState(false);
 
   const {
+    requireLogin,
+    open,
+    closeModal,
+    goToLogin,
+  } = useRequireLogin();
+
+  const {
     data: favoriteIds = [],
     isLoading: favoriteLoading,
   } = useFavoriteIds();
@@ -80,11 +89,17 @@ function ItemDetailModal({ item, onClose }) {
   });
 
   const handleToggleFavorite = () => {
-    if (!item?.id) return;
+    console.log("favorite clicked");
 
-    if (toggleFavorite.isPending) return;
+    requireLogin(() => {
+      console.log("user is logged in");
 
-    toggleFavorite.mutate(item.id);
+      if (!item?.id) return;
+
+      if (toggleFavorite.isPending) return;
+
+      toggleFavorite.mutate(item.id);
+    });
   };
 
   const formatRating = (value) => {
@@ -481,6 +496,11 @@ function ItemDetailModal({ item, onClose }) {
           </div>
         </div>
       </div>
+      <LoginRequiredModal
+        open={open}
+        onClose={closeModal}
+        onLogin={goToLogin}
+      />
     </>
   );
 

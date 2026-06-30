@@ -30,6 +30,7 @@ export default function MusicPage() {
 
   const { showModal } = useModal();
 
+  // fetch playlist
   const fetchMusic = async () => {
     try {
       const res = await getPublicMusic(restaurantId);
@@ -49,7 +50,6 @@ export default function MusicPage() {
       console.error(error);
     }
   };
-
   useEffect(() => {
     if (!restaurantId) {
       navigate(-1);
@@ -59,15 +59,46 @@ export default function MusicPage() {
     fetchMusic();
   }, [restaurantId]);
 
+  /* REQUEST MODAL */
+  //--load data for modal
+  const requestTracks = tracks.map((track) => ({
+    id: track.id,
+    title: track.title,
+    subtitle: track.subtitle,
+    image: track.imageUrl,
+
+    status: track.status === "MineRequested" ? "mineRequested" : null,
+
+    active: playback?.currentTrackId === track.id,
+
+    canRequest:
+      track.status !== "MineRequested" && track.status !== "Requested",
+  }));
+  //--open request modal
   const handleOpenRequestModal = () => {
     setIsRequestModalOpen(true);
   };
+  //--handle request
+  const handleRequestTrack = async (track) => {
+    try {
+      await requestTrack(restaurantId, {
+        musicTrackId: track.id,
+      });
 
+      setIsRequestModalOpen(false);
+      setSearchQuery("");
+      setShowMusicSuccess(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  //--close request modal
   const handleCloseRequestModal = () => {
     setIsRequestModalOpen(false);
     setSearchQuery("");
   };
 
+  // SignalR
   useMusicSignalR(restaurantId, {
     onPlaybackChanged: (data) => {
       console.log("PLAYBACK EVENT:", data);
@@ -95,20 +126,6 @@ export default function MusicPage() {
       });
     },
   });
-
-  const handleRequestTrack = async (track) => {
-    try {
-      await requestTrack(restaurantId, {
-        musicTrackId: track.id,
-      });
-
-      setIsRequestModalOpen(false);
-      setSearchQuery("");
-      setShowMusicSuccess(true);
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
   const handleCloseMusicSuccess = () => {
     setShowMusicSuccess(false);
@@ -210,7 +227,7 @@ export default function MusicPage() {
 
       <MusicRequestModal
         open={isRequestModalOpen}
-        tracks={tracks}
+        tracks={requestTracks}
         searchQuery={searchQuery}
         onClose={handleCloseRequestModal}
         selectedTrackId={selectedTrackId}

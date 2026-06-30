@@ -10,7 +10,6 @@ export default function MusicRequestModal({
   searchQuery = "",
   onClose,
   onRequestTrack,
-  selectedTrackId = null,
   remainingRequests = 1,
   limitReachedIconSrc = "/images/music/red-clock-icon.svg",
   infoIconSrc = "/images/music/orange-clock-icon.svg",
@@ -64,8 +63,6 @@ export default function MusicRequestModal({
     };
   }, [open, onClose]);
 
-  // const hasSelection = Boolean(selectedTrackId);
-
   const filteredTracks = useMemo(() => {
     const q = normalizeText(searchQuery);
     if (!q) return tracks;
@@ -93,36 +90,6 @@ export default function MusicRequestModal({
         aria-label="درخواست موسیقی"
       >
         <div className="music-sheet__header">
-          {/* {hasSelection ? (
-            <div className="music-sheet__alert music-sheet__alert--danger">
-              <img
-                src={limitReachedIconSrc}
-                alt=""
-                aria-hidden="true"
-                className="music-sheet__alert-icon"
-              />
-              <span>
-                تعداد درخواست های موسیقی امروز شما از این رستوران تمام شده
-              </span>
-            </div>
-          ) : (
-            <div className="music-sheet__alert music-sheet__alert--info">
-              <img
-                src={infoIconSrc}
-                alt=""
-                aria-hidden="true"
-                className="music-sheet__alert-icon"
-              />
-              <span>
-                شما در روز قادر به درخواست{" "}
-                <span className="music-sheet__limit-number">
-                  {remainingRequests}
-                </span>{" "}
-                موسیقی از این رستوران هستید.
-              </span>
-            </div>
-          )} */}
-
           <button
             type="button"
             className="music-modal__close"
@@ -132,31 +99,24 @@ export default function MusicRequestModal({
             <img src={closeIconSrc} alt="" aria-hidden="true" />
           </button>
         </div>
-
         <div className="music-sheet__list">
-          {filteredTracks.map((track) => {
-            const modalStatus =
-              selectedTrackId === track.id ? "mineRequested" : null;
-
-            return (
-              <MusicTrack
-                key={track.id}
-                title={track.title}
-                subtitle={track.subtitle}
-                image={track.image}
-                status={modalStatus}
-                active={selectedTrackId === track.id || track.active}
-                showRequestButton
-                requestButtonLabel="درخواست"
-                // requestButtonDisabled={hasSelection}
-                requestButtonDisabled={false}
-                onRequestClick={() => onRequestTrack?.(track)}
-                onActionClick={() => {
-                  // later: copy / backend action
-                }}
-              />
-            );
-          })}
+          {filteredTracks.map((track) => (
+            <MusicTrack
+              key={track.id}
+              title={track.title}
+              subtitle={track.subtitle}
+              image={track.image}
+              status={track.status}
+              active={track.active}
+              showRequestButton
+              requestButtonLabel="درخواست"
+              requestButtonDisabled={!track.canRequest}
+              onRequestClick={() => onRequestTrack?.(track)}
+              onActionClick={() => {
+                // later
+              }}
+            />
+          ))}
         </div>
       </section>
     </div>

@@ -1,11 +1,13 @@
 import React from "react";
-import MusicSection from "../components/admin/MusicSection"; // <-- your pasted component
-import AdminHeader from "../components/admin/AdminHeader";
-import "/public/admin-dashboard.css"; // <-- your pasted CSS
+import MusicSection from "../components/admin/MusicSection";
+import MusicHeader from "../components/music/MusicPlayerHeader";
+
+import "/public/admin-dashboard.css";
+
 export default function AdminMusicPage() {
   return (
     <div className="admin-page">
-      <AdminHeader />
+      <MusicHeader />
 
       <div className="admin-content">
         <MusicSection />

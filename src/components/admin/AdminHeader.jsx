@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 // import SearchBar from "../common/SearchBar"; // 🔕 Search disabled for now
 import { useAuth } from "../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { FaMusic } from "react-icons/fa";
 export default function AdminHeader({
   isLoading = false, // show placeholders while fetching (دلخواه)
   onHamburger,
@@ -59,9 +60,15 @@ export default function AdminHeader({
         <button
           type="button"
           className="admin-music-btn"
-          onClick={() => navigate("/admin/music")}
+          onClick={() => window.open("/admin/music", "_blank")}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
         >
-          مدیریت موسیقی
+          <FaMusic />
+          موزیک پلیر
         </button>
 
         <button

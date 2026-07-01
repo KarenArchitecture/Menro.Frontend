@@ -1065,14 +1065,14 @@ export default function MusicSection() {
             direction: "ltr",
           }}
         >
-          <button
+          {/* <button
             className="btn btn-icon btn-secondary"
             title="بر زدن"
             onClick={() => {}}
             style={{ background: "transparent", border: "none", color: "#aaa" }}
           >
             <i className="fas fa-random" />
-          </button>
+          </button> */}
           <button
             className="btn btn-icon btn-secondary"
             title="قبلی"
@@ -1257,7 +1257,9 @@ export default function MusicSection() {
 
                 {!loadingArchive &&
                   searchResults.map((r) => {
-                    const isTrackPlaying = previewTrackId === r.id;
+                    const isTrackPlaying = playingTrackId === r.id;
+                    const isActive = isTrackPlaying && isPlaying;
+
                     return (
                       <div
                         key={r.id}
@@ -1290,7 +1292,7 @@ export default function MusicSection() {
                               overflow: "hidden",
                               cursor: "pointer",
                             }}
-                            onClick={() => handlePreviewTrack(r.id)}
+                            onClick={() => playArchiveTrack(r.id, r.audioUrl)}
                           >
                             {r.artworkUrl ? (
                               <img
@@ -1304,7 +1306,6 @@ export default function MusicSection() {
                               />
                             ) : (
                               <div
-                                className="placeholder-art"
                                 style={{
                                   width: "100%",
                                   height: "100%",
@@ -1312,6 +1313,7 @@ export default function MusicSection() {
                                 }}
                               />
                             )}
+
                             <div
                               style={{
                                 position: "absolute",
@@ -1326,9 +1328,7 @@ export default function MusicSection() {
                             >
                               <i
                                 className={
-                                  isTrackPlaying && isPreviewPlaying
-                                    ? "fas fa-pause"
-                                    : "fas fa-play"
+                                  isActive ? "fas fa-pause" : "fas fa-play"
                                 }
                                 style={{ color: "#fff", fontSize: "16px" }}
                               />
@@ -1339,7 +1339,6 @@ export default function MusicSection() {
                             style={{ display: "flex", flexDirection: "column" }}
                           >
                             <span
-                              className="song-title"
                               style={{
                                 color: isTrackPlaying ? "#ff9800" : "inherit",
                                 fontWeight: isTrackPlaying ? "bold" : "normal",
@@ -1347,40 +1346,31 @@ export default function MusicSection() {
                             >
                               {r.title}
                             </span>
-                            <span
-                              className="song-artist"
-                              style={{ fontSize: "12px", color: "#888" }}
-                            >
+
+                            <span style={{ fontSize: "12px", color: "#888" }}>
                               {r.artist} • {formatDuration(r.duration)}
                             </span>
                           </div>
                         </div>
 
-                        <div
-                          className="row-actions"
-                          style={{ display: "flex", gap: "4px" }}
-                        >
+                        <div style={{ display: "flex", gap: "4px" }}>
                           <button
-                            type="button"
-                            className="btn btn-icon btn-secondary"
-                            title="ویرایش نام"
                             onClick={() => openEditTrackModal(r.id, r.title)}
+                            className="btn btn-icon btn-secondary"
                           >
                             <i className="fas fa-pencil-alt" />
                           </button>
+
                           <button
-                            type="button"
-                            className="btn btn-icon btn-secondary"
-                            title="افزودن به پلی‌لیست"
                             onClick={() => addToPlaylist(r)}
+                            className="btn btn-icon btn-secondary"
                           >
                             <i className="fas fa-plus" />
                           </button>
+
                           <button
-                            type="button"
-                            className="btn btn-icon btn-danger"
-                            title="حذف از آرشیو"
                             onClick={() => deleteTrackFromArchive(r.id)}
+                            className="btn btn-icon btn-danger"
                           >
                             <i className="fas fa-trash" />
                           </button>

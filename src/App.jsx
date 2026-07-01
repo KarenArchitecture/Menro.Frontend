@@ -19,6 +19,7 @@ import ChangePhone from "./pages/ChangePhone";
 import AdminPage from "./pages/AdminPage";
 import BlogPage from "./pages/BlogPage";
 import Orders from "./pages/OrdersPage";
+import AdminMusicPage from "./pages/AdminMusicPage";
 // 1. Import the BillsPage
 import BillsPage from "./pages/BillsPage";
 
@@ -95,7 +96,14 @@ export default function App() {
             path="/register-restaurant"
             element={<RegisterRestaurantPage />}
           />
-
+          <Route
+            path="/admin/music"
+            element={
+              <ProtectedRoute roles={["admin", "owner"]}>
+                <AdminMusicPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/orders" element={<Orders />} />
           {/* 4. Added the dynamic route for the BillsPage */}
           <Route path="/orders/bill/:id" element={<BillsPage />} />

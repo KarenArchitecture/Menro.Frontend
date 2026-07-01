@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 // import SearchBar from "../common/SearchBar"; // 🔕 Search disabled for now
 import { useAuth } from "../../Context/AuthContext";
-
+import { useNavigate } from "react-router-dom";
 export default function AdminHeader({
   isLoading = false, // show placeholders while fetching (دلخواه)
   onHamburger,
@@ -12,7 +12,7 @@ export default function AdminHeader({
 
   // (keep refs only if you want, otherwise remove both lines above & this line)
   const inputRef = useRef(null);
-
+  const navigate = useNavigate();
   // Admin profile
   const { user, avatarUrl } = useAuth();
   const displayName = user?.fullName || "کاربر ناشناس";
@@ -55,14 +55,24 @@ export default function AdminHeader({
       */}
 
       {/* ✅ Buy subscription button (no action for now) */}
-      <button
-        type="button"
-        className="admin-subscribe-btn"
-        aria-label="خرید اشتراک"
-        onClick={() => {}}
-      >
-        خرید اشتراک
-      </button>
+      <div className="admin-header-actions">
+        <button
+          type="button"
+          className="admin-music-btn"
+          onClick={() => navigate("/admin/music")}
+        >
+          مدیریت موسیقی
+        </button>
+
+        <button
+          type="button"
+          className="admin-subscribe-btn"
+          aria-label="خرید اشتراک"
+          onClick={() => {}}
+        >
+          خرید اشتراک
+        </button>
+      </div>
 
       {/* User info (greeting + avatar) */}
       <div className="user-info">

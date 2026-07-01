@@ -1421,7 +1421,28 @@ textarea {
   width: 12rem;
   font-size: 1.3rem;
 }
+.admin-header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
 
+.admin-music-btn {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #2a313a;
+  background: #151a22;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.admin-music-btn:hover {
+  background: #1c222c;
+}
 .admin-subscribe-btn:hover {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;

@@ -17,12 +17,13 @@ import AdsSettingsSection from "../components/admin/AdsSettingsSection";
 import AdsRequestsSection from "../components/admin/AdsRequestsSection";
 import RestaurantsListForAdminSection from "../components/admin/RestaurantsListForAdminSection";
 import RestaurantProfileSection from "../components/admin/RestaurantProfileSection";
+import CommentsSection from "../components/admin/CommentsSection";
 
 export default function AdminPage() {
   const cssReady = usePageStyles("/admin-dashboard.css");
 
   const [activeTab, setActiveTab] = useState(
-    () => localStorage.getItem("admin-active-tab") || "dashboard"
+    () => localStorage.getItem("admin-active-tab") || "dashboard",
   );
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -57,6 +58,9 @@ export default function AdminPage() {
 
       case "orders":
         return <OrdersSection />;
+
+      case "comments":
+        return <CommentsSection />;
 
       case "financial":
         return <FinancialSection />;

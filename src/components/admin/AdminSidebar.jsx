@@ -10,6 +10,7 @@ const NAV = [
   { isDivider: true, label: "مدیریت رستوران" },
   { key: "products", label: "مدیریت محصولات", icon: "fas fa-utensils" },
   { key: "categories", label: "دسته‌بندی‌های رستوران", icon: "fas fa-tags" },
+  { key: "comments", label: "مدیریت نظرات", icon: "fas fa-comments" },
   //{ key: "music", label: "مدیریت موسیقی", icon: "fas fa-music" },
 
   { isDivider: true, label: "کسب و کار" },

@@ -3,6 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import ownerRestaurantAxios from "../../api/ownerRestaurantAxios";
 import { useMusicSignalR } from "../../hooks/useMusicSignalR";
 import { useModal } from "../common/GlobalModal";
+// import "./MusicSection.css";
 
 // for api
 import {
@@ -1033,157 +1034,115 @@ export default function MusicSection() {
     }
   };
 
+  /* ----- purely visual derived values (no logic impact) ----- */
+  const nowPlayingTrack = playlistTracks.find(
+    (t) => t.id === playingPlaylistTrackId,
+  );
+  const mainProgressPct = duration ? (currentTime / duration) * 100 : 0;
+  const previewProgressPct = previewDuration
+    ? (previewCurrentTime / previewDuration) * 100
+    : 0;
+
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "24px",
-        width: "100%",
-      }}
-    >
+    <div className="music-hub" dir="rtl">
       {/* ---------------------------------
-          Global Player
+          Now Playing bar
       --------------------------------- */}
-      <div
-        className="panel global-player"
-        style={{
-          padding: "16px",
-          display: "flex",
-          alignItems: "center",
-          gap: "24px",
-          background: "#1e1e1e",
-          borderRadius: "8px",
-          border: "1px solid #333",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            direction: "ltr",
-          }}
-        >
-          {/* <button
-            className="btn btn-icon btn-secondary"
-            title="بر زدن"
-            onClick={() => {}}
-            style={{ background: "transparent", border: "none", color: "#aaa" }}
-          >
-            <i className="fas fa-random" />
-          </button> */}
+      <div className="player-bar">
+        <div className="player-bar__art-wrap">
+          <div className={`player-bar__art ${isPlaying ? "is-spinning" : ""}`}>
+            {nowPlayingTrack?.artworkUrl ? (
+              <img src={nowPlayingTrack.artworkUrl} alt="" />
+            ) : (
+              <span className="player-bar__art-hole" />
+            )}
+          </div>
+        </div>
+
+        <div className="player-bar__controls">
           <button
-            className="btn btn-icon btn-secondary"
+            className="player-btn player-btn--ghost"
             title="قبلی"
             onClick={playPreviousTrack}
-            style={{ background: "transparent", border: "none", color: "#aaa" }}
           >
-            <i className="fas fa-step-backward" style={{ fontSize: "18px" }} />
+            <i className="fas fa-step-backward" />
           </button>
 
           <button
             type="button"
-            className="btn btn-icon btn-primary"
+            className="player-btn player-btn--main"
             onClick={toggleGlobalPlay}
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: "50%",
-              background: "#ff9800",
-              color: "#fff",
-              border: "none",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
           >
-            <i
-              className={isPlaying ? "fas fa-pause" : "fas fa-play"}
-              style={{ fontSize: "20px" }}
-            />
+            <i className={isPlaying ? "fas fa-pause" : "fas fa-play"} />
           </button>
 
           <button
-            className="btn btn-icon btn-secondary"
+            className="player-btn player-btn--ghost"
             title="بعدی"
             onClick={playNextTrack}
-            style={{ background: "transparent", border: "none", color: "#aaa" }}
           >
-            <i className="fas fa-step-forward" style={{ fontSize: "18px" }} />
+            <i className="fas fa-step-forward" />
           </button>
         </div>
 
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            gap: "8px",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              fontSize: "14px",
-              color: "#ff9800",
-              fontWeight: "bold",
-            }}
-          >
-            <span>
-              {playlistTracks.find((t) => t.id === playingPlaylistTrackId)
-                ?.title || "آهنگی در حال پخش نیست"}
-            </span>
+        <div className="player-bar__meta">
+          <div className="player-bar__track-row">
             <span
-              style={{
-                color: "#aaa",
-                fontWeight: "normal",
-                fontSize: "12px",
-                direction: "ltr",
-              }}
+              className={`player-bar__title ${nowPlayingTrack ? "" : "is-idle"}`}
             >
+              {nowPlayingTrack?.title || "آهنگی در حال پخش نیست"}
+            </span>
+            <span className="player-bar__time">
               {formatTime(currentTime)} / {formatTime(duration)}
             </span>
           </div>
-          <input
-            type="range"
-            min="0"
-            max={duration || 0}
-            value={currentTime}
-            onMouseDown={handleSeekMouseDown}
-            onChange={handleSeekChange}
-            onMouseUp={handleSeekMouseUp}
-            onTouchStart={handleSeekMouseDown}
-            onTouchEnd={handleSeekMouseUp}
-            style={{ width: "100%", accentColor: "#ff9800", cursor: "pointer" }}
-          />
+
+          <div className="player-bar__progress">
+            <div
+              className="player-bar__progress-fill"
+              style={{ width: `${mainProgressPct}%` }}
+            />
+            <input
+              type="range"
+              min="0"
+              max={duration || 0}
+              value={currentTime}
+              onMouseDown={handleSeekMouseDown}
+              onChange={handleSeekChange}
+              onMouseUp={handleSeekMouseUp}
+              onTouchStart={handleSeekMouseDown}
+              onTouchEnd={handleSeekMouseUp}
+            />
+          </div>
         </div>
       </div>
-      <div
-        className="music-flex"
-        style={{ display: "flex", gap: "24px", alignItems: "flex-start" }}
-      >
+
+      <div className="music-columns">
         {/* ---------------------------------
             آرشیو موسیقی
         --------------------------------- */}
-        <div className="panel music-pane" style={{ flex: "1" }}>
-          <div className="view-header">
-            <h3>آرشیو موسیقی</h3>
-            <span className="playlist-capacity">{archiveCapacityText}</span>
+        <div className="music-card archive-card" style={{ flex: 1 }}>
+          <div className="music-card__header">
+            <h3 className="music-card__title">
+              <span className="icon-badge">
+                <i className="fas fa-compact-disc" />
+              </span>
+              آرشیو موسیقی
+            </h3>
+            <span className="pill-count">{archiveCapacityText}</span>
           </div>
 
-          <div className="music-tab-bar" style={{ marginTop: "12px" }}>
+          <div className="mh-tabs">
             <button
               type="button"
-              className={`music-tab-btn ${activeTab === "search" ? "active" : ""}`}
+              className={`mh-tab ${activeTab === "search" ? "is-active" : ""}`}
               onClick={() => setActiveTab("search")}
             >
               <i className="fas fa-archive" /> مدیریت آرشیو
             </button>
             <button
               type="button"
-              className={`music-tab-btn ${activeTab === "online" ? "active" : ""}`}
+              className={`mh-tab ${activeTab === "online" ? "is-active" : ""}`}
               onClick={() => setActiveTab("online")}
             >
               <i className="fas fa-globe" /> جستجوی آنلاین آهنگ
@@ -1192,69 +1151,40 @@ export default function MusicSection() {
 
           {activeTab === "search" && (
             <div className="music-tab-content">
-              <form
-                className="input-group-inline"
-                onSubmit={handleSearchSubmit}
-              >
+              <form className="mh-search-row" onSubmit={handleSearchSubmit}>
                 <input
                   type="text"
+                  className="mh-input"
                   value={query}
                   placeholder="جستجو در آرشیو..."
                   onChange={(e) => setQuery(e.target.value)}
                 />
                 <button
                   type="submit"
-                  className="btn btn-primary"
+                  className="mh-btn mh-btn--primary"
                   disabled={searching}
                 >
                   {searching ? "..." : "جستجو"}
                 </button>
               </form>
 
-              <div style={{ marginTop: "12px", marginBottom: "12px" }}>
-                <input
-                  type="file"
-                  id="file-upload-archive"
-                  accept="audio/*"
-                  multiple
-                  style={{ display: "none" }}
-                  onChange={(e) => {
-                    onUploadFiles(e.target.files);
-                    e.target.value = null;
-                  }}
-                />
-                <label
-                  htmlFor="file-upload-archive"
-                  className="btn btn-secondary"
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: "8px",
-                    cursor: "pointer",
-                    margin: 0,
-                  }}
-                >
-                  <i className="fas fa-cloud-upload-alt" /> بارگذاری فایل جدید
-                  از سیستم
-                </label>
-              </div>
-
-              {/* همسان‌سازی ارتفاع با پلی‌لیست */}
-              <div
-                className="search-results"
-                style={{
-                  marginTop: 12,
-                  maxHeight: "400px",
-                  overflowY: "auto",
-                  paddingRight: "8px",
+              <input
+                type="file"
+                id="file-upload-archive"
+                accept="audio/*"
+                multiple
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  onUploadFiles(e.target.files);
+                  e.target.value = null;
                 }}
-              >
-                {/* {loadingArchive && (
-                  <div className="empty-hint">در حال دریافت آرشیو...</div>
-                )} */}
+              />
+              <label htmlFor="file-upload-archive" className="mh-upload">
+                <i className="fas fa-cloud-upload-alt" /> بارگذاری فایل جدید از
+                سیستم
+              </label>
 
+              <div className="mh-list">
                 {!loadingArchive &&
                   searchResults.map((r) => {
                     const isTrackPlaying = playingTrackId === r.id;
@@ -1263,114 +1193,60 @@ export default function MusicSection() {
                     return (
                       <div
                         key={r.id}
-                        className="search-result-item"
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        }}
+                        className={`mh-row ${isTrackPlaying ? "is-playing" : ""}`}
                       >
-                        <div
-                          className="song-info"
-                          style={{
-                            display: "flex",
-                            gap: "12px",
-                            alignItems: "center",
-                          }}
-                        >
-                          <i
-                            className="fas fa-music"
-                            style={{ color: "#555" }}
-                          />
-
+                        <div className="mh-row__info">
                           <div
-                            style={{
-                              position: "relative",
-                              width: 48,
-                              height: 48,
-                              borderRadius: 8,
-                              overflow: "hidden",
-                              cursor: "pointer",
-                            }}
+                            className="mh-art"
                             onClick={() => playArchiveTrack(r.id, r.audioUrl)}
                           >
                             {r.artworkUrl ? (
-                              <img
-                                src={r.artworkUrl}
-                                style={{
-                                  width: "100%",
-                                  height: "100%",
-                                  objectFit: "cover",
-                                }}
-                                alt=""
-                              />
+                              <img src={r.artworkUrl} alt="" />
                             ) : (
-                              <div
-                                style={{
-                                  width: "100%",
-                                  height: "100%",
-                                  background: "#444",
-                                }}
-                              />
+                              <div style={{ width: "100%", height: "100%" }} />
                             )}
-
                             <div
-                              style={{
-                                position: "absolute",
-                                inset: 0,
-                                background: isTrackPlaying
-                                  ? "rgba(0,0,0,0.6)"
-                                  : "rgba(0,0,0,0.3)",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                              }}
+                              className={`mh-art__overlay ${
+                                isTrackPlaying ? "is-visible" : ""
+                              }`}
                             >
                               <i
                                 className={
                                   isActive ? "fas fa-pause" : "fas fa-play"
                                 }
-                                style={{ color: "#fff", fontSize: "16px" }}
                               />
                             </div>
                           </div>
 
-                          <div
-                            style={{ display: "flex", flexDirection: "column" }}
-                          >
-                            <span
-                              style={{
-                                color: isTrackPlaying ? "#ff9800" : "inherit",
-                                fontWeight: isTrackPlaying ? "bold" : "normal",
-                              }}
-                            >
-                              {r.title}
-                            </span>
-
-                            <span style={{ fontSize: "12px", color: "#888" }}>
+                          <div className="mh-row__text">
+                            <span className="mh-row__title">{r.title}</span>
+                            <span className="mh-row__subtitle">
                               {r.artist} • {formatDuration(r.duration)}
                             </span>
                           </div>
                         </div>
 
-                        <div style={{ display: "flex", gap: "4px" }}>
+                        <div className="mh-row__actions">
                           <button
                             onClick={() => openEditTrackModal(r.id, r.title)}
-                            className="btn btn-icon btn-secondary"
+                            className="mh-icon-btn"
+                            title="ویرایش نام"
                           >
                             <i className="fas fa-pencil-alt" />
                           </button>
 
                           <button
                             onClick={() => addToPlaylist(r)}
-                            className="btn btn-icon btn-secondary"
+                            className="mh-icon-btn"
+                            title="افزودن به پلی‌لیست"
                           >
                             <i className="fas fa-plus" />
                           </button>
 
                           <button
                             onClick={() => deleteTrackFromArchive(r.id)}
-                            className="btn btn-icon btn-danger"
+                            className="mh-icon-btn is-danger"
+                            title="حذف از آرشیو"
                           >
                             <i className="fas fa-trash" />
                           </button>
@@ -1378,24 +1254,26 @@ export default function MusicSection() {
                       </div>
                     );
                   })}
+
+                {!loadingArchive && searchResults.length === 0 && (
+                  <div className="mh-empty">آهنگی در آرشیو یافت نشد</div>
+                )}
               </div>
             </div>
           )}
 
           {activeTab === "online" && (
             <div className="music-tab-content">
-              <form
-                className="input-group-inline"
-                onSubmit={handleOnlineSearch}
-              >
+              <form className="mh-search-row" onSubmit={handleOnlineSearch}>
                 <input
                   type="url"
+                  className="mh-input"
                   value={searchUrl}
                   placeholder="لینک آهنگ را وارد کنید..."
                   onChange={(e) => setSearchUrl(e.target.value)}
                   dir="ltr"
                 />
-                <button type="submit" className="btn btn-primary">
+                <button type="submit" className="mh-btn mh-btn--primary">
                   <i className="fas fa-search" /> جستجو
                 </button>
               </form>
@@ -1406,36 +1284,19 @@ export default function MusicSection() {
         {/* ---------------------------------
             پلی‌لیست ادمین
         --------------------------------- */}
-        <div
-          className="panel playlist-panel"
-          style={{ flex: "1.5", display: "flex", flexDirection: "column" }}
-        >
-          <div
-            className="view-header"
-            style={{
-              marginBottom: "16px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-              }}
-            >
-              <h3 style={{ margin: 0 }}>مدیریت پلی‌لیست‌ها</h3>
-              <span
-                className="playlist-capacity"
-                style={{ fontSize: "13px", color: "#888" }}
-              >
+        <div className="music-card playlist-card" style={{ flex: 1.5 }}>
+          <div className="music-card__header">
+            <h3 className="music-card__title">
+              <span className="icon-badge">
+                <i className="fas fa-list-music" />
+              </span>
+              مدیریت پلی‌لیست‌ها
+              <span className="pill-count">
                 {playlists.length} / {MAX_PLAYLISTS}
               </span>
-            </div>
+            </h3>
             <button
-              className="btn btn-primary btn-sm"
+              className="mh-btn mh-btn--primary"
               onClick={openAddPlaylistModal}
               disabled={playlists.length >= MAX_PLAYLISTS}
             >
@@ -1443,38 +1304,15 @@ export default function MusicSection() {
             </button>
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              gap: "16px",
-              flex: 1,
-              flexDirection: "row-reverse",
-            }}
-          >
+          <div className="playlist-card__body">
             {/* Sidebar برای لیست پلی‌لیست‌ها */}
-            <div
-              style={{
-                width: "35%",
-                borderRight: "1px solid #333",
-                paddingRight: "12px",
-                overflowY: "auto",
-                maxHeight: "400px",
-              }}
-            >
+            <div className="playlist-rail">
               {playlists.map((pl) => (
                 <div
                   key={pl.id}
-                  style={{
-                    padding: "10px",
-                    marginBottom: "8px",
-                    borderRadius: "6px",
-                    background:
-                      selectedPlaylistId === pl.id ? "#333" : "transparent",
-                    cursor: "pointer",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
+                  className={`playlist-rail__item ${
+                    selectedPlaylistId === pl.id ? "is-active" : ""
+                  }`}
                   onClick={async () => {
                     try {
                       await activatePlaylist(pl.id);
@@ -1495,49 +1333,25 @@ export default function MusicSection() {
                   }}
                 >
                   <span
-                    title={pl.name || "پلی‌لیست"} // Shows full name on hover
-                    style={{
-                      fontWeight:
-                        selectedPlaylistId === pl.id ? "bold" : "normal",
-                      color:
-                        selectedPlaylistId === pl.id ? "#ff9800" : "inherit",
-                      // Truncation styles:
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      flex: 1, // Allows the span to take up available space
-                      minWidth: 0, // Critical for truncation inside a flexbox
-                      marginInlineEnd: "10px", // Adds space between the text and buttons
-                    }}
+                    className="playlist-rail__name"
+                    title={pl.name || "پلی‌لیست"}
                   >
                     {pl.title || pl.name || "پلی‌لیست"}
                   </span>
-                  <span
-                    className="playlist-capacity"
-                    style={{ fontSize: "13px", color: "#888" }}
-                  >
-                    {pl.tracks}
-                  </span>
-                  <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
+                  <span className="pill-count">{pl.tracks}</span>
+                  <div className="playlist-rail__actions">
                     <button
-                      className="btn btn-icon btn-secondary"
-                      style={{ width: 24, height: 24, padding: 0 }}
+                      className="mh-icon-btn"
                       onClick={(e) => {
                         e.stopPropagation();
                         openEditPlaylistModal(pl);
                       }}
                     >
-                      <i
-                        className="fas fa-pencil-alt"
-                        style={{ fontSize: 10 }}
-                      />
+                      <i className="fas fa-pencil-alt" />
                     </button>
                     <button
-                      className="btn btn-icon btn-danger"
+                      className="mh-icon-btn is-danger"
                       style={{
-                        width: 24,
-                        height: 24,
-                        padding: 0,
                         opacity: pl.isActive ? 0.4 : 1,
                         cursor: pl.isActive ? "not-allowed" : "pointer",
                       }}
@@ -1555,55 +1369,29 @@ export default function MusicSection() {
                         handleDeletePlaylist(pl.id);
                       }}
                     >
-                      <i className="fas fa-trash" style={{ fontSize: 10 }} />
+                      <i className="fas fa-trash" />
                     </button>
                   </div>
                 </div>
               ))}
               {playlists.length === 0 && (
-                <span style={{ fontSize: 12, color: "#aaa" }}>
-                  هیچ پلی‌لیستی ندارید
-                </span>
+                <div className="mh-empty">هیچ پلی‌لیستی ندارید</div>
               )}
             </div>
 
             {/* بخش آهنگ‌های داخل پلی‌لیست */}
-            <div
-              style={{
-                width: "65%",
-                display: "flex",
-                flexDirection: "column",
-                gap: "12px",
-              }}
-            >
+            <div className="playlist-card__tracks">
               <input
                 type="text"
+                className="mh-input"
                 placeholder="جستجو در این پلی‌لیست..."
                 value={playlistQuery}
                 onChange={(e) => setPlaylistQuery(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "8px",
-                  borderRadius: "4px",
-                  border: "1px solid #444",
-                  background: "#222",
-                  color: "#fff",
-                }}
               />
 
-              <div
-                className="playlist"
-                style={{
-                  overflowY: "auto",
-                  maxHeight: "400px",
-                  paddingRight: "8px",
-                }}
-              >
-                {/* {loadingPlaylist && (
-                  <div className="empty-hint">در حال دریافت...</div>
-                )} */}
+              <div className="mh-list">
                 {!loadingPlaylist && filteredPlaylistTracks.length === 0 && (
-                  <div className="empty-hint">آهنگی یافت نشد</div>
+                  <div className="mh-empty">آهنگی یافت نشد</div>
                 )}
 
                 {filteredPlaylistTracks.map((s, index) => {
@@ -1611,115 +1399,41 @@ export default function MusicSection() {
                   return (
                     <div
                       key={s.id}
-                      className="playlist-item"
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
+                      className={`mh-row ${isTrackPlaying ? "is-playing" : ""}`}
                     >
-                      <div
-                        className="song-info"
-                        style={{
-                          display: "flex",
-                          gap: "12px",
-                          alignItems: "center",
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "2px",
-                          }}
-                        >
+                      <div className="mh-row__info">
+                        <div className="mh-reorder">
                           <button
-                            className="btn btn-icon"
-                            style={{
-                              width: 20,
-                              height: 20,
-                              padding: 0,
-                              background: "transparent",
-                              color: index === 0 ? "#444" : "#fff",
-                              border: "none",
-                            }}
                             disabled={index === 0}
                             onClick={() => movePlaylistTrack(index, "up")}
                           >
-                            <i
-                              className="fas fa-chevron-up"
-                              style={{ fontSize: 12 }}
-                            />
+                            <i className="fas fa-chevron-up" />
                           </button>
                           <button
-                            className="btn btn-icon"
-                            style={{
-                              width: 20,
-                              height: 20,
-                              padding: 0,
-                              background: "transparent",
-                              color:
-                                index === filteredPlaylistTracks.length - 1
-                                  ? "#444"
-                                  : "#fff",
-                              border: "none",
-                            }}
                             disabled={
                               index === filteredPlaylistTracks.length - 1
                             }
                             onClick={() => movePlaylistTrack(index, "down")}
                           >
-                            <i
-                              className="fas fa-chevron-down"
-                              style={{ fontSize: 12 }}
-                            />
+                            <i className="fas fa-chevron-down" />
                           </button>
                         </div>
 
                         <div
-                          style={{
-                            position: "relative",
-                            width: 48,
-                            height: 48,
-                            borderRadius: 8,
-                            overflow: "hidden",
-                            cursor: "pointer",
-                          }}
+                          className="mh-art"
                           onClick={() =>
                             playPlaylistTrack(s.id, s.musicTrackId)
                           }
                         >
                           {s.artworkUrl ? (
-                            <img
-                              src={s.artworkUrl}
-                              style={{
-                                width: "100%",
-                                height: "100%",
-                                objectFit: "cover",
-                              }}
-                              alt=""
-                            />
+                            <img src={s.artworkUrl} alt="" />
                           ) : (
-                            <div
-                              style={{
-                                width: "100%",
-                                height: "100%",
-                                background: "#444",
-                              }}
-                              className="placeholder-art"
-                            />
+                            <div style={{ width: "100%", height: "100%" }} />
                           )}
                           <div
-                            style={{
-                              position: "absolute",
-                              inset: 0,
-                              background: isTrackPlaying
-                                ? "rgba(0,0,0,0.6)"
-                                : "rgba(0,0,0,0.3)",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
+                            className={`mh-art__overlay ${
+                              isTrackPlaying ? "is-visible" : ""
+                            }`}
                           >
                             <i
                               className={
@@ -1727,61 +1441,31 @@ export default function MusicSection() {
                                   ? "fas fa-pause"
                                   : "fas fa-play"
                               }
-                              style={{ color: "#fff", fontSize: "16px" }}
                             />
                           </div>
                         </div>
 
-                        <div
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                          }}
-                        >
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "8px",
-                            }}
-                          >
-                            <span
-                              className="song-title"
-                              style={{
-                                color: isTrackPlaying ? "#ff9800" : "inherit",
-                                fontWeight: isTrackPlaying ? "bold" : "normal",
-                              }}
-                            >
-                              {s.title}
-                            </span>
-
+                        <div className="mh-row__text">
+                          <span className="mh-row__title">
+                            {s.title}
                             {s.isRequestedTrack && (
-                              <span className="music-track__status music-track__status--requested">
+                              <span className="mh-chip-requested">
                                 درخواستی
                               </span>
                             )}
-                          </div>
-
-                          <span
-                            className="song-artist"
-                            style={{
-                              fontSize: "12px",
-                              color: "#888",
-                            }}
-                          >
+                          </span>
+                          <span className="mh-row__subtitle">
                             {s.artist} • {formatDuration(s.duration)}
                           </span>
                         </div>
                       </div>
 
-                      <div
-                        className="row-actions"
-                        style={{ display: "flex", gap: "4px" }}
-                      >
+                      <div className="mh-row__actions">
                         <button
                           type="button"
-                          className="btn btn-icon btn-danger"
+                          className="mh-icon-btn is-danger"
                           onClick={() => removeFromPlaylist(s.id)}
+                          title="حذف از پلی‌لیست"
                         >
                           <i className="fas fa-trash" />
                         </button>
@@ -1798,157 +1482,94 @@ export default function MusicSection() {
       {/* ---------------------------------
           آهنگ‌های درخواستی
       --------------------------------- */}
-      <div className="panel w-full">
-        <div className="view-header" style={{ marginBottom: "16px" }}>
-          <h3>آهنگ‌های درخواستی</h3>
-
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-            }}
-          >
-            <span className="playlist-capacity">
-              {requestedTracks.length} درخواست
+      <div className="music-card requests-card">
+        <div className="music-card__header">
+          <h3 className="music-card__title">
+            <span className="icon-badge">
+              <i className="fas fa-headphones-alt" />
             </span>
+            آهنگ‌های درخواستی
+          </h3>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span className="pill-count">{requestedTracks.length} درخواست</span>
 
             <button
               type="button"
-              className="btn btn-secondary btn-sm"
+              className="mh-btn mh-btn--ghost"
               onClick={fetchTrackRequests}
               disabled={loadingRequests}
               title="بروزرسانی"
             >
               <i
                 className={`fas fa-sync-alt ${
-                  loadingRequests ? "fa-spin" : ""
+                  loadingRequests ? "spin-icon" : ""
                 }`}
               />
             </button>
           </div>
         </div>
 
-        <div
-          className="requests-list"
-          style={{ maxHeight: "300px", overflowY: "auto" }}
-        >
-          {requestedTracks.length === 0 ? (
-            <div
-              className="empty-hint"
-              style={{
-                padding: "32px 0",
-                border: "1px dashed #444",
-                borderRadius: "8px",
-              }}
-            >
-              هیچ آهنگ درخواستی جدیدی وجود ندارد
-            </div>
-          ) : (
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "12px" }}
-            >
-              {requestedTracks.map((track) => (
-                <div
-                  key={track.id}
-                  className="search-result-item"
-                  style={{
-                    padding: "12px",
-                    border: "1px solid #333",
-                    borderRadius: "8px",
-                  }}
-                >
-                  {/* ...همان کدهای قبلی درخواست... */}
-                  <div className="song-info">
-                    <div
-                      className="song-artwork placeholder-art"
-                      style={{ width: "40px", height: "40px" }}
-                    />
-                    <div>
-                      <span className="song-title">
-                        {track.title || "نامشخص"}
-                      </span>
-                      <span className="song-artist">
-                        {track.artist || "هنرمند نامشخص"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="row-actions">
-                    <button
-                      type="button"
-                      className="btn btn-secondary btn-sm"
-                      onClick={() => handleApproveRequest(track)}
-                    >
-                      <i className="fas fa-check" /> <span>تایید</span>
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-danger btn-sm"
-                      onClick={() => handleRejectRequest(track.id)}
-                    >
-                      <i className="fas fa-times" /> <span>رد</span>
-                    </button>
-                  </div>
+        {requestedTracks.length === 0 ? (
+          <div className="mh-empty">هیچ آهنگ درخواستی جدیدی وجود ندارد</div>
+        ) : (
+          <div className="requests-grid">
+            {requestedTracks.map((track) => (
+              <div key={track.id} className="request-card">
+                <div className="request-card__art">
+                  <i className="fas fa-music" />
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+                <div className="request-card__info">
+                  <span className="request-card__title">
+                    {track.title || "نامشخص"}
+                  </span>
+                  <span className="request-card__artist">
+                    {track.artist || "هنرمند نامشخص"}
+                  </span>
+                </div>
+                <div className="request-card__actions">
+                  <button
+                    type="button"
+                    className="mh-btn mh-btn--approve"
+                    onClick={() => handleApproveRequest(track)}
+                  >
+                    <i className="fas fa-check" /> تایید
+                  </button>
+                  <button
+                    type="button"
+                    className="mh-btn mh-btn--reject"
+                    onClick={() => handleRejectRequest(track.id)}
+                  >
+                    <i className="fas fa-times" /> رد
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ------------------------------------------------------------------
-      ----------------------------------------------------------------------
       -------------------------------MODALS---------------------------------
-      ----------------------------------------------------------------------
       -------------------------------------------------------------------*/}
 
-      {/* ---------------------------------
-          مودال تایید حذف پلی‌لیست
-      --------------------------------- */}
+      {/* مودال تایید حذف پلی‌لیست */}
       {showDeleteModal && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.7)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              background: "#222",
-              padding: "24px",
-              borderRadius: "8px",
-              width: "320px",
-              border: "1px solid #444",
-              textAlign: "center",
-            }}
-          >
-            <h4 style={{ margin: "0 0 16px 0", color: "#fff" }}>
+        <div className="mh-modal-backdrop">
+          <div className="mh-modal">
+            <h4
+              className="mh-modal__title"
+              style={{ justifyContent: "center" }}
+            >
               حذف پلی‌لیست
             </h4>
-            <p
-              style={{
-                color: "#ccc",
-                marginBottom: "24px",
-                fontSize: "14px",
-              }}
-            >
+            <p className="mh-modal__text">
               آیا از حذف این پلی‌لیست اطمینان دارید؟
             </p>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                gap: "12px",
-              }}
-            >
+            <div className="mh-modal__footer is-center">
               <button
                 type="button"
-                className="btn btn-secondary"
+                className="mh-btn mh-btn--ghost"
                 onClick={() => {
                   setShowDeleteModal(false);
                   setPlaylistToDelete(null);
@@ -1958,13 +1579,9 @@ export default function MusicSection() {
               </button>
               <button
                 type="button"
-                className="btn btn-danger"
+                className="mh-btn mh-btn--reject"
                 onClick={handleConfirmDeletePlaylist}
-                style={{
-                  background: "#f44336",
-                  color: "#fff",
-                  border: "none",
-                }}
+                disabled={deleting}
               >
                 بله، حذف شود
               </button>
@@ -1972,31 +1589,12 @@ export default function MusicSection() {
           </div>
         </div>
       )}
-      {/* ---------------------------------
-          مودال ساخت/ویرایش پلی‌لیست
-      --------------------------------- */}
+
+      {/* مودال ساخت/ویرایش پلی‌لیست */}
       {showPlaylistModal && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.7)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              background: "#222",
-              padding: "24px",
-              borderRadius: "8px",
-              width: "320px",
-              border: "1px solid #444",
-            }}
-          >
-            <h4 style={{ margin: "0 0 16px 0", color: "#fff" }}>
+        <div className="mh-modal-backdrop">
+          <div className="mh-modal">
+            <h4 className="mh-modal__title">
               {playlistModalMode === "add"
                 ? "ایجاد پلی‌لیست جدید"
                 : "ویرایش پلی‌لیست"}
@@ -2004,37 +1602,23 @@ export default function MusicSection() {
             <form onSubmit={submitPlaylistModal}>
               <input
                 type="text"
+                className="mh-input"
                 value={playlistFormName}
                 onChange={(e) => setPlaylistFormName(e.target.value)}
                 placeholder="نام پلی‌لیست را وارد کنید..."
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  marginBottom: "16px",
-                  borderRadius: "4px",
-                  border: "1px solid #444",
-                  background: "#111",
-                  color: "#fff",
-                }}
                 autoFocus
               />
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  gap: "8px",
-                }}
-              >
+              <div className="mh-modal__footer">
                 <button
                   type="button"
-                  className="btn btn-secondary"
+                  className="mh-btn mh-btn--ghost"
                   onClick={() => setShowPlaylistModal(false)}
                 >
                   لغو
                 </button>
                 <button
                   type="submit"
-                  className="btn btn-primary"
+                  className="mh-btn mh-btn--primary"
                   disabled={!playlistFormName.trim()}
                 >
                   ذخیره
@@ -2045,67 +1629,31 @@ export default function MusicSection() {
         </div>
       )}
 
-      {/* ---------------------------------
-          مودال ویرایش نام آهنگ
-      --------------------------------- */}
+      {/* مودال ویرایش نام آهنگ */}
       {showTrackModal && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.7)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              background: "#222",
-              padding: "24px",
-              borderRadius: "8px",
-              width: "320px",
-              border: "1px solid #444",
-            }}
-          >
-            <h4 style={{ margin: "0 0 16px 0", color: "#fff" }}>
-              ویرایش نام آهنگ
-            </h4>
+        <div className="mh-modal-backdrop">
+          <div className="mh-modal">
+            <h4 className="mh-modal__title">ویرایش نام آهنگ</h4>
             <form onSubmit={submitTrackModal}>
               <input
                 type="text"
+                className="mh-input"
                 value={trackFormName}
                 onChange={(e) => setTrackFormName(e.target.value)}
                 placeholder="نام جدید آهنگ را وارد کنید..."
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  marginBottom: "16px",
-                  borderRadius: "4px",
-                  border: "1px solid #444",
-                  background: "#111",
-                  color: "#fff",
-                }}
                 autoFocus
               />
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  gap: "8px",
-                }}
-              >
+              <div className="mh-modal__footer">
                 <button
                   type="button"
-                  className="btn btn-secondary"
+                  className="mh-btn mh-btn--ghost"
                   onClick={() => setShowTrackModal(false)}
                 >
                   لغو
                 </button>
                 <button
                   type="submit"
-                  className="btn btn-primary"
+                  className="mh-btn mh-btn--primary"
                   disabled={!trackFormName.trim()}
                 >
                   ذخیره
@@ -2115,98 +1663,47 @@ export default function MusicSection() {
           </div>
         </div>
       )}
-      {/* ---------------------------------
-          مودال پیش نمایش آهنگ
-      --------------------------------- */}
-      {showPreviewModal && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.7)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              background: "#222",
-              padding: "24px",
-              borderRadius: "8px",
-              width: "420px",
-              border: "1px solid #444",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "16px",
-              }}
-            >
-              <h4
-                style={{
-                  margin: 0,
-                  color: "#fff",
-                }}
-              >
-                پیش‌نمایش آهنگ
-              </h4>
 
-              <button className="btn btn-secondary" onClick={closePreviewModal}>
+      {/* مودال پیش نمایش آهنگ */}
+      {showPreviewModal && (
+        <div className="mh-modal-backdrop">
+          <div className="mh-modal mh-modal--wide">
+            <h4 className="mh-modal__title">
+              پیش‌نمایش آهنگ
+              <button
+                className="mh-icon-btn"
+                onClick={closePreviewModal}
+                title="بستن"
+              >
                 ✕
               </button>
+            </h4>
+
+            <div className="mh-preview-track">{previewTrackTitle}</div>
+
+            <div className="mh-preview-progress">
+              <div
+                className="mh-preview-progress-fill"
+                style={{ width: `${previewProgressPct}%` }}
+              />
+              <input
+                type="range"
+                min="0"
+                max={previewDuration || 0}
+                value={previewCurrentTime}
+                onChange={handlePreviewSeek}
+              />
             </div>
 
-            <div
-              style={{
-                color: "#ff9800",
-                fontWeight: "bold",
-                marginBottom: "16px",
-              }}
-            >
-              {previewTrackTitle}
-            </div>
-
-            <input
-              type="range"
-              min="0"
-              max={previewDuration || 0}
-              value={previewCurrentTime}
-              onChange={handlePreviewSeek}
-              style={{
-                width: "100%",
-                accentColor: "#ff9800",
-              }}
-            />
-
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginTop: "8px",
-                color: "#aaa",
-                fontSize: "12px",
-                direction: "ltr",
-              }}
-            >
+            <div className="mh-preview-time">
               <span>{formatTime(previewCurrentTime)}</span>
               <span>{formatTime(previewDuration)}</span>
             </div>
 
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                marginTop: "20px",
-              }}
-            >
+            <div className="mh-preview-playbtn">
               <button
                 type="button"
-                className="btn btn-primary"
+                className="player-btn player-btn--main"
                 onClick={async () => {
                   if (previewAudioRef.current.paused) {
                     await previewAudioRef.current.play();
@@ -2225,46 +1722,22 @@ export default function MusicSection() {
           </div>
         </div>
       )}
-      {/* ---------------------------------
-          مودال هشدار
-      --------------------------------- */}
+
+      {/* مودال هشدار */}
       {!!alertMessage && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.7)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              background: "#222",
-              padding: "24px",
-              borderRadius: "8px",
-              width: "320px",
-              border: "1px solid #444",
-              textAlign: "center",
-            }}
-          >
-            <h4 style={{ margin: "0 0 16px 0", color: "#fff" }}>پیام</h4>
-            <p
-              style={{
-                color: "#ccc",
-                marginBottom: "24px",
-                fontSize: "14px",
-                lineHeight: "1.5",
-              }}
+        <div className="mh-modal-backdrop">
+          <div className="mh-modal">
+            <h4
+              className="mh-modal__title"
+              style={{ justifyContent: "center" }}
             >
-              {alertMessage}
-            </p>
-            <div style={{ display: "flex", justifyContent: "center" }}>
+              پیام
+            </h4>
+            <p className="mh-modal__text">{alertMessage}</p>
+            <div className="mh-modal__footer is-center">
               <button
                 type="button"
-                className="btn btn-primary"
+                className="mh-btn mh-btn--primary"
                 onClick={() => setAlertMessage("")}
               >
                 متوجه شدم

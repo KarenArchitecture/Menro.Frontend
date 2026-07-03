@@ -22,6 +22,7 @@ import Orders from "./pages/OrdersPage";
 import BillsPage from "./pages/BillsPage";
 import FavoritesPage from "./pages/FavoritesPage";
 import ProfilePage from "./pages/ProfilePage";
+import CommentsPage from "./pages/CommentsPage";
 import {
   DrawerStateProvider,
   useDrawerState,
@@ -101,6 +102,7 @@ export default function App() {
           {/* 4. Added the dynamic route for the BillsPage */}
           <Route path="/orders/bill/:id" element={<BillsPage />} />
           <Route path="/favorites" element={<FavoritesPage />} />
+          <Route path="/comments" element={<CommentsPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
           <Route

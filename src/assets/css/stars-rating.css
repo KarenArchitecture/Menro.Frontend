@@ -1,0 +1,49 @@
+/* Stars container */
+.star-rating {
+  display: flex;
+  gap: 6px;
+  direction: ltr; /* IMPORTANT */
+  justify-content: center;
+}
+
+/* Individual star */
+.star-rating .star {
+  font-size: 1.4rem;
+  transition: all 0.2s ease-in-out;
+  transform: scale(1.5);
+}
+
+/* Inactive */
+.star-rating .star.inactive {
+  color: #7b8193;
+}
+
+/* Active */
+.star-rating .star.active {
+  color: #ff623d;
+  filter: drop-shadow(0 2px 6px rgba(255, 98, 61, 0.4));
+}
+
+.star-rating {
+  display: flex;
+  gap: 4px;
+  direction: ltr;
+}
+
+.star-icon {
+  width: 18px;
+  height: 18px;
+  transition:
+    transform 0.2s ease,
+    filter 0.2s ease;
+}
+
+/* subtle glow like modal */
+.star-icon.active {
+  filter: drop-shadow(0 2px 6px rgba(255, 98, 61, 0.4));
+}
+
+/* optional hover scaling */
+.star-rating.interactive .star-icon:hover {
+  transform: scale(1.1);
+}

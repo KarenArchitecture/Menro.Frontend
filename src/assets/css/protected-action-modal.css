@@ -2,7 +2,7 @@
     Backdrop
 =========================== */
 
-.login-required-backdrop {
+.protected-action-backdrop {
     position: fixed;
     inset: 0;
     z-index: 9999;
@@ -25,7 +25,7 @@
     Modal
 =========================== */
 
-.login-required-modal {
+.protected-action-modal {
     position: relative;
     width: min(92vw, 390px);
     overflow: hidden;
@@ -48,7 +48,7 @@
     Orange Glow
 =========================== */
 
-.login-required-glow {
+.protected-action-glow {
     position: absolute;
     top: -90px;
     left: 50%;
@@ -68,7 +68,7 @@
     Close Button
 =========================== */
 
-.login-required-close {
+.protected-action-close {
     position: absolute;
     top: 12px;
     left: 18px;
@@ -84,7 +84,7 @@
     
 }
 
-.login-required-close:hover {
+.protected-action-close:hover {
     background: rgba(255, 255, 255, 0.12);
 }
 
@@ -92,7 +92,7 @@
     Heart
 =========================== */
 
-.login-required-heart{
+.protected-action-icon {
     position:relative;
     width:104px;
     height:104px;
@@ -123,7 +123,7 @@
         orbGlow 4s ease-in-out infinite;
 }
 
-.login-required-heart svg{
+.protected-action-icon svg {
 
     width:42px;
 
@@ -146,7 +146,7 @@
     Title
 =========================== */
 
-.login-required-title {
+.protected-action-title {
     margin-top: 26px;
     margin-bottom: 16px;
     color: white;
@@ -159,7 +159,7 @@
     Description
 =========================== */
 
-.login-required-description {
+.protected-action-description {
     color: #bfc9d2;
     line-height: 2;
     font-size: 15px;
@@ -167,7 +167,7 @@
     max-width: 290px;
 }
 
-.login-required-description span {
+.protected-action-description span {
     color: #ff683c;
     font-size: 1.5rem;
     font-weight: 700;
@@ -177,7 +177,7 @@
     Buttons
 =========================== */
 
-.login-required-actions {
+.protected-action-actions {
     position:relative;
     overflow:hidden;
     display: flex;
@@ -186,7 +186,7 @@
     margin-top: 34px;
 }
 
-.login-required-login {
+.protected-action-login {
     height: 54px;
     border: none;
     border-radius: 16px;
@@ -200,7 +200,7 @@
     overflow:hidden;
 }
 
-.login-required-login::before{
+.protected-action-login::before{
     content:"";
     position:absolute;
     top:0;
@@ -218,11 +218,11 @@
     transform:skewX(-25deg);
 }
 
-.login-required-login:hover {
+.protected-action-login:hover {
     filter:brightness(1.05);
 }
 
-.login-required-later {
+.protected-action-later {
     height: 52px;
     border: none;
     border-radius: 16px;
@@ -233,7 +233,7 @@
     transition: 0.25s;
 }
 
-.login-required-later:hover {
+.protected-action-later:hover {
     background: rgba(255, 255, 255, 0.1);
 }
 
@@ -281,7 +281,7 @@
     Glass Shine
 =========================== */
 
-.login-required-shine{
+.protected-action-shine{
     position:absolute;
     inset:-60%;
     background:
@@ -336,7 +336,7 @@
 }
 
 
-.login-required-login:hover::before{
+.protected-action-login:hover::before{
     animation:buttonSweep .7s ease;
 }
 
@@ -350,7 +350,7 @@
     }
 }
 
-.login-required-heart::before{
+.protected-action-icon::before{
     content:"";
     position:absolute;
     top:8px;
@@ -369,7 +369,7 @@
     opacity:.9;
 }
 
-.login-required-heart::after{
+.protected-action-icon::after{
     content:"";
     position:absolute;
     width:62px;

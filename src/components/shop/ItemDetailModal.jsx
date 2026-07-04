@@ -13,7 +13,9 @@ import StarIcon from "../icons/StarIcon";
 import SmartImage from "../common/SmartImage";
 import { useFavoriteIds, useToggleFavorite } from "../../hooks/useFavorites";
 import useRequireLogin from "../../hooks/useRequireLogin";
-import LoginRequiredModal from "../common/LoginRequiredModal";
+import ProtectedActionModal from "../common/ProtectedActionModal";
+import { useAuth } from "../../context/AuthContext";
+
 
 /* Helper for consistent Persian digits */
 const toPersianDigits = (value) => {
@@ -73,10 +75,12 @@ function ItemDetailModal({ item, onClose }) {
     goToLogin,
   } = useRequireLogin();
 
+  const { user } = useAuth();
+
   const {
     data: favoriteIds = [],
     isLoading: favoriteLoading,
-  } = useFavoriteIds();
+  } = useFavoriteIds(!!user);
 
   const toggleFavorite = useToggleFavorite();
 
@@ -91,14 +95,14 @@ function ItemDetailModal({ item, onClose }) {
   const handleToggleFavorite = () => {
     console.log("favorite clicked");
 
-    requireLogin(() => {
-      console.log("user is logged in");
+    requireLogin({
+      onAuthenticated: () => {
+        if (!item?.id) return;
 
-      if (!item?.id) return;
+        if (toggleFavorite.isPending) return;
 
-      if (toggleFavorite.isPending) return;
-
-      toggleFavorite.mutate(item.id);
+        toggleFavorite.mutate(item.id);
+      },
     });
   };
 
@@ -356,7 +360,7 @@ function ItemDetailModal({ item, onClose }) {
                     className="icon-btn modal-top-action"
                     aria-label="علاقه‌مندی"
                     onClick={handleToggleFavorite}
-                    disabled={favoriteLoading || toggleFavorite.isPending}
+                    disabled={!!user && (favoriteLoading || toggleFavorite.isPending)}
                   >
                     <LikeIcon active={isFavorite} />
                   </button>
@@ -496,10 +500,18 @@ function ItemDetailModal({ item, onClose }) {
           </div>
         </div>
       </div>
-      <LoginRequiredModal
+      <ProtectedActionModal
         open={open}
         onClose={closeModal}
         onLogin={goToLogin}
+        icon={<LikeIcon active />}
+        description={
+          <>
+            برای افزودن این غذا به
+            <span> علاقه‌مندی‌ها </span>
+            ابتدا وارد حساب کاربری خود شوید.
+          </>
+        }
       />
     </>
   );

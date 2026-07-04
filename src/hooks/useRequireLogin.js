@@ -10,11 +10,27 @@ export default function useRequireLogin() {
 
     const [open, setOpen] = useState(false);
 
-    const requireLogin = (callback) => {
+    // اطلاعات آخرین درخواست محافظت‌شده
+    const [pendingAction, setPendingAction] = useState({
+        callback: null,
+        returnUrl: null,
+    });
+
+    const requireLogin = ({
+        onAuthenticated,
+        returnUrl,
+    } = {}) => {
         if (user) {
-        callback?.();
+        onAuthenticated?.();
         return;
         }
+
+        setPendingAction({
+        callback: onAuthenticated ?? null,
+        returnUrl:
+            returnUrl ??
+            `${location.pathname}${location.search}`,
+        });
 
         setOpen(true);
     };
@@ -26,7 +42,7 @@ export default function useRequireLogin() {
     const goToLogin = () => {
         navigate(
         `/login?returnUrl=${encodeURIComponent(
-            location.pathname + location.search
+            pendingAction.returnUrl
         )}`
         );
     };

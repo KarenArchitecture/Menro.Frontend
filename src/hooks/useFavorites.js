@@ -17,11 +17,13 @@ export const favoriteKeys = {
 /* -----------------------------
     GET FAVORITE IDS (lightweight)
 ------------------------------ */
-export const useFavoriteIds = () => {
+export const useFavoriteIds = (enabled = true) => {
     return useQuery({
         queryKey: favoriteKeys.ids(),
         queryFn: getFavoriteFoodIds,
-        staleTime: 1000 * 60 * 5, // 5 min cache
+        enabled,
+        staleTime: 1000 * 60 * 5,
+        retry: false,
     });
 };
 

@@ -1,135 +1,11 @@
-// src/components/admin/CommentsSection.jsx
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import CommentModal from "./CommentModal";
-
-/* ---------------- MOCK DATA (static for now, backend wiring later) ---------------- */
-const MOCK_COMMENTS = [
-  // ---- pending ----
-  {
-    id: 1,
-    code: "CMT-1",
-    status: "pending",
-    title: "پیتزا مخصوص رستوران",
-    userName: "علی رضایی",
-    rating: 4,
-    commentText: "طعم فوق‌العاده‌ای داشت ولی کمی دیر رسید.",
-    date: "۱۴۰۳/۰۴/۱۲",
-    reply: null,
-    rejectReason: null,
-  },
-  {
-    id: 2,
-    code: "CMT-2",
-    status: "pending",
-    title: "برگر دوبل چیز",
-    userName: "سارا احمدی",
-    rating: 5,
-    commentText: "بهترین برگری که تا حالا خوردم، حتما دوباره سفارش میدم.",
-    date: "۱۴۰۳/۰۴/۱۳",
-    reply: null,
-    rejectReason: null,
-  },
-  {
-    id: 3,
-    code: "CMT-3",
-    status: "pending",
-    title: "سالاد سزار",
-    userName: "محمد کریمی",
-    rating: 3,
-    commentText: "سس کمی زیاد بود ولی در کل خوب بود.",
-    date: "۱۴۰۳/۰۴/۱۴",
-    reply: null,
-    rejectReason: null,
-  },
-  {
-    id: 4,
-    code: "CMT-4",
-    status: "pending",
-    title: "پاستا آلفردو",
-    userName: "نگار حسینی",
-    rating: 2,
-    commentText: "غذا سرد رسید و خیلی خوشمزه نبود.",
-    date: "۱۴۰۳/۰۴/۱۵",
-    reply: null,
-    rejectReason: null,
-  },
-
-  // ---- approved ----
-  {
-    id: 5,
-    code: "CMT-5",
-    status: "approved",
-    title: "پیتزا مخصوص رستوران",
-    userName: "رضا مرادی",
-    rating: 5,
-    commentText: "عالی بود، ممنون از کیفیت خوبتون.",
-    date: "۱۴۰۳/۰۴/۰۸",
-    reply: "خوشحالیم که رضایت داشتید 🙏",
-    rejectReason: null,
-  },
-  {
-    id: 6,
-    code: "CMT-6",
-    status: "approved",
-    title: "نوشابه خانواده",
-    userName: "الهام صادقی",
-    rating: 4,
-    commentText: "بسته‌بندی خوب و ارسال سریع بود.",
-    date: "۱۴۰۳/۰۴/۰۹",
-    reply: "ممنون از همراهی شما.",
-    rejectReason: null,
-  },
-  {
-    id: 7,
-    code: "CMT-7",
-    status: "approved",
-    title: "برگر دوبل چیز",
-    userName: "امیر توکلی",
-    rating: 5,
-    commentText: "فوق‌العاده بود، حتما دوباره سفارش میدم.",
-    date: "۱۴۰۳/۰۴/۱۰",
-    reply: null,
-    rejectReason: null,
-  },
-
-  // ---- rejected ----
-  {
-    id: 8,
-    code: "CMT-8",
-    status: "rejected",
-    title: "پاستا آلفردو",
-    userName: "کاربر ناشناس",
-    rating: 1,
-    commentText: "متن حاوی الفاظ نامناسب بود.",
-    date: "۱۴۰۳/۰۴/۰۵",
-    reply: null,
-    rejectReason: "استفاده از الفاظ نامناسب در متن نظر.",
-  },
-  {
-    id: 9,
-    code: "CMT-9",
-    status: "rejected",
-    title: "سالاد سزار",
-    userName: "حسین قاسمی",
-    rating: 1,
-    commentText: "لینک تبلیغاتی نامرتبط در متن قرار داده شده بود.",
-    date: "۱۴۰۳/۰۴/۰۶",
-    reply: null,
-    rejectReason: "محتوای تبلیغاتی نامرتبط.",
-  },
-  {
-    id: 10,
-    code: "CMT-10",
-    status: "rejected",
-    title: "برگر دوبل چیز",
-    userName: "کاربر مهمان",
-    rating: 2,
-    commentText: "نظر تکراری از همان کاربر در بازه زمانی کوتاه.",
-    date: "۱۴۰۳/۰۴/۰۷",
-    reply: null,
-    rejectReason: "نظر تکراری.",
-  },
-];
+import {
+  getAdminComments,
+  approveComment,
+  rejectComment,
+} from "../../api/adminComments";
 
 const TABS = [
   { key: "pending", label: "در انتظار پاسخ" },
@@ -138,52 +14,46 @@ const TABS = [
 ];
 
 export default function CommentsSection() {
-  const [comments, setComments] = useState(MOCK_COMMENTS);
   const [activeTab, setActiveTab] = useState("pending");
   const [selected, setSelected] = useState(null);
+  const queryClient = useQueryClient();
 
-  const counts = useMemo(
-    () => ({
-      pending: comments.filter((c) => c.status === "pending").length,
-      approved: comments.filter((c) => c.status === "approved").length,
-      rejected: comments.filter((c) => c.status === "rejected").length,
-    }),
-    [comments],
-  );
+  const { data: comments = [], isLoading } = useQuery({
+    queryKey: ["admin-comments", activeTab],
+    queryFn: () => getAdminComments(activeTab),
+  });
 
-  const list = useMemo(
-    () => comments.filter((c) => c.status === activeTab),
-    [comments, activeTab],
-  );
+  const { data: pendingList = [] } = useQuery({
+    queryKey: ["admin-comments", "pending"],
+    queryFn: () => getAdminComments("pending"),
+  });
+  const { data: approvedList = [] } = useQuery({
+    queryKey: ["admin-comments", "approved"],
+    queryFn: () => getAdminComments("approved"),
+  });
+  const { data: rejectedList = [] } = useQuery({
+    queryKey: ["admin-comments", "rejected"],
+    queryFn: () => getAdminComments("rejected"),
+  });
 
-  /* ---- Approve (with optional reply) ---- */
-  const handleApprove = (id, replyText) => {
-    // TODO: wire to backend — POST /comments/{id}/approve { reply: replyText }
-    setComments((prev) =>
-      prev.map((c) =>
-        c.id === id
-          ? {
-              ...c,
-              status: "approved",
-              reply: replyText || null,
-              rejectReason: null,
-            }
-          : c,
-      ),
-    );
+  const counts = {
+    pending: pendingList.length,
+    approved: approvedList.length,
+    rejected: rejectedList.length,
+  };
+
+  const invalidateAll = () =>
+    queryClient.invalidateQueries({ queryKey: ["admin-comments"] });
+
+  const handleApprove = async (id, replyText) => {
+    await approveComment(id, replyText);
+    invalidateAll();
     setSelected(null);
   };
 
-  /* ---- Reject ---- */
-  const handleReject = (id, reason) => {
-    // TODO: wire to backend — POST /comments/{id}/reject { reason }
-    setComments((prev) =>
-      prev.map((c) =>
-        c.id === id
-          ? { ...c, status: "rejected", rejectReason: reason, reply: null }
-          : c,
-      ),
-    );
+  const handleReject = async (id, reason) => {
+    await rejectComment(id, reason);
+    invalidateAll();
     setSelected(null);
   };
 
@@ -210,15 +80,12 @@ export default function CommentsSection() {
     <div className="panel orders-panel">
       <div className="view-header orders-header">
         <h3>مدیریت نظرات</h3>
-
         <div className="orders-controls">
           <div className="orders-tabs">
             {TABS.map((t) => (
               <button
                 key={t.key}
-                className={`btn ${
-                  activeTab === t.key ? "btn-primary" : "btn-secondary"
-                }`}
+                className={`btn ${activeTab === t.key ? "btn-primary" : "btn-secondary"}`}
                 onClick={() => setActiveTab(t.key)}
               >
                 {t.label} ({counts[t.key]})
@@ -229,16 +96,15 @@ export default function CommentsSection() {
       </div>
 
       <div className="orders-list orders-list--vertical">
-        {list.length === 0 && (
+        {isLoading && <div className="empty-hint">در حال بارگذاری...</div>}
+        {!isLoading && comments.length === 0 && (
           <div className="empty-hint">نظری در این دسته وجود ندارد.</div>
         )}
 
-        {list.map((c) => (
+        {comments.map((c) => (
           <button
             key={c.id}
-            className={`order-bar ${
-              c.status === "pending" ? "status-pending" : "status-archived"
-            }`}
+            className={`order-bar ${c.status === "pending" ? "status-pending" : "status-archived"}`}
             onClick={() => setSelected(c)}
           >
             <div className="order-bar__info">
@@ -246,20 +112,15 @@ export default function CommentsSection() {
                 <span className="order-code">نظر #{c.code}</span>
                 <span className="order-customer"> — {c.title}</span>
               </div>
-
               <div className="order-bar__meta">
                 <span>{c.userName}</span>
                 <span className="dot-sep">·</span>
-                <span style={{ color: "#f59e0b" }}>
-                  {renderStars(c.rating)}
-                </span>
+                <span style={{ color: "#f59e0b" }}>{renderStars(c.rating)}</span>
                 <span className="dot-sep">·</span>
                 <span>{c.date}</span>
               </div>
-
               <div className="order-bar__preview">{c.commentText}</div>
             </div>
-
             <div className="order-bar__side">
               <span className={`status-pill ${statusPillClass(c.status)}`}>
                 {statusPillText(c.status)}

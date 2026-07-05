@@ -11,7 +11,13 @@ function CommentsPage() {
   const { foodId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { requireLogin, open, closeModal, goToLogin } = useRequireLogin();
+  const {
+    requireLogin,
+    open,
+    closeModal,
+    goToLogin,
+    modalConfig,
+  } = useRequireLogin();
 
   const [rating, setRating] = useState(5);
   const [text, setText] = useState("");
@@ -102,8 +108,9 @@ function CommentsPage() {
         open={open}
         onClose={closeModal}
         onLogin={goToLogin}
-        title="ورود لازم است"
-        description="برای ثبت نظر یا لایک کردن، ابتدا وارد حساب کاربری خود شوید."
+        icon={modalConfig.icon}
+        title={modalConfig.title}
+        description={modalConfig.description}
       />
     </div>
   );

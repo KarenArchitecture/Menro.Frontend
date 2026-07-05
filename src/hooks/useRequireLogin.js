@@ -14,22 +14,45 @@ export default function useRequireLogin() {
     const [pendingAction, setPendingAction] = useState({
         callback: null,
         returnUrl: null,
+
+        title: "ورود لازم است",
+        description: null,
+        icon: null,
+
+        loginText: "ورود به حساب",
+        cancelText: "بعداً وارد می‌شوم",
     });
 
     const requireLogin = ({
         onAuthenticated,
         returnUrl,
+
+        title = "ورود لازم است",
+        description = null,
+        icon = null,
+
+        loginText = "ورود به حساب",
+        cancelText = "بعداً وارد می‌شوم",
     } = {}) => {
+
         if (user) {
-        onAuthenticated?.();
-        return;
+            onAuthenticated?.();
+            return;
         }
 
         setPendingAction({
-        callback: onAuthenticated ?? null,
-        returnUrl:
-            returnUrl ??
-            `${location.pathname}${location.search}`,
+            callback: onAuthenticated ?? null,
+
+            returnUrl:
+                returnUrl ??
+                `${location.pathname}${location.search}`,
+
+            title,
+            description,
+            icon,
+
+            loginText,
+            cancelText,
         });
 
         setOpen(true);
@@ -49,9 +72,18 @@ export default function useRequireLogin() {
 
     return {
         requireLogin,
+
         open,
         closeModal,
         goToLogin,
+
+        modalProps: {
+            title: pendingAction.title,
+            description: pendingAction.description,
+            icon: pendingAction.icon,
+            loginText: pendingAction.loginText,
+            cancelText: pendingAction.cancelText,
+        },
     };
 }
 

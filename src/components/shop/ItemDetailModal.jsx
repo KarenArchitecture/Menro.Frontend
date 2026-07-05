@@ -12,6 +12,10 @@ import resolveFileUrl from "../../utils/resolveFileUrl";
 import StarIcon from "../icons/StarIcon";
 import SmartImage from "../common/SmartImage";
 import { useFavoriteIds, useToggleFavorite } from "../../hooks/useFavorites";
+import useRequireLogin from "../../hooks/useRequireLogin";
+import ProtectedActionModal from "../common/ProtectedActionModal";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 /* Helper for consistent Persian digits */
 const toPersianDigits = (value) => {
@@ -62,12 +66,22 @@ const AddonScrollPicker = ({ value = 0, onChange, max = 99 }) => {
 
 function ItemDetailModal({ item, onClose }) {
   const cart = useCart();
+  const navigate = useNavigate();
   const [isActive, setIsActive] = useState(false);
+  const {
+    requireLogin,
+    open,
+    closeModal,
+    goToLogin,
+    modalConfig,
+  } = useRequireLogin();
+
+  const { user } = useAuth();
 
   const {
     data: favoriteIds = [],
     isLoading: favoriteLoading,
-  } = useFavoriteIds();
+  } = useFavoriteIds(!!user);
 
   const toggleFavorite = useToggleFavorite();
 
@@ -80,11 +94,17 @@ function ItemDetailModal({ item, onClose }) {
   });
 
   const handleToggleFavorite = () => {
-    if (!item?.id) return;
+    requireLogin({
+      modal: "favorite",
 
-    if (toggleFavorite.isPending) return;
+      onAuthenticated: () => {
+        if (!item?.id) return;
 
-    toggleFavorite.mutate(item.id);
+        if (toggleFavorite.isPending) return;
+
+        toggleFavorite.mutate(item.id);
+      },
+    });
   };
 
   const formatRating = (value) => {
@@ -332,6 +352,17 @@ function ItemDetailModal({ item, onClose }) {
                     type="button"
                     className="icon-btn modal-top-action"
                     aria-label="پیام"
+                    onClick={() =>
+                      requireLogin({
+                        modal: "comment",
+                        returnUrl: `/foods/${item.id}/comments`,
+                        onAuthenticated: () => {
+                          handleClose();
+
+                          navigate(`/foods/${item.id}/comments`);
+                        },
+                      })
+                    }
                   >
                     <MessageIcon />
                   </button>
@@ -481,6 +512,14 @@ function ItemDetailModal({ item, onClose }) {
           </div>
         </div>
       </div>
+      <ProtectedActionModal
+        open={open}
+        onClose={closeModal}
+        onLogin={goToLogin}
+        icon={modalConfig.icon}
+        title={modalConfig.title}
+        description={modalConfig.description}
+      />
     </>
   );
 

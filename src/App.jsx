@@ -102,7 +102,10 @@ export default function App() {
           {/* 4. Added the dynamic route for the BillsPage */}
           <Route path="/orders/bill/:id" element={<BillsPage />} />
           <Route path="/favorites" element={<FavoritesPage />} />
-          <Route path="/comments" element={<CommentsPage />} />
+          <Route
+            path="/foods/:foodId/comments"
+            element={<CommentsPage />}
+          />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
           <Route

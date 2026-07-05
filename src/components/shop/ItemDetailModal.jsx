@@ -96,6 +96,7 @@ function ItemDetailModal({ item, onClose }) {
     console.log("favorite clicked");
 
     requireLogin({
+      type: "favorites",
       onAuthenticated: () => {
         if (!item?.id) return;
 

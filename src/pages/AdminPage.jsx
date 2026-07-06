@@ -1,8 +1,9 @@
 // src/pages/AdminPage.jsx
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import usePageStyles from "../hooks/usePageStyles";
 import AdminHeader from "../components/admin/AdminHeader";
 import AdminSidebar from "../components/admin/AdminSidebar";
+
 import DashboardSection from "../components/admin/DashboardSection";
 import ProductsSection from "../components/admin/ProductsSection";
 import CategoriesSection from "../components/admin/CategoriesSection";
@@ -19,6 +20,11 @@ import RestaurantsListForAdminSection from "../components/admin/RestaurantsListF
 import RestaurantProfileSection from "../components/admin/RestaurantProfileSection";
 import CommentsSection from "../components/admin/CommentsSection";
 
+import ownerRestaurantAxios from "../api/ownerRestaurantAxios";
+import { useAuth } from "../context/AuthContext";
+import { useMusicSignalR } from "../hooks/useMusicSignalR";
+import { useModal } from "../components/common/GlobalModal";
+
 export default function AdminPage() {
   const cssReady = usePageStyles("/admin-dashboard.css");
 
@@ -26,12 +32,67 @@ export default function AdminPage() {
     () => localStorage.getItem("admin-active-tab") || "dashboard",
   );
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user } = useAuth();
 
+  const [restaurantId, setRestaurantId] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [hasNewRequest, setHasNewRequest] = useState(false);
+
+  const { showModal } = useModal();
+
+  /* ---------------------------
+   * LOAD RESTAURANT CONTEXT
+   * -------------------------- */
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const { data } = await ownerRestaurantAxios.get("/context");
+        setRestaurantId(data.restaurantId);
+      } catch (err) {
+        console.error("restaurant context error:", err);
+      }
+    };
+
+    if (user) load();
+  }, [user]);
+
+  useEffect(() => {
+    console.log("hasNewRequest =", hasNewRequest);
+  }, [hasNewRequest]);
+  /* ---------------------------
+   * SIGNALR (single source of truth)
+   * -------------------------- */
+  useMusicSignalR(restaurantId, {
+    onCreated: (data) => {
+      setHasNewRequest(true);
+
+      showModal({
+        title: "درخواست جدید موسیقی",
+        message: "یک درخواست جدید موسیقی از طرف مشتری ثبت شده است.",
+        buttonText: "متوجه شدم",
+        onConfirm: () => {
+          setActiveTab("music");
+          localStorage.setItem("admin-active-tab", "music");
+          setHasNewRequest(false);
+        },
+      });
+
+      console.log("🔄 realtime update triggered");
+    },
+  });
+
+  /* ---------------------------
+   * UI HANDLERS
+   * -------------------------- */
   const handleSelectTab = useCallback((tab) => {
     setActiveTab(tab);
     localStorage.setItem("admin-active-tab", tab);
+
     setSidebarOpen(false);
+
+    if (tab === "music") {
+      setHasNewRequest(false);
+    }
   }, []);
 
   const toggleSidebar = () => setSidebarOpen((v) => !v);
@@ -43,49 +104,34 @@ export default function AdminPage() {
     switch (activeTab) {
       case "dashboard":
         return <DashboardSection />;
-
       case "products":
         return <ProductsSection />;
-
       case "categories":
         return <CategoriesSection />;
-
       case "theme":
         return <ThemeSection />;
-
       case "music":
         return <MusicSection />;
-
       case "orders":
         return <OrdersSection />;
-
       case "comments":
         return <CommentsSection />;
-
       case "financial":
         return <FinancialSection />;
-
       case "ads":
         return <AdsBookingSection />;
-
       case "ads-settings":
         return <AdsSettingsSection />;
-
       case "ads-requests":
         return <AdsRequestsSection />;
-
       case "restaurants":
         return <RestaurantsListForAdminSection />;
-
       case "restaurant-profile":
         return <RestaurantProfileSection />;
-
       case "profile":
         return <ProfileSection />;
-
       case "category-settings":
         return <CategorySettingsSection />;
-
       default:
         return <div>در حال ساخت...</div>;
     }
@@ -102,6 +148,7 @@ export default function AdminPage() {
         onClose={closeSidebar}
         activeTab={activeTab}
         onSelect={handleSelectTab}
+        hasNewRequest={hasNewRequest}
       />
 
       <main className="main-content">

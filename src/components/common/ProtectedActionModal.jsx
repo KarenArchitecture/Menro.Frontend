@@ -17,6 +17,7 @@ export default function ProtectedActionModal({
 
     const modal = (
         <div className="protected-action-backdrop" onClick={onClose}>
+
         <div
             className="protected-action-modal"
             onClick={(e) => e.stopPropagation()}
@@ -44,6 +45,7 @@ export default function ProtectedActionModal({
             </button>
 
             <button className="protected-action-later" onClick={onClose}>
+
                 {cancelText}
             </button>
             </div>
@@ -56,4 +58,5 @@ export default function ProtectedActionModal({
   // (MobileNav) — دیگه هیچ ancestor با transform/overflow نمی‌تونه
   // position:fixed رو بشکنه یا زیرش پنهانش کنه.
     return ReactDOM.createPortal(modal, document.body);
+
 }

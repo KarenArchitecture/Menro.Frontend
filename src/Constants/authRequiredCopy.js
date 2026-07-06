@@ -10,7 +10,6 @@ export const authRequiredCopy = {
         description:
         "برای مشاهده و ثبت نظر ابتدا وارد حساب کاربری خود شوید.",
     },
-
     profile: {
         title: "ورود به حساب کاربری",
         description: "برای مشاهده پروفایل باید وارد شوید.",

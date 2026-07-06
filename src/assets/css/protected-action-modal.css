@@ -179,6 +179,8 @@
 .protected-action-actions {
     position: relative;
     overflow: hidden;
+    position:relative;
+    overflow:hidden;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -411,5 +413,4 @@
     50% {
         transform: scale(1.15);
         opacity: 0.95;
-    }
-}
+

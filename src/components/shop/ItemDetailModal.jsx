@@ -122,6 +122,7 @@ function ItemDetailModal({ item, onClose }) {
       icon: <CommentIcon />,
       returnUrl: commentsUrl, // 🔑 after login, go to the comments page, not back to the restaurant
       onAuthenticated: () => navigate(commentsUrl),
+
     });
   };
 
@@ -527,6 +528,7 @@ function ItemDetailModal({ item, onClose }) {
         icon={modalProps.icon}
         title={modalProps.title}
         description={modalProps.description}
+
       />
     </>
   );

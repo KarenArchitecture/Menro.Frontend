@@ -11,7 +11,6 @@ const NAV = [
   { key: "products", label: "مدیریت محصولات", icon: "fas fa-utensils" },
   { key: "categories", label: "دسته‌بندی‌های رستوران", icon: "fas fa-tags" },
   { key: "comments", label: "مدیریت نظرات", icon: "fas fa-comments" },
-  //{ key: "music", label: "مدیریت موسیقی", icon: "fas fa-music" },
 
   { isDivider: true, label: "کسب و کار" },
   { key: "orders", label: "مدیریت سفارش‌ها", icon: "fas fa-receipt" },
@@ -56,6 +55,7 @@ export default function AdminSidebar({
   onClose = () => {},
   activeTab,
   onSelect,
+  hasNewRequest = false,
 }) {
   const navigate = useNavigate();
 
@@ -129,7 +129,23 @@ export default function AdminSidebar({
                     handleSelect(item.key);
                   }}
                 >
-                  <i className={`nav-icon ${item.icon}`} /> {item.label}
+                  <i className={`nav-icon ${item.icon}`} />
+
+                  <span>{item.label}</span>
+
+                  {item.key === "music" && hasNewRequest && (
+                    <span
+                      style={{
+                        background: "red",
+                        color: "white",
+                        marginRight: "8px",
+                        padding: "2px 6px",
+                        borderRadius: "6px",
+                      }}
+                    >
+                      NEW
+                    </span>
+                  )}
                 </a>
               </li>
             );

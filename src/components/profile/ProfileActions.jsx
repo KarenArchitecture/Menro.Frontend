@@ -1,4 +1,4 @@
-import ActionCard from "./ActionCard";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useRequireLogin from "../../hooks/useRequireLogin";
 import ProtectedActionModal from "../common/ProtectedActionModal";
@@ -20,7 +20,7 @@ export default function ProfileActions() {
       icon: "/images/profile/profile-heart-icon.svg",
       label: "علاقه‌مندی",
       gradient: ["#A580EF", "#E98A8A"],
-      onClick: () => navigate("/favorites"),
+      onClick: handleFavoritesClick,
     },
     {
       icon: "/images/profile/profile-chat-icon.svg",

@@ -1,3 +1,212 @@
+// import React, { useEffect, useState } from "react";
+// import { useDrawerState } from "../../Context/DrawerStateContext";
+// import ComingSoonModal from "./ComingSoonModal";
+// import { toPersianDigits } from "../../utils/persianNumbers";
+// import useRequireLogin from "../../hooks/useRequireLogin";
+// import ProtectedActionModal from "../common/ProtectedActionModal";
+// import { NavLink, useNavigate } from "react-router-dom";
+
+// const MobileNav = () => {
+//   const { isDrawerOpen } = useDrawerState();
+//   const [mounted, setMounted] = useState(false);
+//   const [isComingSoonOpen, setIsComingSoonOpen] = useState(false);
+//   const navigate = useNavigate();
+
+//   const {
+//     requireLogin,
+//     open,
+//     closeModal,
+//     goToLogin,
+//   } = useRequireLogin();
+
+//   // Prevent SSR / hydration issues
+//   useEffect(() => {
+//     setMounted(true);
+//   }, []);
+
+//   const openComingSoonModal = (event) => {
+//     event.preventDefault();
+//     setIsComingSoonOpen(true);
+//   };
+
+//   const closeComingSoonModal = () => {
+//     setIsComingSoonOpen(false);
+//   };
+
+//   const handleProfileClick = (event) => {
+//     event.preventDefault();
+
+//     requireLogin({
+//       returnUrl: "/profile",
+//       onAuthenticated: () => {
+//         navigate("/profile");
+//       },
+//     });
+//   };
+
+//   const navContent = (
+//     <>
+//       <nav className={`mobile-nav`}>
+//         <ul className="mobile-nav-list">
+//           {/* HOME */}
+//           <li>
+//             <NavLink
+//               to="/home"
+//               className={({ isActive }) =>
+//                 `nav-item ${isActive ? "active" : ""}`
+//               }
+//             >
+//               <svg
+//                 width="34"
+//                 height="34"
+//                 viewBox="0 0 34 34"
+//                 fill="none"
+//                 xmlns="http://www.w3.org/2000/svg"
+//               >
+//                 <path
+//                   fillRule="evenodd"
+//                   clipRule="evenodd"
+//                   d="M6.0818 12.1894C5.48389 13.2818 5.48389 14.5995 5.48389 17.2348V18.9865C5.48389 23.4788 5.48389 25.7249 6.83308 27.1205C8.18228 28.5161 10.3538 28.5161 14.6968 28.5161H19.3032C23.6462 28.5161 25.8177 28.5161 27.1669 27.1205C28.5161 25.7249 28.5161 23.4788 28.5161 18.9865V17.2348C28.5161 14.5995 28.5161 13.2818 27.9182 12.1894C27.3203 11.0971 26.2279 10.4191 24.0432 9.06324L21.74 7.63379C19.4306 6.20052 18.2759 5.48389 17 5.48389C15.7241 5.48389 14.5694 6.20052 12.26 7.6338L9.95678 9.06324C7.77208 10.4191 6.67972 11.0971 6.0818 12.1894ZM13.5452 23.046C13.0682 23.046 12.6815 23.4327 12.6815 23.9097C12.6815 24.3867 13.0682 24.7734 13.5452 24.7734H20.4548C20.9318 24.7734 21.3185 24.3867 21.3185 23.9097C21.3185 23.4327 20.9318 23.046 20.4548 23.046H13.5452Z"
+//                   fill="#999FA8"
+//                 />
+//               </svg>
+//               <span className="text">خانه</span>
+//             </NavLink>
+//           </li>
+
+//           {/* LOCATION */}
+//           <li>
+//             <NavLink
+//               to="/location"
+//               onClick={openComingSoonModal}
+//               className="nav-item"
+//             >
+//               <svg
+//                 width="34"
+//                 height="34"
+//                 viewBox="0 0 34 34"
+//                 fill="none"
+//                 xmlns="http://www.w3.org/2000/svg"
+//               >
+//                 <path
+//                   d="M17 29C23.6274 29 29 26.6539 29 23.7599C29 22.2849 27.6045 20.9523 25.3585 20C23.988 22.4405 21.8981 24.5442 19.2434 25.645C17.8165 26.2368 16.1835 26.2368 14.7566 25.645C12.1019 24.5442 10.012 22.4405 8.6415 20C6.39554 20.9523 5 22.2849 5 23.7599C5 26.6539 10.3726 29 17 29Z"
+//                   fill="#999FA8"
+//                 />
+//                 <path
+//                   fillRule="evenodd"
+//                   clipRule="evenodd"
+//                   d="M9 12.7361C9 8.46358 12.5817 5 17 5C21.4183 5 25 8.46358 25 12.7361C25 16.9752 22.4467 21.9218 18.4629 23.6907C17.5343 24.1031 16.4657 24.1031 15.5371 23.6907C11.5533 21.9218 9 16.9752 9 12.7361ZM17 15.6875C18.2624 15.6875 19.2857 14.6242 19.2857 13.3125C19.2857 12.0008 18.2624 10.9375 17 10.9375C15.7376 10.9375 14.7143 12.0008 14.7143 13.3125C14.7143 14.6242 15.7376 15.6875 17 15.6875Z"
+//                   fill="#999FA8"
+//                 />
+//               </svg>
+//               <span className="text">موقعیت</span>
+//             </NavLink>
+//           </li>
+
+//           {/* CART */}
+//           <li className="mobile-menu-cart">
+//             <NavLink
+//               to="/orders"
+//               className={({ isActive }) =>
+//                 `nav-item ${isActive ? "active" : ""}`
+//               }
+//             >
+//               <svg
+//                 width="34"
+//                 height="34"
+//                 viewBox="0 0 34 34"
+//                 fill="none"
+//                 xmlns="http://www.w3.org/2000/svg"
+//               >
+//                 <path
+//                   fillRule="evenodd"
+//                   clipRule="evenodd"
+//                   d="M8.93321 7.26939C7.88732 8.19002 7.61183 9.74835 7.06086 12.865L6.11938 18.1906C5.34461 22.5732 4.95723 24.7645 6.08665 26.2079C7.21607 27.6512 9.31812 27.6512 13.5222 27.6512H20.4777C24.6818 27.6512 26.7839 27.6512 27.9133 26.2079C29.0427 24.7645 28.6553 22.5732 27.8806 18.1906L26.9391 12.865C26.3881 9.74835 26.1126 8.19002 25.0667 7.26939C24.0208 6.34875 22.526 6.34875 19.5362 6.34875H14.4637C11.474 6.34875 9.9791 6.34875 8.93321 7.26939ZM14.3365 11.3416C14.7247 12.5065 15.7722 13.3386 17.0005 13.3386C18.2288 13.3386 19.2763 12.5065 19.6644 11.3416C19.8377 10.8217 20.3756 10.5491 20.8658 10.7329C21.3561 10.9167 21.613 11.4872 21.4398 12.0071C20.794 13.945 19.0516 15.3357 17.0005 15.3357C14.9494 15.3357 13.2069 13.945 12.5612 12.0071C12.3879 11.4872 12.6448 10.9167 13.1351 10.7329C13.6253 10.5491 14.1632 10.8217 14.3365 11.3416Z"
+//                   fill="#999FA8"
+//                 />
+//               </svg>
+//               <span className="text">سفارش‌ها</span>
+//               <span className="badge">{toPersianDigits(3)}</span>
+//             </NavLink>
+//           </li>
+
+//           {/* PROFILE */}
+//           <li>
+//             <NavLink
+//               to="/profile"
+//               onClick={handleProfileClick}
+//               className={({ isActive }) =>
+//                 `nav-item ${isActive ? "active" : ""}`
+//               }
+//             >
+//               <svg
+//                 width="28"
+//                 height="28"
+//                 viewBox="0 0 28 28"
+//                 fill="none"
+//                 xmlns="http://www.w3.org/2000/svg"
+//               >
+//                 <circle cx="13.9999" cy="7.47369" r="5.47369" fill="#999FA8" />
+//                 <ellipse
+//                   cx="14"
+//                   cy="20.5263"
+//                   rx="9.57896"
+//                   ry="5.47369"
+//                   fill="#999FA8"
+//                 />
+//               </svg>
+//               <span className="text">حساب کاربری</span>
+//             </NavLink>
+//           </li>
+//         </ul>
+//       </nav>
+
+//       <ComingSoonModal
+//         isOpen={isComingSoonOpen}
+//         onClose={closeComingSoonModal}
+//         title="به زودی"
+//       />
+
+//       <ProtectedActionModal
+//         open={open}
+//         onClose={closeModal}
+//         onLogin={goToLogin}
+//         title="ورود لازم است"
+//         description="برای مشاهده <span>حساب کاربری</span> ابتدا وارد حساب خود شوید."
+//         icon={
+//           <svg
+//             width="40"
+//             height="40"
+//             viewBox="0 0 28 28"
+//             fill="none"
+//             xmlns="http://www.w3.org/2000/svg"
+//           >
+//             <circle
+//               cx="13.9999"
+//               cy="7.47369"
+//               r="5.47369"
+//               fill="currentColor"
+//             />
+//             <ellipse
+//               cx="14"
+//               cy="20.5263"
+//               rx="9.57896"
+//               ry="5.47369"
+//               fill="currentColor"
+//             />
+//           </svg>
+//         }
+//       />
+//     </>
+//   );
+
+//   if (!mounted) return null;
+
+//   return navContent;
+// };
+
+// export default MobileNav;
+
 import React, { useEffect, useState } from "react";
 import { useDrawerState } from "../../Context/DrawerStateContext";
 import ComingSoonModal from "./ComingSoonModal";

@@ -15,6 +15,8 @@ import { useFavoriteIds, useToggleFavorite } from "../../hooks/useFavorites";
 import useRequireLogin from "../../hooks/useRequireLogin";
 import ProtectedActionModal from "../common/ProtectedActionModal";
 import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import CommentIcon from "../icons/CommentIcon";
 
 
 /* Helper for consistent Persian digits */
@@ -66,6 +68,7 @@ const AddonScrollPicker = ({ value = 0, onChange, max = 99 }) => {
 
 function ItemDetailModal({ item, onClose }) {
   const cart = useCart();
+  const navigate = useNavigate();
   const [isActive, setIsActive] = useState(false);
 
   const {
@@ -73,7 +76,12 @@ function ItemDetailModal({ item, onClose }) {
     open,
     closeModal,
     goToLogin,
+    modalProps,
   } = useRequireLogin();
+
+  useEffect(() => {
+    console.log("MODAL OPEN STATE:", open);
+  }, [open]);
 
   const { user } = useAuth();
 
@@ -93,17 +101,28 @@ function ItemDetailModal({ item, onClose }) {
   });
 
   const handleToggleFavorite = () => {
-    console.log("favorite clicked");
-
     requireLogin({
       type: "favorites",
+      icon: <LikeIcon active />,
       onAuthenticated: () => {
         if (!item?.id) return;
-
         if (toggleFavorite.isPending) return;
-
         toggleFavorite.mutate(item.id);
       },
+    });
+  };
+
+  const handleOpenComments = () => {
+    if (!item?.id) return;
+
+    const commentsUrl = `/foods/${item.id}/comments`;
+
+    requireLogin({
+      type: "comments",
+      icon: <CommentIcon />,
+      returnUrl: commentsUrl, // 🔑 after login, go to the comments page, not back to the restaurant
+      onAuthenticated: () => navigate(commentsUrl),
+
     });
   };
 
@@ -352,8 +371,9 @@ function ItemDetailModal({ item, onClose }) {
                     type="button"
                     className="icon-btn modal-top-action"
                     aria-label="پیام"
+                    onClick={handleOpenComments}
                   >
-                    <MessageIcon />
+                    <CommentIcon />
                   </button>
 
                   <button
@@ -505,14 +525,10 @@ function ItemDetailModal({ item, onClose }) {
         open={open}
         onClose={closeModal}
         onLogin={goToLogin}
-        icon={<LikeIcon active />}
-        description={
-          <>
-            برای افزودن این غذا به
-            <span> علاقه‌مندی‌ها </span>
-            ابتدا وارد حساب کاربری خود شوید.
-          </>
-        }
+        icon={modalProps.icon}
+        title={modalProps.title}
+        description={modalProps.description}
+
       />
     </>
   );

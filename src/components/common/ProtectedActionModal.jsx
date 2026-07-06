@@ -1,3 +1,4 @@
+import ReactDOM from "react-dom";
 import "../../assets/css/protected-action-modal.css";
 
 export default function ProtectedActionModal({
@@ -14,11 +15,9 @@ export default function ProtectedActionModal({
     }) {
     if (!open) return null;
 
-    return (
-        <div
-        className="protected-action-backdrop"
-        onClick={onClose}
-        >
+    const modal = (
+        <div className="protected-action-backdrop" onClick={onClose}>
+
         <div
             className="protected-action-modal"
             onClick={(e) => e.stopPropagation()}
@@ -34,36 +33,30 @@ export default function ProtectedActionModal({
             ×
             </button>
 
-            {icon && (
-            <div className="protected-action-icon">
-                {icon}
-            </div>
-            )}
+            {icon && <div className="protected-action-icon">{icon}</div>}
 
-            <h2 className="protected-action-title">
-            {title}
-            </h2>
+            <h2 className="protected-action-title">{title}</h2>
 
-            <div className="protected-action-description">
-            {description}
-            </div>
+            <div className="protected-action-description">{description}</div>
 
             <div className="protected-action-actions">
-            <button
-                className="protected-action-login"
-                onClick={onLogin}
-            >
+            <button className="protected-action-login" onClick={onLogin}>
                 {loginText}
             </button>
 
-            <button
-                className="protected-action-later"
-                onClick={onClose}
-            >
+            <button className="protected-action-later" onClick={onClose}>
+
                 {cancelText}
             </button>
             </div>
         </div>
         </div>
     );
+
+  // 🔑 همیشه مستقیم به body پورتال می‌شه؛ فرقی نمی‌کنه از داخل یک modal
+  // پورتال‌شده (ItemDetailModal) صداش بزنی یا از داخل یک کامپوننت معمولی
+  // (MobileNav) — دیگه هیچ ancestor با transform/overflow نمی‌تونه
+  // position:fixed رو بشکنه یا زیرش پنهانش کنه.
+    return ReactDOM.createPortal(modal, document.body);
+
 }

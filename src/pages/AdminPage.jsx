@@ -18,6 +18,7 @@ import AdsSettingsSection from "../components/admin/AdsSettingsSection";
 import AdsRequestsSection from "../components/admin/AdsRequestsSection";
 import RestaurantsListForAdminSection from "../components/admin/RestaurantsListForAdminSection";
 import RestaurantProfileSection from "../components/admin/RestaurantProfileSection";
+import CommentsSection from "../components/admin/CommentsSection";
 
 import ownerRestaurantAxios from "../api/ownerRestaurantAxios";
 import { useAuth } from "../context/AuthContext";
@@ -113,6 +114,8 @@ export default function AdminPage() {
         return <MusicSection />;
       case "orders":
         return <OrdersSection />;
+      case "comments":
+        return <CommentsSection />;
       case "financial":
         return <FinancialSection />;
       case "ads":

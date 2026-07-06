@@ -5,7 +5,7 @@
 .protected-action-backdrop {
     position: fixed;
     inset: 0;
-    z-index: 9999;
+    z-index: 999999;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -55,11 +55,12 @@
     transform: translateX(-50%);
     width: 220px;
     height: 220px;
-    background:
-        radial-gradient(circle,
-            rgba(255,104,60,.38),
-            rgba(255,104,60,.15) 45%,
-        transparent 72%);
+    background: radial-gradient(
+        circle,
+        rgba(255, 104, 60, 0.38),
+        rgba(255, 104, 60, 0.15) 45%,
+        transparent 72%
+    );
     filter: blur(30px);
     pointer-events: none;
 }
@@ -81,7 +82,6 @@
     font-size: 24px;
     cursor: pointer;
     transition: 0.25s;
-    
 }
 
 .protected-action-close:hover {
@@ -93,53 +93,52 @@
 =========================== */
 
 .protected-action-icon {
-    position:relative;
-    width:104px;
-    height:104px;
-    margin:auto;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:50%;
+    position: relative;
+    width: 104px;
+    height: 104px;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
     background:
-        radial-gradient(circle at 30% 25%,
-            rgba(255,255,255,.20),
-            rgba(255,255,255,.05) 45%,
-            rgba(255,255,255,.02) 70%),
+        radial-gradient(
+            circle at 30% 25%,
+            rgba(255, 255, 255, 0.2),
+            rgba(255, 255, 255, 0.05) 45%,
+            rgba(255, 255, 255, 0.02) 70%
+        ),
         linear-gradient(
             180deg,
-            rgba(255,255,255,.06),
-            rgba(255,255,255,.03)
+            rgba(255, 255, 255, 0.06),
+            rgba(255, 255, 255, 0.03)
         );
-    border:1px solid rgba(255,255,255,.08);
-    backdrop-filter:blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(16px);
     box-shadow:
-        inset 0 1px 1px rgba(255,255,255,.15),
-        inset 0 -10px 20px rgba(0,0,0,.25),
-        0 0 45px rgba(255,104,60,.18);
-    overflow:hidden;
+        inset 0 1px 1px rgba(255, 255, 255, 0.15),
+        inset 0 -10px 20px rgba(0, 0, 0, 0.25),
+        0 0 45px rgba(255, 104, 60, 0.18);
+    overflow: hidden;
     animation:
         orbFloat 5s ease-in-out infinite,
         orbGlow 4s ease-in-out infinite;
 }
 
 .protected-action-icon svg {
+    width: 42px;
 
-    width:42px;
+    height: 42px;
 
-    height:42px;
+    color: #ff683c;
 
-    color:#FF683C;
+    fill: #ff683c;
 
-    fill:#FF683C;
+    position: relative;
 
-    position:relative;
+    z-index: 3;
 
-    z-index:3;
-
-    filter:
-
-        drop-shadow(0 0 10px rgba(255,104,60,.45));
+    filter: drop-shadow(0 0 10px rgba(255, 104, 60, 0.45));
 }
 
 /* ===========================
@@ -178,6 +177,8 @@
 =========================== */
 
 .protected-action-actions {
+    position: relative;
+    overflow: hidden;
     position:relative;
     overflow:hidden;
     display: flex;
@@ -196,30 +197,29 @@
     font-weight: 700;
     background: linear-gradient(135deg, #ff7a50, #ff683c);
     transition: 0.28s;
-    isolation:isolate;
-    overflow:hidden;
+    isolation: isolate;
+    overflow: hidden;
 }
 
-.protected-action-login::before{
-    content:"";
-    position:absolute;
-    top:0;
-    left:-120%;
-    width:70%;
-    height:100%;
-    border-radius:inherit;
-    background:
-        linear-gradient(
+.protected-action-login::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -120%;
+    width: 70%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(
         90deg,
         transparent,
-        rgba(255,255,255,.35),
+        rgba(255, 255, 255, 0.35),
         transparent
-        );
-    transform:skewX(-25deg);
+    );
+    transform: skewX(-25deg);
 }
 
 .protected-action-login:hover {
-    filter:brightness(1.05);
+    filter: brightness(1.05);
 }
 
 .protected-action-later {
@@ -281,148 +281,136 @@
     Glass Shine
 =========================== */
 
-.protected-action-shine{
-    position:absolute;
-    inset:-60%;
-    background:
-        linear-gradient(
-            120deg,
-            transparent 30%,
-            rgba(255,255,255,.08) 48%,
-            rgba(255,255,255,.20) 50%,
-            rgba(255,255,255,.08) 52%,
-            transparent 70%
-        );
-    transform:rotate(18deg);
-    animation:glassMove 7s linear infinite;
-    pointer-events:none;
+.protected-action-shine {
+    position: absolute;
+    inset: -60%;
+    background: linear-gradient(
+        120deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.08) 48%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0.08) 52%,
+        transparent 70%
+    );
+    transform: rotate(18deg);
+    animation: glassMove 7s linear infinite;
+    pointer-events: none;
 }
 
-@keyframes glassMove{
-
-    0%{
-        transform:
-        translateX(-70%)
-        rotate(18deg);
+@keyframes glassMove {
+    0% {
+        transform: translateX(-70%) rotate(18deg);
     }
 
-    100%{
-        transform:
-        translateX(70%)
-        rotate(18deg);
+    100% {
+        transform: translateX(70%) rotate(18deg);
     }
-
 }
 
-
-@keyframes heartGlow{
-    0%{
+@keyframes heartGlow {
+    0% {
         box-shadow:
-        0 0 0 8px rgba(255,104,60,.08),
-        0 0 24px rgba(255,104,60,.35);
+            0 0 0 8px rgba(255, 104, 60, 0.08),
+            0 0 24px rgba(255, 104, 60, 0.35);
     }
 
-    50%{
+    50% {
         box-shadow:
-        0 0 0 14px rgba(255,104,60,.12),
-        0 0 48px rgba(255,104,60,.60);
+            0 0 0 14px rgba(255, 104, 60, 0.12),
+            0 0 48px rgba(255, 104, 60, 0.6);
     }
 
-    100%{
+    100% {
         box-shadow:
-        0 0 0 8px rgba(255,104,60,.08),
-        0 0 24px rgba(255,104,60,.35);
+            0 0 0 8px rgba(255, 104, 60, 0.08),
+            0 0 24px rgba(255, 104, 60, 0.35);
     }
 }
 
-
-.protected-action-login:hover::before{
-    animation:buttonSweep .7s ease;
+.protected-action-login:hover::before {
+    animation: buttonSweep 0.7s ease;
 }
 
-@keyframes buttonSweep{
-    from{
-        left:-120%;
+@keyframes buttonSweep {
+    from {
+        left: -120%;
     }
 
-    to{
-        left:160%;
-    }
-}
-
-.protected-action-icon::before{
-    content:"";
-    position:absolute;
-    top:8px;
-    left:12px;
-    width:42px;
-    height:20px;
-    border-radius:50%;
-    background:
-        linear-gradient(
-            180deg,
-            rgba(255,255,255,.55),
-            rgba(255,255,255,0)
-            );
-    filter:blur(3px);
-    transform:rotate(-18deg);
-    opacity:.9;
-}
-
-.protected-action-icon::after{
-    content:"";
-    position:absolute;
-    width:62px;
-    height:62px;
-    border-radius:50%;
-    background:
-    radial-gradient(circle,
-    rgba(255,104,60,.45),
-    transparent 72%);
-    filter:blur(14px);
-    z-index:0;
-    animation:heartCore 3.5s ease-in-out infinite;
-}
-
-@keyframes orbFloat{
-    0%,100%{
-        transform:translateY(0px);
-    }
-
-    50%{
-        transform:translateY(-6px);
+    to {
+        left: 160%;
     }
 }
 
+.protected-action-icon::before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    left: 12px;
+    width: 42px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.55),
+        rgba(255, 255, 255, 0)
+    );
+    filter: blur(3px);
+    transform: rotate(-18deg);
+    opacity: 0.9;
+}
 
+.protected-action-icon::after {
+    content: "";
+    position: absolute;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle,
+        rgba(255, 104, 60, 0.45),
+        transparent 72%
+    );
+    filter: blur(14px);
+    z-index: 0;
+    animation: heartCore 3.5s ease-in-out infinite;
+}
 
-@keyframes orbGlow{
-    0%,100%{
+@keyframes orbFloat {
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-6px);
+    }
+}
+
+@keyframes orbGlow {
+    0%,
+    100% {
         box-shadow:
-        inset 0 1px 1px rgba(255,255,255,.15),
-        inset 0 -10px 20px rgba(0,0,0,.25),
-        0 0 35px rgba(255,104,60,.15);
+            inset 0 1px 1px rgba(255, 255, 255, 0.15),
+            inset 0 -10px 20px rgba(0, 0, 0, 0.25),
+            0 0 35px rgba(255, 104, 60, 0.15);
     }
 
-    50%{
+    50% {
         box-shadow:
-        inset 0 1px 1px rgba(255,255,255,.18),
-        inset 0 -10px 20px rgba(0,0,0,.25),
-        0 0 55px rgba(255,104,60,.30);
-    }
-
-}
-
-
-
-@keyframes heartCore{
-    0%,100%{
-        transform:scale(.92);
-        opacity:.55;
-    }
-
-    50%{
-        transform:scale(1.15);
-        opacity:.95;
+            inset 0 1px 1px rgba(255, 255, 255, 0.18),
+            inset 0 -10px 20px rgba(0, 0, 0, 0.25),
+            0 0 55px rgba(255, 104, 60, 0.3);
     }
 }
+
+@keyframes heartCore {
+    0%,
+    100% {
+        transform: scale(0.92);
+        opacity: 0.55;
+    }
+
+    50% {
+        transform: scale(1.15);
+        opacity: 0.95;
+

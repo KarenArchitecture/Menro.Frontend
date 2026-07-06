@@ -228,6 +228,11 @@ const MobileNav = () => {
     modalProps,
   } = useRequireLogin();
 
+  const handleGoToLogin = () => {
+    closeModal();
+    goToLogin();
+  };
+
   // Prevent SSR / hydration issues
   useEffect(() => {
     setMounted(true);
@@ -250,6 +255,25 @@ const MobileNav = () => {
         navigate("/profile");
       },
       returnUrl: "/profile",
+      type: "profile",
+      icon: (
+        <svg
+                width="28"
+                height="28"
+                viewBox="0 0 28 28"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle cx="13.9999" cy="7.47369" r="5.47369" fill="#FF683C" />
+                <ellipse
+                  cx="14"
+                  cy="20.5263"
+                  rx="9.57896"
+                  ry="5.47369"
+                  fill="#FF683C"
+                />
+              </svg>
+      )
     });
   };
 
@@ -379,7 +403,7 @@ const MobileNav = () => {
       <ProtectedActionModal
           open={open}
           onClose={closeModal}
-          onLogin={goToLogin}
+          onLogin={handleGoToLogin}
           icon={modalProps.icon}
           title={modalProps.title}
           description={modalProps.description}

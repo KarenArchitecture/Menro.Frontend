@@ -16,7 +16,7 @@ function CommentsPage() {
     open,
     closeModal,
     goToLogin,
-    modalConfig,
+    modalProps,
   } = useRequireLogin();
 
   const [rating, setRating] = useState(5);
@@ -49,7 +49,7 @@ function CommentsPage() {
       setFormError("لطفاً متن نظر را وارد کنید.");
       return;
     }
-    requireLogin({ onAuthenticated: () => submitComment.mutate() });
+    requireLogin({ type: "comments", onAuthenticated: () => submitComment.mutate() });
   };
 
   return (
@@ -72,30 +72,30 @@ function CommentsPage() {
           <span className="comments-header__text">کامنت‌ها</span>
         </div>
       </div>
-
-      <form className="comment-form" onSubmit={handleSubmit} style={{ marginBottom: 24 }}>
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="نظر خود را بنویسید..."
-          rows={3}
-          style={{ width: "100%", marginBottom: 8 }}
-        />
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <select value={rating} onChange={(e) => setRating(Number(e.target.value))}>
-            {[5, 4, 3, 2, 1].map((n) => (
-              <option key={n} value={n}>
-                {n} ستاره
-              </option>
-            ))}
-          </select>
-          <button type="submit" className="btn btn-primary" disabled={submitComment.isPending}>
-            {submitComment.isPending ? "در حال ارسال..." : "ثبت نظر"}
-          </button>
-        </div>
-        {formError && <div className="input-alert">{formError}</div>}
-      </form>
-
+      {foodId && (
+        <form className="comment-form" onSubmit={handleSubmit} style={{ marginBottom: 24 }}>
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="نظر خود را بنویسید..."
+            rows={3}
+            style={{ width: "100%", marginBottom: 8 }}
+          />
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <select value={rating} onChange={(e) => setRating(Number(e.target.value))}>
+              {[5, 4, 3, 2, 1].map((n) => (
+                <option key={n} value={n}>
+                  {n} ستاره
+                </option>
+              ))}
+            </select>
+            <button type="submit" className="btn btn-primary" disabled={submitComment.isPending}>
+              {submitComment.isPending ? "در حال ارسال..." : "ثبت نظر"}
+            </button>
+          </div>
+          {formError && <div className="input-alert">{formError}</div>}
+        </form>
+      )}
       <div className="comments-list">
         {isLoading && <p>در حال بارگذاری نظرات...</p>}
         {!isLoading && comments.length === 0 && <p>هنوز نظری ثبت نشده است.</p>}
@@ -108,9 +108,9 @@ function CommentsPage() {
         open={open}
         onClose={closeModal}
         onLogin={goToLogin}
-        icon={modalConfig.icon}
-        title={modalConfig.title}
-        description={modalConfig.description}
+        icon={modalProps.icon}
+        title={modalProps.title}
+        description={modalProps.description}
       />
     </div>
   );

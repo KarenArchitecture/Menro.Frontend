@@ -6,7 +6,6 @@ import FavoritesHeader from "../components/favorites/FavoritesHeader";
 import { FoodCardsSkeleton } from "../components/home/HomeSkeletons";
 import { useFavoriteFoods } from "../hooks/useFavorites";
 export default function FavoritesPage() {
-  
 
   const {
     data,
@@ -56,7 +55,6 @@ export default function FavoritesPage() {
   }
 
   
-
   return (
     
     <div className="favorites-page">

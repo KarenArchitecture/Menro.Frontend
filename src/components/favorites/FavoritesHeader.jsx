@@ -10,7 +10,7 @@ export default function FavoritesHeader() {
       </button>
 
       <div className="favorites-header__title">
-        <img src="/images/profile/profile-heart-icon.svg" alt="favorites" />
+        <img src="/images/profile/heart-favorites-icon.svg" alt="favorites" />
         <span>علاقه‌مندی‌ها</span>
       </div>
     </div>

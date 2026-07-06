@@ -106,7 +106,9 @@ export default function LoginPage() {
           "userPhone",
           JSON.stringify({ value: phone, expiresAt }),
         );
-        navigate("/register");
+        navigate(
+          `/register?returnUrl=${encodeURIComponent(returnUrl || "/")}`
+        );
       } else if (data.verified) {
         // مرحله بعد: لاگین نهایی
         await finalLogin.mutateAsync({ userId: data.userId });

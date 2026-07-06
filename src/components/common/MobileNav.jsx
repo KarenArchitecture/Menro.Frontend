@@ -1,13 +1,28 @@
 import React, { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
 import { useDrawerState } from "../../Context/DrawerStateContext";
 import ComingSoonModal from "./ComingSoonModal";
 import { toPersianDigits } from "../../utils/persianNumbers";
+import useRequireLogin from "../../hooks/useRequireLogin";
+import ProtectedActionModal from "../common/ProtectedActionModal";
+import { NavLink, useNavigate } from "react-router-dom";
 
 const MobileNav = () => {
   const { isDrawerOpen } = useDrawerState();
   const [mounted, setMounted] = useState(false);
   const [isComingSoonOpen, setIsComingSoonOpen] = useState(false);
+  const navigate = useNavigate();
+  const {
+    requireLogin,
+    open,
+    closeModal,
+    goToLogin,
+    modalProps,
+  } = useRequireLogin();
+
+  const handleGoToLogin = () => {
+    closeModal();
+    goToLogin();
+  };
 
   // Prevent SSR / hydration issues
   useEffect(() => {
@@ -21,6 +36,36 @@ const MobileNav = () => {
 
   const closeComingSoonModal = () => {
     setIsComingSoonOpen(false);
+  };
+
+  const handleProfileClick = (event) => {
+    event.preventDefault();
+
+    requireLogin({
+      onAuthenticated: () => {
+        navigate("/profile");
+      },
+      returnUrl: "/profile",
+      type: "profile",
+      icon: (
+        <svg
+                width="28"
+                height="28"
+                viewBox="0 0 28 28"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle cx="13.9999" cy="7.47369" r="5.47369" fill="#FF683C" />
+                <ellipse
+                  cx="14"
+                  cy="20.5263"
+                  rx="9.57896"
+                  ry="5.47369"
+                  fill="#FF683C"
+                />
+              </svg>
+      )
+    });
   };
 
   const navContent = (
@@ -113,6 +158,7 @@ const MobileNav = () => {
           <li>
             <NavLink
               to="/profile"
+              onClick={handleProfileClick}
               className={({ isActive }) =>
                 `nav-item ${isActive ? "active" : ""}`
               }
@@ -143,6 +189,15 @@ const MobileNav = () => {
         isOpen={isComingSoonOpen}
         onClose={closeComingSoonModal}
         title="به زودی"
+      />
+
+      <ProtectedActionModal
+          open={open}
+          onClose={closeModal}
+          onLogin={handleGoToLogin}
+          icon={modalProps.icon}
+          title={modalProps.title}
+          description={modalProps.description}
       />
     </>
   );

@@ -23,7 +23,8 @@ import Orders from "./pages/OrdersPage";
 import AdminMusicPage from "./pages/AdminMusicPage";
 // 1. Import the BillsPage
 import BillsPage from "./pages/BillsPage";
-
+import FavoritesPage from "./pages/FavoritesPage";
+import ProfilePage from "./pages/ProfilePage";
 import {
   DrawerStateProvider,
   useDrawerState,
@@ -62,6 +63,7 @@ export default function App() {
     "/restaurant",
     "/orders/bill",
     "/music",
+    "/favorites",
   ];
 
   // 3. Added "/orders/bill" so the app shell doesn't add blank padding at the bottom
@@ -111,7 +113,7 @@ export default function App() {
           <Route path="/orders" element={<Orders />} />
           {/* 4. Added the dynamic route for the BillsPage */}
           <Route path="/orders/bill/:id" element={<BillsPage />} />
-
+          <Route path="/favorites" element={<FavoritesPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
           <Route
@@ -120,6 +122,14 @@ export default function App() {
               <ProtectedRoute roles={["admin", "owner"]}>
                 <AdminPage />
               </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              // <ProtectedRoute roles={["user", "admin", "owner"]}>
+              <ProfilePage />
+              // </ProtectedRoute>
             }
           />
         </Routes>

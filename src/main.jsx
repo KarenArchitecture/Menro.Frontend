@@ -9,7 +9,6 @@ import { AuthProvider } from "./Context/AuthContext.jsx";
 import { ModalProvider } from "./components/common/GlobalModal";
 
 import "@fortawesome/fontawesome-free/css/all.min.css";
-
 import "./assets/css/generic.css";
 import "./assets/css/styles.css";
 

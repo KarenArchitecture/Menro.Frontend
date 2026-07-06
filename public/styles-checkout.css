@@ -355,7 +355,9 @@ h2 {
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: transform 0.06s ease, background 0.2s ease;
+  transition:
+    transform 0.06s ease,
+    background 0.2s ease;
 }
 
 .qty-btn:active {
@@ -578,7 +580,9 @@ h2 {
   color: #fff;
   border-radius: 12px;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.06s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.06s ease;
 }
 
 .payment-card:hover {
@@ -680,7 +684,9 @@ h2 {
   border: none;
   border-radius: 0.9rem;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.06s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.06s ease;
 }
 
 .footer-total {
@@ -844,7 +850,10 @@ h2 {
   max-height: 0;
   overflow: hidden;
   opacity: 0;
-  transition: max-height 0.3s ease, opacity 0.25s ease, margin-top 0.25s ease;
+  transition:
+    max-height 0.3s ease,
+    opacity 0.25s ease,
+    margin-top 0.25s ease;
 }
 
 .table-selector-inline.is-open {

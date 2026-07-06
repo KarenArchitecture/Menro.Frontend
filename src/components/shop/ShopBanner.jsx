@@ -26,7 +26,8 @@ function ShopBanner({
   }
 
   const bannerUrl =
-    resolveFileUrl(banner.bannerImageUrl) || "/images/Restaurant/top-banner.png";
+    resolveFileUrl(banner.bannerImageUrl) ||
+    "/images/Restaurant/top-banner.png";
 
   return (
     <section
@@ -93,7 +94,16 @@ function ShopBanner({
             <CircleIcon />
           </button>
 
-          <button className="reorder-and-music-btn">
+          <button
+            className="reorder-and-music-btn"
+            onClick={() =>
+              navigate(`/restaurant/${banner.slug}/music`, {
+                state: {
+                  restaurantId: banner.id,
+                },
+              })
+            }
+          >
             <span>درخواست موسیقی</span>
             <MusicIcon />
           </button>
@@ -104,4 +114,3 @@ function ShopBanner({
 }
 
 export default ShopBanner;
- 

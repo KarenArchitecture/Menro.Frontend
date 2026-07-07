@@ -1,28 +1,4 @@
-// src/components/admin/BlogManagementSection.jsx
-//
-// Blog Management — a single admin tab that lets the owner manage every
-// feature rendered on the public blog page (BlogHero, BlogCategories,
-// BlogFeed's category nav, BlogSidebar's tags, and the mobile blocks logic).
-//
-// Internal layout follows the same pattern already used by MusicSection:
-// a `.content-tab-nav` row switches between `.content-tab-pane`s, so it
-// slots into the existing admin visual language without introducing a
-// second design system.
-//
-// NOTE ON DATA: this file ships with local React state seeded from the
-// current blogData.js so the tab is immediately usable and testable.
-// Replace the marked `TODO: API` spots with real calls to your blog admin
-// endpoints (e.g. an `ownerBlogAxios` client mirroring `ownerRestaurantAxios`)
-// once the backend routes exist. Every mutation already happens through a
-// single local handler, so swapping in `await api.post(...)` etc. is a
-// contained change.
-
 import { useMemo, useState } from "react";
-
-/* ------------------------------------------------------------------ */
-/* Seed data — mirrors src/components/blog/blogData.js + hard-coded    */
-/* content read out of BlogHero.jsx / BlogCategories.jsx / Sidebar.jsx */
-/* ------------------------------------------------------------------ */
 
 const initialHero = {
   titleLine: "بخون، بدون، با منرو",

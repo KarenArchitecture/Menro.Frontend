@@ -43,6 +43,7 @@ const NAV = [
     icon: "fas fa-clipboard-check",
     // roles: ["Admin"],
   },
+  { key: "blog", label: "مدیریت بلاگ", icon: "fas fa-blog" },
 
   { isDivider: true, label: "حساب کاربری" },
   //{ key: "theme", label: "مدیریت قالب", icon: "fas fa-palette" },

@@ -65,6 +65,7 @@ export default function App() {
     "/orders/bill",
     "/music",
     "/favorites",
+    "/blog",
   ];
 
   // 3. Added "/orders/bill" so the app shell doesn't add blank padding at the bottom

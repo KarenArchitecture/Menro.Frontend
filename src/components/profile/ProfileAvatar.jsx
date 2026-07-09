@@ -1,4 +1,8 @@
-export default function ProfileAvatar({ user, onEdit }) {
+import { Link } from "react-router-dom";
+
+import UserProfileForm from "../common/UserProfileForm";
+
+export default function ProfileAvatar({ user }) {
   return (
     <div className="profile-avatar">
       {/* Glow */}
@@ -21,9 +25,13 @@ export default function ProfileAvatar({ user, onEdit }) {
       </div>
 
       {/* Edit Button */}
-      <button className="profile-avatar__edit" onClick={onEdit}>
+      <Link
+        to="/profile/edit"
+        className="profile-avatar__edit"
+        aria-label="ویرایش پروفایل"
+      >
         ✎
-      </button>
+      </Link>
 
       {/* Username */}
       <div className="profile-avatar__name">{user?.name}</div>

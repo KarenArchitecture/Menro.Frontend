@@ -25,6 +25,7 @@ import AdminMusicPage from "./pages/AdminMusicPage";
 import BillsPage from "./pages/BillsPage";
 import FavoritesPage from "./pages/FavoritesPage";
 import ProfilePage from "./pages/ProfilePage";
+import UserProfileForm from "./components/common/UserProfileForm";
 import CommentsPage from "./pages/CommentsPage";
 import {
   DrawerStateProvider,
@@ -132,6 +133,14 @@ export default function App() {
             element={
               // <ProtectedRoute roles={["user", "admin", "owner"]}>
               <ProfilePage />
+              // </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/edit"
+            element={
+              // <ProtectedRoute roles={["user", "admin", "owner"]}>
+              <UserProfileForm />
               // </ProtectedRoute>
             }
           />

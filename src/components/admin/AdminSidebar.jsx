@@ -31,6 +31,12 @@ const NAV = [
     icon: "fas fa-tags",
     roles: ["Admin"],
   },
+  {
+    key: "restaurant-category-settings",
+    label: "دسته‌بندی انواع رستوران",
+    icon: "fas fa-concierge-bell",
+    roles: ["Admin"],
+  },
   // Ads Settings (per-restaurant config)
   {
     key: "ads-settings",

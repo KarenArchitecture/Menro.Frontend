@@ -208,29 +208,37 @@ export default function RegisterRestaurantPage() {
 
               <div className="input-group">
                 <label htmlFor="cat">نوع رستوران</label>
-                {categoriesQuery.isLoading ? (
-                  <p className="field-hint">در حال بارگذاری…</p>
-                ) : categoriesQuery.isError ? (
-                  <p className="field-error">{categoriesQuery.error.message}</p>
-                ) : (
-                  <select
-                    id="cat"
-                    value={form.restaurantCategoryId}
-                    onChange={(e) => {
-                      updateField("restaurantCategoryId")(e);
-                      clearError("restaurantCategoryId");
-                    }}
-                    aria-invalid={!!errors.restaurantCategoryId}
-                    required
-                  >
-                    <option value="">-- انتخاب کنید --</option>
-                    {categoriesQuery.data.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
+
+                <select
+                  id="cat"
+                  value={form.restaurantCategoryId}
+                  onChange={(e) => {
+                    updateField("restaurantCategoryId")(e);
+                    clearError("restaurantCategoryId");
+                  }}
+                  disabled={categoriesQuery.isLoading}
+                  aria-invalid={!!errors.restaurantCategoryId}
+                  required
+                >
+                  <option value="">
+                    {categoriesQuery.isLoading
+                      ? "در حال بارگذاری..."
+                      : "انتخاب دسته‌بندی"}
+                  </option>
+
+                  {categoriesQuery.data?.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+
+                {categoriesQuery.isError && (
+                  <span className="field-error">
+                    خطا در دریافت دسته‌بندی‌های رستوران
+                  </span>
                 )}
+
                 {errors.restaurantCategoryId && (
                   <span className="field-error">
                     {errors.restaurantCategoryId}
@@ -463,6 +471,16 @@ export default function RegisterRestaurantPage() {
           box-sizing: border-box;
         }
 
+        .restaurant-register-page select {
+          appearance: none;
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1L7 7L13 1' stroke='%23999' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: left 14px center;
+          padding-left: 36px;
+        }
+
         .restaurant-register-page input[aria-invalid="true"],
         .restaurant-register-page select[aria-invalid="true"],
         .restaurant-register-page textarea[aria-invalid="true"] {
@@ -493,15 +511,42 @@ export default function RegisterRestaurantPage() {
         }
 
         .restaurant-register-page .btn.btn-primary {
+          display: block;
           width: 100%;
-          padding: 12px;
+          margin-top: 4px;
           font-size: 1rem;
-          border-radius: 8px;
+          font-weight: 600;
+          font-family: inherit;
+          color: #1a1a1a;
+          background-color: #f5a623;
+          border: none;
+          border-radius: 10px;
           cursor: pointer;
+          box-shadow: 0 2px 10px rgba(245, 166, 35, 0.25);
+          transition: background-color 0.15s ease, transform 0.05s ease,
+            box-shadow 0.15s ease;
+        }
+
+        .restaurant-register-page .btn.btn-primary:hover:not(:disabled) {
+          background-color: #ffb340;
+          box-shadow: 0 4px 14px rgba(245, 166, 35, 0.35);
+        }
+
+        .restaurant-register-page .btn.btn-primary:active:not(:disabled) {
+          transform: translateY(1px);
+          box-shadow: 0 2px 8px rgba(245, 166, 35, 0.25);
+        }
+
+        .restaurant-register-page .btn.btn-primary:focus-visible {
+          outline: 2px solid #ffb340;
+          outline-offset: 2px;
         }
 
         .restaurant-register-page .btn.btn-primary:disabled {
-          opacity: 0.6;
+          background-color: #6b5a3d;
+          color: #cfcfcf;
+          box-shadow: none;
+          opacity: 0.7;
           cursor: not-allowed;
         }
 

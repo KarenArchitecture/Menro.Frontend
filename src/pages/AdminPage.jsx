@@ -14,6 +14,7 @@ import AdsBookingSection from "../components/admin/AdsBookingSection";
 import ProfileSection from "../components/admin/ProfileSection";
 import OrdersSection from "../components/admin/OrdersSection";
 import CategorySettingsSection from "../components/admin/CategorySettingsSection";
+import RestaurantCategorySettingsSection from "../components/admin/RestaurantCategorySettingsSection";
 import AdsSettingsSection from "../components/admin/AdsSettingsSection";
 import AdsRequestsSection from "../components/admin/AdsRequestsSection";
 import RestaurantsListForAdminSection from "../components/admin/RestaurantsListForAdminSection";
@@ -108,6 +109,8 @@ export default function AdminPage() {
         return <ProductsSection />;
       case "categories":
         return <CategoriesSection />;
+      case "restaurant-category-settings":
+        return <RestaurantCategorySettingsSection />;
       case "theme":
         return <ThemeSection />;
       case "music":

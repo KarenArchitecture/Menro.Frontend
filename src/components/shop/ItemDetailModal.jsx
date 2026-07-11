@@ -114,15 +114,7 @@ function ItemDetailModal({ item, onClose }) {
 
   const handleOpenComments = () => {
     if (!item?.id) return;
-
-    const commentsUrl = `/foods/${item.id}/comments`;
-
-    requireLogin({
-      type: "comments",
-      icon: <CommentIcon />,
-      returnUrl: commentsUrl, // 🔑 after login, go to the comments page, not back to the restaurant
-      onAuthenticated: () => navigate(commentsUrl),
-    });
+    navigate(`/foods/${item.id}/comments`);
   };
 
   const formatRating = (value) => {

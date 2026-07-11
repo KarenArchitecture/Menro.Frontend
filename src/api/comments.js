@@ -3,6 +3,9 @@ import commentAxios from "./commentAxios";
 export const getFoodComments = (foodId) =>
     commentAxios.get(`/food/${foodId}`).then((r) => r.data);
 
+export const getMyComments = () =>
+    commentAxios.get(`/my`).then((r) => r.data);
+
 export const createComment = ({ foodId, rating, text }) =>
     commentAxios.post("", { foodId, rating, text }).then((r) => r.data);
 

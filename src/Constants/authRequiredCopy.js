@@ -7,8 +7,7 @@ export const authRequiredCopy = {
 
     comments: {
         title: "ورود به حساب کاربری",
-        description:
-        "برای مشاهده و ثبت نظر ابتدا وارد حساب کاربری خود شوید.",
+        description: "برای ثبت نظر و امتیاز ابتدا وارد حساب کاربری خود شوید.",
     },
 
     profile: {

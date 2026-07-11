@@ -8,6 +8,8 @@ import CircleIcon from "../icons/CircleIcon";
 import { useNavigate } from "react-router-dom";
 import { toPersianDigits } from "../../utils/persianNumbers";
 import resolveFileUrl from "../../utils/resolveFileUrl";
+import useRequireLogin from "../../hooks/useRequireLogin";
+import ProtectedActionModal from "../common/ProtectedActionModal";
 
 function ShopBanner({
   banner,
@@ -16,6 +18,14 @@ function ShopBanner({
   searchValue = "",
 }) {
   const navigate = useNavigate();
+
+  const {
+    requireLogin,
+    open: authModalOpen,
+    closeModal: closeAuthModal,
+    goToLogin,
+    modalProps: authModalProps,
+  } = useRequireLogin();
 
   if (!banner) {
     return (
@@ -28,6 +38,20 @@ function ShopBanner({
   const bannerUrl =
     resolveFileUrl(banner.bannerImageUrl) ||
     "/images/Restaurant/top-banner.png";
+
+  const handleMusicClick = () => {
+    requireLogin({
+      type: "music",
+      returnUrl: `/restaurant/${banner.slug}/music`,
+      onAuthenticated: () => {
+        navigate(`/restaurant/${banner.slug}/music`, {
+          state: {
+            restaurantId: banner.id,
+          },
+        });
+      },
+    });
+  };
 
   return (
     <section
@@ -94,21 +118,19 @@ function ShopBanner({
             <CircleIcon />
           </button>
 
-          <button
-            className="reorder-and-music-btn"
-            onClick={() =>
-              navigate(`/restaurant/${banner.slug}/music`, {
-                state: {
-                  restaurantId: banner.id,
-                },
-              })
-            }
-          >
+          <button className="reorder-and-music-btn" onClick={handleMusicClick}>
             <span>درخواست موسیقی</span>
             <MusicIcon />
           </button>
         </div>
       </div>
+
+      <ProtectedActionModal
+        open={authModalOpen}
+        onClose={closeAuthModal}
+        onLogin={goToLogin}
+        {...authModalProps}
+      />
     </section>
   );
 }

@@ -1,15 +1,20 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import authAxios from "../api/authAxios";
-import usePageStyles from "../hooks/usePageStyles";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+
+import "../assets/css/auth.css";
 /* ────────────────────────────────
-function OTP({ length = 6, onValue }) {
+function OTP({ length = 5, onValue }) {
 ──────────────────────────────── */
 
-function OTP({ length = 6, onValue }) {
+function OTP({ length = 5, onValue }) {
   const refs = useRef([]);
   const [boxes, setBoxes] = useState(Array(length).fill(""));
+
+  useEffect(() => {
+    refs.current[0]?.focus();
+  }, []);
 
   const update = (i, v) => {
     const next = [...boxes];
@@ -19,22 +24,63 @@ function OTP({ length = 6, onValue }) {
     if (next[i] && refs.current[i + 1]) refs.current[i + 1].focus();
   };
 
+  const handleReset = () => {
+    setBoxes(Array(length).fill(""));
+    onValue("");
+    refs.current[0]?.focus();
+  };
+
   return (
-    <div className="otp-row" dir="ltr">
-      {boxes.map((val, i) => (
-        <input
+    <div className="otp-group">
+      <div className="otp-row">
+        {boxes.map((val, i) => (
+          <input
+            key={i}
+            ref={(el) => (refs.current[i] = el)}
+            className="otp-box"
+            inputMode="numeric"
+            maxLength={1}
+            value={val}
+            onChange={(e) => update(i, e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Backspace" && !boxes[i] && refs.current[i - 1]) {
+                refs.current[i - 1].focus();
+              }
+            }}
+          />
+        ))}
+      </div>
+      <button
+        type="button"
+        className="otp-refresh-btn"
+        onClick={handleReset}
+        aria-label="پاک کردن کد و شروع مجدد"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+          <polyline points="21 3 21 9 15 9" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+function StepProgress({ step, total = 2 }) {
+  return (
+    <div className="auth-progress">
+      {Array.from({ length: total }).map((_, i) => (
+        <span
           key={i}
-          ref={(el) => (refs.current[i] = el)}
-          className="otp-box"
-          inputMode="numeric"
-          maxLength={1}
-          value={val}
-          onChange={(e) => update(i, e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Backspace" && !boxes[i] && refs.current[i - 1]) {
-              refs.current[i - 1].focus();
-            }
-          }}
+          className={`auth-progress__step ${
+            i + 1 === step ? "is-active" : i + 1 < step ? "is-done" : ""
+          }`}
         />
       ))}
     </div>
@@ -42,12 +88,14 @@ function OTP({ length = 6, onValue }) {
 }
 
 export default function ChangePhone() {
-  usePageStyles("/forgot-password.css");
+  const navigate = useNavigate();
+  const location = useLocation();
+  const returnUrl = new URLSearchParams(location.search).get("returnUrl");
+
   const [newPhone, setNewPhone] = useState("");
   const [step, setStep] = useState(1);
   const [code, setCode] = useState("");
   const [msg, setMsg] = useState("");
-  const navigate = useNavigate();
 
   /* 1) send OTP */
   const sendOtp = useMutation({
@@ -56,10 +104,13 @@ export default function ChangePhone() {
       return data;
     },
     onSuccess: () => {
-      setMsg("کد تأیید ارسال شد ✅");
+      setMsg("");
       setStep(2);
     },
     onError: (err) => {
+      // Rate-limit responses ("too soon since the last code") land here
+      // too — the backend is the single source of truth for cooldowns,
+      // so we just surface whatever message it sends back.
       const msg =
         err.response?.data?.message ||
         "خطا در ارسال کد، لطفاً دوباره تلاش کنید.";
@@ -81,8 +132,13 @@ export default function ChangePhone() {
       return data;
     },
     onSuccess: (data) => {
+      if (data.needsRegister) {
+        setMsg("این شماره متعلق به شما نیست.");
+        return;
+      }
+
       if (data.verified) {
-        setMsg("کد تأیید شد ✅");
+        setMsg("");
 
         // ⭐ مرحله مهم: کال متد تغییر شماره
         changePhone.mutate(newPhone);
@@ -107,7 +163,7 @@ export default function ChangePhone() {
       setMsg("شماره با موفقیت تغییر کرد ✔");
 
       setTimeout(() => {
-        navigate("/admin");
+        navigate(returnUrl?.startsWith("/") ? returnUrl : "/profile/edit");
       }, 800);
     },
     onError: (err) => {
@@ -116,99 +172,180 @@ export default function ChangePhone() {
   });
 
   return (
-    <section className="auth-wrap" dir="rtl">
-      <div className="auth-card">
-        <h1 className="auth-title">تغییر شماره همراه</h1>
-
-        {/* Progress Tabs */}
-        <div className="auth-tabs">
-          <button className={`auth-tab ${step === 1 ? "is-active" : ""}`}>
-            شماره
-          </button>
-          <button
-            className={`auth-tab ${step === 2 ? "is-active" : ""}`}
-            disabled
-          >
-            کد
-          </button>
+    <div className="auth-screen" dir="rtl">
+      <Link
+        to="/home"
+        className="auth-home-btn"
+        aria-label="بازگشت به صفحه اصلی"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M3 11.5 12 4l9 7.5" />
+          <path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" />
+        </svg>
+      </Link>
+      {/* Reusable "back" button — copy this block (and .auth-back-btn in
+          auth.css) into any other auth page that needs it. */}
+      <button
+        type="button"
+        className="auth-back-btn"
+        aria-label="بازگشت"
+        onClick={() => navigate(returnUrl?.startsWith("/") ? returnUrl : -1)}
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M9 6l6 6-6 6" />
+        </svg>
+      </button>
+      <div className="auth-screen__inner">
+        <div className="auth-hero">
+          <img src="/images/cake-auth.png" alt="" className="auth-hero-img" />
         </div>
+
+        <StepProgress step={step} total={2} />
 
         {/* STEP 1: PHONE */}
         {step === 1 && (
-          <form
-            className="auth-body"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (!/^\d{11}$/.test(newPhone)) {
-                setMsg("شماره تلفن باید ۱۱ رقم باشد.");
-                return;
-              }
-              setMsg("");
-              sendOtp.mutate(newPhone);
-            }}
-          >
-            <label className="auth-label">شماره تلفن</label>
-            <input
-              className="auth-input"
-              inputMode="tel"
-              value={newPhone}
-              onChange={(e) =>
-                setNewPhone(e.target.value.replace(/[^\d]/g, ""))
-              }
-              required
-            />
-            <button
-              className="btn btn-primary mt-16"
-              type="submit"
-              disabled={sendOtp.isPending}
+          <>
+            <div className="auth-copy">
+              <h1 className="auth-heading">
+                تغییر <span className="accent">شماره</span> همراه
+              </h1>
+              <p className="auth-subtitle">
+                شماره همراه جدید خود را وارد کنید تا کد تأیید برایتان ارسال شود.
+              </p>
+            </div>
+
+            <form
+              className="auth-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!/^\d{11}$/.test(newPhone)) {
+                  setMsg("شماره تلفن باید ۱۱ رقم باشد.");
+                  return;
+                }
+                setMsg("");
+                sendOtp.mutate(newPhone);
+              }}
             >
-              {sendOtp.isPending ? "در حال ارسال..." : "ارسال کد"}
-            </button>
-            {msg && <p className="form-message">{msg}</p>}
-          </form>
+              <div className="auth-field">
+                <label className="auth-label">شماره همراه جدید</label>
+                <input
+                  className="auth-input"
+                  inputMode="tel"
+                  placeholder="09xxxxxxxxx"
+                  value={newPhone}
+                  onChange={(e) =>
+                    setNewPhone(e.target.value.replace(/[^\d]/g, ""))
+                  }
+                  required
+                />
+              </div>
+
+              <button
+                className="auth-btn auth-btn-primary"
+                type="submit"
+                disabled={sendOtp.isPending}
+              >
+                {sendOtp.isPending ? "در حال ارسال..." : "ارسال کد"}
+              </button>
+
+              {msg && <p className="auth-message">{msg}</p>}
+            </form>
+          </>
         )}
 
         {/* STEP 2: CODE */}
         {step === 2 && (
-          <form
-            className="auth-body"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (code.length !== 6) {
-                setMsg("کد باید ۶ رقم باشد.");
-                return;
-              }
-              setMsg("");
-              verifyOtp.mutate({
-                phoneNumber: newPhone,
-                code,
-                operation: "change-phone",
-              });
-            }}
-          >
-            <p className="auth-label">کد ارسال شده به {newPhone}</p>
-            <OTP length={6} onValue={setCode} />
-
-            <div className="row gap">
-              <button
-                className="btn btn-secondary"
-                type="button"
-                onClick={() => sendOtp.mutate(newPhone)}
-              >
-                ارسال مجدد
-              </button>
-              <button
-                className="btn btn-primary"
-                type="submit"
-                disabled={verifyOtp.isPending || code.length !== 6}
-              >
-                {verifyOtp.isPending ? "در حال بررسی..." : "تأیید کد"}
-              </button>
+          <>
+            <div className="auth-copy">
+              <h1 className="auth-heading">
+                کد <span className="accent">تأیید</span> را وارد کنید
+              </h1>
+              <p className="auth-subtitle">
+                کد ارسال‌شده به شماره {newPhone} را وارد کنید.
+              </p>
             </div>
-            {msg && <p className="form-message">{msg}</p>}
-          </form>
+
+            <form
+              className="auth-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (code.length !== 5) {
+                  setMsg("کد باید ۵ رقم باشد.");
+                  return;
+                }
+                setMsg("");
+                verifyOtp.mutate({
+                  phoneNumber: newPhone,
+                  code,
+                  operation: "change-phone",
+                });
+              }}
+            >
+              <OTP length={5} onValue={setCode} />
+
+              <button
+                className="auth-btn auth-btn-primary mt-16"
+                type="submit"
+                disabled={
+                  verifyOtp.isPending ||
+                  changePhone.isPending ||
+                  code.length !== 5
+                }
+              >
+                {verifyOtp.isPending || changePhone.isPending
+                  ? "در حال بررسی..."
+                  : "تأیید کد"}
+              </button>
+
+              {msg && (
+                <p
+                  className={`auth-message ${
+                    changePhone.isSuccess ? "success" : ""
+                  }`}
+                >
+                  {msg}
+                </p>
+              )}
+
+              <div className="auth-footer">
+                <button
+                  type="button"
+                  className="auth-chip-btn"
+                  onClick={() => sendOtp.mutate(newPhone)}
+                  disabled={sendOtp.isPending}
+                >
+                  ارسال مجدد کد
+                </button>
+                <button
+                  type="button"
+                  className="auth-chip-btn"
+                  onClick={() => {
+                    setCode("");
+                    setMsg("");
+                    setStep(1);
+                  }}
+                >
+                  ویرایش شماره همراه
+                </button>
+              </div>
+            </form>
+          </>
         )}
       </div>
-    </section>
+    </div>
   );
 }

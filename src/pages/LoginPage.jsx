@@ -1,326 +1,465 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import usePageStyles from "../hooks/usePageStyles";
 import authAxios from "../api/authAxios";
 import { useAuth } from "../Context/AuthContext";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import "../assets/css/auth.css";
+/* ────────────────────────────────
+function OTP({ length = 5, onValue }) {
+──────────────────────────────── */
 
-export default function LoginPage() {
-  //
-  const location = useLocation();
-  const navigate = useNavigate();
-  const params = new URLSearchParams(location.search);
-  const returnUrl = params.get("returnUrl");
-  const { refreshUser, setToken, loginWithUserId } = useAuth();
+function OTP({ length = 5, onValue }) {
+  const refs = useRef([]);
+  const [boxes, setBoxes] = useState(Array(length).fill(""));
 
-  /* loginpage CSS (/public) */
-  usePageStyles("/styles-login.css");
-
-  /* -------------------------------
-   * local UI state
-   * ----------------------------- */
-  const [tab, setTab] = useState("otp"); // "otp" | "password"
-  const [phone, setPhone] = useState(""); // otp tab
-  const [code, setCode] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-
-  const [pwPhone, setPwPhone] = useState(""); // password tab
-  const [password, setPassword] = useState("");
-
-  const [msg, setMsg] = useState({ text: "", type: "" }); // success | error
-  const showMsg = (text, type = "error") => setMsg({ text, type });
-  const clearMsg = () => setMsg({ text: "", type: "" });
-
-  //otp timer
-  const [resendTimer, setResendTimer] = useState(0);
-
-  /* clear message when user switches tab */
-  useEffect(() => clearMsg(), [tab]);
-  // otp use effects
   useEffect(() => {
-    if (resendTimer <= 0) return;
-
-    const timer = setInterval(() => {
-      setResendTimer((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [resendTimer > 0]);
-  useEffect(() => {
-    const expiry = localStorage.getItem("otpTimerExpiry");
-    if (expiry) {
-      const timeLeft = Math.floor((+expiry - Date.now()) / 1000);
-      if (timeLeft > 0) {
-        setOtpSent(true);
-        setResendTimer(timeLeft);
-      } else {
-        localStorage.removeItem("otpTimerExpiry");
-        setOtpSent(false);
-      }
-    }
+    refs.current[0]?.focus();
   }, []);
 
-  /* mutations (TanStack Query)*/
+  const update = (i, v) => {
+    const next = [...boxes];
+    next[i] = v.replace(/\D/g, "").slice(0, 1);
+    setBoxes(next);
+    onValue(next.join(""));
+    if (next[i] && refs.current[i + 1]) refs.current[i + 1].focus();
+  };
+
+  const handleReset = () => {
+    setBoxes(Array(length).fill(""));
+    onValue("");
+    refs.current[0]?.focus();
+  };
+
+  return (
+    <div className="otp-group">
+      <div className="otp-row">
+        {boxes.map((val, i) => (
+          <input
+            key={i}
+            ref={(el) => (refs.current[i] = el)}
+            className="otp-box"
+            inputMode="numeric"
+            maxLength={1}
+            value={val}
+            onChange={(e) => update(i, e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Backspace" && !boxes[i] && refs.current[i - 1]) {
+                refs.current[i - 1].focus();
+              }
+            }}
+          />
+        ))}
+      </div>
+      <button
+        type="button"
+        className="otp-refresh-btn"
+        onClick={handleReset}
+        aria-label="پاک کردن کد و شروع مجدد"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+          <polyline points="21 3 21 9 15 9" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { loginWithUserId } = useAuth();
+
+  const params = new URLSearchParams(location.search);
+  const returnUrl = params.get("returnUrl");
+
+  const [step, setStep] = useState(1);
+  const [mode, setMode] = useState("otp"); // "otp" | "password"
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
+  const [msg, setMsg] = useState("");
 
   /* 1) send OTP */
   const sendOtp = useMutation({
     mutationFn: async (phoneNumber) => {
-      try {
-        await authAxios.post("/send-otp", { phoneNumber });
-      } catch (err) {
-        // اگه بک‌اند message برمی‌گردونه
-        const message = err.response?.data?.message || "خطا در ارسال کد.";
-        throw new Error(message);
-      }
-    },
-    onSuccess: () => {
-      setOtpSent(true);
-      setResendTimer(5);
-      const expiry = Date.now() + 5 * 1000;
-      localStorage.setItem("otpTimerExpiry", expiry.toString());
-      showMsg("کد تأیید ارسال شد.", "success");
-    },
-    onError: (err) => showMsg(err.message),
-  });
-
-  /* 1) verify (otp or password) */
-  const verifyUser = useMutation({
-    mutationFn: async ({ phoneNumber, method, codeOrPassword }) => {
-      const { data } = await authAxios.post("/verify", {
-        phoneNumber,
-        method,
-        codeOrPassword,
-      });
+      const { data } = await authAxios.post("/send-otp", { phoneNumber });
       return data;
     },
-    onSuccess: async (data) => {
-      if (data.needsRegister) {
-        const expiresAt = Date.now() + 60_000;
-        localStorage.setItem(
-          "userPhone",
-          JSON.stringify({ value: phone, expiresAt }),
-        );
-        navigate(
-          `/register?returnUrl=${encodeURIComponent(returnUrl || "/")}`
-        );
-      } else if (data.verified) {
-        // مرحله بعد: لاگین نهایی
-        await finalLogin.mutateAsync({ userId: data.userId });
-      }
-    },
-    onError: (err) => {
-      const msg = err.response?.data?.message || "احراز هویت ناموفق بود.";
-      showMsg(msg);
-    },
-  });
-  /* 2) login after verification */
-  const finalLogin = useMutation({
-    mutationFn: async ({ userId }) => {
-      await loginWithUserId(userId);
-    },
     onSuccess: () => {
-      navigate(returnUrl?.startsWith("/") ? returnUrl : "/", { replace: true });
+      setMsg("");
+      setStep(2);
     },
     onError: (err) => {
-      const msg = err.response?.data?.message || "ورود ناموفق بود";
-      showMsg(msg);
+      // Rate-limit responses ("too soon since the last code") land here
+      // too — the backend is the single source of truth for cooldowns,
+      // so we just surface whatever message it sends back.
+      setMsg(
+        err.response?.data?.message ||
+          "خطا در ارسال کد، لطفاً دوباره تلاش کنید.",
+      );
     },
   });
 
-  /* handlers */
-  const handleOtpSubmit = (e) => {
-    e.preventDefault();
-    clearMsg();
-
-    if (!/^\d{11}$/.test(phone)) {
-      showMsg("لطفاً یک شماره تلفن ۱۱ رقمی معتبر وارد کنید");
+  /* shared handler for the /verify response, used by both OTP and
+     password login */
+  const handleVerified = async (data) => {
+    // کاربر جدید است — باید اول ثبت‌نام کند.
+    // نکته: بک‌اند فیلد را با نام needsRegister برمی‌گرداند، نه isNewUser.
+    if (data.needsRegister) {
+      localStorage.setItem(
+        "userPhone",
+        JSON.stringify({
+          value: phone,
+          expiresAt: Date.now() + 10 * 60 * 1000, // 10 دقیقه
+        }),
+      );
+      navigate(
+        `/register${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ""}`,
+        { replace: true },
+      );
       return;
     }
 
-    if (!otpSent) {
-      if (resendTimer > 0) {
-        showMsg("لطفاً چند لحظه صبر کنید تا ارسال مجدد مجاز شود.");
-        return;
-      }
-      sendOtp.mutate(phone);
-    } else {
-      if (code.length !== 6) {
-        showMsg("کد باید 6 رقم باشد.");
-        return;
-      }
-      verifyUser.mutate({
-        phoneNumber: phone,
+    if (!data.verified) {
+      setMsg("اطلاعات وارد شده معتبر نیست.");
+      return;
+    }
+
+    setMsg("");
+
+    // مرحله‌ی /verify فقط شماره را تأیید می‌کند، لاگین واقعی نمی‌کند.
+    // loginWithUserId (از AuthContext) خودش /login را صدا می‌زند،
+    // accessToken را در localStorage ذخیره می‌کند و کاربر را رفرش می‌کند.
+    try {
+      await loginWithUserId(data.userId);
+
+      navigate(returnUrl?.startsWith("/") ? returnUrl : "/", {
+        replace: true,
+      });
+    } catch (err) {
+      setMsg(err.response?.data?.message || "ورود به حساب با خطا مواجه شد.");
+    }
+  };
+
+  /* 2) verify OTP + log in */
+  const verifyOtp = useMutation({
+    mutationFn: async ({ phoneNumber, code }) => {
+      const payload = {
+        phoneNumber,
         method: "otp",
         codeOrPassword: code,
-      });
-    }
+        operation: "login",
+      };
+      const { data } = await authAxios.post("/verify", payload);
+      return data;
+    },
+    onSuccess: handleVerified,
+    onError: (err) =>
+      setMsg(err.response?.data?.message || "کد وارد شده صحیح نیست."),
+  });
+
+  /* 2b) login with phone + password (no OTP step) */
+  const passwordLogin = useMutation({
+    mutationFn: async ({ phoneNumber, password }) => {
+      const payload = {
+        phoneNumber,
+        method: "password",
+        codeOrPassword: password,
+        operation: "login",
+      };
+      const { data } = await authAxios.post("/verify", payload);
+      return data;
+    },
+    onSuccess: handleVerified,
+    onError: (err) =>
+      setMsg(err.response?.data?.message || "شماره یا رمز عبور اشتباه است."),
+  });
+
+  const continueAsGuest = () => {
+    navigate(returnUrl?.startsWith("/") ? returnUrl : "/", { replace: true });
   };
 
-  const handleResendCode = () => {
-    if (resendTimer > 0) return;
-    if (!/^\d{11}$/.test(phone)) {
-      showMsg("شماره موبایل معتبر نیست.");
-      return;
-    }
-    sendOtp.mutate(phone);
+  const switchMode = (next) => {
+    setMode(next);
+    setMsg("");
   };
-
-  const handlePasswordSubmit = (e) => {
-    e.preventDefault();
-    clearMsg();
-
-    if (!pwPhone) return showMsg("شماره تلفن الزامی است");
-    if (!password) return showMsg("رمز عبور نمی‌تواند خالی باشد");
-
-    verifyUser.mutate({
-      phoneNumber: pwPhone,
-      method: "password",
-      codeOrPassword: password,
-    });
-  };
-
-  /* render */
 
   return (
-    <div className="login-container">
-      <div className="form-content">
-        <h1>ورود یا ثبت‌نام</h1>
+    <div className="auth-screen" dir="rtl">
+      <Link
+        to="/home"
+        className="auth-home-btn"
+        aria-label="بازگشت به صفحه اصلی"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M3 11.5 12 4l9 7.5" />
+          <path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" />
+        </svg>
+      </Link>
 
-        {/* tab buttons */}
-        <div className="login-tabs">
-          <button
-            className={`tab ${tab === "otp" ? "active" : ""}`}
-            onClick={() => setTab("otp")}
-          >
-            ورود با کد یکبار مصرف
-          </button>
-          <button
-            className={`tab ${tab === "password" ? "active" : ""}`}
-            onClick={() => setTab("password")}
-          >
-            ورود با رمز عبور
-          </button>
+      {/* Reusable "back" button — copy this block (and .auth-back-btn in
+          auth.css) into any other auth page that needs it. */}
+      <button
+        type="button"
+        className="auth-back-btn"
+        aria-label="بازگشت"
+        onClick={() => navigate(returnUrl?.startsWith("/") ? returnUrl : -1)}
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M9 6l6 6-6 6" />
+        </svg>
+      </button>
+
+      <div className="auth-screen__inner">
+        <div className="auth-hero">
+          <img
+            src={
+              step === 1 ? "/images/burger-auth.png" : "/images/cake-auth.png"
+            }
+            alt=""
+            className="auth-hero-img"
+          />
         </div>
 
-        {/* OTP FORM */}
-        {tab === "otp" && (
-          <form className="login-form active-form" onSubmit={handleOtpSubmit}>
-            {/* phone field */}
-            <div className="input-group">
-              <label htmlFor="phone">شماره تلفن</label>
-              <input
-                id="phone"
-                type="tel"
-                placeholder="09123456789"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                readOnly={otpSent}
-              />
+        {/* STEP 1: PHONE (or PHONE + PASSWORD) */}
+        {step === 1 && (
+          <>
+            <div className="auth-copy">
+              <h1 className="auth-heading">
+                به <span className="accent">منو</span> خوش آمدید
+              </h1>
+              <p className="auth-subtitle">
+                با ایجاد حساب کاربری در منو می‌توانید از امکانات ویژه نرم‌افزار
+                استفاده کنید!
+              </p>
             </div>
 
-            {/* code field (after first request) */}
-            {otpSent && (
-              <div className="input-group">
-                <label htmlFor="code">کد تأیید ۴ رقمی</label>
-                <input
-                  id="code"
-                  type="text"
-                  maxLength="6"
-                  placeholder="------"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                />
+            <div className="auth-mode-tabs">
+              <button
+                type="button"
+                className={`auth-mode-tab ${mode === "otp" ? "is-active" : ""}`}
+                onClick={() => switchMode("otp")}
+              >
+                ورود با کد یکبار مصرف
+              </button>
+              <button
+                type="button"
+                className={`auth-mode-tab ${mode === "password" ? "is-active" : ""}`}
+                onClick={() => switchMode("password")}
+              >
+                ورود با رمز عبور
+              </button>
+            </div>
+
+            {mode === "otp" ? (
+              <form
+                className="auth-form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!/^\d{11}$/.test(phone)) {
+                    setMsg("شماره تلفن باید ۱۱ رقم باشد.");
+                    return;
+                  }
+                  setMsg("");
+                  sendOtp.mutate(phone);
+                }}
+              >
+                <div className="auth-field">
+                  <label className="auth-label">شماره همراه</label>
+                  <input
+                    className="auth-input"
+                    inputMode="tel"
+                    placeholder="09xxxxxxxxx"
+                    value={phone}
+                    onChange={(e) =>
+                      setPhone(e.target.value.replace(/[^\d]/g, ""))
+                    }
+                    required
+                  />
+                </div>
+
+                <button
+                  className="auth-btn auth-btn-primary"
+                  type="submit"
+                  disabled={sendOtp.isPending}
+                >
+                  {sendOtp.isPending ? "در حال ارسال..." : "تأیید و ادامه"}
+                </button>
+
+                {msg && <p className="auth-message">{msg}</p>}
+
+                <div className="auth-footer">
+                  <button
+                    type="button"
+                    className="auth-chip-btn"
+                    onClick={continueAsGuest}
+                  >
+                    ادامه به عنوان مهمان
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form
+                className="auth-form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!/^\d{11}$/.test(phone)) {
+                    setMsg("شماره تلفن باید ۱۱ رقم باشد.");
+                    return;
+                  }
+                  if (!password) {
+                    setMsg("رمز عبور را وارد کنید.");
+                    return;
+                  }
+                  setMsg("");
+                  passwordLogin.mutate({ phoneNumber: phone, password });
+                }}
+              >
+                <div className="auth-field">
+                  <label className="auth-label">شماره همراه</label>
+                  <input
+                    className="auth-input"
+                    inputMode="tel"
+                    placeholder="09xxxxxxxxx"
+                    value={phone}
+                    onChange={(e) =>
+                      setPhone(e.target.value.replace(/[^\d]/g, ""))
+                    }
+                    required
+                  />
+                </div>
+
+                <div className="auth-field">
+                  <label className="auth-label">رمز عبور</label>
+                  <input
+                    type="password"
+                    className="auth-input"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <button
+                  className="auth-btn auth-btn-primary"
+                  type="submit"
+                  disabled={passwordLogin.isPending}
+                >
+                  {passwordLogin.isPending ? "در حال ورود..." : "ورود به حساب"}
+                </button>
+
+                {msg && <p className="auth-message">{msg}</p>}
+
+                <div className="auth-footer">
+                  <Link to="/forgot-password" className="auth-chip-btn">
+                    فراموشی رمز عبور
+                  </Link>
+                  <button
+                    type="button"
+                    className="auth-chip-btn"
+                    onClick={continueAsGuest}
+                  >
+                    ادامه به عنوان مهمان
+                  </button>
+                </div>
+              </form>
+            )}
+          </>
+        )}
+
+        {/* STEP 2: CODE */}
+        {step === 2 && (
+          <>
+            <div className="auth-copy">
+              <h1 className="auth-heading">
+                <span className="accent">منو</span> بهترین همیار رستوران تو
+              </h1>
+              <p className="auth-subtitle">
+                بهترین رستوران‌ها را با منو پیدا کن و سفارشت را به‌راحتی ثبت کن!
+              </p>
+            </div>
+
+            <p className="auth-otp-caption">
+              کد ۵ رقمی ارسال‌شده به شماره <strong>{phone}</strong> را وارد کنید
+            </p>
+
+            <form
+              className="auth-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (code.length !== 5) {
+                  setMsg("کد باید ۵ رقم باشد.");
+                  return;
+                }
+                setMsg("");
+                verifyOtp.mutate({ phoneNumber: phone, code });
+              }}
+            >
+              <OTP length={5} onValue={setCode} />
+
+              <button
+                className="auth-btn auth-btn-primary mt-16"
+                type="submit"
+                disabled={verifyOtp.isPending || code.length !== 5}
+              >
+                {verifyOtp.isPending ? "در حال بررسی..." : "ورود به حساب"}
+              </button>
+
+              {msg && <p className="auth-message">{msg}</p>}
+
+              <div className="auth-footer">
+                <button
+                  type="button"
+                  className="auth-chip-btn"
+                  onClick={() => sendOtp.mutate(phone)}
+                  disabled={sendOtp.isPending}
+                >
+                  ارسال مجدد کد
+                </button>
+                <button
+                  type="button"
+                  className="auth-chip-btn"
+                  onClick={() => {
+                    setCode("");
+                    setMsg("");
+                    setStep(1);
+                  }}
+                >
+                  ویرایش شماره همراه
+                </button>
+                <button
+                  type="button"
+                  className="auth-chip-btn"
+                  onClick={continueAsGuest}
+                >
+                  ادامه به عنوان مهمان
+                </button>
               </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={
-                sendOtp.isPending ||
-                verifyUser.isPending ||
-                (!otpSent && resendTimer > 0)
-              }
-            >
-              {sendOtp.isPending || verifyUser.isPending
-                ? "در حال ارسال…"
-                : otpSent
-                  ? "تأیید کد"
-                  : "ادامه"}
-            </button>
-
-            {otpSent && (
-              <button
-                type="button"
-                onClick={handleResendCode}
-                disabled={resendTimer > 0}
-                className={`resend-btn ${
-                  resendTimer > 0 ? "disabled" : "active"
-                }`}
-              >
-                {resendTimer > 0
-                  ? `ارسال مجدد کد تا ${resendTimer} ثانیه دیگر`
-                  : "ارسال مجدد کد"}
-              </button>
-            )}
-          </form>
+            </form>
+          </>
         )}
-
-        {/* PASSWORD FORM */}
-        {tab === "password" && (
-          <form
-            className="login-form active-form"
-            onSubmit={handlePasswordSubmit}
-          >
-            <div className="input-group">
-              <label htmlFor="pw-phone">شماره تلفن</label>
-              <input
-                id="pw-phone"
-                type="text"
-                value={pwPhone}
-                onChange={(e) => setPwPhone(e.target.value)}
-              />
-            </div>
-
-            <div className="input-group">
-              <label htmlFor="pw-pass">رمز عبور</label>
-              <input
-                id="pw-pass"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={verifyUser.isPending || finalLogin.isPending}
-            >
-              {verifyUser.isPending || finalLogin.isPending
-                ? "در حال بررسی..."
-                : "ورود"}
-            </button>
-
-            {/* Forgot password link */}
-            <div className="forgot-password-link">
-              <button
-                type="button"
-                onClick={() => navigate("/forgot-password")}
-                className="link-btn"
-              >
-                رمز عبور را فراموش کرده‌اید؟
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* message area */}
-        {msg.text && <p className={`message ${msg.type}`}>{msg.text}</p>}
       </div>
     </div>
   );

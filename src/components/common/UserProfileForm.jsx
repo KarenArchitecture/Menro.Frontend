@@ -1,19 +1,54 @@
-import { useState, useEffect, useRef } from "react";
-import { getUserProfile, updateUserProfile } from "../../api/user.js";
+import { useState, useEffect, useRef, useCallback } from "react";
+import {
+  getUserProfile,
+  updateUserProfile,
+  setUserPassword,
+} from "../../api/user.js";
 import { useAuth } from "../../Context/AuthContext.jsx";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import useRequireLogin from "../../hooks/useRequireLogin";
 import ProtectedActionModal from "./ProtectedActionModal";
-import "../../../src/assets/css/styles-userProfileForm.css";
+import "../../assets/css/auth.css";
 
 const MAX_NAME_LENGTH = 50; // matches User.FullName [MaxLength(50)]
 const MAX_IMAGE_SIZE = 1_000_000; // 1MB, matches backend check
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const ALLOWED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
+const MIN_PASSWORD_LENGTH = 6;
+
+function EyeIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function EyeOffIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <path d="M3 3l18 18" />
+      <path d="M10.6 5.2A10.9 10.9 0 0 1 12 5c7 0 10.5 7 10.5 7a13.5 13.5 0 0 1-3.1 4.1M6.6 6.6C3.7 8.5 1.5 12 1.5 12s3.5 7 10.5 7a10.6 10.6 0 0 0 4.4-.9" />
+      <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+    </svg>
+  );
+}
 
 export default function UserProfileForm() {
   const { user, refreshUser } = useAuth();
-  const navigate = useNavigate();
+  const location = useLocation();
+  const returnTo = encodeURIComponent(location.pathname);
   const fileInputRef = useRef(null);
   const { requireLogin, open, closeModal, goToLogin, modalProps } =
     useRequireLogin();
@@ -24,6 +59,14 @@ export default function UserProfileForm() {
   const [profileImage, setProfileImage] = useState(null);
   const [profilePreview, setProfilePreview] = useState(null);
   const [originalPreview, setOriginalPreview] = useState(null);
+
+  // password state — whether the account has one yet, and the inline
+  // "set a password" fields used only when it doesn't
+  const [hasPassword, setHasPassword] = useState(true);
+  const [newPassword, setNewPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
+  const [isSettingPassword, setIsSettingPassword] = useState(false);
 
   // ui state
   const [isLoading, setIsLoading] = useState(true);
@@ -47,38 +90,46 @@ export default function UserProfileForm() {
     }
   }, [user]);
 
+  // Pulled out of the loading effect so it can also be called after a
+  // successful save (issue 3: refetch just this form instead of a full
+  // page reload).
+  const loadProfile = useCallback(async () => {
+    try {
+      const { data } = await getUserProfile();
+      setFullName(data.fullName || "");
+      setPhoneNumber(data.phoneNumber || "");
+      setHasPassword(!!data.hasPassword);
+      if (data.profileImageUrl) {
+        setProfilePreview(data.profileImageUrl);
+        setOriginalPreview(data.profileImageUrl);
+      } else {
+        setProfilePreview(null);
+        setOriginalPreview(null);
+      }
+      return true;
+    } catch (err) {
+      console.error("خطا در دریافت پروفایل:", err);
+      setStatus({
+        type: "error",
+        text: "دریافت اطلاعات پروفایل با خطا مواجه شد. لطفاً صفحه را رفرش کنید.",
+      });
+      return false;
+    }
+  }, []);
+
   useEffect(() => {
     if (!user) return;
     let isMounted = true;
 
-    const loadProfile = async () => {
-      try {
-        const { data } = await getUserProfile();
-        if (!isMounted) return;
-        setFullName(data.fullName || "");
-        setPhoneNumber(data.phoneNumber || "");
-        if (data.profileImageUrl) {
-          setProfilePreview(data.profileImageUrl);
-          setOriginalPreview(data.profileImageUrl);
-        }
-      } catch (err) {
-        console.error("خطا در دریافت پروفایل:", err);
-        if (isMounted) {
-          setStatus({
-            type: "error",
-            text: "دریافت اطلاعات پروفایل با خطا مواجه شد. لطفاً صفحه را رفرش کنید.",
-          });
-        }
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
+    setIsLoading(true);
+    loadProfile().finally(() => {
+      if (isMounted) setIsLoading(false);
+    });
 
-    loadProfile();
     return () => {
       isMounted = false;
     };
-  }, [user]);
+  }, [user, loadProfile]);
 
   // revoke object URLs created for local previews to avoid memory leaks
   useEffect(() => {
@@ -94,6 +145,12 @@ export default function UserProfileForm() {
     if (!trimmed) return "نام و نام خانوادگی الزامی است";
     if (trimmed.length > MAX_NAME_LENGTH)
       return `نام و نام خانوادگی نباید بیش از ${MAX_NAME_LENGTH} کاراکتر باشد`;
+    return null;
+  };
+
+  const validateNewPassword = (value) => {
+    if (!value || value.length < MIN_PASSWORD_LENGTH)
+      return `رمز عبور باید حداقل ${MIN_PASSWORD_LENGTH} کاراکتر باشد`;
     return null;
   };
 
@@ -150,6 +207,44 @@ export default function UserProfileForm() {
     }
   };
 
+  const handleNewPasswordChange = (e) => {
+    const value = e.target.value;
+    setNewPassword(value);
+    if (passwordError) setPasswordError(validateNewPassword(value));
+  };
+
+  // Sets a password for an account that doesn't have one yet. Only ever
+  // rendered/usable when hasPassword === false (see JSX below) — accounts
+  // that already have a password go through /change-password instead,
+  // which requires the current password.
+  const handleSetPassword = async () => {
+    const err = validateNewPassword(newPassword);
+    if (err) {
+      setPasswordError(err);
+      return;
+    }
+
+    setPasswordError("");
+    setStatus(null);
+    setIsSettingPassword(true);
+    try {
+      await setUserPassword(newPassword);
+      setNewPassword("");
+      setShowNewPassword(false);
+      setHasPassword(true);
+      setStatus({ type: "success", text: "رمز عبور با موفقیت تنظیم شد" });
+    } catch (err) {
+      const serverMessage = err?.response?.data?.message;
+      setStatus({
+        type: "error",
+        text:
+          serverMessage || "تنظیم رمز عبور با خطا مواجه شد. دوباره تلاش کنید.",
+      });
+    } finally {
+      setIsSettingPassword(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus(null);
@@ -168,9 +263,12 @@ export default function UserProfileForm() {
     try {
       await updateUserProfile(formData);
       await refreshUser();
+      // Issue 3: refetch just this form's data instead of reloading the
+      // whole page (previously: navigate(0)).
+      await loadProfile();
       setStatus({ type: "success", text: "تغییرات با موفقیت ذخیره شد" });
       setProfileImage(null);
-      navigate(0);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (err) {
       console.error(err);
       const serverMessage = err?.response?.data?.message || err?.response?.data;
@@ -290,7 +388,7 @@ export default function UserProfileForm() {
               <div className="upf-avatar-actions">
                 <button
                   type="button"
-                  className="upf-link-btn"
+                  className="auth-chip-btn auth-chip-btn-sm"
                   onClick={() => fileInputRef.current?.click()}
                 >
                   انتخاب عکس جدید
@@ -298,7 +396,7 @@ export default function UserProfileForm() {
                 {profileImage && (
                   <button
                     type="button"
-                    className="upf-link-btn upf-link-btn-muted"
+                    className="auth-chip-btn auth-chip-btn-sm"
                     onClick={handleRemoveNewImage}
                   >
                     لغو انتخاب
@@ -357,7 +455,7 @@ export default function UserProfileForm() {
                     readOnly
                   />
                   <Link
-                    to="/change-phone"
+                    to={`/change-phone?returnUrl=${returnTo}`}
                     className="upf-btn upf-btn-secondary"
                   >
                     تغییر شماره
@@ -367,15 +465,68 @@ export default function UserProfileForm() {
 
               <div className="upf-field">
                 <label>رمز عبور</label>
-                <div className="upf-input-with-action">
-                  <input type="password" value="••••••••" readOnly disabled />
-                  <Link
-                    to="/change-password"
-                    className="upf-btn upf-btn-secondary"
-                  >
-                    تغییر رمز عبور
-                  </Link>
-                </div>
+
+                {hasPassword ? (
+                  // Account already has a password: keep the existing
+                  // masked/disabled display, with the real change handled
+                  // on its own page (needs the current password).
+                  <div className="upf-input-with-action">
+                    <input type="password" value="••••••••" readOnly disabled />
+                    <Link
+                      to={`/change-password?returnUrl=${returnTo}`}
+                      className="upf-btn upf-btn-secondary"
+                    >
+                      تغییر رمز عبور
+                    </Link>
+                  </div>
+                ) : (
+                  // No password yet (e.g. OTP-only account): let the user
+                  // type and save one directly here instead of sending
+                  // them to a "change password" page that would need a
+                  // current password that doesn't exist.
+                  <>
+                    <div className="upf-input-with-action">
+                      <div className="upf-password-input-wrap">
+                        <input
+                          type={showNewPassword ? "text" : "password"}
+                          value={newPassword}
+                          placeholder="رمز عبور جدید را وارد کنید"
+                          minLength={MIN_PASSWORD_LENGTH}
+                          onChange={handleNewPasswordChange}
+                          className={passwordError ? "upf-input-invalid" : ""}
+                          aria-invalid={!!passwordError}
+                        />
+                        <button
+                          type="button"
+                          className="upf-password-eye-btn"
+                          onClick={() => setShowNewPassword((v) => !v)}
+                          aria-label={
+                            showNewPassword
+                              ? "مخفی کردن رمز عبور"
+                              : "نمایش رمز عبور"
+                          }
+                        >
+                          {showNewPassword ? <EyeOffIcon /> : <EyeIcon />}
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        className="upf-btn upf-btn-secondary"
+                        onClick={handleSetPassword}
+                        disabled={isSettingPassword}
+                      >
+                        {isSettingPassword ? "در حال ذخیره..." : "ثبت رمز عبور"}
+                      </button>
+                    </div>
+                    {passwordError && (
+                      <p className="upf-field-error">{passwordError}</p>
+                    )}
+                    <p className="upf-hint">
+                      شما هنوز رمز عبوری تنظیم نکرده‌اید؛ با ثبت رمز، امکان ورود
+                      با رمز عبور علاوه بر کد تأیید فعال می‌شود.
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           </div>

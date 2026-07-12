@@ -16,6 +16,7 @@ import CheckoutPage from "./pages/CheckoutPage";
 import MobileNav from "./components/common/MobileNav";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
+import NotFoundPage from "./pages/NotFoundPage";
 import ChangePhone from "./pages/ChangePhone";
 import AdminPage from "./pages/AdminPage";
 import BlogPage from "./pages/BlogPage";
@@ -121,6 +122,7 @@ export default function App() {
           <Route path="/comments" element={<CommentsPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
+          <Route path="/not-found" element={<NotFoundPage />} />
           <Route
             path="/admin"
             element={
@@ -145,6 +147,8 @@ export default function App() {
               // </ProtectedRoute>
             }
           />
+          {/* 404 Catch-All Route */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </PageWrapper>
     </DrawerStateProvider>

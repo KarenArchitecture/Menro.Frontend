@@ -4233,3 +4233,76 @@ textarea {
   object-fit: cover;
   display: block;
 }
+
+/* ---------- Blog admin: display-categories list ----------
+   .custom-icon-row .name / .icon are styled elsewhere for short, fixed-width
+   single-line icon rows (nowrap+ellipsis name, flat grey swatch). Those
+   rules are two classes deep, so a single-class override here loses on
+   specificity regardless of source order - that's also why the color
+   swatch below rendered as flat grey instead of the chosen --cat-color.
+   Every override here is scoped two-classes-deep under .blog-mgmt__cat-row
+   so it reliably wins.
+
+   Layout is flex-wrap instead of the shared grid so each card sizes to its
+   own title/subtitle (now capped by CATEGORY_TITLE_MAX/SUBTITLE_MAX in the
+   component) rather than stretching to fill an equal grid column. */
+.blog-mgmt__cat-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.blog-mgmt__cat-row {
+  flex: 0 1 auto;
+  width: auto;
+  min-width: 220px;
+  max-width: 420px;
+  align-items: center;
+}
+
+.blog-mgmt__cat-row .blog-mgmt__cat-name {
+  flex: 0 1 auto;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.4;
+  min-width: 0;
+}
+
+.blog-mgmt__cat-name strong {
+  display: block;
+  color: var(--text, #fff);
+  word-break: break-word;
+}
+
+.blog-mgmt__cat-subtitle {
+  display: block;
+  color: var(--text-muted, rgba(255, 255, 255, 0.55));
+  font-size: 12px;
+  word-break: break-word;
+}
+
+.blog-mgmt__cat-row .blog-mgmt__cat-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--cat-color, #5a302f);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  flex: 0 0 auto;
+}
+
+/* Label + live "x/n" character counter above title/subtitle inputs. */
+.blog-mgmt__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.blog-mgmt__char-count {
+  font-size: 11px;
+  color: var(--text-muted, rgba(255, 255, 255, 0.5));
+  font-variant-numeric: tabular-nums;
+}

@@ -1,129 +1,25 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  getBlogPosts,
+  uploadBlogPostCoverImage,
+  createBlogPost,
+  updateBlogPost,
+  toggleBlogPostPublish,
+  deleteBlogPost,
+  getBlogCategories,
+  createBlogCategory,
+  updateBlogCategory,
+  moveBlogCategory,
+  deleteBlogCategory,
+  getBlogTags,
+  createBlogTag,
+  updateBlogTag,
+  deleteBlogTag,
+  getBlogHero,
+  updateBlogHero,
+} from "../../api/adminBlogs";
 
-const initialHero = {
-  titleLine: "بخون، بدون، با منرو",
-  highlight: "متفاوت باش",
-  searchPlaceholder: "جستجو مقاله ...",
-};
-
-const initialDisplayCategories = [
-  {
-    id: 1,
-    title: "رستوران و فضای سرویس",
-    subtitle: "فضای فیزیکی، خدمات، جو",
-    color: "#5A302F",
-  },
-  {
-    id: 2,
-    title: "منو و غذا",
-    subtitle: "چیدمان، انتخاب، تجربه طعم",
-    color: "#664A25",
-  },
-  {
-    id: 3,
-    title: "رفتار و تجربه مشتری",
-    subtitle: "عادت‌ها، رضایت، وفاداری",
-    color: "#2B314B",
-  },
-  {
-    id: 4,
-    title: "برند و بازاریابی",
-    subtitle: "ساخت برند، جذب، دیده‌شدن",
-    color: "#274435",
-  },
-  {
-    id: 5,
-    title: "مدیریت و عملیات",
-    subtitle: "پشت‌صحنه، منابع، فرآیندها",
-    color: "#454C21",
-  },
-  {
-    id: 6,
-    title: "تکنولوژی و ابزارها",
-    subtitle: "راهکارهای دیجیتال و هوشمند",
-    color: "#58273E",
-  },
-  {
-    id: 7,
-    title: "فرهنگ و جامعه",
-    subtitle: "تأثیر اجتماعی، سبک زندگی",
-    color: "#264648",
-  },
-  {
-    id: 8,
-    title: "نگاه و دیدگاه",
-    subtitle: "تحلیل، ترند، زاویه‌ی متفاوت",
-    color: "#41224D",
-  },
-];
-
-// The pill nav rendered inside BlogFeed ("همه" is a fixed, non-deletable
-// "show everything" filter, so it's handled separately from the editable list).
-const initialFeedTags = [
-  "جدیدترین‌ها",
-  "محبوب‌ترین‌ها",
-  "پربازدیدترین‌ها",
-  "داغ‌ترین‌ها",
-];
-
-const initialSidebarTags = [
-  { id: 1, name: "منرو", count: "۹۶ مقاله" },
-  { id: 2, name: "آموزش آشپزی", count: "۹۶ مقاله" },
-  { id: 3, name: "منرو", count: "۹۶ مقاله" },
-  { id: 4, name: "آموزش آشپزی", count: "۹۶ مقاله" },
-];
-
-const initialPosts = [
-  {
-    id: 1,
-    title: "طرز تهیه پاستا آلفردو با مرغ و قارچ",
-    coverSrc: "/images/blog-(1).png",
-    readingMins: 5,
-    category: "جدیدترین‌ها",
-    published: true,
-  },
-  {
-    id: 2,
-    title: "راز یک پیتزای ایتالیایی خوشمزه",
-    coverSrc: "/images/blog-(2).png",
-    readingMins: 6,
-    category: "جدیدترین‌ها",
-    published: true,
-  },
-  {
-    id: 3,
-    title: "طرز تهیه قهوه دمی در خانه",
-    coverSrc: "/images/blog-(3).png",
-    readingMins: 3,
-    category: "جدیدترین‌ها",
-    published: true,
-  },
-  {
-    id: 7,
-    title: "بهترین رژیم غذایی برای ورزشکاران",
-    coverSrc: "/images/blog-(3).png",
-    readingMins: 8,
-    category: "محبوب‌ترین‌ها",
-    published: true,
-  },
-  {
-    id: 13,
-    title: "چگونه گوشت را سریع‌تر بپزیم؟",
-    coverSrc: "/images/blog-(1).png",
-    readingMins: 4,
-    category: "پربازدیدترین‌ها",
-    published: false,
-  },
-  {
-    id: 19,
-    title: "بررسی امکانات جدید اپلیکیشن منرو",
-    coverSrc: "/images/blog-(3).png",
-    readingMins: 3,
-    category: "داغ‌ترین‌ها",
-    published: true,
-  },
-];
-
+// Kept as-is for now - "چیدمان موبایل" tab is not wired to the backend yet.
 const PAIR_TYPE_LABELS = {
   blogTags: "دو کارت وبلاگ + برچسب‌ها",
   blogBanner: "دو کارت وبلاگ + بنر تبلیغاتی",
@@ -132,7 +28,7 @@ const PAIR_TYPE_LABELS = {
 };
 
 const initialMobileSettings = {
-  randomBlockRounds: 3, // how many <BlogMobileBlocksModule mode="random" /> to render
+  randomBlockRounds: 3,
   enabledPairTypes: {
     blogTags: true,
     blogBanner: true,
@@ -148,6 +44,8 @@ const initialMobileSettings = {
   },
 };
 
+// "فیلترهای فید" tab intentionally removed - feed categories are now a fixed,
+// non-editable list (see FEED_CATEGORIES in adminBlogs.js).
 const SUB_TABS = [
   { key: "posts", label: "پست‌های وبلاگ", icon: "fas fa-newspaper" },
   {
@@ -155,25 +53,31 @@ const SUB_TABS = [
     label: "دسته‌بندی‌های نمایشی",
     icon: "fas fa-th-large",
   },
-  { key: "feed-tags", label: "فیلتر‌های فید", icon: "fas fa-filter" },
   { key: "sidebar-tags", label: "برچسب‌های پیشنهادی", icon: "fas fa-hashtag" },
   { key: "hero", label: "هیرو و جستجو", icon: "fas fa-image" },
   { key: "mobile", label: "چیدمان موبایل", icon: "fas fa-mobile-alt" },
 ];
 
+function toPersianDigits(value) {
+  const persianDigits = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
+  return String(value).replace(/[0-9]/g, (d) => persianDigits[Number(d)]);
+}
+
+function apiErrorMessage(err, fallback = "خطایی رخ داد. دوباره تلاش کنید.") {
+  return err?.response?.data?.message || err?.response?.data?.title || fallback;
+}
+
+// Each pane below fetches its own data on mount. Combined with the
+// conditional rendering in BlogManagementSection (only the active tab's pane
+// is ever mounted), this means: switching to a tab is what triggers its API
+// call(s), and switching away un-mounts it - so nothing is fetched until
+// you're actually looking at it, and coming back to a tab always gets you
+// fresh data instead of a stale in-memory copy.
+
 export default function BlogManagementSection() {
   const [activeSubTab, setActiveSubTab] = useState("posts");
-
-  const [hero, setHero] = useState(initialHero);
-  const [displayCategories, setDisplayCategories] = useState(
-    initialDisplayCategories,
-  );
-  const [feedTags, setFeedTags] = useState(initialFeedTags);
-  const [sidebarTags, setSidebarTags] = useState(initialSidebarTags);
-  const [posts, setPosts] = useState(initialPosts);
   const [mobileSettings, setMobileSettings] = useState(initialMobileSettings);
-
-  const [savedFlash, setSavedFlash] = useState(""); // small transient "ذخیره شد" confirmation
+  const [savedFlash, setSavedFlash] = useState("");
 
   const flashSaved = (label = "تغییرات ذخیره شد") => {
     setSavedFlash(label);
@@ -202,63 +106,39 @@ export default function BlogManagementSection() {
         ))}
       </nav>
 
-      <div
-        className={`content-tab-pane ${activeSubTab === "posts" ? "active" : ""}`}
-      >
-        <PostsPane
-          posts={posts}
-          setPosts={setPosts}
-          feedTags={feedTags}
-          onSaved={flashSaved}
-        />
-      </div>
+      {activeSubTab === "posts" && (
+        <div className="content-tab-pane active">
+          <PostsPane onSaved={flashSaved} />
+        </div>
+      )}
 
-      <div
-        className={`content-tab-pane ${activeSubTab === "display-categories" ? "active" : ""}`}
-      >
-        <DisplayCategoriesPane
-          categories={displayCategories}
-          setCategories={setDisplayCategories}
-          onSaved={flashSaved}
-        />
-      </div>
+      {activeSubTab === "display-categories" && (
+        <div className="content-tab-pane active">
+          <DisplayCategoriesPane onSaved={flashSaved} />
+        </div>
+      )}
 
-      <div
-        className={`content-tab-pane ${activeSubTab === "feed-tags" ? "active" : ""}`}
-      >
-        <FeedTagsPane
-          feedTags={feedTags}
-          setFeedTags={setFeedTags}
-          posts={posts}
-          onSaved={flashSaved}
-        />
-      </div>
+      {activeSubTab === "sidebar-tags" && (
+        <div className="content-tab-pane active">
+          <SidebarTagsPane onSaved={flashSaved} />
+        </div>
+      )}
 
-      <div
-        className={`content-tab-pane ${activeSubTab === "sidebar-tags" ? "active" : ""}`}
-      >
-        <SidebarTagsPane
-          tags={sidebarTags}
-          setTags={setSidebarTags}
-          onSaved={flashSaved}
-        />
-      </div>
+      {activeSubTab === "hero" && (
+        <div className="content-tab-pane active">
+          <HeroPane onSaved={flashSaved} />
+        </div>
+      )}
 
-      <div
-        className={`content-tab-pane ${activeSubTab === "hero" ? "active" : ""}`}
-      >
-        <HeroPane hero={hero} setHero={setHero} onSaved={flashSaved} />
-      </div>
-
-      <div
-        className={`content-tab-pane ${activeSubTab === "mobile" ? "active" : ""}`}
-      >
-        <MobileLayoutPane
-          settings={mobileSettings}
-          setSettings={setMobileSettings}
-          onSaved={flashSaved}
-        />
-      </div>
+      {activeSubTab === "mobile" && (
+        <div className="content-tab-pane active">
+          <MobileLayoutPane
+            settings={mobileSettings}
+            setSettings={setMobileSettings}
+            onSaved={flashSaved}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -267,23 +147,114 @@ export default function BlogManagementSection() {
 /* 1) POSTS                                                            */
 /* ================================================================== */
 
-function emptyPost() {
+function mapPostFromApi(p, categories = []) {
+  return {
+    id: p.id,
+    title: p.title,
+    coverSrc: p.coverImageUrl || "",
+    readingMins: p.readingMinutes,
+    categoryId: p.categoryId,
+    // Fall back to a local lookup if a given endpoint's response doesn't
+    // include the joined category title (e.g. a lightweight PATCH response) -
+    // keeps the category label from ever going blank in the table.
+    categoryTitle:
+      p.categoryTitle ||
+      categories.find((c) => c.id === p.categoryId)?.title ||
+      "",
+    published: p.isPublished,
+  };
+}
+
+function mapPostToApi(draft) {
+  return {
+    title: draft.title,
+    coverImageUrl: draft.coverSrc || null,
+    readingMinutes: Number(draft.readingMins),
+    categoryId: draft.categoryId,
+    isPublished: !!draft.published,
+  };
+}
+
+function emptyPost(defaultCategoryId = "") {
   return {
     id: null,
     title: "",
     coverSrc: "",
     readingMins: 5,
-    category: "",
+    categoryId: defaultCategoryId,
     published: true,
   };
 }
 
-function PostsPane({ posts, setPosts, feedTags, onSaved }) {
+function PostsPane({ onSaved }) {
+  const [posts, setPosts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState("");
   const [query, setQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("همه");
-  const [modalPost, setModalPost] = useState(null); // null = closed, object = editing/new
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [modalPost, setModalPost] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [errors, setErrors] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageError, setImageError] = useState("");
+
+  // Re-fetches posts from the server (rather than splicing the CRUD response
+  // into local state) so the table can never drift from what the backend
+  // actually has - category joins, computed fields, etc. are guaranteed
+  // fresh after every create/update/toggle/delete.
+  const reloadPosts = useCallback(
+    async (categoriesForMapping = categories) => {
+      const data = await getBlogPosts();
+      setPosts(data.map((p) => mapPostFromApi(p, categoriesForMapping)));
+      return data;
+    },
+    [categories],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        const [postsData, categoriesData] = await Promise.all([
+          getBlogPosts(),
+          getBlogCategories(),
+        ]);
+        if (!cancelled) {
+          setCategories(categoriesData);
+          setPosts(postsData.map((p) => mapPostFromApi(p, categoriesData)));
+        }
+      } catch (err) {
+        if (!cancelled)
+          setApiError(apiErrorMessage(err, "بارگذاری پست‌ها با خطا مواجه شد."));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleCoverImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageError("");
+    setUploadingImage(true);
+    try {
+      const oldFileName = modalPost.coverSrc
+        ? modalPost.coverSrc.split("/").pop()
+        : null;
+      const { url } = await uploadBlogPostCoverImage(file, oldFileName);
+      setModalPost((prev) => ({ ...prev, coverSrc: url }));
+    } catch (err) {
+      setImageError(apiErrorMessage(err, "آپلود تصویر با خطا مواجه شد."));
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const filtered = useMemo(() => {
     return posts.filter((p) => {
@@ -291,69 +262,85 @@ function PostsPane({ posts, setPosts, feedTags, onSaved }) {
         .toLowerCase()
         .includes(query.trim().toLowerCase());
       const matchesCategory =
-        categoryFilter === "همه" || p.category === categoryFilter;
+        categoryFilter === "all" || p.categoryId === categoryFilter;
       return matchesQuery && matchesCategory;
     });
   }, [posts, query, categoryFilter]);
 
   const openNew = () => {
     setErrors({});
-    setModalPost({ ...emptyPost(), category: feedTags[0] || "" });
+    setImageError("");
+    setModalPost(emptyPost(categories[0]?.id ?? ""));
   };
 
   const openEdit = (post) => {
     setErrors({});
+    setImageError("");
     setModalPost({ ...post });
   };
 
   const validate = (draft) => {
     const errs = {};
     if (!draft.title.trim()) errs.title = "عنوان پست الزامی است.";
-    if (!draft.category) errs.category = "انتخاب دسته‌بندی الزامی است.";
+    if (!draft.categoryId) errs.category = "انتخاب دسته‌بندی الزامی است.";
     if (!draft.readingMins || draft.readingMins <= 0)
       errs.readingMins = "زمان مطالعه باید بزرگ‌تر از صفر باشد.";
     return errs;
   };
 
-  const savePost = () => {
+  const savePost = async () => {
     const errs = validate(modalPost);
     if (Object.keys(errs).length) {
       setErrors(errs);
       return;
     }
 
-    // TODO: API — POST /admin/blog/posts (create) or PUT /admin/blog/posts/:id (update)
-    setPosts((prev) => {
+    setSaving(true);
+    setApiError("");
+    try {
       if (modalPost.id) {
-        return prev.map((p) => (p.id === modalPost.id ? { ...modalPost } : p));
+        await updateBlogPost(modalPost.id, mapPostToApi(modalPost));
+        onSaved("پست ویرایش شد");
+      } else {
+        await createBlogPost(mapPostToApi(modalPost));
+        onSaved("پست جدید اضافه شد");
       }
-      const nextId = Math.max(0, ...prev.map((p) => p.id)) + 1;
-      return [{ ...modalPost, id: nextId }, ...prev];
-    });
-
-    setModalPost(null);
-    onSaved(modalPost.id ? "پست ویرایش شد" : "پست جدید اضافه شد");
+      await reloadPosts();
+      setModalPost(null);
+    } catch (err) {
+      setApiError(apiErrorMessage(err, "ذخیره پست با خطا مواجه شد."));
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const togglePublished = (post) => {
-    // TODO: API — PATCH /admin/blog/posts/:id/publish
-    setPosts((prev) =>
-      prev.map((p) =>
-        p.id === post.id ? { ...p, published: !p.published } : p,
-      ),
-    );
-    onSaved(post.published ? "پست پیش‌نویس شد" : "پست منتشر شد");
+  const togglePublished = async (post) => {
+    try {
+      await toggleBlogPostPublish(post.id);
+      await reloadPosts();
+      const refreshed = posts.find((p) => p.id === post.id);
+      onSaved(!refreshed?.published ? "پست منتشر شد" : "پست پیش‌نویس شد");
+    } catch (err) {
+      setApiError(apiErrorMessage(err, "تغییر وضعیت پست با خطا مواجه شد."));
+    }
   };
 
-  const deletePost = (id) => {
-    // TODO: API — DELETE /admin/blog/posts/:id
-    setPosts((prev) => prev.filter((p) => p.id !== id));
-    setConfirmDeleteId(null);
-    onSaved("پست حذف شد");
+  const deletePost = async (id) => {
+    try {
+      await deleteBlogPost(id);
+      await reloadPosts();
+      setConfirmDeleteId(null);
+      onSaved("پست حذف شد");
+    } catch (err) {
+      setApiError(apiErrorMessage(err, "حذف پست با خطا مواجه شد."));
+      setConfirmDeleteId(null);
+    }
   };
 
   return (
     <div className="panel">
+      {apiError && <span className="form-error">{apiError}</span>}
+
       <div className="input-group-inline">
         <input
           type="text"
@@ -367,10 +354,10 @@ function PostsPane({ posts, setPosts, feedTags, onSaved }) {
           onChange={(e) => setCategoryFilter(e.target.value)}
           style={{ maxWidth: 220 }}
         >
-          <option value="همه">همه دسته‌ها</option>
-          {feedTags.map((tag) => (
-            <option key={tag} value={tag}>
-              {tag}
+          <option value="all">همه دسته‌ها</option>
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.title}
             </option>
           ))}
         </select>
@@ -392,7 +379,14 @@ function PostsPane({ posts, setPosts, feedTags, onSaved }) {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 && (
+            {loading && (
+              <tr>
+                <td colSpan={6}>
+                  <div className="empty-hint">در حال بارگذاری...</div>
+                </td>
+              </tr>
+            )}
+            {!loading && filtered.length === 0 && (
               <tr>
                 <td colSpan={6}>
                   <div className="empty-hint">
@@ -401,54 +395,58 @@ function PostsPane({ posts, setPosts, feedTags, onSaved }) {
                 </td>
               </tr>
             )}
-            {filtered.map((post) => (
-              <tr key={post.id}>
-                <td>
-                  <div className="blog-mgmt__thumb">
-                    {post.coverSrc ? (
-                      <img src={post.coverSrc} alt={post.title} />
-                    ) : (
-                      <i className="fas fa-image" />
-                    )}
-                  </div>
-                </td>
-                <td>{post.title}</td>
-                <td>{post.category}</td>
-                <td>{post.readingMins} دقیقه</td>
-                <td>
-                  <span
-                    className={`status-chip ${post.published ? "active" : "danger"}`}
-                    style={{ cursor: "pointer" }}
-                    onClick={() => togglePublished(post)}
-                    title="برای تغییر وضعیت کلیک کنید"
-                  >
-                    {post.published ? "منتشر شده" : "پیش‌نویس"}
-                  </span>
-                </td>
-                <td>
-                  <button
-                    className="btn-icon"
-                    title="ویرایش"
-                    onClick={() => openEdit(post)}
-                  >
-                    <i className="fas fa-pen" />
-                  </button>
-                  <button
-                    className="btn-icon btn-danger"
-                    title="حذف"
-                    onClick={() => setConfirmDeleteId(post.id)}
-                  >
-                    <i className="fas fa-trash" />
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {!loading &&
+              filtered.map((post) => (
+                <tr key={post.id}>
+                  <td>
+                    <div className="blog-mgmt__thumb">
+                      {post.coverSrc ? (
+                        <img src={post.coverSrc} alt={post.title} />
+                      ) : (
+                        <i className="fas fa-image" />
+                      )}
+                    </div>
+                  </td>
+                  <td>{post.title}</td>
+                  <td>{post.categoryTitle}</td>
+                  <td>{post.readingMins} دقیقه</td>
+                  <td>
+                    <span
+                      className={`status-chip ${post.published ? "active" : "danger"}`}
+                      style={{ cursor: "pointer" }}
+                      onClick={() => togglePublished(post)}
+                      title="برای تغییر وضعیت کلیک کنید"
+                    >
+                      {post.published ? "منتشر شده" : "پیش‌نویس"}
+                    </span>
+                  </td>
+                  <td>
+                    <button
+                      className="btn-icon"
+                      title="ویرایش"
+                      onClick={() => openEdit(post)}
+                    >
+                      <i className="fas fa-pen" />
+                    </button>
+                    <button
+                      className="btn-icon btn-danger"
+                      title="حذف"
+                      onClick={() => setConfirmDeleteId(post.id)}
+                    >
+                      <i className="fas fa-trash" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
 
       {modalPost && (
-        <div className="modal-backdrop" onClick={() => setModalPost(null)}>
+        <div
+          className="modal-backdrop"
+          onClick={() => !saving && setModalPost(null)}
+        >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h4>{modalPost.id ? "ویرایش پست" : "پست جدید"}</h4>
@@ -473,32 +471,42 @@ function PostsPane({ posts, setPosts, feedTags, onSaved }) {
               </div>
 
               <div className="input-group">
-                <label>آدرس تصویر کاور</label>
+                <label>تصویر کاور</label>
+                {modalPost.coverSrc && (
+                  <div className="blog-mgmt__thumb" style={{ marginBottom: 8 }}>
+                    <img src={modalPost.coverSrc} alt={modalPost.title} />
+                  </div>
+                )}
                 <input
-                  type="text"
-                  placeholder="/images/blog-(1).png"
-                  value={modalPost.coverSrc}
-                  onChange={(e) =>
-                    setModalPost({ ...modalPost, coverSrc: e.target.value })
-                  }
+                  type="file"
+                  accept="image/*"
+                  disabled={uploadingImage}
+                  onChange={handleCoverImageChange}
                 />
+                {uploadingImage && (
+                  <span className="empty-hint">در حال آپلود...</span>
+                )}
+                {imageError && <span className="form-error">{imageError}</span>}
               </div>
 
               <div className="two-column-form">
                 <div className="input-group">
                   <label>دسته‌بندی</label>
                   <select
-                    value={modalPost.category}
+                    value={modalPost.categoryId}
                     onChange={(e) =>
-                      setModalPost({ ...modalPost, category: e.target.value })
+                      setModalPost({
+                        ...modalPost,
+                        categoryId: e.target.value,
+                      })
                     }
                   >
                     <option value="" disabled>
                       انتخاب کنید
                     </option>
-                    {feedTags.map((tag) => (
-                      <option key={tag} value={tag}>
-                        {tag}
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.title}
                       </option>
                     ))}
                   </select>
@@ -541,12 +549,17 @@ function PostsPane({ posts, setPosts, feedTags, onSaved }) {
             <div className="modal-footer">
               <button
                 className="btn btn-secondary"
+                disabled={saving}
                 onClick={() => setModalPost(null)}
               >
                 انصراف
               </button>
-              <button className="btn btn-primary" onClick={savePost}>
-                ذخیره
+              <button
+                className="btn btn-primary"
+                disabled={saving}
+                onClick={savePost}
+              >
+                {saving ? "در حال ذخیره..." : "ذخیره"}
               </button>
             </div>
           </div>
@@ -593,14 +606,68 @@ function PostsPane({ posts, setPosts, feedTags, onSaved }) {
 /* 2) DISPLAY CATEGORIES (the 8 colored cards under the hero)          */
 /* ================================================================== */
 
+function mapCategoryFromApi(c) {
+  return {
+    id: c.id,
+    title: c.title,
+    subtitle: c.subtitle,
+    color: c.colorHex,
+    sortOrder: c.sortOrder,
+  };
+}
+
+function mapCategoryToApi(draft) {
+  return {
+    title: draft.title,
+    subtitle: draft.subtitle,
+    colorHex: draft.color,
+  };
+}
+
 function emptyDisplayCategory() {
   return { id: null, title: "", subtitle: "", color: "#5A302F" };
 }
 
-function DisplayCategoriesPane({ categories, setCategories, onSaved }) {
+// Kept in sync with [MaxLength] on CreateBlogCategoryRequest/UpdateBlogCategoryRequest
+// in BlogCategoryDtos.cs - these are display cards with fixed-size UI on the
+// blog page, so both ends enforce the same short limits.
+const CATEGORY_TITLE_MAX = 30;
+const CATEGORY_SUBTITLE_MAX = 50;
+
+function DisplayCategoriesPane({ onSaved }) {
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState("");
   const [modalCat, setModalCat] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [errors, setErrors] = useState({});
+  const [saving, setSaving] = useState(false);
+
+  const reloadCategories = useCallback(async () => {
+    const data = await getBlogCategories();
+    setCategories(data.map(mapCategoryFromApi));
+    return data;
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        await reloadCategories();
+      } catch (err) {
+        if (!cancelled)
+          setApiError(
+            apiErrorMessage(err, "بارگذاری دسته‌بندی‌ها با خطا مواجه شد."),
+          );
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadCategories]);
 
   const openNew = () => {
     setErrors({});
@@ -611,47 +678,65 @@ function DisplayCategoriesPane({ categories, setCategories, onSaved }) {
     setModalCat({ ...cat });
   };
 
-  const save = () => {
+  const save = async () => {
     const errs = {};
-    if (!modalCat.title.trim()) errs.title = "عنوان الزامی است.";
-    if (!modalCat.subtitle.trim()) errs.subtitle = "زیرعنوان الزامی است.";
+    const title = modalCat.title.trim();
+    const subtitle = modalCat.subtitle.trim();
+    if (!title) errs.title = "عنوان الزامی است.";
+    else if (title.length > CATEGORY_TITLE_MAX)
+      errs.title = `عنوان نباید بیشتر از ${toPersianDigits(CATEGORY_TITLE_MAX)} کاراکتر باشد.`;
+    if (!subtitle) errs.subtitle = "زیرعنوان الزامی است.";
+    else if (subtitle.length > CATEGORY_SUBTITLE_MAX)
+      errs.subtitle = `زیرعنوان نباید بیشتر از ${toPersianDigits(CATEGORY_SUBTITLE_MAX)} کاراکتر باشد.`;
     if (Object.keys(errs).length) {
       setErrors(errs);
       return;
     }
 
-    // TODO: API — POST/PUT /admin/blog/display-categories
-    setCategories((prev) => {
-      if (modalCat.id)
-        return prev.map((c) => (c.id === modalCat.id ? { ...modalCat } : c));
-      const nextId = Math.max(0, ...prev.map((c) => c.id)) + 1;
-      return [...prev, { ...modalCat, id: nextId }];
-    });
-    setModalCat(null);
-    onSaved("دسته‌بندی نمایشی ذخیره شد");
+    setSaving(true);
+    setApiError("");
+    try {
+      if (modalCat.id) {
+        await updateBlogCategory(modalCat.id, mapCategoryToApi(modalCat));
+      } else {
+        await createBlogCategory(mapCategoryToApi(modalCat));
+      }
+      await reloadCategories();
+      setModalCat(null);
+      onSaved("دسته‌بندی نمایشی ذخیره شد");
+    } catch (err) {
+      setApiError(apiErrorMessage(err, "ذخیره دسته‌بندی با خطا مواجه شد."));
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const remove = (id) => {
-    // TODO: API — DELETE /admin/blog/display-categories/:id
-    setCategories((prev) => prev.filter((c) => c.id !== id));
-    setConfirmDeleteId(null);
-    onSaved("دسته‌بندی حذف شد");
+  const remove = async (id) => {
+    try {
+      await deleteBlogCategory(id);
+      await reloadCategories();
+      setConfirmDeleteId(null);
+      onSaved("دسته‌بندی حذف شد");
+    } catch (err) {
+      setApiError(apiErrorMessage(err, "حذف دسته‌بندی با خطا مواجه شد."));
+      setConfirmDeleteId(null);
+    }
   };
 
-  const move = (index, dir) => {
-    const next = [...categories];
+  const move = async (index, dir) => {
     const target = index + dir;
-    if (target < 0 || target >= next.length) return;
-    [next[index], next[target]] = [next[target], next[index]];
-    setCategories(next);
+    if (target < 0 || target >= categories.length) return;
+    try {
+      await moveBlogCategory(categories[index].id, dir < 0 ? "up" : "down");
+      await reloadCategories();
+    } catch (err) {
+      setApiError(apiErrorMessage(err, "تغییر ترتیب با خطا مواجه شد."));
+    }
   };
 
   return (
     <div className="panel">
-      <p className="panel-subtitle">
-        همان ۸ کارت رنگی که زیر بخش هیرو، بالای فید وبلاگ نمایش داده می‌شوند.
-        ترتیب این لیست دقیقاً همان ترتیب نمایش در صفحه‌ی وبلاگ است.
-      </p>
+      {apiError && <span className="form-error">{apiError}</span>}
 
       <div className="panel-actions blog-mgmt__panel-actions--start">
         <button className="btn btn-primary" onClick={openNew}>
@@ -659,55 +744,63 @@ function DisplayCategoriesPane({ categories, setCategories, onSaved }) {
         </button>
       </div>
 
-      <div className="custom-icons-list">
-        {categories.map((cat, index) => (
-          <div key={cat.id} className="custom-icon-row blog-mgmt__cat-row">
-            <span
-              className="icon blog-mgmt__cat-swatch"
-              style={{ "--cat-color": cat.color }}
-            />
-            <div className="name blog-mgmt__cat-name">
-              <strong>{cat.title}</strong>
-              <small className="blog-mgmt__cat-subtitle">{cat.subtitle}</small>
+      {loading && <div className="empty-hint">در حال بارگذاری...</div>}
+
+      <div className="custom-icons-list blog-mgmt__cat-list">
+        {!loading &&
+          categories.map((cat, index) => (
+            <div key={cat.id} className="custom-icon-row blog-mgmt__cat-row">
+              <span
+                className="icon blog-mgmt__cat-swatch"
+                style={{ "--cat-color": cat.color }}
+              />
+              <div className="name blog-mgmt__cat-name">
+                <strong>{cat.title}</strong>
+                <small className="blog-mgmt__cat-subtitle">
+                  {cat.subtitle}
+                </small>
+              </div>
+              <div className="actions">
+                <button
+                  className="mh-reorder-btn btn-icon"
+                  disabled={index === 0}
+                  onClick={() => move(index, -1)}
+                  title="بالا"
+                >
+                  <i className="fas fa-chevron-up" />
+                </button>
+                <button
+                  className="btn-icon"
+                  disabled={index === categories.length - 1}
+                  onClick={() => move(index, 1)}
+                  title="پایین"
+                >
+                  <i className="fas fa-chevron-down" />
+                </button>
+                <button
+                  className="btn-icon"
+                  onClick={() => openEdit(cat)}
+                  title="ویرایش"
+                >
+                  <i className="fas fa-pen" />
+                </button>
+                <button
+                  className="btn-icon btn-danger"
+                  onClick={() => setConfirmDeleteId(cat.id)}
+                  title="حذف"
+                >
+                  <i className="fas fa-trash" />
+                </button>
+              </div>
             </div>
-            <div className="actions">
-              <button
-                className="mh-reorder-btn btn-icon"
-                disabled={index === 0}
-                onClick={() => move(index, -1)}
-                title="بالا"
-              >
-                <i className="fas fa-chevron-up" />
-              </button>
-              <button
-                className="btn-icon"
-                disabled={index === categories.length - 1}
-                onClick={() => move(index, 1)}
-                title="پایین"
-              >
-                <i className="fas fa-chevron-down" />
-              </button>
-              <button
-                className="btn-icon"
-                onClick={() => openEdit(cat)}
-                title="ویرایش"
-              >
-                <i className="fas fa-pen" />
-              </button>
-              <button
-                className="btn-icon btn-danger"
-                onClick={() => setConfirmDeleteId(cat.id)}
-                title="حذف"
-              >
-                <i className="fas fa-trash" />
-              </button>
-            </div>
-          </div>
-        ))}
+          ))}
       </div>
 
       {modalCat && (
-        <div className="modal-backdrop" onClick={() => setModalCat(null)}>
+        <div
+          className="modal-backdrop"
+          onClick={() => !saving && setModalCat(null)}
+        >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h4>
@@ -721,10 +814,17 @@ function DisplayCategoriesPane({ categories, setCategories, onSaved }) {
             </div>
             <div className="form-vertical">
               <div className="input-group">
-                <label>عنوان</label>
+                <div className="blog-mgmt__label-row">
+                  <label>عنوان</label>
+                  <span className="blog-mgmt__char-count">
+                    {toPersianDigits(modalCat.title.length)}/
+                    {toPersianDigits(CATEGORY_TITLE_MAX)}
+                  </span>
+                </div>
                 <input
                   type="text"
                   value={modalCat.title}
+                  maxLength={CATEGORY_TITLE_MAX}
                   onChange={(e) =>
                     setModalCat({ ...modalCat, title: e.target.value })
                   }
@@ -734,10 +834,17 @@ function DisplayCategoriesPane({ categories, setCategories, onSaved }) {
                 )}
               </div>
               <div className="input-group">
-                <label>زیرعنوان</label>
+                <div className="blog-mgmt__label-row">
+                  <label>زیرعنوان</label>
+                  <span className="blog-mgmt__char-count">
+                    {toPersianDigits(modalCat.subtitle.length)}/
+                    {toPersianDigits(CATEGORY_SUBTITLE_MAX)}
+                  </span>
+                </div>
                 <input
                   type="text"
                   value={modalCat.subtitle}
+                  maxLength={CATEGORY_SUBTITLE_MAX}
                   onChange={(e) =>
                     setModalCat({ ...modalCat, subtitle: e.target.value })
                   }
@@ -770,12 +877,17 @@ function DisplayCategoriesPane({ categories, setCategories, onSaved }) {
             <div className="modal-footer">
               <button
                 className="btn btn-secondary"
+                disabled={saving}
                 onClick={() => setModalCat(null)}
               >
                 انصراف
               </button>
-              <button className="btn btn-primary" onClick={save}>
-                ذخیره
+              <button
+                className="btn btn-primary"
+                disabled={saving}
+                onClick={save}
+              >
+                {saving ? "در حال ذخیره..." : "ذخیره"}
               </button>
             </div>
           </div>
@@ -819,131 +931,55 @@ function DisplayCategoriesPane({ categories, setCategories, onSaved }) {
 }
 
 /* ================================================================== */
-/* 3) FEED CATEGORY TAGS (the pill nav: جدیدترین‌ها / محبوب‌ترین‌ها ...) */
+/* 3) SIDEBAR "SUGGESTED TAGS" (name + article count)                  */
 /* ================================================================== */
 
-function FeedTagsPane({ feedTags, setFeedTags, posts, onSaved }) {
-  const [newTag, setNewTag] = useState("");
-  const [confirmDelete, setConfirmDelete] = useState(null);
-  const [error, setError] = useState("");
-
-  const countFor = (tag) => posts.filter((p) => p.category === tag).length;
-
-  const addTag = () => {
-    const trimmed = newTag.trim();
-    if (!trimmed) return;
-    if (feedTags.includes(trimmed)) {
-      setError("این فیلتر از قبل وجود دارد.");
-      return;
-    }
-    // TODO: API — POST /admin/blog/feed-tags
-    setFeedTags((prev) => [...prev, trimmed]);
-    setNewTag("");
-    setError("");
-    onSaved("فیلتر جدید اضافه شد");
+function mapTagFromApi(t) {
+  return {
+    id: t.id,
+    name: t.name,
+    count: `${toPersianDigits(t.articleCount)} مقاله`,
   };
-
-  const removeTag = (tag) => {
-    const inUse = countFor(tag);
-    if (inUse > 0) {
-      setError(
-        `این فیلتر روی ${inUse} پست فعال است؛ ابتدا دسته‌بندی آن پست‌ها را تغییر دهید.`,
-      );
-      setConfirmDelete(null);
-      return;
-    }
-    // TODO: API — DELETE /admin/blog/feed-tags/:tag
-    setFeedTags((prev) => prev.filter((t) => t !== tag));
-    setConfirmDelete(null);
-    onSaved("فیلتر حذف شد");
-  };
-
-  return (
-    <div className="panel">
-      <p className="panel-subtitle">
-        این‌ها همان دکمه‌های فیلتر بالای فید وبلاگ هستند (کنار فیلتر ثابت
-        «همه»). هر پست باید دقیقاً به یکی از این‌ها تعلق داشته باشد.
-      </p>
-
-      <div className="input-group-inline">
-        <input
-          type="text"
-          placeholder="نام فیلتر جدید، مثلاً «ویژه»"
-          value={newTag}
-          onChange={(e) => setNewTag(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && addTag()}
-        />
-        <button className="btn btn-primary" onClick={addTag}>
-          <i className="fas fa-plus" /> افزودن
-        </button>
-      </div>
-      {error && <span className="form-error">{error}</span>}
-
-      <div className="predefined-tags blog-mgmt__predefined-tags">
-        <span className="tag blog-mgmt__tag--static">
-          همه <span className="badge">ثابت</span>
-        </span>
-        {feedTags.map((tag) => (
-          <span key={tag} className="tag blog-mgmt__tag--readonly">
-            {tag}
-            <span className="badge">{countFor(tag)} پست</span>
-            <button
-              type="button"
-              className="btn-icon btn-danger blog-mgmt__tag-remove"
-              onClick={() => setConfirmDelete(tag)}
-              title="حذف فیلتر"
-            >
-              <i className="fas fa-times" />
-            </button>
-          </span>
-        ))}
-      </div>
-
-      {confirmDelete && (
-        <div className="modal-backdrop" onClick={() => setConfirmDelete(null)}>
-          <div
-            className="modal blog-mgmt__modal--confirm"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-header">
-              <h4>حذف فیلتر «{confirmDelete}»</h4>
-            </div>
-            <p className="blog-mgmt__muted-text">
-              با حذف این فیلتر، دکمه‌ی آن از فید وبلاگ برداشته می‌شود.
-            </p>
-            <div className="modal-footer">
-              <button
-                className="btn btn-secondary"
-                onClick={() => setConfirmDelete(null)}
-              >
-                انصراف
-              </button>
-              <button
-                className="btn btn-danger"
-                onClick={() => removeTag(confirmDelete)}
-              >
-                حذف شود
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
 }
-
-/* ================================================================== */
-/* 4) SIDEBAR "SUGGESTED TAGS" (name + article count)                  */
-/* ================================================================== */
 
 function emptySidebarTag() {
-  return { id: null, name: "", count: "" };
+  return { id: null, name: "" };
 }
 
-function SidebarTagsPane({ tags, setTags, onSaved }) {
+function SidebarTagsPane({ onSaved }) {
+  const [tags, setTags] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState("");
   const [modalTag, setModalTag] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const reloadTags = useCallback(async () => {
+    const data = await getBlogTags();
+    setTags(data.map(mapTagFromApi));
+    return data;
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        await reloadTags();
+      } catch (err) {
+        if (!cancelled)
+          setApiError(
+            apiErrorMessage(err, "بارگذاری برچسب‌ها با خطا مواجه شد."),
+          );
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadTags]);
 
   const openNew = () => {
     setError("");
@@ -954,36 +990,45 @@ function SidebarTagsPane({ tags, setTags, onSaved }) {
     setModalTag({ ...tag });
   };
 
-  const save = () => {
+  const save = async () => {
     if (!modalTag.name.trim()) {
       setError("نام برچسب الزامی است.");
       return;
     }
-    // TODO: API — POST/PUT /admin/blog/sidebar-tags
-    setTags((prev) => {
-      if (modalTag.id)
-        return prev.map((t) => (t.id === modalTag.id ? { ...modalTag } : t));
-      const nextId = Math.max(0, ...prev.map((t) => t.id)) + 1;
-      return [...prev, { ...modalTag, id: nextId }];
-    });
-    setModalTag(null);
-    onSaved("برچسب پیشنهادی ذخیره شد");
+
+    setSaving(true);
+    try {
+      if (modalTag.id) {
+        await updateBlogTag(modalTag.id, modalTag.name.trim());
+      } else {
+        await createBlogTag(modalTag.name.trim());
+      }
+      await reloadTags();
+      setModalTag(null);
+      setError("");
+      onSaved("برچسب پیشنهادی ذخیره شد");
+    } catch (err) {
+      setError(apiErrorMessage(err, "ذخیره برچسب با خطا مواجه شد."));
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const remove = (id) => {
-    // TODO: API — DELETE /admin/blog/sidebar-tags/:id
-    setTags((prev) => prev.filter((t) => t.id !== id));
-    setConfirmDeleteId(null);
-    onSaved("برچسب حذف شد");
+  const remove = async (id) => {
+    try {
+      await deleteBlogTag(id);
+      await reloadTags();
+      setConfirmDeleteId(null);
+      onSaved("برچسب حذف شد");
+    } catch (err) {
+      setApiError(apiErrorMessage(err, "حذف برچسب با خطا مواجه شد."));
+      setConfirmDeleteId(null);
+    }
   };
 
   return (
     <div className="panel">
-      <p className="panel-subtitle">
-        این برچسب‌ها همان لیست «برچسب‌های پیشنهادی» در سایدبار دسکتاپ و بلوک‌های
-        تصادفی موبایل هستند. حداکثر ۸ مورد اول در نسخه‌ی موبایل نمایش داده
-        می‌شود.
-      </p>
+      {apiError && <span className="form-error">{apiError}</span>}
 
       <div className="panel-actions blog-mgmt__panel-actions--start">
         <button className="btn btn-primary" onClick={openNew}>
@@ -991,41 +1036,47 @@ function SidebarTagsPane({ tags, setTags, onSaved }) {
         </button>
       </div>
 
+      {loading && <div className="empty-hint">در حال بارگذاری...</div>}
+
       <ul className="sidebar-tags-list blog-mgmt__sidebar-tags-list">
-        {tags.map((tag) => (
-          <li key={tag.id} className="sidebar-tag-item">
-            <div className="tag-item-right">
-              <span className="mobile-blog-tags__hash blog-mgmt__tag-hash">
-                #
-              </span>
-              <span className="tag-item-name">{tag.name}</span>
-            </div>
-            <div className="blog-mgmt__tag-actions">
-              <span className="tag-item-count">{tag.count}</span>
-              <button
-                className="btn-icon"
-                onClick={() => openEdit(tag)}
-                title="ویرایش"
-              >
-                <i className="fas fa-pen" />
-              </button>
-              <button
-                className="btn-icon btn-danger"
-                onClick={() => setConfirmDeleteId(tag.id)}
-                title="حذف"
-              >
-                <i className="fas fa-trash" />
-              </button>
-            </div>
-          </li>
-        ))}
-        {tags.length === 0 && (
+        {!loading &&
+          tags.map((tag) => (
+            <li key={tag.id} className="sidebar-tag-item">
+              <div className="tag-item-right">
+                <span className="mobile-blog-tags__hash blog-mgmt__tag-hash">
+                  #
+                </span>
+                <span className="tag-item-name">{tag.name}</span>
+              </div>
+              <div className="blog-mgmt__tag-actions">
+                <span className="tag-item-count">{tag.count}</span>
+                <button
+                  className="btn-icon"
+                  onClick={() => openEdit(tag)}
+                  title="ویرایش"
+                >
+                  <i className="fas fa-pen" />
+                </button>
+                <button
+                  className="btn-icon btn-danger"
+                  onClick={() => setConfirmDeleteId(tag.id)}
+                  title="حذف"
+                >
+                  <i className="fas fa-trash" />
+                </button>
+              </div>
+            </li>
+          ))}
+        {!loading && tags.length === 0 && (
           <div className="empty-hint">هنوز برچسبی اضافه نشده.</div>
         )}
       </ul>
 
       {modalTag && (
-        <div className="modal-backdrop" onClick={() => setModalTag(null)}>
+        <div
+          className="modal-backdrop"
+          onClick={() => !saving && setModalTag(null)}
+        >
           <div
             className="modal blog-mgmt__modal--tag"
             onClick={(e) => e.stopPropagation()}
@@ -1048,27 +1099,23 @@ function SidebarTagsPane({ tags, setTags, onSaved }) {
                 />
                 {error && <span className="form-error">{error}</span>}
               </div>
-              <div className="input-group">
-                <label>تعداد مقاله (متن نمایشی)</label>
-                <input
-                  type="text"
-                  placeholder="۹۶ مقاله"
-                  value={modalTag.count}
-                  onChange={(e) =>
-                    setModalTag({ ...modalTag, count: e.target.value })
-                  }
-                />
-              </div>
+              {/* "تعداد مقاله" field intentionally removed - it's always
+                  server-computed and shown read-only in the list above. */}
             </div>
             <div className="modal-footer">
               <button
                 className="btn btn-secondary"
+                disabled={saving}
                 onClick={() => setModalTag(null)}
               >
                 انصراف
               </button>
-              <button className="btn btn-primary" onClick={save}>
-                ذخیره
+              <button
+                className="btn btn-primary"
+                disabled={saving}
+                onClick={save}
+              >
+                {saving ? "در حال ذخیره..." : "ذخیره"}
               </button>
             </div>
           </div>
@@ -1109,81 +1156,130 @@ function SidebarTagsPane({ tags, setTags, onSaved }) {
 }
 
 /* ================================================================== */
-/* 5) HERO + SEARCH BAR                                                */
+/* 4) HERO + SEARCH BAR                                                */
 /* ================================================================== */
 
-function HeroPane({ hero, setHero, onSaved }) {
-  const [draft, setDraft] = useState(hero);
-  const [error, setError] = useState("");
+function mapHeroFromApi(h) {
+  return {
+    titleLine: h.titleLine,
+    highlight: h.highlight,
+    searchPlaceholder: h.searchPlaceholder,
+  };
+}
 
-  const save = () => {
+function HeroPane({ onSaved }) {
+  const [draft, setDraft] = useState({
+    titleLine: "",
+    highlight: "",
+    searchPlaceholder: "",
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        const hero = await getBlogHero();
+        if (!cancelled) setDraft(mapHeroFromApi(hero));
+      } catch (err) {
+        if (!cancelled)
+          setError(apiErrorMessage(err, "بارگذاری هیرو با خطا مواجه شد."));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const save = async () => {
     if (!draft.titleLine.trim() || !draft.highlight.trim()) {
       setError("متن اصلی و متن هایلایت نباید خالی باشند.");
       return;
     }
-    // TODO: API — PUT /admin/blog/hero
-    setError("");
-    setHero(draft);
-    onSaved("تنظیمات هیرو ذخیره شد");
+
+    setSaving(true);
+    try {
+      const updated = await updateBlogHero(draft);
+      setDraft(mapHeroFromApi(updated));
+      setError("");
+      onSaved("تنظیمات هیرو ذخیره شد");
+    } catch (err) {
+      setError(apiErrorMessage(err, "ذخیره هیرو با خطا مواجه شد."));
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <div className="panel">
-      <p className="panel-subtitle">
-        متن اصلی، بخش رنگی هایلایت و متن جای‌گزین (placeholder) نوار جستجوی
-        بالای صفحه‌ی وبلاگ. تصاویر شناور غذا (پیتزا، سوشی و ...) فعلاً ثابت
-        هستند و از پوشه‌ی تصاویر پروژه خوانده می‌شوند.
-      </p>
+      {loading && <div className="empty-hint">در حال بارگذاری...</div>}
 
-      <div className="form-vertical blog-mgmt__form--hero">
-        <div className="input-group">
-          <label>متن اصلی هیرو</label>
-          <input
-            type="text"
-            value={draft.titleLine}
-            onChange={(e) => setDraft({ ...draft, titleLine: e.target.value })}
-          />
-        </div>
-        <div className="input-group">
-          <label>متن هایلایت (نارنجی)</label>
-          <input
-            type="text"
-            value={draft.highlight}
-            onChange={(e) => setDraft({ ...draft, highlight: e.target.value })}
-          />
-        </div>
-        <div className="input-group">
-          <label>متن جای‌گزین نوار جستجو</label>
-          <input
-            type="text"
-            value={draft.searchPlaceholder}
-            onChange={(e) =>
-              setDraft({ ...draft, searchPlaceholder: e.target.value })
-            }
-          />
-        </div>
-        {error && <span className="form-error">{error}</span>}
-      </div>
+      {!loading && (
+        <>
+          <div className="form-vertical blog-mgmt__form--hero">
+            <div className="input-group">
+              <label>متن اصلی هیرو</label>
+              <input
+                type="text"
+                value={draft.titleLine}
+                onChange={(e) =>
+                  setDraft({ ...draft, titleLine: e.target.value })
+                }
+              />
+            </div>
+            <div className="input-group">
+              <label>متن هایلایت (نارنجی)</label>
+              <input
+                type="text"
+                value={draft.highlight}
+                onChange={(e) =>
+                  setDraft({ ...draft, highlight: e.target.value })
+                }
+              />
+            </div>
+            <div className="input-group">
+              <label>متن جای‌گزین نوار جستجو</label>
+              <input
+                type="text"
+                value={draft.searchPlaceholder}
+                onChange={(e) =>
+                  setDraft({ ...draft, searchPlaceholder: e.target.value })
+                }
+              />
+            </div>
+            {error && <span className="form-error">{error}</span>}
+          </div>
 
-      <div className="blog-mgmt__hero-preview">
-        <span>{draft.titleLine}</span>{" "}
-        <span className="highlight-text">{draft.highlight}</span>
-        <div className="blog-mgmt__hero-preview-search">
-          {draft.searchPlaceholder}
-        </div>
-      </div>
+          <div className="blog-mgmt__hero-preview">
+            <span>{draft.titleLine}</span>{" "}
+            <span className="highlight-text">{draft.highlight}</span>
+            <div className="blog-mgmt__hero-preview-search">
+              {draft.searchPlaceholder}
+            </div>
+          </div>
 
-      <div className="panel-actions">
-        <button className="btn btn-primary" onClick={save}>
-          ذخیره تغییرات
-        </button>
-      </div>
+          <div className="panel-actions">
+            <button
+              className="btn btn-primary"
+              disabled={saving}
+              onClick={save}
+            >
+              {saving ? "در حال ذخیره..." : "ذخیره تغییرات"}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
 /* ================================================================== */
-/* 6) MOBILE LAYOUT (random blocks, feed rows, final CTA block)        */
+/* 5) MOBILE LAYOUT - untouched for now (not wired to the backend)    */
 /* ================================================================== */
 
 function MobileLayoutPane({ settings, setSettings, onSaved }) {
@@ -1203,18 +1299,12 @@ function MobileLayoutPane({ settings, setSettings, onSaved }) {
       onSaved("حداقل یک نوع بلوک تصادفی باید فعال باشد");
       return;
     }
-    // TODO: API — PUT /admin/blog/mobile-layout
+    // TODO: API — PUT /admin/blog/mobile-layout (not finalized yet)
     onSaved("تنظیمات نسخه موبایل ذخیره شد");
   };
 
   return (
     <div className="panel">
-      <p className="panel-subtitle">
-        نسخه‌ی موبایل وبلاگ به‌جای چیدمان دو ستونه، از بلوک‌های تصادفی، فید ساده
-        و یک بلوک پایانی با دکمه‌ی «نمایش بیشتر» استفاده می‌کند. اینجا می‌توانید
-        نوع بلوک‌های مجاز و اندازه‌ی فید را کنترل کنید.
-      </p>
-
       <div className="config-step">
         <h4>بلوک‌های تصادفی مجاز</h4>
         <div className="predefined-tags">

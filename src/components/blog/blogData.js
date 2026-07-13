@@ -5,7 +5,6 @@ export const categories = [
   "جدیدترین‌ها",
   "محبوب‌ترین‌ها",
   "پربازدیدترین‌ها",
-  "داغ‌ترین‌ها",
 ];
 
 export const blogs = [

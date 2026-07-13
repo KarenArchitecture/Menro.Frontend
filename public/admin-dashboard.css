@@ -4306,3 +4306,136 @@ textarea {
   color: var(--text-muted, rgba(255, 255, 255, 0.5));
   font-variant-numeric: tabular-nums;
 }
+
+/* ---------- Blog admin: posts pane toolbar (search + pagination + filters) ----------
+   Two groups pinned to opposite ends via space-between: the right group holds
+   pagination and the search box together (pagination sits immediately next
+   to the search box, as requested); the left group holds the category
+   filter and the "new post" button. */
+.blog-mgmt__posts-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.blog-mgmt__posts-toolbar-group .btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.blog-mgmt__posts-toolbar-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 10px;
+}
+
+/* Search box: input + attached rounded-square icon button, styled as one unit */
+.blog-mgmt__search-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.blog-mgmt__search-box .mh-input {
+  flex: 1 1 auto;
+  min-width: 220px;
+}
+
+.blog-mgmt__search-submit {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid var(--mh-border, rgba(255, 255, 255, 0.12));
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary, #fff);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.blog-mgmt__search-submit:hover {
+  background: var(--primary-color, #f59e0b);
+  border-color: var(--primary-color, #f59e0b);
+  color: #101010;
+}
+
+/* ---------- Blog admin: posts list pagination (prev/next row) ---------- */
+.blog-mgmt__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.blog-mgmt__pagination-label {
+  font-size: 13px;
+  color: var(--text-muted, rgba(255, 255, 255, 0.55));
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.blog-mgmt__pagination .btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ---------- Blog admin: posts table - internal scroll instead of page scroll ----------
+   Mirrors the #financial-view .table-container pattern already used elsewhere:
+   a fixed max-height with its own scrollbar, so only the list scrolls and the
+   toolbar/pagination/tabs above it stay fixed on screen. */
+#blog-management-view .blog-mgmt__posts-scroll {
+  max-height: calc(100vh - 380px);
+  min-height: 240px;
+  overflow-y: auto;
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) var(--bg-light);
+}
+
+#blog-management-view .blog-mgmt__posts-scroll thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-light);
+  z-index: 1;
+}
+
+#blog-management-view .blog-mgmt__posts-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+#blog-management-view .blog-mgmt__posts-scroll::-webkit-scrollbar-track {
+  background: var(--bg-light);
+  border-radius: 8px;
+}
+#blog-management-view .blog-mgmt__posts-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 8px;
+  border: 2px solid var(--bg-light);
+}
+#blog-management-view .blog-mgmt__posts-scroll::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}
+
+@media (max-width: 720px) {
+  .blog-mgmt__pagination {
+    flex-wrap: wrap;
+  }
+  .blog-mgmt__posts-toolbar-group {
+    width: 100%;
+  }
+  .blog-mgmt__search-box .mh-input {
+    min-width: 0;
+  }
+  #blog-management-view .blog-mgmt__posts-scroll {
+    max-height: calc(100vh - 460px);
+  }
+}

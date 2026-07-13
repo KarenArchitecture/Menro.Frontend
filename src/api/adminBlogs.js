@@ -13,8 +13,15 @@ const MOVE_DIRECTION = { up: -1, down: 1 };
 
 /* ---------------------------- Blog Posts --------------------------- */
 
-export const getBlogPosts = () =>
-  adminBlogsAxios.get("/posts").then((r) => r.data);
+export const getBlogPosts = ({
+  search,
+  categoryId,
+  page = 1,
+  pageSize = 20,
+} = {}) =>
+  adminBlogsAxios
+    .get("/posts", { params: { search, categoryId, page, pageSize } })
+    .then((r) => r.data); // { items, page, pageSize, totalCount, totalPages }
 
 export const getBlogPost = (id) =>
   adminBlogsAxios.get(`/posts/${id}`).then((r) => r.data);

@@ -1,10 +1,9 @@
 import React from "react";
 import SearchBar from "../common/SearchBar";
 
-const BlogHero = () => {
+const BlogHero = ({ hero }) => {
   return (
     <section className="blog-hero-section">
-      {/* Floating Food Images */}
       <img
         src="/images/blog-pics/blog-fries.svg"
         alt="Fries"
@@ -38,10 +37,10 @@ const BlogHero = () => {
 
       <div className="blog-hero-content">
         <h1 className="hero-title">
-          بخون، بدون، با منرو <span className="highlight-text">متفاوت باش</span>
+          {hero?.titleLine}{" "}
+          <span className="highlight-text">{hero?.highlight}</span>
         </h1>
-
-        <SearchBar placeholder="جستجو مقاله ..." />
+        <SearchBar placeholder={hero?.searchPlaceholder || "جستجو مقاله ..."} />
       </div>
 
       <div className="scroll-indicator">

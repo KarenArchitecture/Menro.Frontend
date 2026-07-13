@@ -1,6 +1,6 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import BlogCard from "../common/BlogCard";
-import { blogs } from "./blogData";
+import { getBlogPosts } from "../../api/blogs";
 
 function chunkArray(array, size) {
   const result = [];
@@ -10,21 +10,41 @@ function chunkArray(array, size) {
   return result;
 }
 
-/**
- * Shows 3 rows, 2 cards per row
- */
-export default function BlogMobileFeedModule({
-  posts = blogs,
-  rows = 3,
-  perRow = 2,
-}) {
-  const visiblePosts = useMemo(() => {
-    return posts.slice(0, rows * perRow);
-  }, [posts, rows, perRow]);
+function mapPostForCard(p) {
+  return {
+    id: p.id,
+    title: p.title,
+    href: `/blog/${p.id}`,
+    coverSrc: p.coverImageUrl || "",
+    readingMins: p.readingMinutes,
+  };
+}
 
-  const groupedPosts = useMemo(() => {
-    return chunkArray(visiblePosts, perRow);
-  }, [visiblePosts, perRow]);
+export default function BlogMobileFeedModule({ rows = 3, perRow = 2 }) {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await getBlogPosts({ sort: "Newest" });
+        if (!cancelled)
+          setPosts(data.slice(0, rows * perRow).map(mapPostForCard));
+      } catch (err) {
+        console.error("Failed to load mobile blog feed", err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [rows, perRow]);
+
+  if (loading) return null;
+
+  const groupedPosts = chunkArray(posts, perRow);
 
   return (
     <section className="mobile-blog-feed">

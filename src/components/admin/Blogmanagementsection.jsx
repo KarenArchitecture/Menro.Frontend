@@ -67,13 +67,6 @@ function apiErrorMessage(err, fallback = "خطایی رخ داد. دوباره �
   return err?.response?.data?.message || err?.response?.data?.title || fallback;
 }
 
-// Each pane below fetches its own data on mount. Combined with the
-// conditional rendering in BlogManagementSection (only the active tab's pane
-// is ever mounted), this means: switching to a tab is what triggers its API
-// call(s), and switching away un-mounts it - so nothing is fetched until
-// you're actually looking at it, and coming back to a tab always gets you
-// fresh data instead of a stale in-memory copy.
-
 export default function BlogManagementSection() {
   const [activeSubTab, setActiveSubTab] = useState("posts");
   const [mobileSettings, setMobileSettings] = useState(initialMobileSettings);
@@ -144,19 +137,19 @@ export default function BlogManagementSection() {
 }
 
 /* ================================================================== */
-/* 1) POSTS                                                            */
+/* 1) POSTS (paginated)                                                */
 /* ================================================================== */
 
 function mapPostFromApi(p, categories = []) {
   return {
     id: p.id,
     title: p.title,
+    // GET responses return a ready-to-use URL built server-side via
+    // FileUrlService - use it for both preview and to derive the file name.
     coverSrc: p.coverImageUrl || "",
+    coverFileName: p.coverImageUrl ? p.coverImageUrl.split("/").pop() : "",
     readingMins: p.readingMinutes,
     categoryId: p.categoryId,
-    // Fall back to a local lookup if a given endpoint's response doesn't
-    // include the joined category title (e.g. a lightweight PATCH response) -
-    // keeps the category label from ever going blank in the table.
     categoryTitle:
       p.categoryTitle ||
       categories.find((c) => c.id === p.categoryId)?.title ||
@@ -168,7 +161,8 @@ function mapPostFromApi(p, categories = []) {
 function mapPostToApi(draft) {
   return {
     title: draft.title,
-    coverImageUrl: draft.coverSrc || null,
+    // Only ever send the bare file name - never the full URL.
+    coverImageUrl: draft.coverFileName || null,
     readingMinutes: Number(draft.readingMins),
     categoryId: draft.categoryId,
     isPublished: !!draft.published,
@@ -179,6 +173,7 @@ function emptyPost(defaultCategoryId = "") {
   return {
     id: null,
     title: "",
+    coverFileName: "",
     coverSrc: "",
     readingMins: 5,
     categoryId: defaultCategoryId,
@@ -186,13 +181,22 @@ function emptyPost(defaultCategoryId = "") {
   };
 }
 
+const PAGE_SIZE = 20;
+
 function PostsPane({ onSaved }) {
   const [posts, setPosts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState("");
-  const [query, setQuery] = useState("");
+  // searchDraft is bound to the input as the user types; searchTerm is only
+  // updated when the search button (or Enter) is pressed, and it's the one
+  // used to trigger the API call - this avoids firing a request per keystroke.
+  const [searchDraft, setSearchDraft] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [modalPost, setModalPost] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [errors, setErrors] = useState({});
@@ -200,17 +204,20 @@ function PostsPane({ onSaved }) {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageError, setImageError] = useState("");
 
-  // Re-fetches posts from the server (rather than splicing the CRUD response
-  // into local state) so the table can never drift from what the backend
-  // actually has - category joins, computed fields, etc. are guaranteed
-  // fresh after every create/update/toggle/delete.
   const reloadPosts = useCallback(
     async (categoriesForMapping = categories) => {
-      const data = await getBlogPosts();
-      setPosts(data.map((p) => mapPostFromApi(p, categoriesForMapping)));
+      const data = await getBlogPosts({
+        search: searchTerm.trim() || undefined,
+        categoryId: categoryFilter === "all" ? undefined : categoryFilter,
+        page,
+        pageSize: PAGE_SIZE,
+      });
+      setPosts(data.items.map((p) => mapPostFromApi(p, categoriesForMapping)));
+      setTotalPages(data.totalPages);
+      setTotalCount(data.totalCount);
       return data;
     },
-    [categories],
+    [categories, searchTerm, categoryFilter, page],
   );
 
   useEffect(() => {
@@ -219,12 +226,21 @@ function PostsPane({ onSaved }) {
       try {
         setLoading(true);
         const [postsData, categoriesData] = await Promise.all([
-          getBlogPosts(),
+          getBlogPosts({
+            search: searchTerm.trim() || undefined,
+            categoryId: categoryFilter === "all" ? undefined : categoryFilter,
+            page,
+            pageSize: PAGE_SIZE,
+          }),
           getBlogCategories(),
         ]);
         if (!cancelled) {
           setCategories(categoriesData);
-          setPosts(postsData.map((p) => mapPostFromApi(p, categoriesData)));
+          setPosts(
+            postsData.items.map((p) => mapPostFromApi(p, categoriesData)),
+          );
+          setTotalPages(postsData.totalPages);
+          setTotalCount(postsData.totalCount);
         }
       } catch (err) {
         if (!cancelled)
@@ -236,7 +252,17 @@ function PostsPane({ onSaved }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [searchTerm, categoryFilter, page]);
+
+  // Reset to page 1 whenever search/category filter changes.
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, categoryFilter]);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setSearchTerm(searchDraft);
+  };
 
   const handleCoverImageChange = async (e) => {
     const file = e.target.files?.[0];
@@ -244,28 +270,22 @@ function PostsPane({ onSaved }) {
     setImageError("");
     setUploadingImage(true);
     try {
-      const oldFileName = modalPost.coverSrc
-        ? modalPost.coverSrc.split("/").pop()
-        : null;
-      const { url } = await uploadBlogPostCoverImage(file, oldFileName);
-      setModalPost((prev) => ({ ...prev, coverSrc: url }));
+      const oldFileName = modalPost.coverFileName || null;
+      const { fileName, url } = await uploadBlogPostCoverImage(
+        file,
+        oldFileName,
+      );
+      setModalPost((prev) => ({
+        ...prev,
+        coverFileName: fileName,
+        coverSrc: url,
+      }));
     } catch (err) {
       setImageError(apiErrorMessage(err, "آپلود تصویر با خطا مواجه شد."));
     } finally {
       setUploadingImage(false);
     }
   };
-
-  const filtered = useMemo(() => {
-    return posts.filter((p) => {
-      const matchesQuery = p.title
-        .toLowerCase()
-        .includes(query.trim().toLowerCase());
-      const matchesCategory =
-        categoryFilter === "all" || p.categoryId === categoryFilter;
-      return matchesQuery && matchesCategory;
-    });
-  }, [posts, query, categoryFilter]);
 
   const openNew = () => {
     setErrors({});
@@ -316,10 +336,9 @@ function PostsPane({ onSaved }) {
 
   const togglePublished = async (post) => {
     try {
-      await toggleBlogPostPublish(post.id);
+      const updated = await toggleBlogPostPublish(post.id);
       await reloadPosts();
-      const refreshed = posts.find((p) => p.id === post.id);
-      onSaved(!refreshed?.published ? "پست منتشر شد" : "پست پیش‌نویس شد");
+      onSaved(updated?.isPublished ? "پست منتشر شد" : "پست پیش‌نویس شد");
     } catch (err) {
       setApiError(apiErrorMessage(err, "تغییر وضعیت پست با خطا مواجه شد."));
     }
@@ -328,7 +347,13 @@ function PostsPane({ onSaved }) {
   const deletePost = async (id) => {
     try {
       await deleteBlogPost(id);
-      await reloadPosts();
+      // If we just deleted the last item on a page beyond page 1, step back
+      // a page so the user doesn't land on a now-empty page.
+      if (posts.length === 1 && page > 1) {
+        setPage((p) => p - 1);
+      } else {
+        await reloadPosts();
+      }
       setConfirmDeleteId(null);
       onSaved("پست حذف شد");
     } catch (err) {
@@ -341,32 +366,72 @@ function PostsPane({ onSaved }) {
     <div className="panel">
       {apiError && <span className="form-error">{apiError}</span>}
 
-      <div className="input-group-inline">
-        <input
-          type="text"
-          className="mh-input"
-          placeholder="جستجو در عنوان پست‌ها..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          style={{ maxWidth: 220 }}
-        >
-          <option value="all">همه دسته‌ها</option>
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>
-              {cat.title}
-            </option>
-          ))}
-        </select>
-        <button type="button" className="btn btn-primary" onClick={openNew}>
-          <i className="fas fa-plus" /> پست جدید
-        </button>
+      <div className="blog-mgmt__posts-toolbar">
+        <div className="blog-mgmt__posts-toolbar-group">
+          {!loading && totalPages > 1 && (
+            <div className="blog-mgmt__pagination">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => p - 1)}
+              >
+                قبلی
+              </button>
+              <span className="blog-mgmt__pagination-label">
+                صفحه {toPersianDigits(page)} از {toPersianDigits(totalPages)} (
+                {toPersianDigits(totalCount)} پست)
+              </span>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                بعدی
+              </button>
+            </div>
+          )}
+
+          <form className="blog-mgmt__search-box" onSubmit={handleSearchSubmit}>
+            <input
+              type="text"
+              className="mh-input"
+              placeholder="جستجو در عنوان پست‌ها..."
+              value={searchDraft}
+              onChange={(e) => setSearchDraft(e.target.value)}
+            />
+            <button
+              type="submit"
+              className="blog-mgmt__search-submit"
+              title="جستجو"
+              aria-label="جستجو"
+            >
+              <i className="fas fa-search" />
+            </button>
+          </form>
+        </div>
+
+        <div className="blog-mgmt__posts-toolbar-group">
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            style={{ maxWidth: 220 }}
+          >
+            <option value="all">همه دسته‌ها</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.title}
+              </option>
+            ))}
+          </select>
+          <button type="button" className="btn btn-primary" onClick={openNew}>
+            <i className="fas fa-plus" /> پست جدید
+          </button>
+        </div>
       </div>
 
-      <div className="table-container">
+      <div className="table-container blog-mgmt__posts-scroll">
         <table>
           <thead>
             <tr>
@@ -386,7 +451,7 @@ function PostsPane({ onSaved }) {
                 </td>
               </tr>
             )}
-            {!loading && filtered.length === 0 && (
+            {!loading && posts.length === 0 && (
               <tr>
                 <td colSpan={6}>
                   <div className="empty-hint">
@@ -396,7 +461,7 @@ function PostsPane({ onSaved }) {
               </tr>
             )}
             {!loading &&
-              filtered.map((post) => (
+              posts.map((post) => (
                 <tr key={post.id}>
                   <td>
                     <div className="blog-mgmt__thumb">
@@ -628,9 +693,6 @@ function emptyDisplayCategory() {
   return { id: null, title: "", subtitle: "", color: "#5A302F" };
 }
 
-// Kept in sync with [MaxLength] on CreateBlogCategoryRequest/UpdateBlogCategoryRequest
-// in BlogCategoryDtos.cs - these are display cards with fixed-size UI on the
-// blog page, so both ends enforce the same short limits.
 const CATEGORY_TITLE_MAX = 30;
 const CATEGORY_SUBTITLE_MAX = 50;
 
@@ -1099,8 +1161,6 @@ function SidebarTagsPane({ onSaved }) {
                 />
                 {error && <span className="form-error">{error}</span>}
               </div>
-              {/* "تعداد مقاله" field intentionally removed - it's always
-                  server-computed and shown read-only in the list above. */}
             </div>
             <div className="modal-footer">
               <button
@@ -1299,7 +1359,6 @@ function MobileLayoutPane({ settings, setSettings, onSaved }) {
       onSaved("حداقل یک نوع بلوک تصادفی باید فعال باشد");
       return;
     }
-    // TODO: API — PUT /admin/blog/mobile-layout (not finalized yet)
     onSaved("تنظیمات نسخه موبایل ذخیره شد");
   };
 

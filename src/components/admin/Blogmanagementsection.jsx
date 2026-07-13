@@ -14,6 +14,7 @@ import {
   getBlogTags,
   createBlogTag,
   updateBlogTag,
+  toggleBlogTagSuggested,
   deleteBlogTag,
   getBlogHero,
   updateBlogHero,
@@ -1001,12 +1002,17 @@ function mapTagFromApi(t) {
     id: t.id,
     name: t.name,
     count: `${toPersianDigits(t.articleCount)} مقاله`,
+    suggested: !!t.suggested,
   };
 }
 
 function emptySidebarTag() {
-  return { id: null, name: "" };
+  return { id: null, name: "", suggested: false };
 }
+
+// Sidebar block on the public blog is small - keep the number of tags an
+// admin can mark "suggested" capped so the block never grows unbounded.
+const MAX_SUGGESTED_TAGS = 10;
 
 function SidebarTagsPane({ onSaved }) {
   const [tags, setTags] = useState([]);
@@ -1016,6 +1022,13 @@ function SidebarTagsPane({ onSaved }) {
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  // Local-only, no API calls involved: free-text filter and a "suggested
+  // only" switch that just narrow down what's already loaded in `tags`.
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showOnlySuggested, setShowOnlySuggested] = useState(false);
+  // Shown next to "برچسب جدید" in red when a toggle is rejected for hitting
+  // the MAX_SUGGESTED_TAGS limit (separate from the generic apiError banner).
+  const [limitError, setLimitError] = useState("");
 
   const reloadTags = useCallback(async () => {
     const data = await getBlogTags();
@@ -1043,12 +1056,31 @@ function SidebarTagsPane({ onSaved }) {
     };
   }, [reloadTags]);
 
+  // Count of currently-suggested tags, shown as the x/10 counter.
+  const suggestedCount = useMemo(
+    () => tags.filter((t) => t.suggested).length,
+    [tags],
+  );
+
+  // Local-only filtering: text search over the name, optionally narrowed to
+  // suggested-only tags. No API call - just derived from `tags` in memory.
+  const filteredTags = useMemo(() => {
+    const term = searchTerm.trim();
+    return tags.filter((tag) => {
+      if (showOnlySuggested && !tag.suggested) return false;
+      if (term && !tag.name.includes(term)) return false;
+      return true;
+    });
+  }, [tags, searchTerm, showOnlySuggested]);
+
   const openNew = () => {
     setError("");
+    setLimitError("");
     setModalTag(emptySidebarTag());
   };
   const openEdit = (tag) => {
     setError("");
+    setLimitError("");
     setModalTag({ ...tag });
   };
 
@@ -1061,9 +1093,13 @@ function SidebarTagsPane({ onSaved }) {
     setSaving(true);
     try {
       if (modalTag.id) {
-        await updateBlogTag(modalTag.id, modalTag.name.trim());
+        await updateBlogTag(
+          modalTag.id,
+          modalTag.name.trim(),
+          modalTag.suggested,
+        );
       } else {
-        await createBlogTag(modalTag.name.trim());
+        await createBlogTag(modalTag.name.trim(), modalTag.suggested);
       }
       await reloadTags();
       setModalTag(null);
@@ -1073,6 +1109,29 @@ function SidebarTagsPane({ onSaved }) {
       setError(apiErrorMessage(err, "ذخیره برچسب با خطا مواجه شد."));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const toggleSuggested = async (tag) => {
+    setLimitError("");
+    try {
+      await toggleBlogTagSuggested(tag.id);
+      await reloadTags();
+      onSaved(tag.suggested ? "تگ از حالت پیشنهادی خارج شد" : "تگ پیشنهادی شد");
+    } catch (err) {
+      if (err?.response?.status === 409) {
+        setLimitError(
+          apiErrorMessage(
+            err,
+            `حداکثر تعداد برچسب‌های پیشنهادی (${toPersianDigits(MAX_SUGGESTED_TAGS)} عدد) است.`,
+          ),
+        );
+        // auto-clear after 5s, same pattern as flashSaved
+        window.clearTimeout(toggleSuggested._t);
+        toggleSuggested._t = window.setTimeout(() => setLimitError(""), 5000);
+      } else {
+        setApiError(apiErrorMessage(err, "تغییر وضعیت تگ با خطا مواجه شد."));
+      }
     }
   };
 
@@ -1092,17 +1151,46 @@ function SidebarTagsPane({ onSaved }) {
     <div className="panel">
       {apiError && <span className="form-error">{apiError}</span>}
 
-      <div className="panel-actions blog-mgmt__panel-actions--start">
-        <button className="btn btn-primary" onClick={openNew}>
-          <i className="fas fa-plus" /> برچسب جدید
-        </button>
+      <div className="blog-mgmt__posts-toolbar">
+        <div className="blog-mgmt__posts-toolbar-group">
+          <div className="blog-mgmt__search-box">
+            <input
+              type="text"
+              className="mh-input"
+              placeholder="جستجو در برچسب‌ها..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <label className="blog-mgmt__suggested-toggle">
+            <input
+              type="checkbox"
+              checked={showOnlySuggested}
+              onChange={(e) => setShowOnlySuggested(e.target.checked)}
+            />
+            برچسب‌های پیشنهادی
+          </label>
+        </div>
+
+        <div className="blog-mgmt__posts-toolbar-group blog-mgmt__tags-actions-group">
+          {limitError && (
+            <span className="blog-mgmt__tag-limit-error">{limitError}</span>
+          )}
+          <button className="btn btn-primary" onClick={openNew}>
+            <i className="fas fa-plus" /> برچسب جدید
+          </button>
+          <span className="blog-mgmt__tag-counter">
+            تگ‌های پیشنهادی سایدبار: {toPersianDigits(suggestedCount)}/
+            {toPersianDigits(MAX_SUGGESTED_TAGS)}
+          </span>
+        </div>
       </div>
 
       {loading && <div className="empty-hint">در حال بارگذاری...</div>}
 
-      <ul className="sidebar-tags-list blog-mgmt__sidebar-tags-list">
+      <ul className="sidebar-tags-list blog-mgmt__sidebar-tags-list blog-mgmt__tags-scroll">
         {!loading &&
-          tags.map((tag) => (
+          filteredTags.map((tag) => (
             <li key={tag.id} className="sidebar-tag-item">
               <div className="tag-item-right">
                 <span className="mobile-blog-tags__hash blog-mgmt__tag-hash">
@@ -1110,6 +1198,17 @@ function SidebarTagsPane({ onSaved }) {
                 </span>
                 <span className="tag-item-name">{tag.name}</span>
               </div>
+              <label
+                className="blog-mgmt__suggested-toggle"
+                title="نمایش این تگ در سایدبار عمومی وبلاگ"
+              >
+                <input
+                  type="checkbox"
+                  checked={tag.suggested}
+                  onChange={() => toggleSuggested(tag)}
+                />
+                تگ پیشنهادی
+              </label>
               <div className="blog-mgmt__tag-actions">
                 <span className="tag-item-count">{tag.count}</span>
                 <button
@@ -1131,6 +1230,9 @@ function SidebarTagsPane({ onSaved }) {
           ))}
         {!loading && tags.length === 0 && (
           <div className="empty-hint">هنوز برچسبی اضافه نشده.</div>
+        )}
+        {!loading && tags.length > 0 && filteredTags.length === 0 && (
+          <div className="empty-hint">برچسبی مطابق فیلتر پیدا نشد.</div>
         )}
       </ul>
 
@@ -1161,6 +1263,17 @@ function SidebarTagsPane({ onSaved }) {
                 />
                 {error && <span className="form-error">{error}</span>}
               </div>
+
+              <label className="radio-label">
+                <input
+                  type="checkbox"
+                  checked={modalTag.suggested}
+                  onChange={(e) =>
+                    setModalTag({ ...modalTag, suggested: e.target.checked })
+                  }
+                />
+                تگ پیشنهادی
+              </label>
             </div>
             <div className="modal-footer">
               <button

@@ -466,6 +466,7 @@
   align-items: center;
   padding-bottom: 12px;
   border-bottom: 1px solid #2a2a2a;
+  cursor: pointer;
 }
 
 .sidebar-tag-item:last-child {
@@ -489,7 +490,6 @@
   color: #dcdcdc;
   font-size: 14px;
   transition: color 0.2s;
-  cursor: pointer;
 }
 
 .sidebar-tag-item:hover .tag-item-name {

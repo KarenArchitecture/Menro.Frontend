@@ -78,11 +78,20 @@ export const deleteBlogCategory = (id) =>
 export const getBlogTags = () =>
   adminBlogsAxios.get("/sidebar-tags").then((r) => r.data);
 
-export const createBlogTag = (name) =>
-  adminBlogsAxios.post("/sidebar-tags", { name }).then((r) => r.data);
+export const createBlogTag = (name, suggested = false) =>
+  adminBlogsAxios
+    .post("/sidebar-tags", { name, suggested })
+    .then((r) => r.data);
 
-export const updateBlogTag = (id, name) =>
-  adminBlogsAxios.put(`/sidebar-tags/${id}`, { name }).then((r) => r.data);
+export const updateBlogTag = (id, name, suggested = false) =>
+  adminBlogsAxios
+    .put(`/sidebar-tags/${id}`, { name, suggested })
+    .then((r) => r.data);
+
+export const toggleBlogTagSuggested = (id) =>
+  adminBlogsAxios
+    .patch(`/sidebar-tags/${id}/toggle-suggested`)
+    .then((r) => r.data);
 
 export const deleteBlogTag = (id) =>
   adminBlogsAxios.delete(`/sidebar-tags/${id}`).then((r) => r.data);

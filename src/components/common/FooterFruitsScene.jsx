@@ -39,8 +39,12 @@ const FRUITS = [
   },
 ];
 
+const ALPHA_THRESHOLD = 10; // 0-255, pixels below this are "transparent" for hit-testing
+const SAMPLE_MAX_DIM = 150; // downscale canvas for perf; hit-testing doesn't need full res
+
 export default function FooterFruitsScene() {
   const sceneRef = useRef(null);
+  const alphaMapsRef = useRef(new Map()); // img element -> { canvas, ctx, w, h }
 
   // 1) Fade in when footer enters viewport
   useEffect(() => {
@@ -49,7 +53,6 @@ export default function FooterFruitsScene() {
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const isMobile = window.matchMedia("(max-width: 768px)");
-
     if (reducedMotion.matches || isMobile.matches) return;
 
     const imgs = Array.from(root.querySelectorAll(".footer-bg__item img"));
@@ -64,12 +67,10 @@ export default function FooterFruitsScene() {
       (entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
-
           imgs.forEach((img, i) => {
             img.style.transitionDelay = i * 80 + "ms";
             img.style.opacity = "1";
           });
-
           io.disconnect();
         });
       },
@@ -77,42 +78,63 @@ export default function FooterFruitsScene() {
     );
 
     io.observe(root);
-
-    return () => {
-      io.disconnect();
-    };
+    return () => io.disconnect();
   }, []);
 
-  // 2) Precise hover-repel using elementFromPoint
+  // 2) Precise hover-repel using per-pixel alpha hit-testing
   useEffect(() => {
     const root = sceneRef.current;
     if (!root) return;
 
-    // React StrictMode guard so we don't double-bind in dev
     if (root.__fruitsHoverInit) return;
     root.__fruitsHoverInit = true;
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const isMobile = window.matchMedia("(max-width: 768px)");
-
     if (reducedMotion.matches || isMobile.matches) return;
 
     const items = Array.from(root.querySelectorAll(".footer-bg__item"));
     if (!items.length) return;
 
-    const states = new Map(); // per-item state
-
+    const states = new Map();
     items.forEach((el) => {
-      states.set(el, {
-        tx: 0,
-        ty: 0,
-        targetX: 0,
-        targetY: 0,
-        raf: 0,
-      });
+      states.set(el, { tx: 0, ty: 0, targetX: 0, targetY: 0, raf: 0 });
     });
 
-    const lerpAlpha = 0.18; // smoothing
+    // Build a downscaled offscreen canvas per image so we can read alpha values.
+    function buildAlphaMap(img) {
+      if (alphaMapsRef.current.has(img)) return;
+
+      const naturalW = img.naturalWidth || 1;
+      const naturalH = img.naturalHeight || 1;
+      const scale = Math.min(1, SAMPLE_MAX_DIM / Math.max(naturalW, naturalH));
+      const w = Math.max(1, Math.round(naturalW * scale));
+      const h = Math.max(1, Math.round(naturalH * scale));
+
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+      try {
+        ctx.drawImage(img, 0, 0, w, h);
+        alphaMapsRef.current.set(img, { ctx, w, h });
+      } catch (err) {
+        // Canvas tainted (CORS) or other failure — fall back to bounding-box behavior for this image
+        alphaMapsRef.current.set(img, null);
+      }
+    }
+
+    const imgs = items.map((el) => el.querySelector("img")).filter(Boolean);
+    imgs.forEach((img) => {
+      if (img.complete && img.naturalWidth) {
+        buildAlphaMap(img);
+      } else {
+        img.addEventListener("load", () => buildAlphaMap(img), { once: true });
+      }
+    });
+
+    const lerpAlpha = 0.18;
     const SHIFT_MULTIPLIER = 1.4;
 
     function animate(el) {
@@ -126,9 +148,7 @@ export default function FooterFruitsScene() {
       if (Math.abs(st.ty) < 0.05) st.ty = 0;
 
       const img = el.querySelector("img");
-      if (img) {
-        img.style.transform = `translate(${st.tx}px, ${st.ty}px)`;
-      }
+      if (img) img.style.transform = `translate(${st.tx}px, ${st.ty}px)`;
 
       if (st.tx !== st.targetX || st.ty !== st.targetY) {
         st.raf = requestAnimationFrame(() => animate(el));
@@ -137,10 +157,48 @@ export default function FooterFruitsScene() {
       }
     }
 
+    // Returns true if the pixel under (clientX, clientY) on this img is visually opaque.
+    function isOpaqueAt(img, clientX, clientY, rect) {
+      const map = alphaMapsRef.current.get(img);
+      if (!map) return true; // no alpha data yet/available — fall back to bounding box
+
+      const fx = (clientX - rect.left) / rect.width;
+      const fy = (clientY - rect.top) / rect.height;
+      if (fx < 0 || fx > 1 || fy < 0 || fy > 1) return false;
+
+      const px = Math.min(map.w - 1, Math.max(0, Math.floor(fx * map.w)));
+      const py = Math.min(map.h - 1, Math.max(0, Math.floor(fy * map.h)));
+
+      const alpha = map.ctx.getImageData(px, py, 1, 1).data[3];
+      return alpha >= ALPHA_THRESHOLD;
+    }
+
+    function findHoveredItem(clientX, clientY) {
+      // Iterate in reverse DOM order so later (visually stacked-on-top) items win ties.
+      for (let i = items.length - 1; i >= 0; i--) {
+        const el = items[i];
+        const img = el.querySelector("img");
+        if (!img) continue;
+
+        const rect = img.getBoundingClientRect();
+        if (
+          clientX < rect.left ||
+          clientX > rect.right ||
+          clientY < rect.top ||
+          clientY > rect.bottom
+        ) {
+          continue;
+        }
+
+        if (isOpaqueAt(img, clientX, clientY, rect)) {
+          return el;
+        }
+      }
+      return null;
+    }
+
     function handlePointerMove(e) {
-      // who is *actually* under the cursor?
-      const hoveredNode = document.elementFromPoint(e.clientX, e.clientY);
-      const hoveredItem = hoveredNode?.closest(".footer-bg__item");
+      const hoveredItem = findHoveredItem(e.clientX, e.clientY);
 
       items.forEach((el) => {
         const st = states.get(el);
@@ -150,7 +208,6 @@ export default function FooterFruitsScene() {
         if (!img) return;
 
         if (el === hoveredItem) {
-          // only this fruit reacts
           const r = img.getBoundingClientRect();
           const x = e.clientX - r.left;
           const y = e.clientY - r.top;
@@ -164,7 +221,6 @@ export default function FooterFruitsScene() {
           st.targetX = -nx * maxShift;
           st.targetY = -ny * maxShift;
         } else {
-          // everyone else eases back to rest
           st.targetX = 0;
           st.targetY = 0;
         }
@@ -174,7 +230,6 @@ export default function FooterFruitsScene() {
     }
 
     function handlePointerLeave() {
-      // when leaving the whole scene, reset everything
       items.forEach((el) => {
         const st = states.get(el);
         if (!st) return;
@@ -210,7 +265,12 @@ export default function FooterFruitsScene() {
             className={`footer-bg__item ${item.className}`}
             data-shift={item.shift}
           >
-            <img src={item.src} alt={item.alt} draggable="false" />
+            <img
+              src={item.src}
+              alt={item.alt}
+              draggable="false"
+              crossOrigin="anonymous"
+            />
           </div>
         ))}
       </div>

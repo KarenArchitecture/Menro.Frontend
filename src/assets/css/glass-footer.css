@@ -412,3 +412,122 @@
   overflow: visible !important;
 }
 /* On mobile, reduce the gap so it doesn't look empty */
+
+/* ---- Back-to-top button + concave connectors ---- */
+
+:root {
+  --page-bg: #0b0f13; /* must match whatever sits behind the footer */
+}
+
+.footer-glass__button-wrapper {
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 56px;
+  height: 44px;
+  z-index: 6;
+}
+
+/* Remove the old filled ::before rectangle */
+.footer-glass__button-wrapper::before {
+  content: none;
+}
+
+/* The two concave fillets sit at the top-left/top-right of the button,
+   carved by an inverted-radius panel colored like the page background. */
+.footer-glass__button-wrapper::before,
+.footer-glass__button-wrapper::after {
+  content: "";
+  position: absolute;
+  top: -20px;
+  width: 20px;
+  height: 20px;
+  background: var(--page-bg);
+  pointer-events: none;
+}
+
+.footer-glass__button-wrapper::before {
+  width: 135px;
+  height: 30px;
+  border-right: 1px solid #394350;
+  right: -60px;
+  top: -41px;
+  border-radius: 20px;
+  /* border-left: none; */
+  /* border-right: none; */
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
+}
+
+.footer-glass__button-wrapper::after {
+  right: 67px;
+  border-bottom-right-radius: 20px;
+  border-right: 1px solid #394350;
+  border-bottom: 1px solid #394350;
+  top: -36px;
+  width: 3rem;
+  height: 53px;
+  z-index: 100;
+}
+
+.footer-glass::before,
+.footer-glass::after {
+  content: "";
+  position: absolute;
+  top: -20px;
+  width: 20px;
+  height: 20px;
+  background: var(--page-bg);
+  pointer-events: none;
+}
+
+.footer-glass::after {
+  width: 30px;
+  height: 47px;
+  border: 1px solid #394350;
+  right: 25px;
+  top: 202px;
+  border-top: none;
+  border-right: none;
+  border-bottom-left-radius: 17px;
+  z-index: 100;
+}
+
+.footer-glass::before {
+  right: 41px;
+  /* border-bottom-right-radius: 20px; */
+  /* border-right: 1px solid #394350; */
+  /* border: 1px solid #394350; */
+  top: 176px;
+  width: 11rem;
+  height: 88px;
+  z-index: -1000000000;
+}
+
+.footer-glass__backtotop {
+  margin-right: -64px;
+  width: 7rem;
+  height: 4rem;
+  margin-top: -40px;
+  position: relative;
+  border-radius: 16px;
+  background: var(--page-bg);
+  border: 1px solid #394350;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.footer-glass__backtotop:hover {
+  background: #14181e;
+}
+
+.footer-glass__chevron {
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(225deg);
+}

@@ -20,31 +20,6 @@ import {
   updateBlogHero,
 } from "../../api/adminBlogs";
 
-// Kept as-is for now - "چیدمان موبایل" tab is not wired to the backend yet.
-const PAIR_TYPE_LABELS = {
-  blogTags: "دو کارت وبلاگ + برچسب‌ها",
-  blogBanner: "دو کارت وبلاگ + بنر تبلیغاتی",
-  blogTagsBanner: "دو کارت وبلاگ + بنر (نسخه‌ی برچسب)",
-  bannerTags: "بنر تبلیغاتی + برچسب‌ها",
-};
-
-const initialMobileSettings = {
-  randomBlockRounds: 3,
-  enabledPairTypes: {
-    blogTags: true,
-    blogBanner: true,
-    blogTagsBanner: true,
-    bannerTags: true,
-  },
-  feedRows: 3,
-  feedPerRow: 2,
-  finalBlock: {
-    forcedPairType: "bannerTags",
-    showButton: true,
-    buttonLabel: "نمایش بیشتر...",
-  },
-};
-
 // "فیلترهای فید" tab intentionally removed - feed categories are now a fixed,
 // non-editable list (see FEED_CATEGORIES in adminBlogs.js).
 const SUB_TABS = [
@@ -56,7 +31,6 @@ const SUB_TABS = [
   },
   { key: "sidebar-tags", label: "برچسب‌های پیشنهادی", icon: "fas fa-hashtag" },
   { key: "hero", label: "هیرو و جستجو", icon: "fas fa-image" },
-  { key: "mobile", label: "چیدمان موبایل", icon: "fas fa-mobile-alt" },
 ];
 
 function toPersianDigits(value) {
@@ -70,7 +44,6 @@ function apiErrorMessage(err, fallback = "خطایی رخ داد. دوباره �
 
 export default function BlogManagementSection() {
   const [activeSubTab, setActiveSubTab] = useState("posts");
-  const [mobileSettings, setMobileSettings] = useState(initialMobileSettings);
   const [savedFlash, setSavedFlash] = useState("");
 
   const flashSaved = (label = "تغییرات ذخیره شد") => {
@@ -121,16 +94,6 @@ export default function BlogManagementSection() {
       {activeSubTab === "hero" && (
         <div className="content-tab-pane active">
           <HeroPane onSaved={flashSaved} />
-        </div>
-      )}
-
-      {activeSubTab === "mobile" && (
-        <div className="content-tab-pane active">
-          <MobileLayoutPane
-            settings={mobileSettings}
-            setSettings={setMobileSettings}
-            onSaved={flashSaved}
-          />
         </div>
       )}
     </div>
@@ -1447,163 +1410,6 @@ function HeroPane({ onSaved }) {
           </div>
         </>
       )}
-    </div>
-  );
-}
-
-/* ================================================================== */
-/* 5) MOBILE LAYOUT - untouched for now (not wired to the backend)    */
-/* ================================================================== */
-
-function MobileLayoutPane({ settings, setSettings, onSaved }) {
-  const togglePairType = (key) => {
-    setSettings((prev) => ({
-      ...prev,
-      enabledPairTypes: {
-        ...prev.enabledPairTypes,
-        [key]: !prev.enabledPairTypes[key],
-      },
-    }));
-  };
-
-  const save = () => {
-    const anyEnabled = Object.values(settings.enabledPairTypes).some(Boolean);
-    if (!anyEnabled) {
-      onSaved("حداقل یک نوع بلوک تصادفی باید فعال باشد");
-      return;
-    }
-    onSaved("تنظیمات نسخه موبایل ذخیره شد");
-  };
-
-  return (
-    <div className="panel">
-      <div className="config-step">
-        <h4>بلوک‌های تصادفی مجاز</h4>
-        <div className="predefined-tags">
-          {Object.entries(PAIR_TYPE_LABELS).map(([key, label]) => (
-            <label
-              key={key}
-              className={`tag blog-mgmt__pair-chip ${settings.enabledPairTypes[key] ? "is-active" : ""}`}
-            >
-              <input
-                type="checkbox"
-                style={{ display: "none" }}
-                checked={settings.enabledPairTypes[key]}
-                onChange={() => togglePairType(key)}
-              />
-              {label}
-            </label>
-          ))}
-        </div>
-      </div>
-
-      <div className="config-step two-column-form">
-        <div className="input-group">
-          <label>تعداد بلوک‌های تصادفی نمایش داده شده</label>
-          <input
-            type="number"
-            min={0}
-            max={6}
-            value={settings.randomBlockRounds}
-            onChange={(e) =>
-              setSettings({
-                ...settings,
-                randomBlockRounds: Number(e.target.value),
-              })
-            }
-          />
-        </div>
-        <div className="input-group">
-          <label>تعداد ردیف فید ساده</label>
-          <input
-            type="number"
-            min={1}
-            max={10}
-            value={settings.feedRows}
-            onChange={(e) =>
-              setSettings({ ...settings, feedRows: Number(e.target.value) })
-            }
-          />
-        </div>
-        <div className="input-group">
-          <label>تعداد کارت در هر ردیف فید</label>
-          <input
-            type="number"
-            min={1}
-            max={4}
-            value={settings.feedPerRow}
-            onChange={(e) =>
-              setSettings({ ...settings, feedPerRow: Number(e.target.value) })
-            }
-          />
-        </div>
-      </div>
-
-      <div className="config-step">
-        <h4>بلوک پایانی (قبل از فوتر)</h4>
-        <div className="two-column-form">
-          <div className="input-group">
-            <label>نوع بلوک</label>
-            <select
-              value={settings.finalBlock.forcedPairType}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  finalBlock: {
-                    ...settings.finalBlock,
-                    forcedPairType: e.target.value,
-                  },
-                })
-              }
-            >
-              {Object.entries(PAIR_TYPE_LABELS).map(([key, label]) => (
-                <option key={key} value={key}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="input-group">
-            <label>متن دکمه</label>
-            <input
-              type="text"
-              disabled={!settings.finalBlock.showButton}
-              value={settings.finalBlock.buttonLabel}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  finalBlock: {
-                    ...settings.finalBlock,
-                    buttonLabel: e.target.value,
-                  },
-                })
-              }
-            />
-          </div>
-        </div>
-        <label className="radio-label blog-mgmt__radio-label--spaced">
-          <input
-            type="checkbox"
-            checked={settings.finalBlock.showButton}
-            onChange={(e) =>
-              setSettings({
-                ...settings,
-                finalBlock: {
-                  ...settings.finalBlock,
-                  showButton: e.target.checked,
-                },
-              })
-            }
-          />
-          نمایش دکمه در بلوک پایانی
-        </label>
-      </div>
-
-      <div className="panel-actions">
-        <button className="btn btn-primary" onClick={save}>
-          ذخیره تغییرات
-        </button>
-      </div>
     </div>
   );
 }

@@ -4483,7 +4483,8 @@ textarea {
    height, mirroring the posts table's .blog-mgmt__posts-scroll pattern, so
    a long tag list scrolls in place instead of pushing the whole page down. ---------- */
 #blog-management-view .blog-mgmt__tags-scroll {
-  max-height: 480px;
+  max-height: calc(100vh - 380px);
+  min-height: 240px;
   overflow-y: auto;
   padding-inline-end: 4px;
 

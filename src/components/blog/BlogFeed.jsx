@@ -20,6 +20,7 @@ function mapPostForCard(p) {
     readingMins: p.readingMinutes,
     viewCount: p.viewCount,
     likeCount: p.likeCount,
+    publishedDate: p.publishedDatePersian,
   };
 }
 
@@ -37,8 +38,10 @@ const BlogFeed = () => {
   const startY = useRef(0);
   const scrollTop = useRef(0);
   const dragStartCoords = useRef({ x: 0, y: 0 });
+  const requestIdRef = useRef(0);
 
   const loadPage = useCallback(async (tab, pageNum) => {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     setError("");
     try {
@@ -47,27 +50,38 @@ const BlogFeed = () => {
         page: pageNum,
         pageSize: PAGE_SIZE,
       });
+      // Ignore this response if a newer request (e.g. from switching tabs
+      // again before this one resolved) has since been fired.
+      if (requestId !== requestIdRef.current) return;
       setPosts(data.items.map(mapPostForCard));
       setTotalPages(data.totalPages);
       setTotalCount(data.totalCount);
       setPage(data.page);
     } catch (err) {
+      if (requestId !== requestIdRef.current) return;
       setError("بارگذاری مقاله‌ها با خطا مواجه شد.");
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) setLoading(false);
     }
   }, []);
 
+  // Whenever the sort tab changes, jump back to page 1 and fetch it in one
+  // shot - avoids firing a fetch for the old tab's stale page number before
+  // the reset-to-1 effect runs.
   useEffect(() => {
+    setPage(1);
+    loadPage(activeTab, 1);
+    if (scrollAreaRef.current) scrollAreaRef.current.scrollTop = 0;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+
+  // Manual pagination (prev/next) within the current tab.
+  useEffect(() => {
+    if (page === 1) return; // already fetched by the tab-change effect above
     loadPage(activeTab, page);
     if (scrollAreaRef.current) scrollAreaRef.current.scrollTop = 0;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, page]);
-
-  // Reset to page 1 whenever the active tab changes.
-  useEffect(() => {
-    setPage(1);
-  }, [activeTab]);
+  }, [page]);
 
   const handleMouseDown = (e) => {
     isDragging.current = true;

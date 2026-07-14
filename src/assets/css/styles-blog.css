@@ -705,7 +705,18 @@
 .blog-mobile-layout {
   display: none;
 }
+/* ---------- Tablet: force 2-column feed grid instead of relying on
+   auto-fill, which was collapsing to a single oversized card around
+   768px depending on how much width the sidebar leaves the feed. ---------- */
+@media (min-width: 426px) and (max-width: 1024px) {
+  .blog-feed-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 
+/* ---------- Mobile (phone) - single consolidated breakpoint. Merged
+   the former separate 420px card-scaling block into this 425px block
+   so there's one mobile breakpoint instead of two near-duplicates. ---------- */
 @media (max-width: 425px) {
   .blog-desktop-layout {
     display: none;
@@ -745,6 +756,7 @@
     width: 100%;
     min-width: 0;
   }
+
   /* FEED: 2 cards per row */
   .mobile-blog-feed-section {
     padding: 0 16px 16px;
@@ -756,21 +768,37 @@
     gap: 12px;
   }
 
-  .mobile-blog-feed__row {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    align-items: start;
+  .mobile-blog-feed__pagination {
+    margin-top: 16px;
   }
 
-  .mobile-blog-feed__card {
-    min-width: 0;
-    width: 100%;
+  /* Blog card content scaling (formerly a separate 420px media query -
+     merged here since it targets the same mobile range) */
+  .blogs__card-title {
+    font-size: 1.35rem; /* was 1.8rem - too large for a ~180px-wide card */
+    margin-bottom: 6px;
   }
 
-  .mobile-blog-feed__card .blog-card {
-    width: 100%;
-    min-width: 0;
+  .blogs__card-info {
+    font-size: 1rem; /* was 1.3rem */
+    gap: 8px;
+  }
+
+  .blogs__card-stats-group {
+    gap: 10px; /* was 14px */
+  }
+
+  .blogs__card-stat {
+    gap: 4px; /* was 6px */
+  }
+
+  .blogs__card-info svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  .blogs__card-meta {
+    inset: auto 10px 10px 10px; /* was 14px - slightly tighter edge padding */
   }
 
   /* Shared mobile block shell */
@@ -935,6 +963,7 @@
     padding: 12px 16px 16px;
   }
 }
+
 .mobile-blog-feed__row,
 .mobile-blog-blocks__row {
   display: grid;

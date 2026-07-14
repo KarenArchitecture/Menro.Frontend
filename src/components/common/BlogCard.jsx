@@ -39,8 +39,34 @@ function EyeIcon() {
   );
 }
 
+function CalendarIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" />
+    </svg>
+  );
+}
+
 export default function BlogCard({ post }) {
-  const { title, href, coverSrc, readingMins, viewCount, likeCount } = post;
+  const {
+    title,
+    href,
+    coverSrc,
+    readingMins,
+    viewCount,
+    likeCount,
+    publishedDate,
+  } = post;
 
   return (
     <div className="blogs__card">
@@ -62,20 +88,28 @@ export default function BlogCard({ post }) {
         <div className="blogs__card-meta">
           <h3 className="blogs__card-title">{title}</h3>
           <div className="blogs__card-info">
-            <span className="blogs__card-stat">
-              <ClockIcon />
-              <span className="blogs__mins">{readingMins} دقیقه</span>
-            </span>
-            {typeof likeCount === "number" && (
+            <div className="blogs__card-stats-group">
               <span className="blogs__card-stat">
-                <HeartIcon />
-                <span className="blogs__likes">{likeCount}</span>
+                <ClockIcon />
+                <span className="blogs__mins">{readingMins} دقیقه</span>
               </span>
-            )}
-            {typeof viewCount === "number" && (
-              <span className="blogs__card-stat">
-                <EyeIcon />
-                <span className="blogs__views">{viewCount}</span>
+              {typeof likeCount === "number" && (
+                <span className="blogs__card-stat">
+                  <HeartIcon />
+                  <span className="blogs__likes">{likeCount}</span>
+                </span>
+              )}
+              {typeof viewCount === "number" && (
+                <span className="blogs__card-stat">
+                  <EyeIcon />
+                  <span className="blogs__views">{viewCount}</span>
+                </span>
+              )}
+            </div>
+            {publishedDate && (
+              <span className="blogs__card-stat blogs__card-stat--date">
+                <CalendarIcon />
+                <span className="blogs__date">{publishedDate}</span>
               </span>
             )}
           </div>

@@ -1,7 +1,15 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import SearchBar from "../common/SearchBar";
 
 const BlogHero = ({ hero }) => {
+  const navigate = useNavigate();
+
+  const handleSearch = (term) => {
+    if (!term) return;
+    navigate(`/blogresult?search=${encodeURIComponent(term)}`);
+  };
+
   return (
     <section className="blog-hero-section">
       <img
@@ -40,7 +48,10 @@ const BlogHero = ({ hero }) => {
           {hero?.titleLine}{" "}
           <span className="highlight-text">{hero?.highlight}</span>
         </h1>
-        <SearchBar placeholder={hero?.searchPlaceholder || "جستجو مقاله ..."} />
+        <SearchBar
+          placeholder={hero?.searchPlaceholder || "جستجو مقاله ..."}
+          onSubmit={handleSearch}
+        />
       </div>
 
       <div className="scroll-indicator">

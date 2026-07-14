@@ -1,0 +1,137 @@
+/* assets/css/blog-result.css */
+/* Companion stylesheet for BlogResultPage. Reuses the existing
+   blog-feed-*, blog-content-*, blog-sidebar-*, blog-desktop-layout /
+   blog-mobile-layout, and mobile-blog-feed__* classes from
+   styles-blog.css - only the compact hero and the empty state below
+   are new. */
+
+.result-page-wrapper {
+  color: #ffffff;
+  font-family: inherit;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* --- Compact Hero --- */
+.result-hero-section {
+  position: relative;
+  min-height: 360px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 20px 48px;
+  text-align: center;
+  background: radial-gradient(circle at top center, #35200f 0%, #000 75%);
+}
+
+.result-hero-content {
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-width: 640px;
+}
+
+.result-hero-eyebrow {
+  display: inline-block;
+  padding: 6px 18px;
+  border-radius: 50px;
+  border: 1px solid #2a2d32;
+  background-color: #1a1c20;
+  color: #ff683c;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.result-hero-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.result-hero-count {
+  margin: 0;
+  color: #a0a0a0;
+  font-size: 14px;
+}
+
+.result-hero-search-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.result-hero-search-wrap .search-bar {
+  width: 500px !important;
+  max-width: 90vw;
+}
+
+.result-clear-filter-btn {
+  margin-top: 4px;
+  background: transparent;
+  border: 1px solid #444;
+  color: #dcdcdc;
+  border-radius: 50px;
+  padding: 8px 20px;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.result-clear-filter-btn:hover {
+  border-color: #ff6b35;
+  color: #ff6b35;
+}
+
+/* --- Empty state (shared by desktop + mobile feeds) --- */
+.result-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 60px 20px;
+  text-align: center;
+  color: #dcdcdc;
+  background-color: #16171a;
+  border: 1px dashed #2a2d32;
+  border-radius: 16px;
+}
+
+.result-empty-state p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.result-empty-state span {
+  color: #888888;
+  font-size: 13px;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .result-hero-section {
+    min-height: 300px;
+    padding: 100px 20px 36px;
+  }
+
+  .result-hero-title {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 425px) {
+  .result-hero-section {
+    padding: 90px 16px 28px;
+  }
+
+  .result-hero-search-wrap .search-bar {
+    width: 100% !important;
+  }
+}

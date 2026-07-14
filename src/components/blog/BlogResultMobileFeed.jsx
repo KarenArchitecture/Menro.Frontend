@@ -1,6 +1,7 @@
+// src/components/blog/BlogResultMobileFeed.jsx
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import BlogCard from "../common/BlogCard";
-import { getBlogPosts } from "../../api/blogs";
+import { getBlogResultPosts } from "../../api/blogs";
 
 function chunkArray(array, size) {
   const result = [];
@@ -23,7 +24,15 @@ function mapPostForCard(p) {
   };
 }
 
-export default function BlogMobileFeedModule({ rows = 3, perRow = 2 }) {
+// filters: { search?, categorySlug?, tagSlug? } — same filters object
+// BlogResultFeed receives; this component just fetches independently for
+// the mobile layout, mirroring BlogMobileFeedModule on the main blog page.
+export default function BlogResultMobileFeed({
+  filters,
+  onTotalCountChange,
+  rows = 3,
+  perRow = 2,
+}) {
   const pageSize = rows * perRow;
 
   const [posts, setPosts] = useState([]);
@@ -34,14 +43,17 @@ export default function BlogMobileFeedModule({ rows = 3, perRow = 2 }) {
   const [error, setError] = useState("");
 
   const requestIdRef = useRef(0);
+  const onTotalCountChangeRef = useRef(onTotalCountChange);
+  onTotalCountChangeRef.current = onTotalCountChange;
 
   const loadPage = useCallback(
-    async (pageNum) => {
+    async (currentFilters, pageNum) => {
       const requestId = ++requestIdRef.current;
       setLoading(true);
       setError("");
       try {
-        const data = await getBlogPosts({
+        const data = await getBlogResultPosts({
+          ...currentFilters,
           sort: "Newest",
           page: pageNum,
           pageSize,
@@ -51,6 +63,7 @@ export default function BlogMobileFeedModule({ rows = 3, perRow = 2 }) {
         setTotalPages(data.totalPages);
         setTotalCount(data.totalCount);
         setPage(data.page);
+        onTotalCountChangeRef.current?.(data.totalCount);
       } catch (err) {
         if (requestId !== requestIdRef.current) return;
         setError("بارگذاری مقاله‌ها با خطا مواجه شد.");
@@ -62,9 +75,9 @@ export default function BlogMobileFeedModule({ rows = 3, perRow = 2 }) {
   );
 
   useEffect(() => {
-    loadPage(1);
+    loadPage(filters, 1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageSize]);
+  }, [filters, pageSize]);
 
   const groupedPosts = chunkArray(posts, perRow);
 
@@ -73,7 +86,10 @@ export default function BlogMobileFeedModule({ rows = 3, perRow = 2 }) {
       {loading && <div className="empty-hint">در حال بارگذاری...</div>}
       {!loading && error && <div className="form-error">{error}</div>}
       {!loading && !error && posts.length === 0 && (
-        <div className="empty-hint">مقاله‌ای پیدا نشد.</div>
+        <div className="result-empty-state">
+          <p>مقاله‌ای با این مشخصات پیدا نشد.</p>
+          <span>کلمه دیگری را جستجو کنید یا فیلتر را پاک کنید.</span>
+        </div>
       )}
 
       {!loading && !error && posts.length > 0 && (
@@ -96,7 +112,7 @@ export default function BlogMobileFeedModule({ rows = 3, perRow = 2 }) {
             type="button"
             className="blog-feed-pagination__btn"
             disabled={page <= 1}
-            onClick={() => loadPage(page - 1)}
+            onClick={() => loadPage(filters, page - 1)}
           >
             قبلی
           </button>
@@ -107,7 +123,7 @@ export default function BlogMobileFeedModule({ rows = 3, perRow = 2 }) {
             type="button"
             className="blog-feed-pagination__btn"
             disabled={page >= totalPages}
-            onClick={() => loadPage(page + 1)}
+            onClick={() => loadPage(filters, page + 1)}
           >
             بعدی
           </button>

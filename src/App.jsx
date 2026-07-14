@@ -20,6 +20,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 import ChangePhone from "./pages/ChangePhone";
 import AdminPage from "./pages/AdminPage";
 import BlogPage from "./pages/BlogPage";
+import BlogResultPage from "./pages/BlogResultPage";
 import Orders from "./pages/OrdersPage";
 import AdminMusicPage from "./pages/AdminMusicPage";
 // 1. Import the BillsPage
@@ -88,6 +89,7 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/home" element={<HomePage />} />
           <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blogresult" element={<BlogResultPage />} />
           <Route path="/restaurants" element={<RestaurantsBrowsePage />} />
           <Route path="/foods/popular" element={<PopularFoodsBrowsePage />} />
           <Route

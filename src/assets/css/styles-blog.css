@@ -341,7 +341,10 @@
 }
 /* 2. Scrollable Grid Area */
 .blog-feed-scroll-area {
-  max-height: 600px; /* Adjust height based on your needs */
+  /* Tall enough to comfortably show 2 full rows of cards before the
+     internal scrollbar takes over - card height varies with viewport
+     width, so this is viewport-relative rather than a fixed pixel value. */
+  max-height: 95vh;
   overflow-y: auto;
   padding-right: 5px; /* Prevent scrollbar from touching content */
   -ms-overflow-style: none; /* IE and Edge */
@@ -371,23 +374,53 @@
     grid-template-columns: 1fr; /* Stack cards on smaller screens */
   }
 }
-/* 3. Show More Button */
-.blog-feed-show-more {
-  width: 100%;
-  padding: 15px;
+/* 3. Pagination (replaces the old show-more button) */
+.blog-feed-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 10px 0;
+}
+
+.blog-feed-pagination__btn {
+  padding: 12px 24px;
   background-color: #0c0f14;
   color: #ffffff;
   border: 1px solid #444;
   border-radius: 10px;
-  font-size: 16px;
+  font-size: 15px;
+  font-family: inherit;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: inherit;
 }
 
-.blog-feed-show-more:hover {
+.blog-feed-pagination__btn:hover:not(:disabled) {
   background-color: #ff6b00;
   border-color: #ff6b00;
+}
+
+.blog-feed-pagination__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.blog-feed-pagination__label {
+  color: #a0a0a0;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .blog-feed-pagination {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .blog-feed-pagination__label {
+    order: 3;
+    width: 100%;
+    text-align: center;
+  }
 }
 
 /* Responsive adjustments for mobile */
@@ -431,8 +464,17 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 12px;
+  padding: 12px;
   border-bottom: 1px solid #2a2a2a;
+  border-radius: 10px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.sidebar-tag-item:hover {
+  border-color: rgba(245, 158, 11, 0.35);
+  background: rgba(255, 255, 255, 0.035);
 }
 
 .sidebar-tag-item:last-child {
@@ -440,30 +482,29 @@
   padding-bottom: 0;
 }
 
-.tag-item-right {
+.sidebar-tag-item-right {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.tag-hashtag-icon {
+.sidebar-tag-hashtag-icon {
   width: 16px;
   height: 16px;
   opacity: 0.7; /* Optional: slightly dim the icon if it's too bright */
 }
 
-.tag-item-name {
+.sidebar-tag-item-name {
   color: #dcdcdc;
   font-size: 14px;
   transition: color 0.2s;
-  cursor: pointer;
 }
 
-.sidebar-tag-item:hover .tag-item-name {
+.sidebar-tag-item:hover .sidebar-tag-item-name {
   color: #ff683c;
 }
 
-.tag-item-count {
+.sidebar-tag-item-count {
   color: #888888;
   font-size: 13px;
 }
@@ -664,7 +705,18 @@
 .blog-mobile-layout {
   display: none;
 }
+/* ---------- Tablet: force 2-column feed grid instead of relying on
+   auto-fill, which was collapsing to a single oversized card around
+   768px depending on how much width the sidebar leaves the feed. ---------- */
+@media (min-width: 426px) and (max-width: 1024px) {
+  .blog-feed-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 
+/* ---------- Mobile (phone) - single consolidated breakpoint. Merged
+   the former separate 420px card-scaling block into this 425px block
+   so there's one mobile breakpoint instead of two near-duplicates. ---------- */
 @media (max-width: 425px) {
   .blog-desktop-layout {
     display: none;
@@ -704,6 +756,7 @@
     width: 100%;
     min-width: 0;
   }
+
   /* FEED: 2 cards per row */
   .mobile-blog-feed-section {
     padding: 0 16px 16px;
@@ -715,21 +768,37 @@
     gap: 12px;
   }
 
-  .mobile-blog-feed__row {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    align-items: start;
+  .mobile-blog-feed__pagination {
+    margin-top: 16px;
   }
 
-  .mobile-blog-feed__card {
-    min-width: 0;
-    width: 100%;
+  /* Blog card content scaling (formerly a separate 420px media query -
+     merged here since it targets the same mobile range) */
+  .blogs__card-title {
+    font-size: 1.35rem; /* was 1.8rem - too large for a ~180px-wide card */
+    margin-bottom: 6px;
   }
 
-  .mobile-blog-feed__card .blog-card {
-    width: 100%;
-    min-width: 0;
+  .blogs__card-info {
+    font-size: 1rem; /* was 1.3rem */
+    gap: 8px;
+  }
+
+  .blogs__card-stats-group {
+    gap: 10px; /* was 14px */
+  }
+
+  .blogs__card-stat {
+    gap: 4px; /* was 6px */
+  }
+
+  .blogs__card-info svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  .blogs__card-meta {
+    inset: auto 10px 10px 10px; /* was 14px - slightly tighter edge padding */
   }
 
   /* Shared mobile block shell */
@@ -894,6 +963,7 @@
     padding: 12px 16px 16px;
   }
 }
+
 .mobile-blog-feed__row,
 .mobile-blog-blocks__row {
   display: grid;

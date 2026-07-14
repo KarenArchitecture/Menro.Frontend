@@ -20,7 +20,7 @@ import AdsRequestsSection from "../components/admin/AdsRequestsSection";
 import RestaurantsListForAdminSection from "../components/admin/RestaurantsListForAdminSection";
 import RestaurantProfileSection from "../components/admin/RestaurantProfileSection";
 import CommentsSection from "../components/admin/CommentsSection";
-import BlogManagementSection from "../components/admin/Blogmanagementsection";
+import BlogManagementSection from "../components/admin/BlogManagementSection";
 
 import ownerRestaurantAxios from "../api/ownerRestaurantAxios";
 import { useAuth } from "../context/AuthContext";

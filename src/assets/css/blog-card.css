@@ -70,6 +70,25 @@
   padding-right: 1rem;
 }
 
+.blogs__card-stats-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.blogs__card-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px; /* more room between icon and number, per point 2 */
+}
+
+.blogs__card-date {
+  display: block;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 4px;
+}
+
 .blogs__card-title {
   margin: 0;
   font-weight: 900;
@@ -79,10 +98,10 @@
 }
 
 .blogs__card-info {
-  display: inline-grid;
-  grid-auto-flow: column;
+  display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between; /* stats group → right, date → left (RTL) */
+  gap: 12px;
   opacity: 0.9;
   font-size: 1.3rem;
 }

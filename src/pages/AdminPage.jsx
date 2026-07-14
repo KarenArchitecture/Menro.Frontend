@@ -21,6 +21,7 @@ import RestaurantsListForAdminSection from "../components/admin/RestaurantsListF
 import RestaurantProfileSection from "../components/admin/RestaurantProfileSection";
 import CommentsSection from "../components/admin/CommentsSection";
 import BlogManagementSection from "../components/admin/BlogManagementSection";
+import LandingManagementSection from "../components/admin/LandingManagementSection";
 
 import ownerRestaurantAxios from "../api/ownerRestaurantAxios";
 import { useAuth } from "../context/AuthContext";
@@ -122,6 +123,8 @@ export default function AdminPage() {
         return <CommentsSection />;
       case "blog":
         return <BlogManagementSection />;
+      case "landing":
+        return <LandingManagementSection />;
       case "financial":
         return <FinancialSection />;
       case "ads":

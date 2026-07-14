@@ -23,7 +23,7 @@ const NAV = [
     key: "restaurants",
     label: "مدیریت رستوران‌ها",
     icon: "fas fa-utensils",
-    // roles: ["Admin"],
+    roles: ["Admin"],
   },
   {
     key: "category-settings",
@@ -37,19 +37,20 @@ const NAV = [
     icon: "fas fa-concierge-bell",
     roles: ["Admin"],
   },
-  // Ads Settings (per-restaurant config)
   {
     key: "ads-settings",
     label: "تنظیمات تبلیغات",
     icon: "fas fa-sliders-h",
+    roles: ["Admin"],
   },
   {
     key: "ads-requests",
     label: "درخواست‌های تبلیغات",
     icon: "fas fa-clipboard-check",
-    // roles: ["Admin"],
+    roles: ["Admin"],
   },
   { key: "blog", label: "مدیریت بلاگ", icon: "fas fa-blog" },
+  { key: "landing", label: "مدیریت صفحه اصلی", icon: "fas fa-home" },
 
   { isDivider: true, label: "حساب کاربری" },
   //{ key: "theme", label: "مدیریت قالب", icon: "fas fa-palette" },

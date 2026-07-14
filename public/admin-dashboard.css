@@ -4518,7 +4518,7 @@ textarea {
    Grid layout with fixed column widths for the toggle/actions columns so
    every row lines up in a clean vertical column, regardless of how long
    each tag's name is. */
-.blog-mgmt__sidebar-tags-list {
+.blog-mgmt__admin-tags-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -4527,7 +4527,7 @@ textarea {
   padding: 0;
 }
 
-.sidebar-tag-item {
+.blog-mgmt__admin-tag-item {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 150px 140px;
   align-items: center;
@@ -4541,12 +4541,12 @@ textarea {
     background 0.15s ease;
 }
 
-.sidebar-tag-item:hover {
+.blog-mgmt__admin-tag-item:hover {
   border-color: rgba(245, 158, 11, 0.35);
   background: rgba(255, 255, 255, 0.035);
 }
 
-.tag-item-right {
+.blog-mgmt__admin-tag-right {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -4559,7 +4559,7 @@ textarea {
   flex-shrink: 0;
 }
 
-.tag-item-name {
+.blog-mgmt__admin-tag-name {
   color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -4573,7 +4573,7 @@ textarea {
   gap: 10px;
 }
 
-.tag-item-count {
+.blog-mgmt__admin-tag-count {
   color: var(--text-muted);
   font-size: 0.85rem;
   white-space: nowrap;
@@ -4635,7 +4635,7 @@ textarea {
 }
 
 @media (max-width: 720px) {
-  .sidebar-tag-item {
+  .blog-mgmt__admin-tag-item {
     grid-template-columns: 1fr;
     justify-items: start;
     gap: 8px;

@@ -1188,15 +1188,15 @@ function SidebarTagsPane({ onSaved }) {
 
       {loading && <div className="empty-hint">در حال بارگذاری...</div>}
 
-      <ul className="sidebar-tags-list blog-mgmt__sidebar-tags-list blog-mgmt__tags-scroll">
+      <ul className="blog-mgmt__admin-tags-list blog-mgmt__tags-scroll">
         {!loading &&
           filteredTags.map((tag) => (
-            <li key={tag.id} className="sidebar-tag-item">
-              <div className="tag-item-right">
+            <li key={tag.id} className="blog-mgmt__admin-tag-item">
+              <div className="blog-mgmt__admin-tag-right">
                 <span className="mobile-blog-tags__hash blog-mgmt__tag-hash">
                   #
                 </span>
-                <span className="tag-item-name">{tag.name}</span>
+                <span className="blog-mgmt__admin-tag-name">{tag.name}</span>
               </div>
               <label
                 className="blog-mgmt__suggested-toggle"
@@ -1210,7 +1210,7 @@ function SidebarTagsPane({ onSaved }) {
                 تگ پیشنهادی
               </label>
               <div className="blog-mgmt__tag-actions">
-                <span className="tag-item-count">{tag.count}</span>
+                <span className="blog-mgmt__admin-tag-count">{tag.count}</span>
                 <button
                   className="btn-icon"
                   onClick={() => openEdit(tag)}

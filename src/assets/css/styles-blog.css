@@ -464,9 +464,17 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 12px;
+  padding: 12px;
   border-bottom: 1px solid #2a2a2a;
+  border-radius: 10px;
   cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.sidebar-tag-item:hover {
+  border-color: rgba(245, 158, 11, 0.35);
+  background: rgba(255, 255, 255, 0.035);
 }
 
 .sidebar-tag-item:last-child {
@@ -474,29 +482,29 @@
   padding-bottom: 0;
 }
 
-.tag-item-right {
+.sidebar-tag-item-right {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.tag-hashtag-icon {
+.sidebar-tag-hashtag-icon {
   width: 16px;
   height: 16px;
   opacity: 0.7; /* Optional: slightly dim the icon if it's too bright */
 }
 
-.tag-item-name {
+.sidebar-tag-item-name {
   color: #dcdcdc;
   font-size: 14px;
   transition: color 0.2s;
 }
 
-.sidebar-tag-item:hover .tag-item-name {
+.sidebar-tag-item:hover .sidebar-tag-item-name {
   color: #ff683c;
 }
 
-.tag-item-count {
+.sidebar-tag-item-count {
   color: #888888;
   font-size: 13px;
 }

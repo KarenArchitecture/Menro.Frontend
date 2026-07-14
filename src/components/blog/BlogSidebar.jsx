@@ -13,15 +13,15 @@ const BlogSidebar = ({ tags = [], loading = false }) => {
           <ul className="sidebar-tags-list">
             {tags.map((tag) => (
               <li key={tag.id} className="sidebar-tag-item">
-                <div className="tag-item-right">
+                <div className="sidebar-tag-item-right">
                   <img
                     src="/images/blog-pics/tag.svg"
                     alt="hashtag"
-                    className="tag-hashtag-icon"
+                    className="sidebar-tag-hashtag-icon"
                   />
-                  <span className="tag-item-name">{tag.name}</span>
+                  <span className="sidebar-tag-item-name">{tag.name}</span>
                 </div>
-                <span className="tag-item-count">
+                <span className="sidebar-tag-item-count">
                   {typeof tag.articleCount === "number"
                     ? `${tag.articleCount} مقاله`
                     : tag.count}

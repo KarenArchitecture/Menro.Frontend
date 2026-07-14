@@ -16,15 +16,18 @@ import CheckoutPage from "./pages/CheckoutPage";
 import MobileNav from "./components/common/MobileNav";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
+import NotFoundPage from "./pages/NotFoundPage";
 import ChangePhone from "./pages/ChangePhone";
 import AdminPage from "./pages/AdminPage";
 import BlogPage from "./pages/BlogPage";
+import BlogResultPage from "./pages/BlogResultPage";
 import Orders from "./pages/OrdersPage";
 import AdminMusicPage from "./pages/AdminMusicPage";
 // 1. Import the BillsPage
 import BillsPage from "./pages/BillsPage";
 import FavoritesPage from "./pages/FavoritesPage";
 import ProfilePage from "./pages/ProfilePage";
+import UserProfileForm from "./components/common/UserProfileForm";
 import CommentsPage from "./pages/CommentsPage";
 import {
   DrawerStateProvider,
@@ -65,6 +68,7 @@ export default function App() {
     "/orders/bill",
     "/music",
     "/favorites",
+    "/blog",
   ];
 
   // 3. Added "/orders/bill" so the app shell doesn't add blank padding at the bottom
@@ -85,6 +89,7 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/home" element={<HomePage />} />
           <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blogresult" element={<BlogResultPage />} />
           <Route path="/restaurants" element={<RestaurantsBrowsePage />} />
           <Route path="/foods/popular" element={<PopularFoodsBrowsePage />} />
           <Route
@@ -119,6 +124,7 @@ export default function App() {
           <Route path="/comments" element={<CommentsPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
+          <Route path="/not-found" element={<NotFoundPage />} />
           <Route
             path="/admin"
             element={
@@ -135,6 +141,16 @@ export default function App() {
               // </ProtectedRoute>
             }
           />
+          <Route
+            path="/profile/edit"
+            element={
+              // <ProtectedRoute roles={["user", "admin", "owner"]}>
+              <UserProfileForm />
+              // </ProtectedRoute>
+            }
+          />
+          {/* 404 Catch-All Route */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </PageWrapper>
     </DrawerStateProvider>

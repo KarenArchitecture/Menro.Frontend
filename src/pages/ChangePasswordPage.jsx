@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import authAxios from "../api/authAxios";
-import usePageStyles from "../hooks/usePageStyles";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import "../assets/css/auth.css";
 
 export default function ChangePasswordPage() {
-  usePageStyles("/forgot-password.css"); // همان استایل صفحه قبلی، سازگار هست
-
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnUrl = new URLSearchParams(location.search).get("returnUrl");
 
   const [current, setCurrent] = useState("");
   const [pass, setPass] = useState("");
@@ -26,7 +26,9 @@ export default function ChangePasswordPage() {
     },
     onSuccess: () => {
       setMsg("رمز عبور با موفقیت تغییر کرد ✔");
-      setTimeout(() => navigate("/admin"), 1000);
+      setTimeout(() => {
+        navigate(returnUrl?.startsWith("/") ? returnUrl : "/profile/edit");
+      }, 1000);
     },
     onError: (err) => {
       setMsg(err.response?.data?.message || "خطا در تغییر رمز عبور.");
@@ -50,54 +52,118 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <section className="auth-wrap" dir="rtl">
-      <div className="auth-card">
-        <h1 className="auth-title">تغییر رمز عبور</h1>
+    <div className="auth-screen" dir="rtl">
+      <Link
+        to="/home"
+        className="auth-home-btn"
+        aria-label="بازگشت به صفحه اصلی"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M3 11.5 12 4l9 7.5" />
+          <path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" />
+        </svg>
+      </Link>
+      {/* Reusable "back" button — copy this block (and .auth-back-btn in
+          auth.css) into any other auth page that needs it. */}
+      <button
+        type="button"
+        className="auth-back-btn"
+        aria-label="بازگشت"
+        onClick={() => navigate(returnUrl?.startsWith("/") ? returnUrl : -1)}
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M9 6l6 6-6 6" />
+        </svg>
+      </button>
+      <div className="auth-screen__inner">
+        <div className="auth-hero">
+          <img src="/images/cake-auth.png" alt="" className="auth-hero-img" />
+        </div>
 
-        <form className="auth-body" onSubmit={handleSubmit}>
-          {/* Current Password */}
-          <label className="auth-label">رمز عبور فعلی</label>
-          <input
-            type="password"
-            className="auth-input"
-            value={current}
-            onChange={(e) => setCurrent(e.target.value)}
-            required
-          />
+        <div className="auth-copy">
+          <h1 className="auth-heading">
+            تغییر <span className="accent">رمز</span> عبور
+          </h1>
+          <p className="auth-subtitle">
+            برای امنیت بیشتر حساب خود، رمز عبور جدید تعیین کنید.
+          </p>
+        </div>
 
-          {/* New Password */}
-          <label className="auth-label">رمز جدید</label>
-          <input
-            type="password"
-            className="auth-input"
-            value={pass}
-            onChange={(e) => setPass(e.target.value)}
-            required
-            minLength={6}
-          />
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="auth-field">
+            <label className="auth-label">رمز عبور فعلی</label>
+            <input
+              type="password"
+              className="auth-input"
+              value={current}
+              onChange={(e) => setCurrent(e.target.value)}
+              required
+            />
+          </div>
 
-          {/* Confirm New Password */}
-          <label className="auth-label">تکرار رمز جدید</label>
-          <input
-            type="password"
-            className="auth-input"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            required
-            minLength={6}
-          />
+          <div className="auth-field">
+            <label className="auth-label">رمز جدید</label>
+            <input
+              type="password"
+              className="auth-input"
+              value={pass}
+              onChange={(e) => setPass(e.target.value)}
+              required
+              minLength={6}
+            />
+          </div>
+
+          <div className="auth-field">
+            <label className="auth-label">تکرار رمز جدید</label>
+            <input
+              type="password"
+              className="auth-input"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              required
+              minLength={6}
+            />
+          </div>
 
           <button
-            className="btn btn-primary mt-16"
+            className="auth-btn auth-btn-primary"
             type="submit"
             disabled={changePassword.isPending}
           >
             {changePassword.isPending ? "در حال ثبت..." : "تغییر رمز عبور"}
           </button>
 
-          {msg && <p className="form-message">{msg}</p>}
+          {msg && (
+            <p
+              className={`auth-message ${
+                changePassword.isSuccess ? "success" : ""
+              }`}
+            >
+              {msg}
+            </p>
+          )}
+
+          <div className="auth-footer">
+            <Link to="/forgot-password" className="auth-chip-btn">
+              فراموشی رمز عبور
+            </Link>
+          </div>
         </form>
       </div>
-    </section>
+    </div>
   );
 }

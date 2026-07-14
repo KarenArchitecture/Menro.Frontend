@@ -1,42 +1,62 @@
 import React from "react";
-// Make sure to adjust this import path to point correctly to your AdBanner component
+import { useNavigate } from "react-router-dom";
 import AdBanner from "../common/AdBanner";
 
-const BlogSidebar = () => {
-  // Creating an array of 8 tags: alternating 4 "منرو" and 4 "آموزش آشپزی"
-  const suggestedTags = Array.from({ length: 8 }, (_, index) => ({
-    name: index % 2 === 0 ? "منرو" : "آموزش آشپزی",
-    count: "۹۶ مقاله",
-  }));
+const BlogSidebar = ({ tags = [], loading = false }) => {
+  const navigate = useNavigate();
+
+  // Same caveat as BlogCategories: falls back to tag.id if the tags list
+  // doesn't carry a slug yet, but PublicBlogPostsController expects
+  // tagSlug - confirm the backend tag shape includes it.
+  const handleTagClick = (tag) => {
+    const slug = tag.slug || tag.id;
+    const params = new URLSearchParams({ tag: slug, tagName: tag.name });
+    navigate(`/blogresult?${params.toString()}`);
+  };
 
   return (
     <aside className="blog-sidebar-container" dir="rtl">
-      {/* Tags Section */}
       <div className="blog-sidebar-tags-box">
         <h3 className="sidebar-tags-title">
           برچسب های <span style={{ color: "#FF683C" }}>پیشنهادی</span>
         </h3>
 
-        <ul className="sidebar-tags-list">
-          {suggestedTags.map((tag, index) => (
-            <li key={index} className="sidebar-tag-item">
-              <div className="tag-item-right">
-                <img
-                  src="/images/blog-pics/tag.svg"
-                  alt="hashtag"
-                  className="tag-hashtag-icon"
-                />
-                <span className="tag-item-name">{tag.name}</span>
-              </div>
-              <span className="tag-item-count">{tag.count}</span>
-            </li>
-          ))}
-        </ul>
+        {!loading && (
+          <ul className="sidebar-tags-list">
+            {tags.map((tag) => (
+              <li
+                key={tag.id}
+                className="sidebar-tag-item"
+                role="button"
+                tabIndex={0}
+                onClick={() => handleTagClick(tag)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleTagClick(tag);
+                  }
+                }}
+              >
+                <div className="sidebar-tag-item-right">
+                  <img
+                    src="/images/blog-pics/tag.svg"
+                    alt="hashtag"
+                    className="sidebar-tag-hashtag-icon"
+                  />
+                  <span className="sidebar-tag-item-name">{tag.name}</span>
+                </div>
+                <span className="sidebar-tag-item-count">
+                  {typeof tag.articleCount === "number"
+                    ? `${tag.articleCount} مقاله`
+                    : tag.count}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
-      {/* Ad Banner Section */}
       <div className="blog-sidebar-ad-box">
-        {/* Using your existing AdBanner component */}
         <AdBanner slotKey="blog-sidebar-ad" height={300} maxWidth={400} />
       </div>
     </aside>

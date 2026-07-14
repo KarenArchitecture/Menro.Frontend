@@ -1,7 +1,7 @@
-// src/components/blog/BlogFeed.jsx
-import React, { useState, useRef, useEffect, useCallback } from "react";
+// src/components/blog/BlogResultFeed.jsx
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import BlogCard from "../common/BlogCard";
-import { getBlogPosts } from "../../api/blogs";
+import { getBlogResultPosts } from "../../api/blogs";
 
 const FEED_TABS = [
   { label: "جدیدترین‌ها", sort: "Newest" },
@@ -24,7 +24,10 @@ function mapPostForCard(p) {
   };
 }
 
-const BlogFeed = () => {
+// filters: { search?, categorySlug?, tagSlug? } — decided by BlogResultPage
+// from the URL. This component owns its own fetch/sort/pagination state,
+// the same way BlogFeed does on the main blog page.
+const BlogResultFeed = ({ filters, onTotalCountChange }) => {
   const [activeTab, setActiveTab] = useState(FEED_TABS[0]);
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(1);
@@ -33,30 +36,27 @@ const BlogFeed = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const scrollAreaRef = useRef(null);
-  const isDragging = useRef(false);
-  const startY = useRef(0);
-  const scrollTop = useRef(0);
-  const dragStartCoords = useRef({ x: 0, y: 0 });
   const requestIdRef = useRef(0);
+  const onTotalCountChangeRef = useRef(onTotalCountChange);
+  onTotalCountChangeRef.current = onTotalCountChange;
 
-  const loadPage = useCallback(async (tab, pageNum) => {
+  const loadPage = useCallback(async (currentFilters, tab, pageNum) => {
     const requestId = ++requestIdRef.current;
     setLoading(true);
     setError("");
     try {
-      const data = await getBlogPosts({
+      const data = await getBlogResultPosts({
+        ...currentFilters,
         sort: tab.sort,
         page: pageNum,
         pageSize: PAGE_SIZE,
       });
-      // Ignore this response if a newer request (e.g. from switching tabs
-      // again before this one resolved) has since been fired.
       if (requestId !== requestIdRef.current) return;
       setPosts(data.items.map(mapPostForCard));
       setTotalPages(data.totalPages);
       setTotalCount(data.totalCount);
       setPage(data.page);
+      onTotalCountChangeRef.current?.(data.totalCount);
     } catch (err) {
       if (requestId !== requestIdRef.current) return;
       setError("بارگذاری مقاله‌ها با خطا مواجه شد.");
@@ -65,62 +65,22 @@ const BlogFeed = () => {
     }
   }, []);
 
-  // Whenever the sort tab changes, jump back to page 1 and fetch it in one
-  // shot - avoids firing a fetch for the old tab's stale page number before
-  // the reset-to-1 effect runs.
+  // Filters changing (new search term, different tag/category coming from
+  // the URL) or the sort tab changing both reset pagination back to 1.
   useEffect(() => {
     setPage(1);
-    loadPage(activeTab, 1);
-    if (scrollAreaRef.current) scrollAreaRef.current.scrollTop = 0;
+    loadPage(filters, activeTab, 1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab]);
+  }, [filters, activeTab]);
 
-  // Manual pagination (prev/next) within the current tab.
+  // Manual pagination (prev/next) within the current filters/tab.
   useEffect(() => {
-    if (page === 1) return; // already fetched by the tab-change effect above
-    loadPage(activeTab, page);
-    if (scrollAreaRef.current) scrollAreaRef.current.scrollTop = 0;
+    if (page === 1) return; // already fetched by the effect above
+    loadPage(filters, activeTab, page);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
-  const handleMouseDown = (e) => {
-    isDragging.current = true;
-    dragStartCoords.current = { x: e.clientX, y: e.clientY };
-    startY.current = e.pageY - scrollAreaRef.current.offsetTop;
-    scrollTop.current = scrollAreaRef.current.scrollTop;
-    scrollAreaRef.current.style.cursor = "grabbing";
-    scrollAreaRef.current.style.userSelect = "none";
-  };
-
-  const handleMouseLeave = () => {
-    isDragging.current = false;
-    if (scrollAreaRef.current) scrollAreaRef.current.style.cursor = "grab";
-  };
-
-  const handleMouseUp = () => {
-    isDragging.current = false;
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.style.cursor = "grab";
-      scrollAreaRef.current.style.userSelect = "auto";
-    }
-  };
-
-  const handleMouseMove = (e) => {
-    if (!isDragging.current) return;
-    e.preventDefault();
-    const y = e.pageY - scrollAreaRef.current.offsetTop;
-    const walk = (y - startY.current) * 1.5;
-    scrollAreaRef.current.scrollTop = scrollTop.current - walk;
-  };
-
-  const handleClickCapture = (e) => {
-    const dx = Math.abs(e.clientX - dragStartCoords.current.x);
-    const dy = Math.abs(e.clientY - dragStartCoords.current.y);
-    if (dx > 5 || dy > 5) {
-      e.stopPropagation();
-      e.preventDefault();
-    }
-  };
+  const handleTabChange = (tab) => setActiveTab(tab);
 
   return (
     <div className="blog-feed-container">
@@ -129,27 +89,21 @@ const BlogFeed = () => {
           <button
             key={tab.sort}
             className={`feed-nav-btn ${activeTab.sort === tab.sort ? "active" : ""}`}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => handleTabChange(tab)}
           >
             {tab.label}
           </button>
         ))}
       </nav>
 
-      <div
-        className="blog-feed-scroll-area"
-        ref={scrollAreaRef}
-        onMouseDown={handleMouseDown}
-        onMouseLeave={handleMouseLeave}
-        onMouseUp={handleMouseUp}
-        onMouseMove={handleMouseMove}
-        onClickCapture={handleClickCapture}
-        style={{ cursor: "grab" }}
-      >
+      <div className="blog-feed-scroll-area">
         {loading && <div className="empty-hint">در حال بارگذاری...</div>}
         {!loading && error && <div className="form-error">{error}</div>}
         {!loading && !error && posts.length === 0 && (
-          <div className="empty-hint">مقاله‌ای پیدا نشد.</div>
+          <div className="result-empty-state">
+            <p>مقاله‌ای با این مشخصات پیدا نشد.</p>
+            <span>کلمه دیگری را جستجو کنید یا فیلتر را پاک کنید.</span>
+          </div>
         )}
         {!loading && !error && posts.length > 0 && (
           <div className="blog-feed-grid">
@@ -187,4 +141,4 @@ const BlogFeed = () => {
   );
 };
 
-export default BlogFeed;
+export default BlogResultFeed;

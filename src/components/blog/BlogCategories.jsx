@@ -1,65 +1,44 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
-const blogCategories = [
-  {
-    id: 1,
-    title: "رستوران و فضای سرویس",
-    subtitle: "فضای فیزیکی، خدمات، جو",
-    color: "#5A302F",
-  },
-  {
-    id: 2,
-    title: "منو و غذا",
-    subtitle: "چیدمان، انتخاب، تجربه طعم",
-    color: "#664A25",
-  },
-  {
-    id: 3,
-    title: "رفتار و تجربه مشتری",
-    subtitle: "عادت‌ها، رضایت، وفاداری",
-    color: "#2B314B",
-  },
-  {
-    id: 4,
-    title: "برند و بازاریابی",
-    subtitle: "ساخت برند، جذب، دیده‌شدن",
-    color: "#274435",
-  },
-  {
-    id: 5,
-    title: "مدیریت و عملیات",
-    subtitle: "پشت‌صحنه، منابع، فرآیندها",
-    color: "#454C21",
-  },
-  {
-    id: 6,
-    title: "تکنولوژی و ابزارها",
-    subtitle: "راهکارهای دیجیتال و هوشمند",
-    color: "#58273E",
-  },
-  {
-    id: 7,
-    title: "فرهنگ و جامعه",
-    subtitle: "تأثیر اجتماعی، سبک زندگی",
-    color: "#264648",
-  },
-  {
-    id: 8,
-    title: "نگاه و دیدگاه",
-    subtitle: "تحلیل، ترند، زاویه‌ی متفاوت",
-    color: "#41224D",
-  },
-];
+const BlogCategories = ({ categories = [], loading = false }) => {
+  const navigate = useNavigate();
 
-const BlogCategories = () => {
+  if (loading || categories.length === 0) return null;
+
+  // NOTE: falls back to category.id when there's no slug on the payload
+  // yet. PublicBlogPostsController filters by categorySlug, so this only
+  // resolves real results once the bootstrap DTO exposes a proper slug -
+  // worth confirming with the backend category list shape.
+  const handleCategoryClick = (category) => {
+    const slug = category.slug || category.id;
+    const params = new URLSearchParams({
+      category: slug,
+      categoryName: category.title,
+    });
+    navigate(`/blogresult?${params.toString()}`);
+  };
+
   return (
     <section className="blog-categories-section">
       <div className="categories-wrapper">
-        {blogCategories.map((category) => (
-          <div key={category.id} className="category-card">
+        {categories.map((category) => (
+          <div
+            key={category.id}
+            className="category-card"
+            role="button"
+            tabIndex={0}
+            onClick={() => handleCategoryClick(category)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleCategoryClick(category);
+              }
+            }}
+          >
             <div
               className="category-icon-box"
-              style={{ backgroundColor: category.color }}
+              style={{ backgroundColor: category.colorHex }}
             ></div>
             <div className="category-text">
               <h3>{category.title}</h3>

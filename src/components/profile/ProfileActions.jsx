@@ -2,10 +2,14 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useRequireLogin from "../../hooks/useRequireLogin";
 import ProtectedActionModal from "../common/ProtectedActionModal";
+import ActionCard from "../profile/ActionCard";
+import { useAuth } from "../../context/AuthContext";
 
 export default function ProfileActions() {
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const { requireLogin, open, closeModal, goToLogin, modalProps } = useRequireLogin();
+  const { requireLogin, open, closeModal, goToLogin, modalProps } =
+    useRequireLogin();
 
   const handleCommentsClick = () => {
     requireLogin({
@@ -13,6 +17,14 @@ export default function ProfileActions() {
       returnUrl: "/comments",
       onAuthenticated: () => navigate("/comments"),
     });
+  };
+  const handleFavoritesClick = () => {
+    if (!user) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    navigate("/favorites");
   };
 
   const actions = [

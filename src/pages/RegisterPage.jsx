@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import usePageStyles from "../hooks/usePageStyles";
-import authAxios from "../api/authAxios";
 import { useAuth } from "../Context/AuthContext";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import "../assets/css/auth.css";
 
 export default function RegisterPage() {
-  usePageStyles("/styles-register.css");
   const navigate = useNavigate();
   const { registerUser } = useAuth();
 
@@ -49,12 +47,9 @@ export default function RegisterPage() {
       return await registerUser(payload);
     },
     onSuccess: () => {
-      navigate(
-          returnUrl?.startsWith("/")
-              ? returnUrl
-              : "/",
-          { replace:true }
-      );
+      navigate(returnUrl?.startsWith("/") ? returnUrl : "/", {
+        replace: true,
+      });
     },
     onError: (err) => {
       setMsg({ text: err.message, type: "error" });
@@ -80,55 +75,134 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="form-container">
-      <form className="profile-form active-form" onSubmit={handleSubmit}>
-        <h2>تکمیل اطلاعات کاربر</h2>
-        <p>برای ادامه، لطفاً اطلاعات خود را وارد کنید.</p>
-
-        <div className="input-group">
-          <label htmlFor="name">نام و نام خانوادگی</label>
-          <input
-            id="name"
-            type="text"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-          />
+    <div className="auth-screen" dir="rtl">
+      <Link
+        to="/home"
+        className="auth-home-btn"
+        aria-label="بازگشت به صفحه اصلی"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M3 11.5 12 4l9 7.5" />
+          <path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" />
+        </svg>
+      </Link>
+      {/* Reusable "back" button — copy this block (and .auth-back-btn in
+          auth.css) into any other auth page that needs it. */}
+      <button
+        type="button"
+        className="auth-back-btn"
+        aria-label="بازگشت"
+        onClick={() => navigate(returnUrl?.startsWith("/") ? returnUrl : -1)}
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M9 6l6 6-6 6" />
+        </svg>
+      </button>
+      <div className="auth-screen__inner">
+        <div className="auth-hero">
+          <img src="/images/cake-auth.png" alt="" className="auth-hero-img" />
         </div>
 
-        <div className="input-group">
-          <label htmlFor="phone">شماره تلفن</label>
-          <input id="phone" type="text" value={phone} readOnly />
-          <small>شماره از مرحله قبل تأیید شده است.</small>
+        <div className="auth-copy">
+          <h1 className="auth-heading">
+            تکمیل <span className="accent">اطلاعات</span> کاربری
+          </h1>
+          <p className="auth-subtitle">
+            برای ادامه، لطفاً اطلاعات خود را وارد کنید.
+          </p>
         </div>
 
-        <div className="input-group">
-          <label htmlFor="email">ایمیل (اختیاری)</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="auth-field">
+            <label className="auth-label" htmlFor="name">
+              نام و نام خانوادگی
+            </label>
+            <input
+              id="name"
+              type="text"
+              className="auth-input"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+            />
+          </div>
 
-        <div className="input-group">
-          <label htmlFor="pass">رمز عبور (اختیاری)</label>
-          <input
-            id="pass"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <small>با انتخاب رمز عبور، حساب خود را امن‌تر کنید.</small>
-        </div>
+          <div className="auth-field">
+            <label className="auth-label" htmlFor="phone">
+              شماره تلفن
+            </label>
+            <input
+              id="phone"
+              type="text"
+              className="auth-input"
+              value={phone}
+              readOnly
+            />
+            <p className="auth-input-hint">شماره از مرحله قبل تأیید شده است.</p>
+          </div>
 
-        <button type="submit" disabled={registerMutation.isLoading}>
-          {registerMutation.isLoading ? "در حال ارسال…" : "ثبت‌نام"}
-        </button>
+          <div className="auth-field">
+            <label className="auth-label" htmlFor="email">
+              ایمیل (اختیاری)
+            </label>
+            <input
+              id="email"
+              type="email"
+              className="auth-input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
 
-        {msg.text && <p className={`message ${msg.type}`}>{msg.text}</p>}
-      </form>
+          <div className="auth-field">
+            <label className="auth-label" htmlFor="pass">
+              رمز عبور (اختیاری)
+            </label>
+            <input
+              id="pass"
+              type="password"
+              className="auth-input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <p className="auth-input-hint">
+              با انتخاب رمز عبور، حساب خود را امن‌تر کنید.
+            </p>
+          </div>
+
+          <button
+            className="auth-btn auth-btn-primary"
+            type="submit"
+            disabled={registerMutation.isLoading}
+          >
+            {registerMutation.isLoading ? "در حال ارسال…" : "ثبت‌نام"}
+          </button>
+
+          {msg.text && (
+            <p
+              className={`auth-message ${
+                msg.type === "success" ? "success" : ""
+              }`}
+            >
+              {msg.text}
+            </p>
+          )}
+        </form>
+      </div>
     </div>
   );
 }

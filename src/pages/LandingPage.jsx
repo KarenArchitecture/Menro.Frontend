@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import usePageStyles from "../hooks/usePageStyles";
 
 import Hero from "../components/landing/Hero";
@@ -14,6 +14,18 @@ import BlogSection from "../components/landing/BlogSection";
 import GlassFooter from "../components/common/GlassFooter";
 import FooterFruitsScene from "../components/common/FooterFruitsScene";
 import MobileHeader from "../components/common/MobileHeader";
+
+// Adjust this path to wherever the api/ folder lives in the project
+// (mirrors the blogAxios.js / blogs.js pattern for the public blog API).
+import {
+  getLandingGeneral,
+  getLandingReasons,
+  getLandingFaqs,
+} from "../api/landing";
+
+// Fallback used until getLandingGeneral() resolves, or if it fails —
+// matches the previously hardcoded BurgerPanelSection title.
+const DEFAULT_BURGER_TITLE = "با منرو تو چشم باش";
 
 export default function LandingPage() {
   const leftIcons = [
@@ -49,6 +61,48 @@ export default function LandingPage() {
   // ✅ NEW: usePageStyles now returns "ready"
   const stylesReady = usePageStyles("/styles-landing.css");
 
+  // Landing content from the public API. `general` stays `null` until
+  // loaded; `generalStatus` tells Hero specifically when the /general fetch
+  // has settled (success or failure) so it can pick its final image exactly
+  // once instead of flashing the fallback first.
+  const [general, setGeneral] = useState(null);
+  const [generalStatus, setGeneralStatus] = useState("loading"); // "loading" | "loaded" | "error"
+  const [reasons, setReasons] = useState(null);
+  const [faqs, setFaqs] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadLandingContent() {
+      try {
+        const [generalData, reasonsData, faqsData] = await Promise.all([
+          getLandingGeneral(),
+          getLandingReasons(),
+          getLandingFaqs(),
+        ]);
+
+        if (cancelled) return;
+
+        setGeneral(generalData);
+        setGeneralStatus("loaded");
+        setReasons(reasonsData);
+        setFaqs(faqsData);
+      } catch (err) {
+        if (cancelled) return;
+
+        // صفحه همچنان با محتوای پیش‌فرض کامپوننت‌ها قابل نمایش است
+        console.error("خطا در دریافت اطلاعات صفحه لندینگ:", err);
+        setGeneralStatus("error");
+      }
+    }
+
+    loadLandingContent();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // ✅ After styles load, force a layout re-measure for scroll/pin animations
   useEffect(() => {
     if (!stylesReady) return;
@@ -74,8 +128,13 @@ export default function LandingPage() {
 
       <MobileHeader />
 
-      <Hero />
-      <WhyMenroSection />
+      <Hero
+        heroImageUrl={general?.heroImageUrl}
+        titleHighlight={general?.heroTitleHighlight}
+        titleText={general?.heroTitleText}
+        isLoading={generalStatus === "loading"}
+      />
+      <WhyMenroSection reasons={reasons} />
       <StatsSection />
 
       <InstallPhonesBanner
@@ -93,11 +152,11 @@ export default function LandingPage() {
       />
 
       <BurgerPanelSection
-        title="با منرو تو چشم باش"
+        title={general?.burgerPanelTitle ?? DEFAULT_BURGER_TITLE}
         burgerSrc="/images/burger-landing.png"
       />
 
-      <FAQSection />
+      <FAQSection items={faqs ?? undefined} />
       <BlogSection />
 
       <section className="footer-bg">

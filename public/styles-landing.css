@@ -81,8 +81,26 @@ body {
   height: 100%;
   display: block;
   object-fit: cover;
-  object-position: 90% center;
+  object-position: center center;
   z-index: 0;
+}
+
+/* Shown only while getLandingGeneral() is in flight, so the real hero
+   image (or, on failure, the static fallback) is painted exactly once —
+   no flash of the fallback image swapping to the real one. */
+.hero__bg--skeleton {
+  background: linear-gradient(120deg, #12151b 0%, #1c212b 50%, #12151b 100%);
+  background-size: 200% 100%;
+  animation: hero-skeleton-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes hero-skeleton-pulse {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
 }
 
 /* اوورلی تیره */
@@ -236,10 +254,6 @@ body {
     min-height: 100svh;
   }
 
-  .hero__bg {
-    object-position: center center;
-  }
-
   .hero__overlay {
     min-height: 100svh;
     justify-content: flex-end;
@@ -296,10 +310,6 @@ body {
 }
 
 @media (max-width: 420px) {
-  .hero__bg {
-    object-position: 52% center;
-  }
-
   .hero__overlay {
     padding: 0 2rem;
   }

@@ -1,5 +1,11 @@
 // components/landing/FAQSection.jsx
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import gsap from "gsap";
 
 const DEFAULT_FAQ = [
@@ -23,12 +29,34 @@ const DEFAULT_FAQ = [
   { id: "q5", question: "سوال پنجم", answer: ["پاسخ به سوال پنجم."] },
 ];
 
+// getLandingFaqs() returns { id, question, answer, sortOrder }[] where
+// answer is a plain string. DEFAULT_FAQ uses an array of paragraphs instead,
+// so this normalizes either shape into an array of paragraph strings.
+function normalizeAnswer(answer) {
+  if (Array.isArray(answer)) return answer;
+  if (typeof answer === "string") {
+    return answer
+      .split(/\n\s*\n/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
 export default function FAQSection({
   items = DEFAULT_FAQ,
-  initialOpenId = DEFAULT_FAQ[0]?.id ?? null,
+  // was previously hardcoded to DEFAULT_FAQ[0]?.id regardless of `items`,
+  // so a dynamic first item never opened by default — now derived from
+  // whatever `items` is actually passed in.
+  initialOpenId = items[0]?.id ?? null,
   allQuestionsHref = "#",
   className = "",
 }) {
+  const normalizedItems = useMemo(
+    () => items.map((it) => ({ ...it, answer: normalizeAnswer(it.answer) })),
+    [items],
+  );
+
   const [openId, setOpenId] = useState(initialOpenId);
 
   const panelsRef = useRef({});
@@ -207,7 +235,7 @@ export default function FAQSection({
       </h2>
 
       <div className="faq__list">
-        {items.map((it) => {
+        {normalizedItems.map((it) => {
           const isOpen = openId === it.id;
           const panelId = `faq-panel-${it.id}`;
           const buttonId = `faq-button-${it.id}`;

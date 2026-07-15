@@ -8,7 +8,12 @@ import ArrowUpIcon from "../icons/ArrowUpIcon";
 import NextIcon from "../icons/NextIcon";
 import PrevIcon from "../icons/PrevIcon";
 
-/** Demo data (swap with API later) */
+/**
+ * Demo data - only used when this component is rendered without a `posts`
+ * prop at all (e.g. in isolation/storybook). In the real landing page,
+ * LandingPage.jsx fetches real posts via getBlogPosts() from api/blogs.js
+ * and passes them in as `posts` (raw BlogPostResponse[] shape).
+ */
 const DEFAULT_POSTS = [
   {
     id: "p1",
@@ -182,6 +187,27 @@ function BlogCursorFollower({ targetEl, offsetY = -5 }) {
   );
 }
 
+// Used when a post has no cover image yet.
+const BLOG_COVER_FALLBACK = "/images/blog-placeholder.png";
+
+/**
+ * Maps a raw BlogPostResponse (see BlogPostDtos.cs) coming from
+ * getBlogPosts() to the flat shape BlogCard expects.
+ *
+ * NOTE: BlogPostResponse has no slug field, so the read link is built from
+ * the post id (`/blog/{id}`). Adjust `hrefBase` if the real post route uses
+ * a slug instead.
+ */
+function mapPostToCard(post, hrefBase = "/blog") {
+  return {
+    id: post.id,
+    title: post.title,
+    href: `${hrefBase}/${post.id}`,
+    coverSrc: post.coverImageUrl || BLOG_COVER_FALLBACK,
+    readingMins: post.readingMinutes,
+  };
+}
+
 /** Card */
 function BlogCard({ post }) {
   const { title, href, coverSrc, readingMins } = post;
@@ -216,6 +242,36 @@ function BlogCard({ post }) {
   );
 }
 
+/**
+ * Placeholder shown in the rail while posts are being fetched. Uses inline
+ * styles on purpose - styles-landing.css wasn't provided, so this doesn't
+ * assume any `.blogs__card--skeleton` rule exists there. Feel free to move
+ * this into the stylesheet and simplify once it does.
+ */
+function BlogCardSkeleton() {
+  return (
+    <li className="blogs__card" role="listitem" aria-hidden="true">
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          borderRadius: "inherit",
+          background:
+            "linear-gradient(90deg, rgba(255,255,255,.06) 25%, rgba(255,255,255,.12) 37%, rgba(255,255,255,.06) 63%)",
+          backgroundSize: "400% 100%",
+          animation: "blogs-skeleton-pulse 1.4s ease infinite",
+        }}
+      />
+      <style>{`
+        @keyframes blogs-skeleton-pulse {
+          0% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+      `}</style>
+    </li>
+  );
+}
+
 /** Wrap last occurrence of token with span */
 function HighlightedChunk({
   text,
@@ -236,11 +292,23 @@ function HighlightedChunk({
 }
 
 export default function BlogSection({
-  posts = DEFAULT_POSTS,
-  allHref = "#",
+  // undefined -> standalone/dev usage, falls back to demo posts.
+  // null      -> real page is still fetching from getBlogPosts().
+  // []        -> fetch succeeded but there are no published posts yet.
+  // [...]     -> real posts, mapped from raw BlogPostResponse[] below.
+  posts,
+  hrefBase = "/blog",
+  allHref = "/blog",
   sectionTitle = "بلاگ‌ها منرو",
   highlightWord = "منرو",
 }) {
+  const isDevFallback = posts === undefined;
+  const isLoading = posts === null;
+  const rawPosts = isDevFallback ? DEFAULT_POSTS : posts || [];
+  const cards = isDevFallback
+    ? rawPosts // already in the {id, title, href, coverSrc, readingMins} shape
+    : rawPosts.map((p) => mapPostToCard(p, hrefBase));
+
   const railRef = useRef(null);
   const sectionRef = useRef(null);
 
@@ -308,6 +376,13 @@ export default function BlogSection({
       el.removeEventListener("load", onLoad, true);
     };
   }, []);
+
+  // Fetch succeeded but there's nothing published yet - nothing useful to
+  // show, so skip rendering the section entirely rather than showing an
+  // empty rail + marquee.
+  if (!isDevFallback && !isLoading && cards.length === 0) {
+    return null;
+  }
 
   return (
     <section
@@ -391,9 +466,11 @@ export default function BlogSection({
             }
           }}
         >
-          {posts.map((p) => (
-            <BlogCard key={p.id} post={p} />
-          ))}
+          {isLoading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <BlogCardSkeleton key={`skeleton-${i}`} />
+              ))
+            : cards.map((p) => <BlogCard key={p.id} post={p} />)}
         </ul>
 
         <div className="blogs__controls">

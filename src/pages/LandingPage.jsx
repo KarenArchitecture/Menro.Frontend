@@ -22,6 +22,7 @@ import {
   getLandingReasons,
   getLandingFaqs,
 } from "../api/landing";
+import { getBlogPosts } from "../api/blogs";
 
 // Fallback used until getLandingGeneral() resolves, or if it fails —
 // matches the previously hardcoded BurgerPanelSection title.
@@ -69,17 +70,23 @@ export default function LandingPage() {
   const [generalStatus, setGeneralStatus] = useState("loading"); // "loading" | "loaded" | "error"
   const [reasons, setReasons] = useState(null);
   const [faqs, setFaqs] = useState(null);
+  // null while loading (BlogSection shows skeleton cards), [] once loaded
+  // with nothing published, [...] once loaded with real posts.
+  const [blogPosts, setBlogPosts] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadLandingContent() {
       try {
-        const [generalData, reasonsData, faqsData] = await Promise.all([
-          getLandingGeneral(),
-          getLandingReasons(),
-          getLandingFaqs(),
-        ]);
+        const [generalData, reasonsData, faqsData, blogPostsData] =
+          await Promise.all([
+            getLandingGeneral(),
+            getLandingReasons(),
+            getLandingFaqs(),
+            // Latest 8 published posts for the landing page's blog rail.
+            getBlogPosts({ sort: "Newest", page: 1, pageSize: 8 }),
+          ]);
 
         if (cancelled) return;
 
@@ -87,12 +94,16 @@ export default function LandingPage() {
         setGeneralStatus("loaded");
         setReasons(reasonsData);
         setFaqs(faqsData);
+        setBlogPosts(blogPostsData.items);
       } catch (err) {
         if (cancelled) return;
 
         // صفحه همچنان با محتوای پیش‌فرض کامپوننت‌ها قابل نمایش است
         console.error("خطا در دریافت اطلاعات صفحه لندینگ:", err);
         setGeneralStatus("error");
+        // Blog rail just hides itself (see BlogSection's empty-state check)
+        // rather than showing stale/demo posts on a real error.
+        setBlogPosts([]);
       }
     }
 
@@ -157,7 +168,7 @@ export default function LandingPage() {
       />
 
       <FAQSection items={faqs ?? undefined} />
-      <BlogSection />
+      <BlogSection posts={blogPosts} allHref="/blog" />
 
       <section className="footer-bg">
         <FooterFruitsScene />

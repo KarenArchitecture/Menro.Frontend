@@ -599,10 +599,6 @@ function ReasonsPane({ onSaved }) {
       closeReasonModal();
       onSaved("دلیل ذخیره شد");
     } catch (err) {
-      // Surface the backend's Persian message when there is one — this is
-      // how the "حداکثر ۴ دلیل" cap error (and any future validation errors
-      // added to LandingReasonService) reaches the admin as-is instead of a
-      // generic string.
       const serverMessage =
         err?.response?.data?.message ||
         err?.response?.data?.detail ||
@@ -676,6 +672,12 @@ function ReasonsPane({ onSaved }) {
   return (
     <div className="panel">
       <div className="panel-actions blog-mgmt__panel-actions--start">
+        {reasons.length >= REASONS_LIMIT && (
+          <span className="landing-mgmt__limit-hint">
+            حداکثر {toPersianDigits(REASONS_LIMIT)} دلیل قابل ثبت است. برای
+            افزودن مورد جدید، ابتدا یکی از موارد فعلی را حذف کنید.
+          </span>
+        )}
         <button
           className="btn btn-primary"
           onClick={openNew}
@@ -688,12 +690,6 @@ function ReasonsPane({ onSaved }) {
         >
           <i className="fas fa-plus" /> دلیل جدید
         </button>
-        {reasons.length >= REASONS_LIMIT && (
-          <span className="landing-mgmt__limit-hint">
-            حداکثر {toPersianDigits(REASONS_LIMIT)} دلیل قابل ثبت است. برای
-            افزودن مورد جدید، ابتدا یکی از موارد فعلی را حذف کنید.
-          </span>
-        )}
       </div>
 
       {/* Only 4 reason cards exist by design, so they're stacked vertically

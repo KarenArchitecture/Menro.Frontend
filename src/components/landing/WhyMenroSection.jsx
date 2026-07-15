@@ -42,11 +42,23 @@ const DEFAULT_ACCENT_COLOR = "#ff683c";
 // `import "@fortawesome/fontawesome-free/css/all.min.css";` once near your
 // app's entry point (e.g. main.jsx) — importing it per-component would load
 // it repeatedly.
+// Matches the visual size the fallback SVG icons render at inside the
+// 30x30 .info-icon box (see info-card CSS). Font Awesome glyphs scale with
+// font-size, not their container, so without this they render tiny
+// (~1em/16px) — this brings them back up to the same standard size.
+const REASON_ICON_FONT_SIZE = "1.8rem";
+
 function ReasonIcon({ iconClass, colorHex, FallbackComp }) {
   const color = colorHex || DEFAULT_ACCENT_COLOR;
 
   if (iconClass) {
-    return <i className={iconClass} style={{ color }} aria-hidden="true" />;
+    return (
+      <i
+        className={iconClass}
+        style={{ color, fontSize: REASON_ICON_FONT_SIZE, lineHeight: 1 }}
+        aria-hidden="true"
+      />
+    );
   }
 
   // Fallback to the original bundled SVG icon when the API doesn't provide

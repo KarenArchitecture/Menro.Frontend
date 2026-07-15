@@ -1,18 +1,28 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+  getLandingGeneral,
+  updateLandingGeneral,
+  uploadLandingHeroImage,
+  extractFileNameFromUrl,
+  getLandingReasons,
+  createLandingReason,
+  updateLandingReason,
+  deleteLandingReason,
+  moveLandingReason,
+  getLandingFaqs,
+  createLandingFaq,
+  updateLandingFaq,
+  deleteLandingFaq,
+  moveLandingFaq,
+} from "../../api/AdminLanding";
 
 /* ======================================================================
  * LandingManagementSection
  * ----------------------------------------------------------------------
- * Design-only panel for managing the dynamic parts of the public landing
- * page. There is no backend yet, so every pane below works purely on
- * local React state (a "draft" that lives only in the browser tab).
- *
- * When the API is ready, each pane is built to be dropped in exactly like
- * BlogManagementSection.jsx's panes: replace the local seed arrays with a
- * `getLanding...` call in a useEffect, and replace `save()` /
- * `remove()` / `move()` with the matching `create/update/delete/move`
- * calls, following the same mapFromApi / mapToApi convention used in
- * adminBlogs.js.
+ * Admin panel for managing the dynamic parts of the public landing page.
+ * Wired up to AdminLandingController.cs via src/api/AdminLanding.js,
+ * following the same fetch-on-mount / create-update-delete-move pattern
+ * as BlogManagementSection.jsx + adminBlogs.js.
  *
  * Sections intentionally left OUT of this panel (per product decision):
  *   - Hero stats (رستوران ثبت‌شده / محصول فعال / ...) -> computed live
@@ -35,10 +45,6 @@ function toPersianDigits(value) {
   return String(value).replace(/[0-9]/g, (d) => persianDigits[Number(d)]);
 }
 
-function makeId(prefix) {
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
 export default function LandingManagementSection() {
   const [activeSubTab, setActiveSubTab] = useState("general");
   const [savedFlash, setSavedFlash] = useState("");
@@ -56,7 +62,7 @@ export default function LandingManagementSection() {
         {savedFlash && <span className="blog-mgmt__flash">{savedFlash}</span>}
       </div>
 
-      <div className="landing-mgmt__info-banner">
+      {/* <div className="landing-mgmt__info-banner">
         <i className="fas fa-circle-info" />
         <span>
           آمار بالای صفحه (تعداد رستوران‌ها، محصولات و ...) به‌صورت خودکار و
@@ -64,7 +70,7 @@ export default function LandingManagementSection() {
           همین‌جا مدیریت خواهند شد و بخش بلاگ مستقیماً از تب «مدیریت وبلاگ»
           خوانده می‌شود؛ به همین دلیل این سه بخش در این تب وجود ندارند.
         </span>
-      </div>
+      </div> */}
 
       <nav className="content-tab-nav">
         {SUB_TABS.map((tab) => (
@@ -109,40 +115,94 @@ const HERO_TITLE_MAX = 60;
 const SPOTLIGHT_TITLE_MAX = 60;
 
 function GeneralTextsPane({ onSaved }) {
-  // TODO(api): replace seed with `await getLandingGeneral()` in a useEffect,
-  // and `save()` with `await updateLandingGeneral(draft)`.
   const [draft, setDraft] = useState({
-    heroHighlight: "منرو",
-    heroTitle: "بهترین همیار رستوران تو",
-    spotlightTitle: "با منرو تو چشم باش",
+    heroHighlight: "",
+    heroTitle: "",
+    spotlightTitle: "",
   });
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
+  // { type: "success" | "error", message } — cleared automatically after 5s,
+  // rendered right next to the "ذخیره تغییرات" button.
+  const [saveStatus, setSaveStatus] = useState(null);
+  const saveStatusTimeoutRef = useRef(null);
 
-  // TODO(api): seed from `getLandingGeneral().heroImageUrl`. `heroImageFile`
-  // only exists locally so the actual multipart upload (whenever the
-  // backend endpoint exists) has the raw file to send; `heroImage` is just
-  // the data URL used for the two previews below.
-  const [heroImage, setHeroImage] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
+
+  const flashSaveStatus = (type, message) => {
+    window.clearTimeout(saveStatusTimeoutRef.current);
+    setSaveStatus({ type, message });
+    saveStatusTimeoutRef.current = window.setTimeout(
+      () => setSaveStatus(null),
+      5000,
+    );
+  };
+
+  useEffect(() => () => window.clearTimeout(saveStatusTimeoutRef.current), []);
+
+  // heroImageUrl: last known-good URL from the server. heroImageFile /
+  // heroImageDataUrl: a newly-picked file staged for upload (not sent until
+  // "ذخیره تغییرات" is pressed). heroImageRemoved: user explicitly cleared
+  // the image without picking a replacement.
+  const [heroImageUrl, setHeroImageUrl] = useState(null);
   const [heroImageFile, setHeroImageFile] = useState(null);
+  const [heroImageDataUrl, setHeroImageDataUrl] = useState(null);
+  const [heroImageRemoved, setHeroImageRemoved] = useState(false);
   const heroImageInputRef = useRef(null);
+
+  useEffect(() => {
+    let ignore = false;
+    setLoading(true);
+    setLoadError("");
+    getLandingGeneral()
+      .then((data) => {
+        if (ignore) return;
+        setDraft({
+          heroHighlight: data.heroHighlight || "",
+          heroTitle: data.heroTitle || "",
+          spotlightTitle: data.spotlightTitle || "",
+        });
+        setHeroImageUrl(data.heroImageUrl || null);
+        setHeroImageFile(null);
+        setHeroImageDataUrl(null);
+        setHeroImageRemoved(false);
+      })
+      .catch(() => {
+        if (!ignore)
+          setLoadError("خطا در دریافت اطلاعات. لطفاً دوباره تلاش کنید.");
+      })
+      .finally(() => !ignore && setLoading(false));
+    return () => {
+      ignore = true;
+    };
+  }, [reloadKey]);
+
+  const heroImagePreview = heroImageDataUrl
+    ? heroImageDataUrl
+    : heroImageRemoved
+      ? null
+      : heroImageUrl;
 
   const handleHeroImageSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setHeroImageFile(file);
+    setHeroImageRemoved(false);
     const reader = new FileReader();
-    reader.onload = () => setHeroImage(reader.result);
+    reader.onload = () => setHeroImageDataUrl(reader.result);
     reader.readAsDataURL(file);
   };
 
   const removeHeroImage = () => {
-    setHeroImage(null);
     setHeroImageFile(null);
+    setHeroImageDataUrl(null);
+    setHeroImageRemoved(true);
     if (heroImageInputRef.current) heroImageInputRef.current.value = "";
   };
 
-  const save = () => {
+  const save = async () => {
     const errs = {};
     if (!draft.heroHighlight.trim())
       errs.heroHighlight = "این فیلد الزامی است.";
@@ -155,12 +215,68 @@ function GeneralTextsPane({ onSaved }) {
     }
     setErrors({});
     setSaving(true);
-    // Simulated save — no backend yet.
-    window.setTimeout(() => {
-      setSaving(false);
+    try {
+      let heroImageFileName = heroImageRemoved
+        ? null
+        : extractFileNameFromUrl(heroImageUrl);
+
+      if (heroImageFile) {
+        const uploaded = await uploadLandingHeroImage(
+          heroImageFile,
+          extractFileNameFromUrl(heroImageUrl),
+        );
+        heroImageFileName = uploaded.fileName;
+      }
+
+      const result = await updateLandingGeneral({
+        heroHighlight: draft.heroHighlight.trim(),
+        heroTitle: draft.heroTitle.trim(),
+        spotlightTitle: draft.spotlightTitle.trim(),
+        heroImageFileName,
+      });
+
+      setDraft({
+        heroHighlight: result.heroHighlight,
+        heroTitle: result.heroTitle,
+        spotlightTitle: result.spotlightTitle,
+      });
+      setHeroImageUrl(result.heroImageUrl || null);
+      setHeroImageFile(null);
+      setHeroImageDataUrl(null);
+      setHeroImageRemoved(false);
+      if (heroImageInputRef.current) heroImageInputRef.current.value = "";
       onSaved("متن‌های عمومی ذخیره شد");
-    }, 300);
+      flashSaveStatus("success", "تغییرات با موفقیت ذخیره شد");
+    } catch {
+      flashSaveStatus("error", "ذخیره تغییرات با خطا مواجه شد.");
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="panel landing-mgmt__panel">
+        <div className="empty-hint">در حال بارگذاری...</div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="panel landing-mgmt__panel">
+        <div className="empty-hint">{loadError}</div>
+        <div className="panel-actions">
+          <button
+            className="btn btn-secondary"
+            onClick={() => setReloadKey((k) => k + 1)}
+          >
+            تلاش مجدد
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="panel landing-mgmt__panel">
@@ -185,10 +301,12 @@ function GeneralTextsPane({ onSaved }) {
           onClick={() => heroImageInputRef.current?.click()}
         >
           <i className="fas fa-cloud-arrow-up" />
-          <span>{heroImage ? "تغییر عکس لندینگ" : "آپلود عکس لندینگ"}</span>
+          <span>
+            {heroImagePreview ? "تغییر عکس لندینگ" : "آپلود عکس لندینگ"}
+          </span>
         </button>
 
-        {heroImage && (
+        {heroImagePreview && (
           <button
             type="button"
             className="landing-mgmt__hero-image-remove"
@@ -206,8 +324,11 @@ function GeneralTextsPane({ onSaved }) {
               نمای دسکتاپ
             </span>
             <div className="landing-mgmt__hero-image-frame">
-              {heroImage ? (
-                <img src={heroImage} alt="پیش‌نمایش عکس لندینگ در لپ‌تاپ" />
+              {heroImagePreview ? (
+                <img
+                  src={heroImagePreview}
+                  alt="پیش‌نمایش عکس لندینگ در لپ‌تاپ"
+                />
               ) : (
                 <span className="landing-mgmt__hero-image-placeholder">
                   <i className="fas fa-image" />
@@ -223,8 +344,11 @@ function GeneralTextsPane({ onSaved }) {
               نمای موبایل
             </span>
             <div className="landing-mgmt__hero-image-frame">
-              {heroImage ? (
-                <img src={heroImage} alt="پیش‌نمایش عکس لندینگ در موبایل" />
+              {heroImagePreview ? (
+                <img
+                  src={heroImagePreview}
+                  alt="پیش‌نمایش عکس لندینگ در موبایل"
+                />
               ) : (
                 <span className="landing-mgmt__hero-image-placeholder">
                   <i className="fas fa-image" />
@@ -317,6 +441,17 @@ function GeneralTextsPane({ onSaved }) {
       </div>
 
       <div className="panel-actions">
+        {saveStatus && (
+          <span
+            className={
+              saveStatus.type === "success"
+                ? "landing-mgmt__save-status landing-mgmt__save-status--success"
+                : "landing-mgmt__save-status landing-mgmt__save-status--error"
+            }
+          >
+            {saveStatus.message}
+          </span>
+        )}
         <button className="btn btn-primary" disabled={saving} onClick={save}>
           {saving ? "در حال ذخیره..." : "ذخیره تغییرات"}
         </button>
@@ -331,6 +466,9 @@ function GeneralTextsPane({ onSaved }) {
 
 const REASON_TITLE_MAX = 30;
 const REASON_DESC_MAX = 150;
+// Must match LandingReasonService.MaxReasonsCount on the backend — enforced
+// there too, this is just so the admin sees the limit before hitting save.
+const REASONS_LIMIT = 4;
 
 const REASON_COLOR_PRESETS = [
   "#7C3AED",
@@ -339,6 +477,40 @@ const REASON_COLOR_PRESETS = [
   "#3B82F6",
   "#EF4444",
   "#EAB308",
+];
+
+// A curated set of frequently-useful Font Awesome solid icons for the
+// "چرا منرو؟" cards, shown in the icon-picker modal so the admin can click
+// one instead of remembering/typing FA class names by hand. The text input
+// next to it still accepts any FA class directly for anything not listed
+// here.
+const REASON_ICON_OPTIONS = [
+  "fas fa-bolt",
+  "fas fa-star",
+  "fas fa-heart",
+  "fas fa-crown",
+  "fas fa-fire",
+  "fas fa-gem",
+  "fas fa-headphones-simple",
+  "fas fa-shield-halved",
+  "fas fa-thumbs-up",
+  "fas fa-utensils",
+  "fas fa-truck-fast",
+  "fas fa-clock",
+  "fas fa-wallet",
+  "fas fa-gift",
+  "fas fa-rocket",
+  "fas fa-lock",
+  "fas fa-mobile-screen-button",
+  "fas fa-comments",
+  "fas fa-chart-line",
+  "fas fa-handshake",
+  "fas fa-award",
+  "fas fa-leaf",
+  "fas fa-percent",
+  "fas fa-circle-check",
+  "fas fa-users",
+  "fas fa-robot",
 ];
 
 function emptyReason() {
@@ -351,61 +523,53 @@ function emptyReason() {
   };
 }
 
-function seedReasons() {
-  // TODO(api): replace with `await getLandingReasons()`.
-  return [
-    {
-      id: makeId("reason"),
-      icon: "fas fa-headphones-simple",
-      color: "#7C3AED",
-      title: "عنوان دلیل",
-      description:
-        "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.",
-    },
-    {
-      id: makeId("reason"),
-      icon: "fas fa-book-open",
-      color: "#F97316",
-      title: "عنوان دلیل",
-      description:
-        "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.",
-    },
-    {
-      id: makeId("reason"),
-      icon: "fas fa-heart",
-      color: "#EF4444",
-      title: "عنوان دلیل",
-      description:
-        "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.",
-    },
-    {
-      id: makeId("reason"),
-      icon: "fas fa-robot",
-      color: "#22C55E",
-      title: "عنوان دلیل",
-      description:
-        "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.",
-    },
-  ];
-}
-
 function ReasonsPane({ onSaved }) {
-  const [reasons, setReasons] = useState(seedReasons);
+  const [reasons, setReasons] = useState([]);
   const [modalReason, setModalReason] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
+  const [movingId, setMovingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+  const [iconPickerOpen, setIconPickerOpen] = useState(false);
+
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    let ignore = false;
+    setLoading(true);
+    setLoadError("");
+    getLandingReasons()
+      .then((data) => !ignore && setReasons(data))
+      .catch(() => {
+        if (!ignore)
+          setLoadError("خطا در دریافت دلایل. لطفاً دوباره تلاش کنید.");
+      })
+      .finally(() => !ignore && setLoading(false));
+    return () => {
+      ignore = true;
+    };
+  }, [reloadKey]);
 
   const openNew = () => {
+    if (reasons.length >= REASONS_LIMIT) return;
     setErrors({});
+    setIconPickerOpen(false);
     setModalReason(emptyReason());
   };
   const openEdit = (reason) => {
     setErrors({});
+    setIconPickerOpen(false);
     setModalReason({ ...reason });
   };
+  const closeReasonModal = () => {
+    setModalReason(null);
+    setIconPickerOpen(false);
+  };
 
-  const save = () => {
+  const save = async () => {
     const errs = {};
     const title = modalReason.title.trim();
     const description = modalReason.description.trim();
@@ -421,44 +585,115 @@ function ReasonsPane({ onSaved }) {
     }
 
     setSaving(true);
-    // TODO(api): createLandingReason / updateLandingReason.
-    window.setTimeout(() => {
-      setReasons((prev) => {
-        if (modalReason.id) {
-          return prev.map((r) => (r.id === modalReason.id ? modalReason : r));
-        }
-        return [...prev, { ...modalReason, id: makeId("reason") }];
-      });
-      setSaving(false);
-      setModalReason(null);
+    try {
+      const payload = { ...modalReason, title, description };
+      if (modalReason.id) {
+        const updated = await updateLandingReason(modalReason.id, payload);
+        setReasons((prev) =>
+          prev.map((r) => (r.id === updated.id ? updated : r)),
+        );
+      } else {
+        const created = await createLandingReason(payload);
+        setReasons((prev) => [...prev, created]);
+      }
+      closeReasonModal();
       onSaved("دلیل ذخیره شد");
-    }, 250);
+    } catch (err) {
+      // Surface the backend's Persian message when there is one — this is
+      // how the "حداکثر ۴ دلیل" cap error (and any future validation errors
+      // added to LandingReasonService) reaches the admin as-is instead of a
+      // generic string.
+      const serverMessage =
+        err?.response?.data?.message ||
+        err?.response?.data?.detail ||
+        (typeof err?.response?.data === "string" ? err.response.data : null);
+      setErrors({
+        submit: serverMessage || "ذخیره با خطا مواجه شد. دوباره تلاش کنید.",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const remove = (id) => {
-    // TODO(api): deleteLandingReason(id).
-    setReasons((prev) => prev.filter((r) => r.id !== id));
-    setConfirmDeleteId(null);
-    onSaved("دلیل حذف شد");
+  const remove = async (id) => {
+    setDeletingId(id);
+    try {
+      await deleteLandingReason(id);
+      setReasons((prev) => prev.filter((r) => r.id !== id));
+      onSaved("دلیل حذف شد");
+    } catch {
+      // keep the item in the list on failure so nothing looks silently lost
+    } finally {
+      setDeletingId(null);
+      setConfirmDeleteId(null);
+    }
   };
 
-  const move = (index, dir) => {
+  const move = async (index, dir) => {
     const target = index + dir;
     if (target < 0 || target >= reasons.length) return;
-    // TODO(api): moveLandingReason(id, "up" | "down").
-    setReasons((prev) => {
-      const next = [...prev];
-      [next[index], next[target]] = [next[target], next[index]];
-      return next;
-    });
+    const item = reasons[index];
+    const direction = dir === -1 ? "up" : "down";
+    setMovingId(item.id);
+    try {
+      await moveLandingReason(item.id, direction);
+      setReasons((prev) => {
+        const next = [...prev];
+        [next[index], next[target]] = [next[target], next[index]];
+        return next;
+      });
+    } catch {
+      // ignore — order stays as-is on failure
+    } finally {
+      setMovingId(null);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="panel">
+        <div className="empty-hint">در حال بارگذاری...</div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="panel">
+        <div className="empty-hint">{loadError}</div>
+        <div className="panel-actions">
+          <button
+            className="btn btn-secondary"
+            onClick={() => setReloadKey((k) => k + 1)}
+          >
+            تلاش مجدد
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="panel">
       <div className="panel-actions blog-mgmt__panel-actions--start">
-        <button className="btn btn-primary" onClick={openNew}>
+        <button
+          className="btn btn-primary"
+          onClick={openNew}
+          disabled={reasons.length >= REASONS_LIMIT}
+          title={
+            reasons.length >= REASONS_LIMIT
+              ? `حداکثر ${toPersianDigits(REASONS_LIMIT)} دلیل قابل ثبت است`
+              : undefined
+          }
+        >
           <i className="fas fa-plus" /> دلیل جدید
         </button>
+        {reasons.length >= REASONS_LIMIT && (
+          <span className="landing-mgmt__limit-hint">
+            حداکثر {toPersianDigits(REASONS_LIMIT)} دلیل قابل ثبت است. برای
+            افزودن مورد جدید، ابتدا یکی از موارد فعلی را حذف کنید.
+          </span>
+        )}
       </div>
 
       {/* Only 4 reason cards exist by design, so they're stacked vertically
@@ -485,7 +720,7 @@ function ReasonsPane({ onSaved }) {
             <div className="actions">
               <button
                 className="mh-reorder-btn btn-icon"
-                disabled={index === 0}
+                disabled={index === 0 || movingId === reason.id}
                 onClick={() => move(index, -1)}
                 title="بالا"
               >
@@ -493,7 +728,9 @@ function ReasonsPane({ onSaved }) {
               </button>
               <button
                 className="btn-icon"
-                disabled={index === reasons.length - 1}
+                disabled={
+                  index === reasons.length - 1 || movingId === reason.id
+                }
                 onClick={() => move(index, 1)}
                 title="پایین"
               >
@@ -501,6 +738,7 @@ function ReasonsPane({ onSaved }) {
               </button>
               <button
                 className="btn-icon"
+                disabled={deletingId === reason.id}
                 onClick={() => openEdit(reason)}
                 title="ویرایش"
               >
@@ -508,6 +746,7 @@ function ReasonsPane({ onSaved }) {
               </button>
               <button
                 className="btn-icon btn-danger"
+                disabled={deletingId === reason.id}
                 onClick={() => setConfirmDeleteId(reason.id)}
                 title="حذف"
               >
@@ -524,12 +763,12 @@ function ReasonsPane({ onSaved }) {
       {modalReason && (
         <div
           className="modal-backdrop"
-          onClick={() => !saving && setModalReason(null)}
+          onClick={() => !saving && closeReasonModal()}
         >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h4>{modalReason.id ? "ویرایش دلیل" : "دلیل جدید"}</h4>
-              <button className="btn-icon" onClick={() => setModalReason(null)}>
+              <button className="btn-icon" onClick={closeReasonModal}>
                 <i className="fas fa-times" />
               </button>
             </div>
@@ -596,9 +835,18 @@ function ReasonsPane({ onSaved }) {
                       setModalReason({ ...modalReason, icon: e.target.value })
                     }
                   />
+                  <button
+                    type="button"
+                    className="btn btn-secondary landing-mgmt__icon-pick-btn"
+                    onClick={() => setIconPickerOpen(true)}
+                  >
+                    <i className="fas fa-icons" />
+                    انتخاب از لیست
+                  </button>
                 </div>
                 <p className="blog-mgmt__muted-text">
-                  مثال: fas fa-bolt، fas fa-heart، fas fa-headphones-simple
+                  کلاس آیکون را مستقیم بنویسید یا با دکمه «انتخاب از لیست» یکی
+                  از آیکون‌های پراستفاده را انتخاب کنید.
                 </p>
               </div>
 
@@ -637,10 +885,13 @@ function ReasonsPane({ onSaved }) {
               </div>
             </div>
             <div className="modal-footer">
+              {errors.submit && (
+                <span className="form-error">{errors.submit}</span>
+              )}
               <button
                 className="btn btn-secondary"
                 disabled={saving}
-                onClick={() => setModalReason(null)}
+                onClick={closeReasonModal}
               >
                 انصراف
               </button>
@@ -656,10 +907,50 @@ function ReasonsPane({ onSaved }) {
         </div>
       )}
 
+      {iconPickerOpen && modalReason && (
+        <div
+          className="modal-backdrop landing-mgmt__icon-picker-backdrop"
+          onClick={() => setIconPickerOpen(false)}
+        >
+          <div
+            className="modal landing-mgmt__icon-picker-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <h4>انتخاب آیکون</h4>
+              <button
+                className="btn-icon"
+                onClick={() => setIconPickerOpen(false)}
+              >
+                <i className="fas fa-times" />
+              </button>
+            </div>
+            <div className="landing-mgmt__icon-picker-grid">
+              {REASON_ICON_OPTIONS.map((iconClass) => (
+                <button
+                  key={iconClass}
+                  type="button"
+                  className={`landing-mgmt__icon-picker-item ${
+                    modalReason.icon === iconClass ? "active" : ""
+                  }`}
+                  title={iconClass}
+                  onClick={() => {
+                    setModalReason({ ...modalReason, icon: iconClass });
+                    setIconPickerOpen(false);
+                  }}
+                >
+                  <i className={iconClass} />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {confirmDeleteId !== null && (
         <div
           className="modal-backdrop"
-          onClick={() => setConfirmDeleteId(null)}
+          onClick={() => deletingId === null && setConfirmDeleteId(null)}
         >
           <div
             className="modal blog-mgmt__modal--confirm"
@@ -674,15 +965,17 @@ function ReasonsPane({ onSaved }) {
             <div className="modal-footer">
               <button
                 className="btn btn-secondary"
+                disabled={deletingId !== null}
                 onClick={() => setConfirmDeleteId(null)}
               >
                 انصراف
               </button>
               <button
                 className="btn btn-danger"
+                disabled={deletingId !== null}
                 onClick={() => remove(confirmDeleteId)}
               >
-                حذف شود
+                {deletingId !== null ? "در حال حذف..." : "حذف شود"}
               </button>
             </div>
           </div>
@@ -696,41 +989,42 @@ function ReasonsPane({ onSaved }) {
 /* 3) FAQ ("سوالات متداول")                                            */
 /* ================================================================== */
 
-const FAQ_QUESTION_MAX = 120;
-const FAQ_ANSWER_MAX = 1200;
+const FAQ_QUESTION_MAX = 150;
+const FAQ_ANSWER_MAX = 600;
 
 function emptyFaq() {
   return { id: null, question: "", answer: "" };
 }
 
-function seedFaqs() {
-  // TODO(api): replace with `await getLandingFaqs()`.
-  return [
-    {
-      id: makeId("faq"),
-      question: "سوال اول با متنی طولانی‌تر؟",
-      answer:
-        "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است. چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است.",
-    },
-    {
-      id: makeId("faq"),
-      question: "سوال دوم با متنی بسیار طولانی‌تر؟",
-      answer:
-        "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.",
-    },
-    { id: makeId("faq"), question: "سوال سوم", answer: "پاسخ سوال سوم." },
-    { id: makeId("faq"), question: "سوال چهارم", answer: "پاسخ سوال چهارم." },
-    { id: makeId("faq"), question: "سوال پنجم", answer: "پاسخ سوال پنجم." },
-  ];
-}
-
 function FaqPane({ onSaved }) {
-  const [faqs, setFaqs] = useState(seedFaqs);
+  const [faqs, setFaqs] = useState([]);
   const [modalFaq, setModalFaq] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
+  const [movingId, setMovingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
+
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    let ignore = false;
+    setLoading(true);
+    setLoadError("");
+    getLandingFaqs()
+      .then((data) => !ignore && setFaqs(data))
+      .catch(() => {
+        if (!ignore)
+          setLoadError("خطا در دریافت سوالات. لطفاً دوباره تلاش کنید.");
+      })
+      .finally(() => !ignore && setLoading(false));
+    return () => {
+      ignore = true;
+    };
+  }, [reloadKey]);
 
   const openNew = () => {
     setErrors({});
@@ -741,7 +1035,7 @@ function FaqPane({ onSaved }) {
     setModalFaq({ ...faq });
   };
 
-  const save = () => {
+  const save = async () => {
     const errs = {};
     const question = modalFaq.question.trim();
     const answer = modalFaq.answer.trim();
@@ -757,37 +1051,81 @@ function FaqPane({ onSaved }) {
     }
 
     setSaving(true);
-    // TODO(api): createLandingFaq / updateLandingFaq.
-    window.setTimeout(() => {
-      setFaqs((prev) => {
-        if (modalFaq.id) {
-          return prev.map((f) => (f.id === modalFaq.id ? modalFaq : f));
-        }
-        return [...prev, { ...modalFaq, id: makeId("faq") }];
-      });
-      setSaving(false);
+    try {
+      const payload = { question, answer };
+      if (modalFaq.id) {
+        const updated = await updateLandingFaq(modalFaq.id, payload);
+        setFaqs((prev) => prev.map((f) => (f.id === updated.id ? updated : f)));
+      } else {
+        const created = await createLandingFaq(payload);
+        setFaqs((prev) => [...prev, created]);
+      }
       setModalFaq(null);
       onSaved("سوال ذخیره شد");
-    }, 250);
+    } catch {
+      setErrors({ submit: "ذخیره با خطا مواجه شد. دوباره تلاش کنید." });
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const remove = (id) => {
-    // TODO(api): deleteLandingFaq(id).
-    setFaqs((prev) => prev.filter((f) => f.id !== id));
-    setConfirmDeleteId(null);
-    onSaved("سوال حذف شد");
+  const remove = async (id) => {
+    setDeletingId(id);
+    try {
+      await deleteLandingFaq(id);
+      setFaqs((prev) => prev.filter((f) => f.id !== id));
+      onSaved("سوال حذف شد");
+    } catch {
+      // keep the item in the list on failure so nothing looks silently lost
+    } finally {
+      setDeletingId(null);
+      setConfirmDeleteId(null);
+    }
   };
 
-  const move = (index, dir) => {
+  const move = async (index, dir) => {
     const target = index + dir;
     if (target < 0 || target >= faqs.length) return;
-    // TODO(api): moveLandingFaq(id, "up" | "down").
-    setFaqs((prev) => {
-      const next = [...prev];
-      [next[index], next[target]] = [next[target], next[index]];
-      return next;
-    });
+    const item = faqs[index];
+    const direction = dir === -1 ? "up" : "down";
+    setMovingId(item.id);
+    try {
+      await moveLandingFaq(item.id, direction);
+      setFaqs((prev) => {
+        const next = [...prev];
+        [next[index], next[target]] = [next[target], next[index]];
+        return next;
+      });
+    } catch {
+      // ignore — order stays as-is on failure
+    } finally {
+      setMovingId(null);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="panel">
+        <div className="empty-hint">در حال بارگذاری...</div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="panel">
+        <div className="empty-hint">{loadError}</div>
+        <div className="panel-actions">
+          <button
+            className="btn btn-secondary"
+            onClick={() => setReloadKey((k) => k + 1)}
+          >
+            تلاش مجدد
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="panel">
@@ -820,7 +1158,7 @@ function FaqPane({ onSaved }) {
               <div className="actions landing-mgmt__faq-actions">
                 <button
                   className="mh-reorder-btn btn-icon"
-                  disabled={index === 0}
+                  disabled={index === 0 || movingId === faq.id}
                   onClick={() => move(index, -1)}
                   title="بالا"
                 >
@@ -828,7 +1166,7 @@ function FaqPane({ onSaved }) {
                 </button>
                 <button
                   className="btn-icon"
-                  disabled={index === faqs.length - 1}
+                  disabled={index === faqs.length - 1 || movingId === faq.id}
                   onClick={() => move(index, 1)}
                   title="پایین"
                 >
@@ -836,6 +1174,7 @@ function FaqPane({ onSaved }) {
                 </button>
                 <button
                   className="btn-icon"
+                  disabled={deletingId === faq.id}
                   onClick={() => openEdit(faq)}
                   title="ویرایش"
                 >
@@ -843,6 +1182,7 @@ function FaqPane({ onSaved }) {
                 </button>
                 <button
                   className="btn-icon btn-danger"
+                  disabled={deletingId === faq.id}
                   onClick={() => setConfirmDeleteId(faq.id)}
                   title="حذف"
                 >
@@ -914,6 +1254,9 @@ function FaqPane({ onSaved }) {
               </div>
             </div>
             <div className="modal-footer">
+              {errors.submit && (
+                <span className="form-error">{errors.submit}</span>
+              )}
               <button
                 className="btn btn-secondary"
                 disabled={saving}
@@ -936,7 +1279,7 @@ function FaqPane({ onSaved }) {
       {confirmDeleteId !== null && (
         <div
           className="modal-backdrop"
-          onClick={() => setConfirmDeleteId(null)}
+          onClick={() => deletingId === null && setConfirmDeleteId(null)}
         >
           <div
             className="modal blog-mgmt__modal--confirm"
@@ -951,15 +1294,17 @@ function FaqPane({ onSaved }) {
             <div className="modal-footer">
               <button
                 className="btn btn-secondary"
+                disabled={deletingId !== null}
                 onClick={() => setConfirmDeleteId(null)}
               >
                 انصراف
               </button>
               <button
                 className="btn btn-danger"
+                disabled={deletingId !== null}
                 onClick={() => remove(confirmDeleteId)}
               >
-                حذف شود
+                {deletingId !== null ? "در حال حذف..." : "حذف شود"}
               </button>
             </div>
           </div>

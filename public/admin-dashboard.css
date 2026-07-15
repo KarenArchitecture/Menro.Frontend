@@ -182,6 +182,77 @@ ul {
   text-align: center;
 }
 
+/* ==========================================================================
+   AdminSidebar — collapsible (accordion) nav sections
+   Append these rules to admin-dashboard.css.
+   Uses the CSS grid-template-rows 0fr/1fr trick for a smooth height
+   animation without measuring content height in JS.
+   ========================================================================== */
+
+.admin-sidebar__group {
+  display: flex;
+  flex-direction: column;
+}
+
+/* .nav-section-title keeps whatever base look it already has (font-size,
+   color, letter-spacing, padding, text-transform) from your existing
+   sidebar styles — it was previously a plain <li>, now it's the accordion
+   trigger <button>, so we only reset the button-specific defaults here and
+   deliberately do NOT touch font/color, so nav-section-title's typography
+   passes through untouched (a `font: inherit` shorthand here would have
+   silently reset font-size back to the button's inherited size). */
+.admin-sidebar__group-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 10px 25px; /* same value as .nav-section-title's own padding —
+                          duplicated here defensively so it holds regardless
+                          of stylesheet load order between the two classes */
+  cursor: pointer;
+  text-align: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.admin-sidebar__group-toggle:hover {
+  color: var(--text-primary, #f4f4f5);
+}
+
+.admin-sidebar__group-toggle:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.admin-sidebar__group-chevron {
+  font-size: 11px;
+  color: var(--text-muted, #a1a1aa);
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+}
+
+.admin-sidebar__group-toggle.open .admin-sidebar__group-chevron {
+  transform: rotate(180deg);
+}
+
+.admin-sidebar__group-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.28s ease;
+}
+
+.admin-sidebar__group-collapse.open {
+  grid-template-rows: 1fr;
+}
+
+.admin-sidebar__group-collapse-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
 /* --- Main Content --- */
 .main-content {
   flex-grow: 1;
@@ -4648,11 +4719,11 @@ textarea {
 }
 
 /* ==========================================================================
-   LandingManagementSection additions
-   Append these rules to admin-dashboard.css.
-   Reuses .blog-mgmt / .panel / .modal / .custom-icon-row primitives that
-   already exist for BlogManagementSection — only landing-specific bits
-   (prefixed landing-mgmt__) are added here.
+  LandingManagementSection additions
+  Append these rules to admin-dashboard.css.
+  Reuses .blog-mgmt / .panel / .modal / .custom-icon-row primitives that
+  already exist for BlogManagementSection — only landing-specific bits
+  (prefixed landing-mgmt__) are added here.
    ========================================================================== */
 
 /* ----- Scrollable panel wrapper (فقط برای صفحه لندینگ) ----- */
@@ -4982,4 +5053,90 @@ textarea {
   resize: vertical;
   min-height: 140px;
   line-height: 1.9;
+}
+
+/* ----- Save status flash (next to "ذخیره تغییرات") ----- */
+
+.landing-mgmt__save-status {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.landing-mgmt__save-status--success {
+  color: #22c55e;
+}
+
+.landing-mgmt__save-status--error {
+  color: #ef4444;
+}
+
+/* ----- Reasons cap hint ----- */
+
+.landing-mgmt__limit-hint {
+  font-size: 12.5px;
+  color: var(--text-muted, #a1a1aa);
+}
+
+/* ----- Icon row: make room for the "انتخاب از لیست" button ----- */
+
+.landing-mgmt__icon-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.landing-mgmt__icon-pick-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ----- FA icon-picker modal ----- */
+
+.landing-mgmt__icon-picker-backdrop {
+  z-index: 60;
+}
+
+.landing-mgmt__icon-picker-modal {
+  max-width: 420px;
+}
+
+.landing-mgmt__icon-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  padding: 4px 2px 8px;
+}
+
+.landing-mgmt__icon-picker-item {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #16161c;
+  color: #f4f4f5;
+  font-size: 16px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    transform 0.05s ease;
+}
+
+.landing-mgmt__icon-picker-item:hover {
+  border-color: color-mix(in srgb, var(--accent, #f97316) 55%, transparent);
+  background: color-mix(in srgb, var(--accent, #f97316) 12%, #16161c);
+}
+
+.landing-mgmt__icon-picker-item:active {
+  transform: scale(0.95);
+}
+
+.landing-mgmt__icon-picker-item.active {
+  border-color: var(--accent, #f97316);
+  background: color-mix(in srgb, var(--accent, #f97316) 20%, #16161c);
+  color: var(--accent, #f97316);
 }

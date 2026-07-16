@@ -30,6 +30,11 @@ const NAV_GROUPS = [
         icon: "fas fa-tags",
       },
       { key: "comments", label: "مدیریت نظرات", icon: "fas fa-comments" },
+      {
+        key: "combos",
+        label: "ترکیب‌های پیشنهادی",
+        icon: "fas fa-layer-group",
+      },
     ],
   },
   {

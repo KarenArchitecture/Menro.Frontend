@@ -40,7 +40,7 @@ const MobileNav = () => {
       onAuthenticated: () => {
         navigate("/profile");
       },
-      returnUrl: "/home",
+      returnUrl: "/profile",
       type: "profile",
       icon: (
         <svg

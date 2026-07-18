@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import authAxios from "../api/authAxios";
-import { useAuth } from "../Context/AuthContext";
+import authAxios from "../../api/authAxios";
+import { useAuth } from "../../Context/AuthContext";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import "../assets/css/auth.css";
+import "../../assets/css/auth.css";
 /* ────────────────────────────────
 function OTP({ length = 5, onValue }) {
 ──────────────────────────────── */
@@ -75,7 +75,7 @@ function OTP({ length = 5, onValue }) {
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { loginWithUserId } = useAuth();
+  const { completeLogin } = useAuth();
 
   const params = new URLSearchParams(location.search);
   const returnUrl = params.get("returnUrl");
@@ -108,16 +108,15 @@ export default function LoginPage() {
     },
   });
 
-  /* shared handler for the /verify response, used by both OTP and
-     password login */
+  /* shared handler for the login response, 
+    used by both OTP and password login */
   const handleVerified = async (data) => {
-    // کاربر جدید است — باید اول ثبت‌نام کند.
-    // نکته: بک‌اند فیلد را با نام needsRegister برمی‌گرداند، نه isNewUser.
     if (data.needsRegister) {
       localStorage.setItem(
         "userPhone",
         JSON.stringify({
           value: phone,
+          registrationTicket: data.registrationTicket, // 👈 جدید
           expiresAt: Date.now() + 10 * 60 * 1000, // 10 دقیقه
         }),
       );
@@ -128,37 +127,25 @@ export default function LoginPage() {
       return;
     }
 
-    if (!data.verified) {
-      setMsg("اطلاعات وارد شده معتبر نیست.");
-      return;
-    }
-
     setMsg("");
 
-    // مرحله‌ی /verify فقط شماره را تأیید می‌کند، لاگین واقعی نمی‌کند.
-    // loginWithUserId (از AuthContext) خودش /login را صدا می‌زند،
-    // accessToken را در localStorage ذخیره می‌کند و کاربر را رفرش می‌کند.
     try {
-      await loginWithUserId(data.userId);
-
+      await completeLogin(data.accessToken);
       navigate(returnUrl?.startsWith("/") ? returnUrl : "/", {
         replace: true,
       });
     } catch (err) {
-      setMsg(err.response?.data?.message || "ورود به حساب با خطا مواجه شد.");
+      setMsg(err.message || "ورود به حساب با خطا مواجه شد.");
     }
   };
 
   /* 2) verify OTP + log in */
   const verifyOtp = useMutation({
     mutationFn: async ({ phoneNumber, code }) => {
-      const payload = {
+      const { data } = await authAxios.post("/login/otp", {
         phoneNumber,
-        method: "otp",
-        codeOrPassword: code,
-        operation: "login",
-      };
-      const { data } = await authAxios.post("/verify", payload);
+        code,
+      });
       return data;
     },
     onSuccess: handleVerified,
@@ -169,13 +156,10 @@ export default function LoginPage() {
   /* 2b) login with phone + password (no OTP step) */
   const passwordLogin = useMutation({
     mutationFn: async ({ phoneNumber, password }) => {
-      const payload = {
+      const { data } = await authAxios.post("/login/password", {
         phoneNumber,
-        method: "password",
-        codeOrPassword: password,
-        operation: "login",
-      };
-      const { data } = await authAxios.post("/verify", payload);
+        password,
+      });
       return data;
     },
     onSuccess: handleVerified,

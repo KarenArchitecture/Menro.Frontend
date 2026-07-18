@@ -1,6 +1,6 @@
 // src/pages/UnauthorizedPage.jsx
 import { Link, useLocation } from "react-router-dom";
-import "../assets/css/auth.css";
+import "../../assets/css/auth.css";
 
 export default function UnauthorizedPage() {
   const location = useLocation();

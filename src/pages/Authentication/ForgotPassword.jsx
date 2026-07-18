@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import authAxios from "../api/authAxios";
+import authAxios from "../../api/authAxios";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import "../assets/css/auth.css";
+import "../../assets/css/auth.css";
 /* ────────────────────────────────
 function OTP({ length = 5, onValue }) {
 ──────────────────────────────── */
@@ -128,31 +128,21 @@ export default function ForgotPassword() {
     },
   });
 
-  /* 2) verify OTP */
+  /* 2) verify OTP (forgot-password) */
   const verifyOtp = useMutation({
     mutationFn: async ({ phoneNumber, code }) => {
-      const payload = {
+      const { data } = await authAxios.post("/forgot-password/verify", {
         phoneNumber,
-        method: "otp",
-        codeOrPassword: code,
-      };
-      const { data } = await authAxios.post("/verify", payload);
+        code,
+      });
       return data;
     },
     onSuccess: (data) => {
-      if (data.needsRegister) {
-        setMsg("این شماره حساب کاربری ندارد.");
-        return;
-      }
-
-      if (data.verified) {
-        // Hang on to the reset token — step 3 can't succeed without it.
-        setResetToken(data.resetToken || "");
-        setMsg("");
-        setStep(3);
-      } else {
-        setMsg("کد وارد شده معتبر نیست.");
-      }
+      // اگه شماره حساب نداشته باشه، بک‌اند خودش 400 برمی‌گردونه و این
+      // onSuccess اصلاً اجرا نمی‌شه — دیگه نیازی به چک needsRegister نیست.
+      setResetToken(data.resetToken || "");
+      setMsg("");
+      setStep(3);
     },
     onError: (err) =>
       setMsg(err.response?.data?.message || "کد وارد شده صحیح نیست."),

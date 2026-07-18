@@ -1,34 +1,34 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 
-import LandingPage from "./pages/LandingPage";
-import HomePage from "./pages/HomePage";
-import RestaurantPage from "./pages/RestaurantPage";
-import RestaurantsBrowsePage from "./pages/RestaurantsBrowsePage";
-import RecentOrdersBrowsePage from "./pages/RecentOrdersBrowsePage";
-import PopularFoodsBrowsePage from "./pages/PopularFoodsBrowsePage";
-import MusicPage from "./pages/MusicPage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import ForgotPassword from "./pages/ForgotPassword";
-import ChangePasswordPage from "./pages/ChangePasswordPage";
-import RegisterRestaurantPage from "./pages/RegisterRestaurantPage";
-import CheckoutPage from "./pages/CheckoutPage";
-import MobileNav from "./components/common/MobileNav";
-import ProtectedRoute from "./components/common/ProtectedRoute";
-import UnauthorizedPage from "./pages/UnauthorizedPage";
-import NotFoundPage from "./pages/NotFoundPage";
-import ChangePhone from "./pages/ChangePhone";
+import AdminMusicPage from "./pages/AdminMusicPage";
 import AdminPage from "./pages/AdminPage";
+import BillsPage from "./pages/BillsPage";
 import BlogPage from "./pages/BlogPage";
 import BlogResultPage from "./pages/BlogResultPage";
-import Orders from "./pages/OrdersPage";
-import AdminMusicPage from "./pages/AdminMusicPage";
-// 1. Import the BillsPage
-import BillsPage from "./pages/BillsPage";
-import FavoritesPage from "./pages/FavoritesPage";
-import ProfilePage from "./pages/ProfilePage";
-import UserProfileForm from "./components/common/UserProfileForm";
+import ChangePasswordPage from "./pages/Authentication/ChangePasswordPage";
+import ChangePhone from "./pages/Authentication/ChangePhone";
+import CheckoutPage from "./pages/CheckoutPage";
 import CommentsPage from "./pages/CommentsPage";
+import FavoritesPage from "./pages/FavoritesPage";
+import ForgotPassword from "./pages/Authentication/ForgotPassword";
+import HomePage from "./pages/HomePage";
+import LandingPage from "./pages/LandingPage";
+import LoginPage from "./pages/Authentication/LoginPage";
+import MusicPage from "./pages/MusicPage";
+import NotFoundPage from "./pages/NotFoundPage";
+import Orders from "./pages/OrdersPage";
+import PopularFoodsBrowsePage from "./pages/PopularFoodsBrowsePage";
+import ProfilePage from "./pages/Authentication/ProfilePage";
+import RecentOrdersBrowsePage from "./pages/RecentOrdersBrowsePage";
+import RegisterPage from "./pages/Authentication/RegisterPage";
+import RegisterRestaurantPage from "./pages/RegisterRestaurantPage";
+import RestaurantPage from "./pages/RestaurantPage";
+import RestaurantsBrowsePage from "./pages/RestaurantsBrowsePage";
+import UnauthorizedPage from "./pages/Authentication/UnauthorizedPage";
+import UserProfileForm from "./components/common/UserProfileForm";
+
+import MobileNav from "./components/common/MobileNav";
+import ProtectedRoute from "./components/common/ProtectedRoute";
 import {
   DrawerStateProvider,
   useDrawerState,
@@ -87,44 +87,6 @@ export default function App() {
       <PageWrapper hideMobileNav={hideMobileNav} removePadding={removePadding}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/blog" element={<BlogPage />} />
-          <Route path="/blogresult" element={<BlogResultPage />} />
-          <Route path="/restaurants" element={<RestaurantsBrowsePage />} />
-          <Route path="/foods/popular" element={<PopularFoodsBrowsePage />} />
-          <Route
-            path="/foods/popular/:categoryId"
-            element={<PopularFoodsBrowsePage />}
-          />
-          <Route path="/restaurant/:slug" element={<RestaurantPage />} />
-          {/* <Route path="/music" element={<MusicPage />} /> */}
-          <Route path="/restaurant/:slug/music" element={<MusicPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/change-password" element={<ChangePasswordPage />} />
-          <Route path="/change-phone" element={<ChangePhone />} />
-          <Route
-            path="/register-restaurant"
-            element={<RegisterRestaurantPage />}
-          />
-          <Route
-            path="/admin/music"
-            element={
-              <ProtectedRoute roles={["admin", "owner"]}>
-                <AdminMusicPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/orders" element={<Orders />} />
-          {/* 4. Added the dynamic route for the BillsPage */}
-          <Route path="/orders/bill/:id" element={<BillsPage />} />
-          <Route path="/favorites" element={<FavoritesPage />} />
-          <Route path="/foods/:foodId/comments" element={<CommentsPage />} />
-          <Route path="/comments" element={<CommentsPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/unauthorized" element={<UnauthorizedPage />} />
-          <Route path="/not-found" element={<NotFoundPage />} />
           <Route
             path="/admin"
             element={
@@ -134,21 +96,59 @@ export default function App() {
             }
           />
           <Route
+            path="/admin/music"
+            element={
+              <ProtectedRoute roles={["admin", "owner"]}>
+                <AdminMusicPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blogresult" element={<BlogResultPage />} />
+          <Route path="/change-password" element={<ChangePasswordPage />} />
+          <Route path="/change-phone" element={<ChangePhone />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/comments" element={<CommentsPage />} />
+          <Route path="/favorites" element={<FavoritesPage />} />
+          <Route path="/foods/:foodId/comments" element={<CommentsPage />} />
+          <Route path="/foods/popular" element={<PopularFoodsBrowsePage />} />
+          <Route
+            path="/foods/popular/:categoryId"
+            element={<PopularFoodsBrowsePage />}
+          />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/not-found" element={<NotFoundPage />} />
+          <Route path="/orders" element={<Orders />} />
+          {/* 4. Added the dynamic route for the BillsPage */}
+          <Route path="/orders/bill/:id" element={<BillsPage />} />
+          <Route
             path="/profile"
             element={
-              // <ProtectedRoute roles={["user", "admin", "owner"]}>
-              <ProfilePage />
-              // </ProtectedRoute>
+              <ProtectedRoute roles={["user", "admin", "owner"]}>
+                <ProfilePage />
+              </ProtectedRoute>
             }
           />
           <Route
             path="/profile/edit"
             element={
-              // <ProtectedRoute roles={["user", "admin", "owner"]}>
-              <UserProfileForm />
-              // </ProtectedRoute>
+              <ProtectedRoute roles={["user", "admin", "owner"]}>
+                <UserProfileForm />
+              </ProtectedRoute>
             }
           />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route
+            path="/register-restaurant"
+            element={<RegisterRestaurantPage />}
+          />
+          <Route path="/restaurant/:slug" element={<RestaurantPage />} />
+          {/* <Route path="/music" element={<MusicPage />} /> */}
+          <Route path="/restaurant/:slug/music" element={<MusicPage />} />
+          <Route path="/restaurants" element={<RestaurantsBrowsePage />} />
+          <Route path="/unauthorized" element={<UnauthorizedPage />} />
           {/* 404 Catch-All Route */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

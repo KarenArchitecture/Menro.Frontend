@@ -35,8 +35,8 @@ export function AuthProvider({ children }) {
       const normalizedRoles = Array.isArray(roles)
         ? roles
         : roles
-        ? [roles]
-        : [];
+          ? [roles]
+          : [];
 
       if (!cancelled) {
         setUser({
@@ -160,23 +160,13 @@ export function AuthProvider({ children }) {
   /* ------------------------
    * LOGIN
    * ---------------------- */
-  const loginWithUserId = async (userId) => {
-    try {
-      const { data } = await authAxios.post("/login", { userId });
-      const { accessToken } = data;
+  const completeLogin = async (accessToken) => {
+    if (!accessToken) throw new Error("accessToken یافت نشد.");
 
-      // 1) ذخیره توکن
-      localStorage.setItem("accessToken", accessToken);
-      setToken(accessToken); // ✅ این باعث میشه avatar دوباره لود بشه
+    localStorage.setItem("accessToken", accessToken);
+    setToken(accessToken);
 
-      // 2) لود اطلاعات کاربر
-      await refreshUser();
-
-      return true;
-    } catch (err) {
-      console.error("❌ loginWithUserId failed:", err);
-      throw err;
-    }
+    await refreshUser();
   };
 
   /* ------------------------
@@ -225,7 +215,7 @@ export function AuthProvider({ children }) {
         refreshUser,
         avatarUrl,
         setToken,
-        loginWithUserId,
+        completeLogin,
         registerUser,
       }}
     >

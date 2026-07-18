@@ -10,6 +10,50 @@
   top: 16px;
   right: 16px; /* RTL friendly */
 }
+/* Page wrapper needs to be the positioning context for the logout button */
+.profile-page {
+  position: relative;
+}
+
+/* Logout button — top-left corner, flush to the edge (LTR position
+  regardless of RTL layout, since it sits opposite the "منو" button which
+   is top-right) */
+.profile-logout-btn {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 5;
+
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+
+  background: #1c1f26;
+  color: #fff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.profile-logout-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+@media (hover: hover) {
+  .profile-logout-btn:hover {
+    transform: scale(1.08);
+  }
+}
+
+.profile-logout-btn:active {
+  transform: scale(0.95);
+}
 
 /* Avatar wrapper */
 .profile-header__avatar-wrapper {

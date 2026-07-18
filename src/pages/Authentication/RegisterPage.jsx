@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { useAuth } from "../Context/AuthContext";
+import { useAuth } from "../../Context/AuthContext";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import "../assets/css/auth.css";
+import "../../assets/css/auth.css";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -10,11 +10,12 @@ export default function RegisterPage() {
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  const [registrationTicket, setRegistrationTicket] = useState(""); // 👈 جدید
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState({ text: "", type: "" });
 
-  /* pre-fill phone from localStorage */
+  /* pre-fill phone + ticket from localStorage */
   useEffect(() => {
     const raw = localStorage.getItem("userPhone");
     if (!raw) {
@@ -23,8 +24,12 @@ export default function RegisterPage() {
     }
     try {
       const saved = JSON.parse(raw);
-      if (saved.value && Date.now() < saved.expiresAt) {
+      const stillValid =
+        saved.value && saved.registrationTicket && Date.now() < saved.expiresAt;
+
+      if (stillValid) {
         setPhone(saved.value);
+        setRegistrationTicket(saved.registrationTicket);
       } else {
         localStorage.removeItem("userPhone");
         navigate("/login", { replace: true });
@@ -35,11 +40,8 @@ export default function RegisterPage() {
     }
   }, [navigate]);
 
-  /* register mutation */
   const location = useLocation();
-
   const params = new URLSearchParams(location.search);
-
   const returnUrl = params.get("returnUrl");
 
   const registerMutation = useMutation({
@@ -56,7 +58,6 @@ export default function RegisterPage() {
     },
   });
 
-  /* form submit */
   const handleSubmit = (e) => {
     e.preventDefault();
     setMsg({ text: "", type: "" });
@@ -66,11 +67,22 @@ export default function RegisterPage() {
       return;
     }
 
+    if (!registrationTicket) {
+      // نشست تأیید شماره منقضی شده؛ باید دوباره کد بگیره
+      setMsg({
+        text: "نشست ثبت‌نام منقضی شده؛ لطفاً دوباره شماره را تأیید کنید.",
+        type: "error",
+      });
+      navigate("/login", { replace: true });
+      return;
+    }
+
     registerMutation.mutate({
       fullName,
       phoneNumber: phone,
       email,
       password,
+      registrationTicket, // 👈 جدید — بدون این، بک‌اند رد می‌کنه
     });
   };
 
@@ -93,8 +105,6 @@ export default function RegisterPage() {
           <path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" />
         </svg>
       </Link>
-      {/* Reusable "back" button — copy this block (and .auth-back-btn in
-          auth.css) into any other auth page that needs it. */}
       <button
         type="button"
         className="auth-back-btn"
@@ -194,9 +204,7 @@ export default function RegisterPage() {
 
           {msg.text && (
             <p
-              className={`auth-message ${
-                msg.type === "success" ? "success" : ""
-              }`}
+              className={`auth-message ${msg.type === "success" ? "success" : ""}`}
             >
               {msg.text}
             </p>

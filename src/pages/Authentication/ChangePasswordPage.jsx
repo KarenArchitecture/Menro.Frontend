@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import authAxios from "../api/authAxios";
+import authAxios from "../../api/authAxios";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import "../assets/css/auth.css";
+import "../../assets/css/auth.css";
 
 export default function ChangePasswordPage() {
   const navigate = useNavigate();

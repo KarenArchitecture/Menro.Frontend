@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const adminDashboardAxios = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL}/adminpanel/dashboard`,
+  baseURL: `${import.meta.env.VITE_API_URL}/admin/dashboard`,
   withCredentials: true,
 });
 

@@ -1,12 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import authAxios from "../api/authAxios";
+import authAxios from "../../api/authAxios";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 
-import "../assets/css/auth.css";
-/* ────────────────────────────────
-function OTP({ length = 5, onValue }) {
-──────────────────────────────── */
+import "../../assets/css/auth.css";
 
 function OTP({ length = 5, onValue }) {
   const refs = useRef([]);
@@ -78,9 +75,7 @@ function StepProgress({ step, total = 2 }) {
       {Array.from({ length: total }).map((_, i) => (
         <span
           key={i}
-          className={`auth-progress__step ${
-            i + 1 === step ? "is-active" : i + 1 < step ? "is-done" : ""
-          }`}
+          className={`auth-progress__step ${i + 1 === step ? "is-active" : i + 1 < step ? "is-done" : ""}`}
         />
       ))}
     </div>
@@ -108,60 +103,21 @@ export default function ChangePhone() {
       setStep(2);
     },
     onError: (err) => {
-      // Rate-limit responses ("too soon since the last code") land here
-      // too — the backend is the single source of truth for cooldowns,
-      // so we just surface whatever message it sends back.
-      const msg =
+      setMsg(
         err.response?.data?.message ||
-        "خطا در ارسال کد، لطفاً دوباره تلاش کنید.";
-      setMsg(msg);
+          "خطا در ارسال کد، لطفاً دوباره تلاش کنید.",
+      );
     },
   });
 
-  /* 2) verify OTP */
-  const verifyOtp = useMutation({
-    mutationFn: async ({ phoneNumber, code }) => {
-      const payload = {
-        phoneNumber,
-        method: "otp",
-        codeOrPassword: code,
-        operation: "change-phone",
-      };
-
-      const { data } = await authAxios.post("/verify", payload);
-      return data;
-    },
-    onSuccess: (data) => {
-      if (data.needsRegister) {
-        setMsg("این شماره متعلق به شما نیست.");
-        return;
-      }
-
-      if (data.verified) {
-        setMsg("");
-
-        // ⭐ مرحله مهم: کال متد تغییر شماره
-        changePhone.mutate(newPhone);
-
-        // ❌ نیازی به navigate نیست
-        // این در changePhone.onSuccess انجام می‌شود
-      } else {
-        setMsg("کد وارد شده معتبر نیست.");
-      }
-    },
-    onError: (err) =>
-      setMsg(err.response?.data?.message || "کد وارد شده صحیح نیست."),
-  });
-
-  /* 3) change phone */
+  /* 2) verify + commit در یک درخواست */
   const changePhone = useMutation({
-    mutationFn: async (newPhone) => {
-      const payload = { newPhone }; // مطابق DTO بک‌اند
-      await authAxios.put("/change-phone", payload);
+    mutationFn: async ({ newPhone, code }) => {
+      const { data } = await authAxios.put("/change-phone", { newPhone, code });
+      return data;
     },
     onSuccess: () => {
       setMsg("شماره با موفقیت تغییر کرد ✔");
-
       setTimeout(() => {
         navigate(returnUrl?.startsWith("/") ? returnUrl : "/profile/edit");
       }, 800);
@@ -190,8 +146,6 @@ export default function ChangePhone() {
           <path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" />
         </svg>
       </Link>
-      {/* Reusable "back" button — copy this block (and .auth-back-btn in
-          auth.css) into any other auth page that needs it. */}
       <button
         type="button"
         className="auth-back-btn"
@@ -216,7 +170,6 @@ export default function ChangePhone() {
 
         <StepProgress step={step} total={2} />
 
-        {/* STEP 1: PHONE */}
         {step === 1 && (
           <>
             <div className="auth-copy">
@@ -267,7 +220,6 @@ export default function ChangePhone() {
           </>
         )}
 
-        {/* STEP 2: CODE */}
         {step === 2 && (
           <>
             <div className="auth-copy">
@@ -288,11 +240,7 @@ export default function ChangePhone() {
                   return;
                 }
                 setMsg("");
-                verifyOtp.mutate({
-                  phoneNumber: newPhone,
-                  code,
-                  operation: "change-phone",
-                });
+                changePhone.mutate({ newPhone, code });
               }}
             >
               <OTP length={5} onValue={setCode} />
@@ -300,22 +248,16 @@ export default function ChangePhone() {
               <button
                 className="auth-btn auth-btn-primary mt-16"
                 type="submit"
-                disabled={
-                  verifyOtp.isPending ||
-                  changePhone.isPending ||
-                  code.length !== 5
-                }
+                disabled={changePhone.isPending || code.length !== 5}
               >
-                {verifyOtp.isPending || changePhone.isPending
+                {changePhone.isPending
                   ? "در حال بررسی..."
-                  : "تأیید کد"}
+                  : "تأیید و تغییر شماره"}
               </button>
 
               {msg && (
                 <p
-                  className={`auth-message ${
-                    changePhone.isSuccess ? "success" : ""
-                  }`}
+                  className={`auth-message ${changePhone.isSuccess ? "success" : ""}`}
                 >
                   {msg}
                 </p>

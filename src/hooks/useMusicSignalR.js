@@ -2,6 +2,21 @@
 import { useEffect } from "react";
 import { getMusicConnection } from "../utils/signalr";
 
+// اطمینان از اینکه فقط یک‌بار start() صدا زده میشه و همه منتظر همون
+// promise واحد می‌مونن، حتی اگه چند کامپوننت همزمان از این connection استفاده کنن
+const ensureStarted = async (connection) => {
+  if (connection.state === "Connected") return;
+
+  if (!connection._musicStartPromise) {
+    connection._musicStartPromise = connection.start().catch((err) => {
+      connection._musicStartPromise = null; // اجازه‌ی تلاش مجدد بعدی
+      throw err;
+    });
+  }
+
+  await connection._musicStartPromise;
+};
+
 export function useMusicSignalR(
   restaurantId,
   {
@@ -23,30 +38,40 @@ export function useMusicSignalR(
     const handlePlaybackChanged = (data) => onPlaybackChanged?.(data);
     const handlePlaylistChanged = () => onPlaylistChanged?.();
 
+    let isCancelled = false;
+
     const start = async () => {
-      if (connection.state === "Disconnected") {
-        await connection.start();
+      try {
+        await ensureStarted(connection);
+
+        if (isCancelled) return; // کامپوننت قبل از اتمام اتصال unmount شده
+
+        connection.on("RequestCreated", handleCreated);
+        connection.on("RequestApproved", handleApproved);
+        connection.on("RequestRejected", handleRejected);
+        connection.on("PlaybackChanged", handlePlaybackChanged);
+        connection.on("PlaylistChanged", handlePlaylistChanged);
+
+        await connection.invoke("JoinRestaurant", restaurantId);
+      } catch (err) {
+        console.error("SignalR music connection failed:", err);
       }
-
-      connection.on("RequestCreated", handleCreated);
-      connection.on("RequestApproved", handleApproved);
-      connection.on("RequestRejected", handleRejected);
-      connection.on("PlaybackChanged", handlePlaybackChanged);
-      connection.on("PlaylistChanged", handlePlaylistChanged);
-
-      await connection.invoke("JoinRestaurant", restaurantId);
     };
 
     start();
 
     return () => {
+      isCancelled = true;
+
       connection.off("RequestCreated", handleCreated);
       connection.off("RequestApproved", handleApproved);
       connection.off("RequestRejected", handleRejected);
       connection.off("PlaybackChanged", handlePlaybackChanged);
       connection.off("PlaylistChanged", handlePlaylistChanged);
 
-      connection.invoke("LeaveRestaurant", restaurantId).catch(() => {});
+      if (connection.state === "Connected") {
+        connection.invoke("LeaveRestaurant", restaurantId).catch(() => {});
+      }
     };
   }, [
     restaurantId,

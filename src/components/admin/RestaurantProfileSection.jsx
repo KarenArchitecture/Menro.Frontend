@@ -5,6 +5,7 @@ import {
   updateRestaurantProfile,
 } from "../../api/ownerRestaurant";
 import restaurantAxios from "../../api/restaurantAxios";
+
 export default function RestaurantProfileSection() {
   // basic fields
   const [name, setName] = useState("");
@@ -19,6 +20,7 @@ export default function RestaurantProfileSection() {
   // categories list
   const [categories, setCategories] = useState([]);
   const getRestaurantCategories = () => restaurantAxios.get("/categories");
+
   // images + previews
   const [homeBannerFile, setHomeBannerFile] = useState(null);
   const [homeBannerPreview, setHomeBannerPreview] = useState(null);
@@ -29,9 +31,9 @@ export default function RestaurantProfileSection() {
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
 
-  // fake subscription info (backend can replace these)
-  const subscriptionType = "طلایی"; // e.g. طلایی / نقره‌ای / برنزی
-  const subscriptionDaysLeft = 23; // e.g. 23 days left
+  // subscription info (اکنون واقعاً state، نه مقدار ثابت)
+  const [subscriptionType, setSubscriptionType] = useState("نامشخص");
+  const [subscriptionDaysLeft, setSubscriptionDaysLeft] = useState(0);
 
   // --------------------------------------------
   // Load categories + restaurant profile together
@@ -57,16 +59,14 @@ export default function RestaurantProfileSection() {
         setOpenTime(d.openTime);
         setCloseTime(d.closeTime);
 
-        // images
+        // images (بک‌اند حالا URL کامل برمی‌گردونه)
         if (d.bannerImageUrl) setHomeBannerPreview(d.bannerImageUrl);
-
         if (d.shopBannerImageUrl) setShopBannerPreview(d.shopBannerImageUrl);
-
         if (d.logoImageUrl) setLogoPreview(d.logoImageUrl);
 
         // subscription
         setSubscriptionType(d.subscriptionType || "نامشخص");
-        setSubscriptionDaysLeft(d.subscriptionDaysLeft);
+        setSubscriptionDaysLeft(d.subscriptionDaysLeft ?? 0);
       } catch (err) {
         console.error("Failed to load profile or categories", err);
       }
@@ -146,7 +146,6 @@ export default function RestaurantProfileSection() {
       >
         {/* Restaurant basic info */}
         <div className="form-grid">
-          {/* Name */}
           <div className="input-group">
             <label htmlFor="restaurant-name">نام رستوران</label>
             <input
@@ -159,19 +158,16 @@ export default function RestaurantProfileSection() {
             />
           </div>
 
-          {/* Type */}
           <div className="input-group">
             <label htmlFor="restaurant-type">نوع رستوران</label>
-
             <select
               id="restaurant-type"
               name="restaurantType"
-              value={type} // category id as string
+              value={type}
               onChange={(e) => setType(e.target.value)}
               required
             >
               <option value="">انتخاب کنید...</option>
-
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}

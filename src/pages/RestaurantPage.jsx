@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import usePageStyles from "../hooks/usePageStyles";
 // import "../../public/shop.css";
 // import AppHeader from "../components/common/AppHeader";
 

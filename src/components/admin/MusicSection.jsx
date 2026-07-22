@@ -67,6 +67,14 @@ export default function MusicSection() {
   }, [selectedPlaylistId]);
   const [tracks, setTracks] = useState([]);
 
+  const withAuthToken = (url) => {
+    if (!url) return url;
+    const token = localStorage.getItem("accessToken");
+    if (!token) return url;
+    const separator = url.includes("?") ? "&" : "?";
+    return `${url}${separator}access_token=${encodeURIComponent(token)}`;
+  };
+
   // for requests
   const [requestedTracks, setRequestedTracks] = useState([]);
   const [loadingRequests, setLoadingRequests] = useState(false);
@@ -191,8 +199,6 @@ export default function MusicSection() {
       console.log("🔄 music requests refreshed");
     },
     onPlaybackChanged: async (playerDto) => {
-      console.log("🎵 PlaybackChanged", playerDto);
-
       await handlePlaybackChanged(playerDto);
     },
   });
@@ -677,7 +683,7 @@ export default function MusicSection() {
 
       // پخش آهنگ جدید
       previewAudioRef.current.pause();
-      previewAudioRef.current.src = audioUrl;
+      previewAudioRef.current.src = withAuthToken(audioUrl);
 
       // check if other player is playing
       if (audioRef.current && !audioRef.current.paused) {
@@ -840,8 +846,6 @@ export default function MusicSection() {
       const audio = audioRef.current;
       if (!audio) return;
 
-      console.log("▶ PLAY TRACK:", playlistTrackId);
-
       const isSameTrack = playingPlaylistTrackIdRef.current === playlistTrackId;
 
       if (isSameTrack) {
@@ -878,7 +882,7 @@ export default function MusicSection() {
       // ⛔ جلوگیری از race
       await new Promise((r) => requestAnimationFrame(r));
 
-      audio.src = audioUrl;
+      audio.src = withAuthToken(audioUrl);
 
       const p = audio.play();
 
@@ -955,7 +959,7 @@ export default function MusicSection() {
     audioCacheRef.current[track.musicTrackId] = url;
 
     audio.pause();
-    audio.src = url;
+    audio.src = withAuthToken(url);
     audio.load();
 
     await new Promise((r) => requestAnimationFrame(r));
@@ -1198,7 +1202,7 @@ export default function MusicSection() {
                         <div className="mh-row__info">
                           <div
                             className="mh-art"
-                            onClick={() => playArchiveTrack(r.id, r.audioUrl)}
+                            onClick={() => handlePreviewTrack(r.id, r.audioUrl)}
                           >
                             {r.artworkUrl ? (
                               <img src={r.artworkUrl} alt="" />

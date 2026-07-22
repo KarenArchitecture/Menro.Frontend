@@ -95,21 +95,7 @@ export default function AdsBookingSection() {
     if (!imageFile) return alert("لطفاً تصویر تبلیغ را آپلود کنید.");
 
     try {
-      // 1) Upload Image
-      const fd = new FormData();
-      fd.append("file", imageFile);
-
-      const uploadRes = await adminRestaurantAdAxios.post(
-        "/upload-ad-image",
-        fd,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        },
-      );
-
-      const fileName = uploadRes.data;
-
-      // 2) Placement + Billing (NEW LOGIC)
+      // Placement + Billing — moved up so it's available for the upload call too
       const placementType = adType === "slider" ? 1 : 2;
 
       const billingType =
@@ -121,24 +107,30 @@ export default function AdsBookingSection() {
 
       const purchasedUnits = bookingMethod === "by_click" ? clicks : days;
 
-      // 3) Create DTO
+      // 1) Upload Image
+      const fd = new FormData();
+      fd.append("file", imageFile);
+      fd.append("placementType", placementType); // NEW
+
+      const uploadRes = await adminRestaurantAdAxios.post(
+        "/upload-ad-image",
+        fd,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
+
+      const fileName = uploadRes.data;
+
+      // 2) Create DTO
       const dto = {
         placementType,
         billingType,
         cost: totalCost,
         imageFileName: fileName,
-        //targetUrl: link,
         commercialText: advertisementText,
         purchasedUnits,
       };
-      console.log("DEBUG SUBMIT:", {
-        adType,
-        bookingMethod,
-        pricing,
-        days,
-        clicks,
-        totalCost,
-      });
 
       // 4) Submit Ad
       await adminRestaurantAdAxios.post("/addAd", dto);

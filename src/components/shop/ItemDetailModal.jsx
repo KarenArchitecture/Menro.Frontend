@@ -17,6 +17,9 @@ import ProtectedActionModal from "../common/ProtectedActionModal";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import CommentIcon from "../icons/CommentIcon";
+import { useQuery } from "@tanstack/react-query";
+import { getFoodCombos } from "../../api/combos";
+import ComboFoodsModal from "./ComboFoodsModal";
 
 
 /* Helper for consistent Persian digits */
@@ -66,7 +69,14 @@ const AddonScrollPicker = ({ value = 0, onChange, max = 99 }) => {
   );
 };
 
-function ItemDetailModal({ item, onClose }) {
+function ItemDetailModal({ item, onClose, onSelectComboFood }) {
+  const [combosModalOpen, setCombosModalOpen] = useState(false);
+
+  const { data: combos = [] } = useQuery({
+    queryKey: ["food-combos", item?.id],
+    queryFn: () => getFoodCombos(item.id),
+    enabled: !!item?.id,
+  });
   const cart = useCart();
   const navigate = useNavigate();
   const [isActive, setIsActive] = useState(false);
@@ -126,6 +136,11 @@ function ItemDetailModal({ item, onClose }) {
     });
   };
 
+    const handleSelectComboFood = (food) => {
+    setCombosModalOpen(false);
+    onSelectComboFood?.(food);
+  };
+
   const formatRating = (value) => {
     const num = Number(value);
     if (Number.isFinite(num) && num > 0) {
@@ -174,40 +189,6 @@ function ItemDetailModal({ item, onClose }) {
 
   /* 4) ADDONS SELECTION STATE (Now stores objects with qty) */
   const [selectedAddonsByVar, setSelectedAddonsByVar] = useState({});
-
-  useEffect(() => {
-    if (!item) return;
-
-    const init = {};
-
-    variations.forEach((v) => {
-      const key = getVariantKey(v.id);
-      const existing = cart.items.get(key);
-
-      init[v.id] = {};
-
-      if (existing?.addons?.length > 0) {
-        existing.addons.forEach((addon) => {
-          // Backward compatibility: check if addon is just an ID string or a proper object
-          if (typeof addon === "object") {
-            init[v.id][addon.id] = addon;
-          } else {
-            const addonDetail = v.addons?.find((a) => a.id === addon);
-            if (addonDetail) {
-              init[v.id][addon] = {
-                id: addonDetail.id,
-                name: addonDetail.name,
-                price: addonDetail.extraPrice,
-                qty: 1,
-              };
-            }
-          }
-        });
-      }
-    });
-
-    setSelectedAddonsByVar(init);
-  }, [item, variations, baseKey]);
 
   /* helpers */
   const fmt = (n) => (Number(n) || 0).toLocaleString("fa-IR");
@@ -517,7 +498,9 @@ function ItemDetailModal({ item, onClose }) {
               })}
             </div>
 
-            <RestaurantCombosButton />
+            {combos.length > 0 && (
+              <RestaurantCombosButton onClick={() => setCombosModalOpen(true)} />
+            )}
           </div>
         </div>
       </div>
@@ -529,6 +512,12 @@ function ItemDetailModal({ item, onClose }) {
         title={modalProps.title}
         description={modalProps.description}
 
+      />
+      <ComboFoodsModal
+        open={combosModalOpen}
+        combos={combos}
+        onClose={() => setCombosModalOpen(false)}
+        onSelectFood={handleSelectComboFood}
       />
     </>
   );

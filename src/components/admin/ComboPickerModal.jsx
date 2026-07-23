@@ -1,21 +1,37 @@
 // src/components/admin/ComboPickerModal.jsx
 import React, { useMemo, useState } from "react";
 import resolveFileUrl from "../../utils/resolveFileUrl";
+import { groupFoodsByCategory } from "../../utils/groupFoodsByCategory";
 
 export default function ComboPickerModal({
     open,
-    candidateFoods, // all foods NOT already combos and not the selected food itself
+    candidateFoods,
     onClose,
-    onConfirm, // (selectedIds: number[]) => void
+    onConfirm,
     }) {
     const [query, setQuery] = useState("");
     const [selectedIds, setSelectedIds] = useState(new Set());
+    const [openCats, setOpenCats] = useState(new Set()); // empty = everything closed by default
+
+    const grouped = useMemo(() => {
+        const q = query.trim().toLowerCase();
+        const filtered = q
+        ? candidateFoods.filter((f) => f.name?.toLowerCase().includes(q))
+        : candidateFoods;
+        return groupFoodsByCategory(filtered);
+    }, [candidateFoods, query]);
+
+    const isOpen = (cat) => openCats.has(cat);
+    const toggleGroup = (cat) => {
+        setOpenCats((prev) => {
+        const next = new Set(prev);
+        if (next.has(cat)) next.delete(cat);
+        else next.add(cat);
+        return next;
+        });
+    };
 
     if (!open) return null;
-
-    const filtered = candidateFoods.filter((f) =>
-        f.name?.toLowerCase().includes(query.trim().toLowerCase()),
-    );
 
     const toggle = (id) => {
         setSelectedIds((prev) => {
@@ -36,6 +52,7 @@ export default function ComboPickerModal({
     const handleClose = () => {
         setSelectedIds(new Set());
         setQuery("");
+        setOpenCats(new Set());
         onClose?.();
     };
 
@@ -67,51 +84,56 @@ export default function ComboPickerModal({
                 />
             </div>
 
-            {filtered.length === 0 ? (
+            {grouped.length === 0 ? (
                 <div className="empty-hint">
                 {candidateFoods.length === 0
                     ? "همه غذاهای رستوران شما در حال حاضر به این غذا اضافه شده‌اند."
                     : "غذایی با این جستجو پیدا نشد."}
                 </div>
             ) : (
-                <div className="combos-mgmt__picker-grid">
-                {filtered.map((f) => {
-                    const isChecked = selectedIds.has(f.id);
-                    return (
+                <div className="combos-mgmt__picker-scroll">
+                {grouped.map((group) => (
+                    <div key={group.categoryName} className="combos-mgmt__cat-group">
                     <button
                         type="button"
-                        key={f.id}
-                        className={`combos-mgmt__picker-item ${
-                        isChecked ? "is-selected" : ""
-                        }`}
-                        onClick={() => toggle(f.id)}
+                        className={`combos-mgmt__cat-toggle ${isOpen(group.categoryName) ? "open" : ""}`}
+                        onClick={() => toggleGroup(group.categoryName)}
                     >
-                        <img
-                        src={resolveFileUrl(
-                            f.imageUrl,
-                            "/images/food/food-placeholder.png",
-                        )}
-                        alt={f.name}
-                        className="combos-mgmt__picker-thumb"
-                        />
-                        <div className="combos-mgmt__picker-info">
-                        <span className="combos-mgmt__picker-name">
-                            {f.name}
-                        </span>
-                        <span className="combos-mgmt__picker-price">
-                            {fmt(f.price)} تومان
-                        </span>
-                        </div>
-                        <span
-                        className={`combos-mgmt__picker-check ${
-                            isChecked ? "is-checked" : ""
-                        }`}
-                        >
-                        {isChecked && <i className="fas fa-check" />}
-                        </span>
+                        <span>{group.categoryName}</span>
+                        <span className="pill-count">{group.foods.length.toLocaleString("fa-IR")}</span>
+                        <i className="fas fa-chevron-down" />
                     </button>
-                    );
-                })}
+
+                    {isOpen(group.categoryName) && (
+                        <div className="combos-mgmt__picker-grid">
+                        {group.foods.map((f) => {
+                            const isChecked = selectedIds.has(f.id);
+                            return (
+                            <button
+                                type="button"
+                                key={f.id}
+                                className={`combos-mgmt__picker-item ${isChecked ? "is-selected" : ""}`}
+                                onClick={() => toggle(f.id)}
+                            >
+                                <img
+                                src={resolveFileUrl(f.imageUrl, "/images/food/food-placeholder.png")}
+                                alt={f.name}
+                                className="combos-mgmt__picker-thumb"
+                                />
+                                <div className="combos-mgmt__picker-info">
+                                <span className="combos-mgmt__picker-name">{f.name}</span>
+                                <span className="combos-mgmt__picker-price">{fmt(f.price)} تومان</span>
+                                </div>
+                                <span className={`combos-mgmt__picker-check ${isChecked ? "is-checked" : ""}`}>
+                                {isChecked && <i className="fas fa-check" />}
+                                </span>
+                            </button>
+                            );
+                        })}
+                        </div>
+                    )}
+                    </div>
+                ))}
                 </div>
             )}
             </div>
@@ -123,7 +145,7 @@ export default function ComboPickerModal({
                 disabled={selectedIds.size === 0}
                 onClick={handleConfirm}
             >
-                افزودن {selectedIds.size > 0 ? `(${selectedIds.size} مورد)` : ""}
+                افزودن {selectedIds.size > 0 ? `(${selectedIds.size.toLocaleString("fa-IR")} مورد)` : ""}
             </button>
             <button type="button" className="btn btn-secondary" onClick={handleClose}>
                 انصراف

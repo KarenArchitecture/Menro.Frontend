@@ -22,7 +22,7 @@ export default function MenuItem({ item, onOpen, layout = "horizontal" }) {
 
   const cart = useCart();
 
-  const { name, price, imageUrl, rating = 4.5, voters = 0 } = item || {};
+  const { name, price, imageUrl, rating = 4.5, voters = item?.votersCount ?? 0 } = item || {};
 
   const toPersianDigits = (value) => {
     if (value === null || value === undefined) return "";

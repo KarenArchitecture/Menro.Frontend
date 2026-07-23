@@ -22,6 +22,7 @@ import {
   CategoryBarSkeleton,
   ShopMenuSkeleton,
 } from "../components/shop/ShopSkeletons";
+import usePageStyles from "../hooks/usePageStyles";
 
 function RestaurantContent() {
   const navigate = useNavigate();
@@ -231,6 +232,7 @@ function RestaurantContent() {
             rating: selectedItem?.rating ?? modalData?.rating,
           }}
           onClose={handleCloseModal}
+          onSelectComboFood={handleSelectItem}
         />
       )}
 

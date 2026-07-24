@@ -1,4 +1,4 @@
-// src/components/admin/ProductModal.jsx
+// src/components/admin/FoodModal.jsx
 import { useState, useEffect, useRef } from "react";
 import adminFoodAxios from "../../api/adminFoodAxios";
 
@@ -16,14 +16,14 @@ function clamp(n, min, max) {
   return Math.max(min, Math.min(max, n));
 }
 
-export default function ProductModal({
+export default function FoodModal({
   isOpen,
   mode = "create",
-  productId,
+  foodId,
   onClose,
   onSaved,
 }) {
-  const title = mode === "edit" ? "ویرایش محصول" : "افزودن محصول جدید";
+  const title = mode === "edit" ? "ویرایش غذا" : "افزودن غذای جدید";
 
   // برای ریست کردن فرم بعد بسته شدن
   const [name, setName] = useState("");
@@ -40,7 +40,7 @@ export default function ProductModal({
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
 
-  // عکس محصول
+  // عکس غذا
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [existingImageName, setExistingImageName] = useState(null);
@@ -96,12 +96,12 @@ export default function ProductModal({
 
   // food details
   useEffect(() => {
-    if (!isOpen || mode !== "edit" || !productId) return;
+    if (!isOpen || mode !== "edit" || !foodId) return;
 
-    const fetchProduct = async () => {
+    const fetchFood = async () => {
       try {
-        const { data } = await adminFoodAxios.get(`/${productId}`);
-        console.log("product fetched:", data);
+        const { data } = await adminFoodAxios.get(`/${foodId}`);
+        console.log("food fetched:", data);
 
         setName(data.name || "");
         setIngredients(data.ingredients || "");
@@ -145,12 +145,12 @@ export default function ProductModal({
           setPrice(data.price?.toString() || "");
         }
       } catch (err) {
-        console.error("خطا در گرفتن اطلاعات محصول:", err);
+        console.error("خطا در گرفتن اطلاعات غذا:", err);
       }
     };
 
-    fetchProduct();
-  }, [isOpen, mode, productId]);
+    fetchFood();
+  }, [isOpen, mode, foodId]);
 
   // hasCategory check for food
   useEffect(() => {
@@ -163,7 +163,7 @@ export default function ProductModal({
     );
 
     if (!exists) {
-      console.warn("⚠ دسته‌بندی محصول حذف شده → foodCategoryId = ''");
+      console.warn("⚠ دسته‌بندی غذا حذف شده → foodCategoryId = ''");
       setFoodCategoryId("");
     }
   }, [isOpen, mode, loadingCategories, categories, foodCategoryId]);
@@ -393,7 +393,7 @@ export default function ProductModal({
       const basePriceValuePayload = !hasVariants ? toIntDigits(price) : null;
 
       const payload = {
-        id: productId,
+        id: foodId,
         name: name.trim(),
         ingredients: ingredients.trim() || null,
         foodCategoryId: Number(foodCategoryId || 0),
@@ -432,10 +432,10 @@ export default function ProductModal({
 
       if (mode === "create") {
         response = await adminFoodAxios.post("/add", payload);
-      } else if (mode === "edit" && productId) {
+      } else if (mode === "edit" && foodId) {
         response = await adminFoodAxios.put("/update", payload);
       } else {
-        throw new Error("Invalid mode or missing productId");
+        throw new Error("Invalid mode or missing foodId");
       }
 
       console.log("SUCCESS:", response?.data);
@@ -455,7 +455,7 @@ export default function ProductModal({
         console.error("NO RESPONSE:", err);
       }
 
-      alert("ذخیره محصول ناموفق بود");
+      alert("ذخیره غذا ناموفق بود");
     } finally {
       setIsSubmitting(false);
     }
@@ -463,10 +463,10 @@ export default function ProductModal({
 
   return (
     <div
-      id="product-modal"
+      id="food-modal"
       className="modal-overlay"
       style={{ display: isOpen ? "flex" : "none" }}
-      onClick={(e) => e.target.id === "product-modal" && onClose?.()}
+      onClick={(e) => e.target.id === "food-modal" && onClose?.()}
     >
       <div className="modal-content">
         <div className="modal-header">
@@ -478,16 +478,16 @@ export default function ProductModal({
 
         <div className="modal-body">
           <form
-            id="product-form"
+            id="food-form"
             className="two-column-form"
             onSubmit={onSubmit}
           >
             <div className="form-column">
               <div className="input-group">
-                <label htmlFor="product-name">نام محصول</label>
+                <label htmlFor="food-name">نام غذا</label>
                 <input
                   type="text"
-                  id="product-name"
+                  id="food-name"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -495,9 +495,9 @@ export default function ProductModal({
               </div>
 
               <div className="input-group">
-                <label htmlFor="product-description">توضیح مختصر محصول</label>
+                <label htmlFor="food-description">توضیح مختصر غذا</label>
                 <textarea
-                  id="product-description"
+                  id="food-description"
                   rows={4}
                   value={ingredients}
                   onChange={(e) => setIngredients(e.target.value)}
@@ -505,9 +505,9 @@ export default function ProductModal({
               </div>
 
               <div className="input-group">
-                <label htmlFor="product-category">دسته‌بندی</label>
+                <label htmlFor="food-category">دسته‌بندی</label>
                 <select
-                  id="product-category"
+                  id="food-category"
                   required
                   value={foodCategoryId}
                   onChange={(e) => setFoodCategoryId(e.target.value)}
@@ -534,8 +534,8 @@ export default function ProductModal({
               </div>
 
               <div className="input-group">
-                <label htmlFor="product-combinations">ترکیب‌ها (اختیاری)</label>
-                <select id="product-combinations" multiple>
+                <label htmlFor="food-combinations">ترکیب‌ها (اختیاری)</label>
+                <select id="food-combinations" multiple>
                   <option value="combo1">ترکیب ویژه ۱</option>
                   <option value="combo2">ترکیب اقتصادی</option>
                 </select>
@@ -546,18 +546,18 @@ export default function ProductModal({
             <div className="form-column">
               {/* image preview and input */}
               <div className="input-group">
-                <label>پیش‌نمایش تصویر محصول</label>
+                <label>پیش‌نمایش تصویر غذا</label>
 
-                <div className="product-image-preview">
+                <div className="food-image-preview">
                   {imagePreview ? (
                     <img
                       src={imagePreview}
                       alt="preview"
-                      className="product-image-preview__img"
+                      className="food-image-preview__img"
                     />
                   ) : (
-                    <span className="product-image-preview__placeholder">
-                      عکس محصول نمایش داده می‌شود
+                    <span className="food-image-preview__placeholder">
+                      عکس غذا نمایش داده می‌شود
                     </span>
                   )}
                 </div>
@@ -577,11 +577,11 @@ export default function ProductModal({
                 />
               </div>
 
-              <span className="input-alert">عکس محصول باید 1 * 1 باشد!</span>
+              <span className="input-alert">عکس غذا باید 1 * 1 باشد!</span>
 
               {/* Step 1: simple vs variants */}
               <div className="input-group">
-                <label>آیا محصول تنوع دارد؟</label>
+                <label>آیا غذا تنوع دارد؟</label>
                 <div className="radio-row">
                   <label className="radio-label">
                     <input
@@ -591,7 +591,7 @@ export default function ProductModal({
                       checked={!hasVariants}
                       onChange={() => onToggleHasVariants(false)}
                     />{" "}
-                    خیر، محصول ساده است
+                    خیر، غذا ساده است
                   </label>
 
                   <label className="radio-label">
@@ -615,12 +615,12 @@ export default function ProductModal({
               {!hasVariants && (
                 <>
                   <div className="input-group">
-                    <label htmlFor="product-price">
-                      قیمت پایه (برای محصول ساده)
+                    <label htmlFor="food-price">
+                      قیمت پایه (برای غذای ساده)
                     </label>
                     <input
                       type="text"
-                      id="product-price"
+                      id="food-price"
                       placeholder="مثال: ۱۵۰۰۰۰"
                       value={price}
                       onChange={(e) =>
@@ -637,7 +637,7 @@ export default function ProductModal({
                         checked={hasDiscount}
                         onChange={(e) => handleToggleDiscount(e.target.checked)}
                       />
-                      این محصول تخفیف دارد؟
+                      این غذا تخفیف دارد؟
                     </label>
 
                     {hasDiscount && (
@@ -714,12 +714,12 @@ export default function ProductModal({
               {/* variants */}
               {hasVariants && (
                 <div className="input-group">
-                  <label>انواع محصول (دارای تنوع)</label>
+                  <label>انواع غذا (دارای تنوع)</label>
 
-                  <div id="product-types-container">
+                  <div id="food-types-container">
                     {variants.map((v) => (
                       <div key={v.clientId} style={{ marginBottom: 10 }}>
-                        <div className="product-type-item">
+                        <div className="food-type-item">
                           <input
                             type="text"
                             placeholder="نام نوع (مثال: ویژه)"
@@ -845,7 +845,7 @@ export default function ProductModal({
                         checked={hasDiscount}
                         onChange={(e) => handleToggleDiscount(e.target.checked)}
                       />
-                      این محصول تخفیف دارد؟
+                      این غذا تخفیف دارد؟
                     </label>
 
                     {hasDiscount && (
@@ -910,8 +910,8 @@ export default function ProductModal({
         </div>
 
         <div className="modal-footer">
-          <button type="submit" form="product-form" className="btn btn-primary">
-            ذخیره محصول
+          <button type="submit" form="food-form" className="btn btn-primary">
+            ذخیره غذا
           </button>
 
           <button

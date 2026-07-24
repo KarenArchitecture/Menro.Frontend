@@ -23,7 +23,7 @@ const NAV_GROUPS = [
     key: "restaurant-mgmt",
     label: "مدیریت رستوران",
     items: [
-      { key: "products", label: "مدیریت محصولات", icon: "fas fa-utensils" },
+      { key: "menu", label: "مدیریت منو", icon: "fas fa-utensils" },
       {
         key: "categories",
         label: "دسته‌بندی‌های رستوران",

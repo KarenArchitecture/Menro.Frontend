@@ -517,7 +517,7 @@ table td {
   border-bottom: 1px solid var(--border-color);
 }
 .status-chip {
-  padding: 4px 10px;
+  padding: 4px 15px;
   border-radius: 12px;
   font-size: 0.8rem;
   font-weight: 700;
@@ -1012,6 +1012,12 @@ textarea {
     background 0.15s ease;
 }
 
+.food-mgmt__category-select option {
+  background-color: #1c1c1c;
+  color: var(--text-primary);
+  padding: 8px 12px;
+}
+
 .food-mgmt__category-select:hover {
   border-color: rgba(245, 158, 11, 0.5);
 }
@@ -1083,6 +1089,24 @@ textarea {
 }
 .food-mgmt__sort-icon--active {
   opacity: 1;
+}
+.food-mgmt__add-category-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  border: 1.5px dashed #f5a623;
+  border-radius: 10px;
+  background: rgba(245, 166, 35, 0.08);
+  color: #f5a623;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.food-mgmt__add-category-btn:hover {
+  background: rgba(245, 166, 35, 0.15);
 }
 .food-mgmt__thumb {
   width: 44px;
@@ -4614,16 +4638,16 @@ textarea {
   margin-bottom: 16px;
 }
 
-.blog-mgmt__posts-toolbar-group .btn {
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
 .blog-mgmt__posts-toolbar-group {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
   gap: 10px;
+}
+
+.blog-mgmt__posts-toolbar-group .btn {
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Search box: input + attached rounded-square icon button, styled as one unit */

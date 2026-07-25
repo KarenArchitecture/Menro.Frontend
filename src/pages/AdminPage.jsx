@@ -5,7 +5,7 @@ import AdminHeader from "../components/admin/AdminHeader";
 import AdminSidebar from "../components/admin/AdminSidebar";
 
 import DashboardSection from "../components/admin/DashboardSection";
-import FoodSection from "../components/admin/FoodsSection";
+import MenuManagementSection from "../components/admin/MenuManagementSection";
 import CategoriesSection from "../components/admin/CategoriesSection";
 import ThemeSection from "../components/admin/ThemeSection";
 import MusicSection from "../components/admin/MusicSection";
@@ -28,7 +28,6 @@ import ownerRestaurantAxios from "../api/ownerRestaurantAxios";
 import { useAuth } from "../context/AuthContext";
 import { useMusicSignalR } from "../hooks/useMusicSignalR";
 import { useModal } from "../components/common/GlobalModal";
-import FoodsSection from "../components/admin/FoodsSection";
 
 export default function AdminPage() {
   const cssReady = usePageStyles("/admin-dashboard.css");

@@ -1,6 +1,7 @@
 // src/components/admin/FoodModal.jsx
 import { useState, useEffect, useRef } from "react";
 import adminFoodAxios from "../../api/adminFoodAxios";
+import "../../assets/css/admin/foodModal.css";
 
 function uid() {
   if (typeof crypto !== "undefined" && crypto.randomUUID)
@@ -59,6 +60,9 @@ export default function FoodModal({
       addons: [],
     },
   ]);
+
+  // show extra column if has variant/discount
+  const showExtraColumn = hasVariants || hasDiscount;
 
   // load categories on open
   useEffect(() => {
@@ -281,6 +285,17 @@ export default function FoodModal({
     return Math.max(0, v);
   })();
 
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    setExistingImageName(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleAddCategoryClick = () => {
+    // TODO: بعداً مودال افزودن دسته‌بندی از اینجا باز می‌شود
+  };
+
   const handleToggleDiscount = (checked) => {
     setHasDiscount(checked);
     if (!checked) {
@@ -468,18 +483,20 @@ export default function FoodModal({
       style={{ display: isOpen ? "flex" : "none" }}
       onClick={(e) => e.target.id === "food-modal" && onClose?.()}
     >
-      <div className="modal-content">
+      <div
+        className={`modal-content ${showExtraColumn ? "modal-content--wide" : ""}`}
+      >
+        {" "}
         <div className="modal-header">
           <h3 id="modal-title">{title}</h3>
           <button className="btn btn-icon" onClick={onClose}>
             <i className="fas fa-times" />
           </button>
         </div>
-
         <div className="modal-body">
           <form
             id="food-form"
-            className="two-column-form"
+            className={`two-column-form ${showExtraColumn ? "two-column-form--three-col" : ""}`}
             onSubmit={onSubmit}
           >
             <div className="form-column">
@@ -506,40 +523,42 @@ export default function FoodModal({
 
               <div className="input-group">
                 <label htmlFor="food-category">دسته‌بندی</label>
-                <select
-                  id="food-category"
-                  required
-                  value={foodCategoryId}
-                  onChange={(e) => setFoodCategoryId(e.target.value)}
-                >
-                  {mode === "edit" &&
-                    foodCategoryId === "" &&
-                    !loadingCategories &&
-                    categories.length > 0 && (
-                      <option value="" disabled>
-                        دسته‌بندی پاک شده
-                      </option>
-                    )}
+                {!loadingCategories && categories.length === 0 ? (
+                  <button
+                    type="button"
+                    className="food-modal__add-category-btn"
+                    onClick={handleAddCategoryClick}
+                  >
+                    <i className="fas fa-plus" />
+                    افزودن دسته‌بندی
+                  </button>
+                ) : (
+                  <select
+                    id="food-category"
+                    required
+                    value={foodCategoryId}
+                    onChange={(e) => setFoodCategoryId(e.target.value)}
+                  >
+                    {mode === "edit" &&
+                      foodCategoryId === "" &&
+                      !loadingCategories &&
+                      categories.length > 0 && (
+                        <option value="" disabled>
+                          دسته‌بندی پاک شده
+                        </option>
+                      )}
 
-                  <option value="" disabled>
-                    انتخاب دسته‌بندی
-                  </option>
-
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
+                    <option value="" disabled>
+                      انتخاب دسته‌بندی
                     </option>
-                  ))}
-                </select>
-              </div>
 
-              <div className="input-group">
-                <label htmlFor="food-combinations">ترکیب‌ها (اختیاری)</label>
-                <select id="food-combinations" multiple>
-                  <option value="combo1">ترکیب ویژه ۱</option>
-                  <option value="combo2">ترکیب اقتصادی</option>
-                </select>
-                <small>برای انتخاب چند مورد، Ctrl/Cmd را نگه دارید.</small>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
             </div>
 
@@ -548,16 +567,17 @@ export default function FoodModal({
               <div className="input-group">
                 <label>پیش‌نمایش تصویر غذا</label>
 
-                <div className="food-image-preview">
+                <div className="food-modal__image-frame">
                   {imagePreview ? (
                     <img
                       src={imagePreview}
-                      alt="preview"
-                      className="food-image-preview__img"
+                      alt="پیش‌نمایش عکس غذا"
+                      className="food-modal__image-frame-img"
                     />
                   ) : (
-                    <span className="food-image-preview__placeholder">
-                      عکس غذا نمایش داده می‌شود
+                    <span className="food-modal__image-placeholder">
+                      <i className="fas fa-image" />
+                      عکسی انتخاب نشده
                     </span>
                   )}
                 </div>
@@ -566,8 +586,11 @@ export default function FoodModal({
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
+                  className="landing-mgmt__hero-image-input"
                   onChange={(e) => {
-                    const file = e.target.files[0];
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+
                     setImageFile(file);
 
                     const reader = new FileReader();
@@ -575,9 +598,29 @@ export default function FoodModal({
                     reader.readAsDataURL(file);
                   }}
                 />
-              </div>
 
-              <span className="input-alert">عکس غذا باید 1 * 1 باشد!</span>
+                <button
+                  type="button"
+                  className="landing-mgmt__hero-image-upload-btn"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <i className="fas fa-cloud-arrow-up" />
+                  <span>
+                    {imagePreview ? "تغییر عکس غذا" : "آپلود عکس غذا"}
+                  </span>
+                </button>
+
+                {imagePreview && (
+                  <button
+                    type="button"
+                    className="landing-mgmt__hero-image-remove"
+                    onClick={removeImage}
+                  >
+                    <i className="fas fa-trash" />
+                    <span>حذف عکس</span>
+                  </button>
+                )}
+              </div>
 
               {/* Step 1: simple vs variants */}
               <div className="input-group">
@@ -613,302 +656,232 @@ export default function FoodModal({
 
               {/* Base price only when simple */}
               {!hasVariants && (
-                <>
-                  <div className="input-group">
-                    <label htmlFor="food-price">
-                      قیمت پایه (برای غذای ساده)
-                    </label>
-                    <input
-                      type="text"
-                      id="food-price"
-                      placeholder="مثال: ۱۵۰۰۰۰"
-                      value={price}
-                      onChange={(e) =>
-                        setPrice(e.target.value.replace(/[^\d]/g, ""))
-                      }
-                    />
-                  </div>
-
-                  {/* ✅ NEW: discount (below price) */}
-                  <div className="input-group">
-                    <label className="discount-toggle">
-                      <input
-                        type="checkbox"
-                        checked={hasDiscount}
-                        onChange={(e) => handleToggleDiscount(e.target.checked)}
-                      />
-                      این غذا تخفیف دارد؟
-                    </label>
-
-                    {hasDiscount && (
-                      <div className="discount-box">
-                        <div className="discount-row">
-                          <input
-                            type="text"
-                            inputMode="numeric"
-                            placeholder="درصد تخفیف (۱ تا ۹۹)"
-                            value={discountPercent}
-                            disabled={discountConfirmed}
-                            onChange={(e) => {
-                              const raw = e.target.value.replace(/[^\d]/g, "");
-                              const v = clamp(toIntDigits(raw), 0, 99);
-                              setDiscountPercent(raw ? String(v) : "");
-                              setDiscountConfirmed(false);
-                            }}
-                          />
-
-                          {!discountConfirmed ? (
-                            <button
-                              type="button"
-                              className="btn btn-primary"
-                              onClick={confirmDiscount}
-                            >
-                              تأیید تخفیف
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              className="btn btn-secondary"
-                              onClick={() => setDiscountConfirmed(false)}
-                            >
-                              ویرایش
-                            </button>
-                          )}
-                        </div>
-
-                        <small className="discount-hint">
-                          تا زمانی که «تأیید تخفیف» را نزنید، ذخیره انجام
-                          نمی‌شود.
-                        </small>
-
-                        {pctValue > 0 && !discountConfirmed && (
-                          <div className="discount-warning">
-                            ⚠️ تخفیف وارد شده اما هنوز تأیید نشده است.
-                          </div>
-                        )}
-
-                        {pctValue > 0 && discountConfirmed && (
-                          <div className="discount-confirmed">
-                            ✅ تخفیف ثبت شد: {pctValue.toLocaleString("fa-IR")}٪
-                          </div>
-                        )}
-
-                        {/* optional price preview (safe + non-abusive) */}
-                        {basePriceValue > 0 && pctValue > 0 && (
-                          <div className="discount-preview">
-                            قیمت نهایی:{" "}
-                            <strong>
-                              {computedFinalBasePrice.toLocaleString("fa-IR")}
-                            </strong>{" "}
-                            تومان
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-
-              <hr className="form-divider" />
-
-              {/* variants */}
-              {hasVariants && (
                 <div className="input-group">
-                  <label>انواع غذا (دارای تنوع)</label>
-
-                  <div id="food-types-container">
-                    {variants.map((v) => (
-                      <div key={v.clientId} style={{ marginBottom: 10 }}>
-                        <div className="food-type-item">
-                          <input
-                            type="text"
-                            placeholder="نام نوع (مثال: ویژه)"
-                            value={v.name}
-                            onChange={(e) =>
-                              updateVariant(v.clientId, {
-                                name: e.target.value,
-                              })
-                            }
-                          />
-
-                          <input
-                            type="text"
-                            inputMode="numeric"
-                            placeholder="قیمت نوع"
-                            value={v.price}
-                            onChange={(e) => {
-                              const raw = e.target.value.replace(/[^\d]/g, "");
-                              updateVariant(v.clientId, { price: raw });
-                            }}
-                          />
-
-                          <label className="radio-label">
-                            <input
-                              type="radio"
-                              name="default_type"
-                              checked={v.isDefault}
-                              onChange={() => makeDefault(v.clientId)}
-                            />{" "}
-                            پیش‌فرض
-                          </label>
-
-                          <button
-                            type="button"
-                            className="btn btn-icon btn-danger"
-                            onClick={() => removeVariant(v.clientId)}
-                            title="حذف نوع"
-                            disabled={variants.length === 1}
-                          >
-                            <i className="fas fa-trash" />
-                          </button>
-                        </div>
-
-                        <div className="addons-block">
-                          <label className="addons-title">مخلفات</label>
-
-                          {v.addons.length === 0 && (
-                            <div className="addons-empty">
-                              هیچ مخلفی اضافه نشده است
-                            </div>
-                          )}
-
-                          {v.addons.map((a) => (
-                            <div key={a.clientId} className="addon-item">
-                              <input
-                                type="text"
-                                placeholder="نام مخلفات"
-                                value={a.name}
-                                onChange={(e) =>
-                                  updateAddon(v.clientId, a.clientId, {
-                                    name: e.target.value,
-                                  })
-                                }
-                              />
-                              <input
-                                type="text"
-                                placeholder="قیمت"
-                                inputMode="numeric"
-                                value={a.price}
-                                onChange={(e) => {
-                                  const raw = e.target.value.replace(
-                                    /[^\d]/g,
-                                    "",
-                                  );
-                                  updateAddon(v.clientId, a.clientId, {
-                                    price: raw,
-                                  });
-                                }}
-                              />
-                              <button
-                                type="button"
-                                className="btn btn-icon btn-danger"
-                                onClick={() =>
-                                  removeAddon(v.clientId, a.clientId)
-                                }
-                                title="حذف مخلف"
-                              >
-                                <i className="fas fa-trash" />
-                              </button>
-                            </div>
-                          ))}
-
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-secondary"
-                            onClick={() => addAddon(v.clientId)}
-                          >
-                            افزودن مخلفات
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button
-                    type="button"
-                    id="add-type-btn"
-                    className="btn btn-secondary full-width"
-                    onClick={addVariant}
-                  >
-                    + افزودن نوع جدید
-                  </button>
-
-                  <small className="variants-note">
-                    یکی از انواع باید «پیش‌فرض» باشد.
-                  </small>
-
-                  {/* discount */}
-                  <div className="input-group">
-                    <label className="discount-toggle">
-                      <input
-                        type="checkbox"
-                        checked={hasDiscount}
-                        onChange={(e) => handleToggleDiscount(e.target.checked)}
-                      />
-                      این غذا تخفیف دارد؟
-                    </label>
-
-                    {hasDiscount && (
-                      <div className="discount-box">
-                        <div className="discount-row">
-                          <input
-                            type="text"
-                            inputMode="numeric"
-                            placeholder="درصد تخفیف (۱ تا ۹۹)"
-                            value={discountPercent}
-                            disabled={discountConfirmed}
-                            onChange={(e) => {
-                              const raw = e.target.value.replace(/[^\d]/g, "");
-                              const v = clamp(toIntDigits(raw), 0, 99);
-                              setDiscountPercent(raw ? String(v) : "");
-                              setDiscountConfirmed(false);
-                            }}
-                          />
-
-                          {!discountConfirmed ? (
-                            <button
-                              type="button"
-                              className="btn btn-primary"
-                              onClick={confirmDiscount}
-                            >
-                              تأیید تخفیف
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              className="btn btn-secondary"
-                              onClick={() => setDiscountConfirmed(false)}
-                            >
-                              ویرایش
-                            </button>
-                          )}
-                        </div>
-
-                        <small className="discount-hint">
-                          تا زمانی که «تأیید تخفیف» را نزنید، ذخیره انجام
-                          نمی‌شود.
-                        </small>
-
-                        {pctValue > 0 && !discountConfirmed && (
-                          <div className="discount-warning">
-                            ⚠️ تخفیف وارد شده اما هنوز تأیید نشده است.
-                          </div>
-                        )}
-
-                        {pctValue > 0 && discountConfirmed && (
-                          <div className="discount-confirmed">
-                            ✅ تخفیف ثبت شد: {pctValue.toLocaleString("fa-IR")}٪
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  <label htmlFor="food-price">قیمت پایه (برای غذای ساده)</label>
+                  <input
+                    type="text"
+                    id="food-price"
+                    placeholder="مثال: ۱۵۰۰۰۰"
+                    value={price}
+                    onChange={(e) =>
+                      setPrice(e.target.value.replace(/[^\d]/g, ""))
+                    }
+                  />
                 </div>
               )}
+
+              {/* discount toggle — همیشه دیده می‌شود، چه ساده چه با تنوع */}
+              <div className="input-group">
+                <label className="discount-toggle">
+                  <input
+                    type="checkbox"
+                    checked={hasDiscount}
+                    onChange={(e) => handleToggleDiscount(e.target.checked)}
+                  />
+                  این غذا تخفیف دارد؟
+                </label>
+              </div>
             </div>
+
+            {showExtraColumn && (
+              <div className="form-column form-column--extra">
+                {hasVariants && (
+                  <div className="input-group">
+                    <label>انواع غذا (دارای تنوع)</label>
+
+                    <div id="food-types-container">
+                      {variants.map((v) => (
+                        <div key={v.clientId} style={{ marginBottom: 10 }}>
+                          <div className="food-type-item">
+                            <input
+                              type="text"
+                              placeholder="نام نوع (مثال: ویژه)"
+                              value={v.name}
+                              onChange={(e) =>
+                                updateVariant(v.clientId, {
+                                  name: e.target.value,
+                                })
+                              }
+                            />
+
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              placeholder="قیمت نوع"
+                              value={v.price}
+                              onChange={(e) => {
+                                const raw = e.target.value.replace(
+                                  /[^\d]/g,
+                                  "",
+                                );
+                                updateVariant(v.clientId, { price: raw });
+                              }}
+                            />
+
+                            <label className="radio-label">
+                              <input
+                                type="radio"
+                                name="default_type"
+                                checked={v.isDefault}
+                                onChange={() => makeDefault(v.clientId)}
+                              />{" "}
+                              پیش‌فرض
+                            </label>
+
+                            <button
+                              type="button"
+                              className="btn btn-icon btn-danger"
+                              onClick={() => removeVariant(v.clientId)}
+                              title="حذف نوع"
+                              disabled={variants.length === 1}
+                            >
+                              <i className="fas fa-trash" />
+                            </button>
+                          </div>
+
+                          <div className="addons-block">
+                            <label className="addons-title">مخلفات</label>
+
+                            {v.addons.length === 0 && (
+                              <div className="addons-empty">
+                                هیچ مخلفی اضافه نشده است
+                              </div>
+                            )}
+
+                            {v.addons.map((a) => (
+                              <div key={a.clientId} className="addon-item">
+                                <input
+                                  type="text"
+                                  placeholder="نام مخلفات"
+                                  value={a.name}
+                                  onChange={(e) =>
+                                    updateAddon(v.clientId, a.clientId, {
+                                      name: e.target.value,
+                                    })
+                                  }
+                                />
+                                <input
+                                  type="text"
+                                  placeholder="قیمت"
+                                  inputMode="numeric"
+                                  value={a.price}
+                                  onChange={(e) => {
+                                    const raw = e.target.value.replace(
+                                      /[^\d]/g,
+                                      "",
+                                    );
+                                    updateAddon(v.clientId, a.clientId, {
+                                      price: raw,
+                                    });
+                                  }}
+                                />
+                                <button
+                                  type="button"
+                                  className="btn btn-icon btn-danger"
+                                  onClick={() =>
+                                    removeAddon(v.clientId, a.clientId)
+                                  }
+                                  title="حذف مخلف"
+                                >
+                                  <i className="fas fa-trash" />
+                                </button>
+                              </div>
+                            ))}
+
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-secondary"
+                              onClick={() => addAddon(v.clientId)}
+                            >
+                              افزودن مخلفات
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <button
+                      type="button"
+                      id="add-type-btn"
+                      className="btn btn-secondary full-width"
+                      onClick={addVariant}
+                    >
+                      + افزودن نوع جدید
+                    </button>
+
+                    <small className="variants-note">
+                      یکی از انواع باید «پیش‌فرض» باشد.
+                    </small>
+                  </div>
+                )}
+
+                {hasDiscount && (
+                  <div className="discount-box">
+                    <div className="discount-row">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="درصد تخفیف (۱ تا ۹۹)"
+                        value={discountPercent}
+                        disabled={discountConfirmed}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/[^\d]/g, "");
+                          const v = clamp(toIntDigits(raw), 0, 99);
+                          setDiscountPercent(raw ? String(v) : "");
+                          setDiscountConfirmed(false);
+                        }}
+                      />
+
+                      {!discountConfirmed ? (
+                        <button
+                          type="button"
+                          className="btn btn-primary"
+                          onClick={confirmDiscount}
+                        >
+                          تأیید تخفیف
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="btn btn-secondary"
+                          onClick={() => setDiscountConfirmed(false)}
+                        >
+                          ویرایش
+                        </button>
+                      )}
+                    </div>
+
+                    <small className="discount-hint">
+                      تا زمانی که «تأیید تخفیف» را نزنید، ذخیره انجام نمی‌شود.
+                    </small>
+
+                    {pctValue > 0 && !discountConfirmed && (
+                      <div className="discount-warning">
+                        ⚠️ تخفیف وارد شده اما هنوز تأیید نشده است.
+                      </div>
+                    )}
+
+                    {pctValue > 0 && discountConfirmed && (
+                      <div className="discount-confirmed">
+                        ✅ تخفیف ثبت شد: {pctValue.toLocaleString("fa-IR")}٪
+                      </div>
+                    )}
+
+                    {!hasVariants && basePriceValue > 0 && pctValue > 0 && (
+                      <div className="discount-preview">
+                        قیمت نهایی:{" "}
+                        <strong>
+                          {computedFinalBasePrice.toLocaleString("fa-IR")}
+                        </strong>{" "}
+                        تومان
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </form>
         </div>
-
         <div className="modal-footer">
           <button type="submit" form="food-form" className="btn btn-primary">
             ذخیره غذا

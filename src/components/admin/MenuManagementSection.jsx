@@ -26,12 +26,16 @@ function SortIcon({ active, dir }) {
   );
 }
 
-export default function FoodsSection() {
+export default function MenuManagementSection() {
   const [foods, setFoods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mode, setMode] = useState("create"); // 'create' | 'edit'
   const [selectedFoodId, setSelectedFoodId] = useState(null);
+
+  // for category filter dropdown menu
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
 
   // --- toolbar / local filtering & sorting state -----------------------
   const [searchDraft, setSearchDraft] = useState("");
@@ -41,6 +45,28 @@ export default function FoodsSection() {
   const [sortKey, setSortKey] = useState(null); // 'name' | 'price' | 'category'
   const [sortDir, setSortDir] = useState("asc");
 
+  // fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setLoadingCategories(true);
+      try {
+        const { data } = await adminFoodAxios.get("/categories");
+        setCategories(data || []);
+      } catch (err) {
+        console.error("خطا در گرفتن دسته‌بندی‌ها", err);
+        setCategories([]);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  const handleAddCategoryClick = () => {
+    // TODO: بعداً مودال افزودن دسته‌بندی از اینجا باز می‌شود
+  };
+
+  // fetch foods
   const fetchFoods = async () => {
     try {
       const { data } = await adminFoodAxios.get("/read-all");
@@ -140,15 +166,10 @@ export default function FoodsSection() {
       };
     });
   }, [foods]);
-
-  // Category list for the filter dropdown, derived locally from the
-  // already-loaded foods - no extra API call.
-  const categoryOptions = useMemo(() => {
-    const names = new Set(
-      enrichedFoods.map((p) => p.foodCategoryName).filter(Boolean),
-    );
-    return Array.from(names).sort((a, b) => a.localeCompare(b, "fa"));
-  }, [enrichedFoods]);
+  const hasUncategorized = useMemo(
+    () => enrichedFoods.some((p) => !p.foodCategoryName),
+    [enrichedFoods],
+  );
 
   const visibleFoods = useMemo(() => {
     const term = searchTerm.trim();
@@ -225,20 +246,33 @@ export default function FoodsSection() {
               فقط غذاهای فعال
             </label>
           </div>
-
           <div className="blog-mgmt__posts-toolbar-group">
-            <select
-              className="food-mgmt__category-select"
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-            >
-              <option value="all">همه دسته‌ها</option>
-              {categoryOptions.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+            {!loadingCategories && categories.length === 0 ? (
+              <button
+                type="button"
+                className="food-mgmt__add-category-btn"
+                onClick={handleAddCategoryClick}
+              >
+                <i className="fas fa-plus" />
+                افزودن دسته‌بندی
+              </button>
+            ) : (
+              <select
+                className="food-mgmt__category-select"
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+              >
+                <option value="all">همه دسته‌ها</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.name}>
+                    {cat.name}
+                  </option>
+                ))}
+                {hasUncategorized && (
+                  <option value="__uncategorized__">بدون دسته‌بندی</option>
+                )}
+              </select>
+            )}
           </div>
         </div>
 

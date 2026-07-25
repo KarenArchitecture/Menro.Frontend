@@ -1,0 +1,255 @@
+/* ==========================================================================
+   UserManagementSection
+   Append this file's contents to admin-dashboard.css (or keep it as a
+   separate stylesheet imported after it — either way it relies on the
+   :root custom properties already defined there: --primary-color,
+   --border-color, --text-primary, --text-secondary, --text-muted,
+   --status-active, --status-danger, --bg-light, --bg-dark).
+
+   Reuses as-is (no new classes needed): .panel, .btn, .btn-primary,
+   .btn-secondary, .btn-danger, .btn-icon, .modal-backdrop, .modal,
+   .modal-header, .modal-footer, .form-vertical, .form-error, .empty-hint,
+   .status-chip(.active/.danger), .table-container, table/th/td,
+   .blog-mgmt__posts-toolbar(-group), .blog-mgmt__search-box/-submit,
+   .blog-mgmt__pagination(-label), .blog-mgmt__posts-scroll,
+   .blog-mgmt__modal--confirm, .blog-mgmt__muted-text.
+   ========================================================================== */
+
+.user-mgmt__info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+  font-size: 13px;
+  line-height: 1.9;
+  color: var(--text-muted, #a1a1aa);
+}
+
+.user-mgmt__info-banner i {
+  color: var(--primary-color, #f59e0b);
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+/* ---------- Avatar (table cell + view-modal header) ---------- */
+
+.user-mgmt__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  font-size: 20px;
+}
+
+.user-mgmt__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.user-mgmt__avatar-initials {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-transform: uppercase;
+}
+
+.user-mgmt__avatar--lg {
+  width: 68px;
+  height: 68px;
+  font-size: 30px;
+}
+
+.user-mgmt__avatar--lg .user-mgmt__avatar-initials {
+  font-size: 22px;
+}
+
+/* ---------- Role chips (table cell + view modal) ---------- */
+
+.user-mgmt__roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.user-mgmt__role-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--primary-color, #f59e0b);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  white-space: nowrap;
+}
+
+.user-mgmt__role-chip--muted {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  border-color: var(--border-color);
+}
+
+/* ---------- View modal ---------- */
+
+.user-mgmt__view-modal {
+  max-width: 480px;
+}
+
+.user-mgmt__view-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.user-mgmt__view-header-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.user-mgmt__view-header-text strong {
+  font-size: 1.05rem;
+  color: var(--text-primary);
+}
+
+.user-mgmt__muted {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  direction: ltr;
+}
+
+.user-mgmt__detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.user-mgmt__detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-mgmt__detail-item--full {
+  grid-column: 1 / -1;
+}
+
+.user-mgmt__detail-item span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.user-mgmt__detail-item strong {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  word-break: break-word;
+}
+
+.user-mgmt__verified {
+  color: var(--status-active, #10b981);
+}
+
+.user-mgmt__unverified {
+  color: var(--text-muted);
+}
+
+.user-mgmt__stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.user-mgmt__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+}
+
+.user-mgmt__stat strong {
+  font-size: 1.15rem;
+  color: var(--primary-color);
+}
+
+.user-mgmt__stat span {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.user-mgmt__muted-text {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.8;
+  margin: 0 0 4px;
+}
+
+/* ---------- Edit-roles modal: checkbox grid ---------- */
+
+.user-mgmt__role-picker {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.user-mgmt__role-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.user-mgmt__role-option:hover {
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.user-mgmt__role-option input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--primary-color);
+  cursor: pointer;
+}
+
+@media (max-width: 720px) {
+  .user-mgmt__detail-grid {
+    grid-template-columns: 1fr;
+  }
+  .user-mgmt__role-picker {
+    grid-template-columns: 1fr;
+  }
+}

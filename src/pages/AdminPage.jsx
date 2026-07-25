@@ -23,6 +23,7 @@ import CommentsSection from "../components/admin/CommentsSection";
 import BlogManagementSection from "../components/admin/BlogManagementSection";
 import LandingManagementSection from "../components/admin/LandingManagementSection";
 import CombosSection from "../components/admin/CombosSection";
+import UserManagementSection from "../components/admin/UserManagementSection";
 
 import ownerRestaurantAxios from "../api/ownerRestaurantAxios";
 import { useAuth } from "../context/AuthContext";
@@ -144,6 +145,8 @@ export default function AdminPage() {
         return <ProfileSection />;
       case "category-settings":
         return <CategorySettingsSection />;
+      case "user-roles":
+        return <UserManagementSection />;
       default:
         return <div>در حال ساخت...</div>;
     }

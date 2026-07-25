@@ -15,6 +15,7 @@ import {
   deleteLandingFaq,
   moveLandingFaq,
 } from "../../api/AdminLanding";
+import "../../assets/css/admin/landingManagement.css";
 
 /* ======================================================================
  * LandingManagementSection

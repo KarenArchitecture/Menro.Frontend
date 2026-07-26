@@ -2,6 +2,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import FoodModal from "./FoodModal";
 import adminFoodAxios from "../../api/adminFoodAxios";
+import { useGlobalUI } from "../common/GlobalUI";
 
 function toIntDigits(v) {
   return Number(String(v || "0").replace(/[^\d]/g, ""));
@@ -27,6 +28,9 @@ function SortIcon({ active, dir }) {
 }
 
 export default function MenuManagementSection({ onNavigateToCategories }) {
+  // for global modals
+  const { notify, confirmModal } = useGlobalUI();
+
   const [foods, setFoods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -55,6 +59,10 @@ export default function MenuManagementSection({ onNavigateToCategories }) {
       } catch (err) {
         console.error("خطا در گرفتن دسته‌بندی‌ها", err);
         setCategories([]);
+        notify({
+          type: "error",
+          message: "دریافت دسته‌بندی‌ها با خطا مواجه شد",
+        });
       } finally {
         setLoadingCategories(false);
       }
@@ -73,6 +81,7 @@ export default function MenuManagementSection({ onNavigateToCategories }) {
       setFoods(data);
     } catch (err) {
       console.error("خطا در گرفتن لیست غذاها:", err);
+      notify({ type: "error", message: "دریافت لیست غذاها با خطا مواجه شد" });
     } finally {
       setLoading(false);
     }
@@ -94,22 +103,28 @@ export default function MenuManagementSection({ onNavigateToCategories }) {
   };
 
   const handleDelete = async (foodId) => {
-    if (!window.confirm("آیا مطمئن هستید که می‌خواهید این غذا را حذف کنید؟"))
-      return;
+    const ok = await confirmModal({
+      title: "حذف غذا",
+      message: "آیا مطمئن هستید که می‌خواهید این غذا را حذف کنید؟",
+      confirmText: "حذف",
+      cancelText: "انصراف",
+      danger: true,
+    });
+    if (!ok) return;
 
     try {
       await adminFoodAxios.delete(`/${foodId}`);
-      alert("غذا با موفقیت حذف شد");
+      notify({ type: "success", message: "غذا با موفقیت حذف شد" });
       fetchFoods();
     } catch (err) {
       console.error("خطا در حذف غذا:", err);
+      notify({ type: "error", message: "حذف غذا با خطا مواجه شد" });
     }
   };
 
   // NOTE: endpoint name is a placeholder - point it at whatever route your
   // API exposes for flipping isAvailable (adjust the path if different).
   const handleToggleAvailability = async (food) => {
-    // optimistic local update so the UI feels instant
     setFoods((prev) =>
       prev.map((p) =>
         p.id === food.id ? { ...p, isAvailable: !p.isAvailable } : p,
@@ -119,12 +134,12 @@ export default function MenuManagementSection({ onNavigateToCategories }) {
       await adminFoodAxios.patch(`/toggle-status/${food.id}`);
     } catch (err) {
       console.error("خطا در تغییر وضعیت غذا:", err);
-      // revert on failure
       setFoods((prev) =>
         prev.map((p) =>
           p.id === food.id ? { ...p, isAvailable: food.isAvailable } : p,
         ),
       );
+      notify({ type: "error", message: "تغییر وضعیت غذا با خطا مواجه شد" });
     }
   };
 
@@ -514,7 +529,22 @@ export default function MenuManagementSection({ onNavigateToCategories }) {
         mode={mode}
         foodId={selectedFoodId}
         onClose={() => setIsModalOpen(false)}
-        onSaved={fetchFoods}
+        onSaved={() => {
+          fetchFoods();
+          notify({
+            type: "success",
+            message:
+              mode === "create"
+                ? "غذا با موفقیت افزوده شد"
+                : "تغییرات با موفقیت ذخیره شد",
+          });
+        }}
+        onError={(message) =>
+          notify({
+            type: "error",
+            message: message || "ذخیره غذا با خطا مواجه شد",
+          })
+        }
         onNavigateToCategories={() => {
           setIsModalOpen(false);
           onNavigateToCategories?.();

@@ -1,5 +1,6 @@
 // src/components/admin/FoodModal.jsx
 import { useState, useEffect, useRef } from "react";
+import { useGlobalUI } from "../common/GlobalUI";
 import adminFoodAxios from "../../api/adminFoodAxios";
 import "../../assets/css/admin/foodModal.css";
 
@@ -26,6 +27,9 @@ export default function FoodModal({
   onNavigateToCategories,
 }) {
   const title = mode === "edit" ? "ویرایش غذا" : "افزودن غذای جدید";
+
+  // for modal
+  const { notify } = useGlobalUI();
 
   // برای ریست کردن فرم بعد بسته شدن
   const [name, setName] = useState("");
@@ -78,6 +82,10 @@ export default function FoodModal({
       } catch (err) {
         console.error("خطا در گرفتن دسته‌بندی‌ها", err);
         setCategories([]);
+        notify({
+          type: "error",
+          message: "دریافت دسته‌بندی‌ها با خطا مواجه شد",
+        });
       } finally {
         setLoadingCategories(false);
       }
@@ -118,7 +126,7 @@ export default function FoodModal({
         if (serverPct > 0) {
           setHasDiscount(true);
           setDiscountPercent(String(serverPct));
-          setDiscountConfirmed(true); // saved value = confirmed
+          setDiscountConfirmed(true);
         } else {
           setHasDiscount(false);
           setDiscountPercent("");
@@ -129,14 +137,14 @@ export default function FoodModal({
           setHasVariants(true);
           setVariants(
             data.variants.map((v, index) => ({
-              id: v.id ?? v.Id ?? null, // ✅ db id
-              clientId: uid(), // ✅ ui id
+              id: v.id ?? v.Id ?? null,
+              clientId: uid(),
               name: v.name || "",
               price: v.price?.toString() || "",
               isDefault: v.isDefault ?? index === 0,
               addons: (v.addons || []).map((a) => ({
-                id: a.id ?? a.Id ?? null, // ✅ db id
-                clientId: uid(), // ✅ ui id
+                id: a.id ?? a.Id ?? null,
+                clientId: uid(),
                 name: a.name || "",
                 price: a.extraPrice?.toString() || "",
               })),
@@ -148,6 +156,11 @@ export default function FoodModal({
         }
       } catch (err) {
         console.error("خطا در گرفتن اطلاعات غذا:", err);
+        notify({
+          type: "error",
+          message: "دریافت اطلاعات غذا با خطا مواجه شد",
+        });
+        onClose?.();
       }
     };
 
@@ -306,13 +319,15 @@ export default function FoodModal({
   const confirmDiscount = () => {
     const v = clamp(toIntDigits(discountPercent), 0, 99);
 
-    // ✅ anti abuse: no 0, no 100, no negative, no >99
     if (v <= 0) {
-      alert("درصد تخفیف باید حداقل ۱٪ باشد.");
+      notify({ type: "warning", message: "درصد تخفیف باید حداقل ۱٪ باشد." });
       return;
     }
     if (v >= 100) {
-      alert("درصد تخفیف نمی‌تواند ۱۰۰٪ یا بیشتر باشد.");
+      notify({
+        type: "warning",
+        message: "درصد تخفیف نمی‌تواند ۱۰۰٪ یا بیشتر باشد.",
+      });
       return;
     }
 
@@ -358,12 +373,15 @@ export default function FoodModal({
         const v = clamp(toIntDigits(discountPercent), 0, 99);
 
         if (v <= 0 || v >= 100) {
-          alert("درصد تخفیف معتبر نیست (۱ تا ۹۹).");
+          notify({
+            type: "warning",
+            message: "درصد تخفیف معتبر نیست (۱ تا ۹۹).",
+          });
           return;
         }
 
         if (!discountConfirmed) {
-          alert("لطفاً تخفیف را تأیید کنید.");
+          notify({ type: "warning", message: "لطفاً تخفیف را تأیید کنید." });
           return;
         }
       }
@@ -384,21 +402,37 @@ export default function FoodModal({
 
       // -------------------- validation variants --------------------
       if (hasVariants) {
-        if (variants.length === 0) return alert("حداقل یک نوع تعریف کنید.");
+        if (variants.length === 0) {
+          notify({ type: "warning", message: "حداقل یک نوع تعریف کنید." });
+          return;
+        }
 
         const badVariant = variants.find((v) => !v.name || !v.price);
-        if (badVariant) return alert("برای هر نوع، نام و قیمت را وارد کنید.");
+        if (badVariant) {
+          notify({
+            type: "warning",
+            message: "برای هر نوع، نام و قیمت را وارد کنید.",
+          });
+          return;
+        }
 
         for (const v of variants) {
           for (const a of v.addons) {
             if (!a.name || !a.price) {
-              return alert("لطفاً برای همه مخلفات نام و قیمت وارد کنید.");
+              notify({
+                type: "warning",
+                message: "لطفاً برای همه مخلفات نام و قیمت وارد کنید.",
+              });
+              return;
             }
           }
         }
       } else {
         const basePrice = (price || "").trim();
-        if (!basePrice) return alert("قیمت پایه را وارد کنید.");
+        if (!basePrice) {
+          notify({ type: "warning", message: "قیمت پایه را وارد کنید." });
+          return;
+        }
       }
 
       // -------------------- payload --------------------
@@ -455,13 +489,16 @@ export default function FoodModal({
         console.error("STATUS:", err.response.status);
         console.error("DATA:", err.response.data);
         console.error("HEADERS:", err.response.headers);
-
-        alert(JSON.stringify(err.response.data, null, 2));
-      } else {
-        console.error("NO RESPONSE:", err);
       }
 
-      alert("ذخیره غذا ناموفق بود");
+      notify({
+        type: "error",
+        title: "ذخیره غذا ناموفق بود",
+        message:
+          err.response?.data?.message ||
+          err.response?.data?.title ||
+          "خطایی در ذخیره‌سازی رخ داد.",
+      });
     } finally {
       setIsSubmitting(false);
     }

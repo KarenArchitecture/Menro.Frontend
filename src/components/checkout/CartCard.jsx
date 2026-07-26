@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import OptionRow from "./OptionRow";
+import AddonsEditModal from "./AddonsEditModal";
 
 const formatIR = (n) => Number(n || 0).toLocaleString("fa-IR");
 
 export default function CartCard({ item, onChangeQty }) {
+  const [addonsModalOpen, setAddonsModalOpen] = useState(false);
+
   return (
     <div className="cart-card-wrap">
       <div className="cart-card">
@@ -20,25 +23,26 @@ export default function CartCard({ item, onChangeQty }) {
             </div>
           </div>
         </div>
-
         <div className="option-group">
           {item.options.map((opt) => (
-            <OptionRow
-              key={opt.id}
-              itemId={item.id}
-              option={opt}
-              onChangeQty={onChangeQty}
-            />
+            <OptionRow key={opt.id} itemId={item.id} option={opt} onChangeQty={onChangeQty} />
           ))}
         </div>
       </div>
 
       {item.hasAddons && (
-        <div className="cart-card-extra">
+        <button
+          type="button"
+          className="cart-card-extra"
+          onClick={() => setAddonsModalOpen(true)}
+          style={{ border: "none", cursor: "pointer" }}
+        >
           <img src="/images/checkout-extras.svg" alt="food options svg" />
           با مخلفات
-        </div>
+        </button>
       )}
+
+      <AddonsEditModal open={addonsModalOpen} onClose={() => setAddonsModalOpen(false)} />
     </div>
   );
 }

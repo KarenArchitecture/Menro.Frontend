@@ -10,14 +10,11 @@ import { toPersianDigits } from "../../utils/persianNumbers";
 import resolveFileUrl from "../../utils/resolveFileUrl";
 import useRequireLogin from "../../hooks/useRequireLogin";
 import ProtectedActionModal from "../common/ProtectedActionModal";
+import { useCart } from "./CartContext";
 
-function ShopBanner({
-  banner,
-  onSearchSubmit,
-  onSearchChange,
-  searchValue = "",
-}) {
+function ShopBanner({ banner, onSearchSubmit, onSearchChange, searchValue = "" }) {
   const navigate = useNavigate();
+  const cart = useCart();
 
   const {
     requireLogin,
@@ -96,9 +93,16 @@ function ShopBanner({
         </div>
 
         <div className="nav-left">
-          <button className="icon-btn shop-cart-btn" aria-label="Cart">
+          <button
+            type="button"
+            className="icon-btn shop-cart-btn"
+            aria-label="Cart"
+            onClick={() => navigate("/checkout")}
+          >
             <ShoppingBagIcon />
-            <span className="shop-cart-badge">{toPersianDigits(3)}</span>
+            {cart.distinctFoodCount > 0 && (
+              <span className="shop-cart-badge">{toPersianDigits(cart.distinctFoodCount)}</span>
+            )}
           </button>
         </div>
       </nav>

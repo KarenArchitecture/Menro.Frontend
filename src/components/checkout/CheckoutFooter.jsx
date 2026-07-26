@@ -177,7 +177,7 @@ export default function CheckoutFooter({
         discount={discount}
         total={total}
         invoiceNumber={invoiceNumber}
-        primaryActionTo={successVariant === "invoice" ? "/bills" : ""}
+        primaryActionTo={successVariant === "invoice" ? "/bills" : "/orders"}
         primaryActionLabel={
           successVariant === "invoice" ? (
             <>

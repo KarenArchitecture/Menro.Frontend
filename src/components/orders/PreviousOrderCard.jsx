@@ -123,61 +123,11 @@ const PreviousOrderCard = ({ order }) => {
 };
 
 // --- EXPORTING A MOCK LIST TO TEST BOTH STATES ---
-export default function PreviousOrdersList() {
-  // Mock data representing the two cards in your screenshot
-  const mockOrders = [
-    {
-      id: "ord-1",
-      restaurantName: "منرو",
-      orderTypeTag: "بیرون‌بر ۲۶۳",
-      date: "یکشنبه ۱۲ شهریور - ۱۸:۰۰",
-      logo: "/images/menu-logo.jpg", // Using your existing logo
-      items: [
-        { id: 1, image: "/images/mocha.jpg", quantity: 13 },
-        { id: 2, image: "/images/mocha.jpg", quantity: 2 },
-        { id: 3, image: "/images/mocha.jpg", quantity: 21 },
-        ...Array.from({ length: 10 }).map((_, i) => ({
-          id: i + 4,
-          image: "/images/mocha.jpg",
-          quantity: 1,
-        })),
-      ],
-      totalPrice: 240000,
-      rating: null, // Unrated state
-    },
-    {
-      id: "ord-2",
-      restaurantName: "منرو",
-      orderTypeTag: null,
-      date: "یکشنبه ۱۲ شهریور - ۱۸:۰۰",
-      logo: "/images/menu-logo.jpg",
-      items: [
-        { id: 1, image: "/images/mocha.jpg", quantity: 13 },
-        { id: 2, image: "/images/mocha.jpg", quantity: 2 },
-        { id: 3, image: "/images/mocha.jpg", quantity: 21 },
-        ...Array.from({ length: 13 }).map((_, i) => ({
-          id: i + 4,
-          image: "/images/mocha.jpg",
-          quantity: 1,
-        })),
-      ],
-      totalPrice: 2040000,
-      rating: 4, // Rated state (4 out of 5 stars)
-    },
-  ];
-
+export function PreviousOrdersList({ orders }) {
+  if (!orders?.length) return null;
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "20px",
-        padding: "2rem",
-      }}
-    >
-      {mockOrders.map((order) => (
-        <PreviousOrderCard key={order.id} order={order} />
-      ))}
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px", padding: "2rem" }}>
+      {orders.map((order) => <PreviousOrderCard key={order.id} order={order} />)}
     </div>
   );
 }

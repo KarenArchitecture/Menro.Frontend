@@ -6,6 +6,7 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
   const [details, setDetails] = useState(null); // AdminOrderDetailsDto
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showInvoiceView, setShowInvoiceView] = useState(false);
 
   // ✅ برای تست فرانت (تا وقتی بک‌اند آماده نیست):
   // وضعیت "نمایشی" داخل مودال
@@ -158,110 +159,89 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
           <h3>
             سفارش #{dto.restaurantOrderNumber} — {tableLabel}
           </h3>
+          <button className="btn btn-icon" onClick={() => setShowInvoiceView((v) => !v)} title="نمای فاکتور">
+            <i className="fas fa-receipt" />
+          </button>
           <button className="btn btn-icon" onClick={onClose}>
             <i className="fas fa-times" />
           </button>
         </div>
 
         <div className="modal-body">
-          <div
-            className="order-meta"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, minmax(0,1fr))",
-              gap: 12,
-              marginBottom: 12,
-            }}
-          >
-            <div>
-              <strong>وضعیت:</strong> {statusLabel}
+          {showInvoiceView ? (
+            <div className="order-items">
+              {items.map((it) => (
+                <div key={it.id} style={{ marginBottom: 10 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700 }}>
+                    <span>{it.name}</span>
+                    <span>×{it.qty} — {Number(it.price * it.qty).toLocaleString("fa-IR")} تومان</span>
+                  </div>
+                  {it.addons?.map((a, i) => (
+                    <div key={i} style={{ display: "flex", justifyContent: "space-between", opacity: 0.75, fontSize: 13, paddingRight: 16 }}>
+                      <span>{a.name}</span>
+                    </div>
+                  ))}
+                </div>
+              ))}
             </div>
-
-            <div>
-              <strong>زمان:</strong> {timeLabel}
-            </div>
-
-            <div>
-              <strong>مشتری:</strong> {customerLabel}
-            </div>
-          </div>
-
-          {loading && (
-            <div className="empty-hint" style={{ marginBottom: 10 }}>
-              در حال دریافت جزئیات...
-            </div>
-          )}
-          {!loading && error && (
-            <div className="empty-hint" style={{ marginBottom: 10 }}>
-              {error}
-            </div>
-          )}
-
-          <div className="order-items">
-            {!loading && !error && details && items.length === 0 && (
-              <div className="empty-hint">آیتمی برای نمایش وجود ندارد.</div>
-            )}
-
-            {items.map((it) => (
+          ) : (
+            <>
               <div
-                key={it.id}
-                className="order-item-row"
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "64px 1fr auto",
-                  gap: 12,
-                  alignItems: "center",
-                  padding: "8px 0",
-                  borderBottom: "1px solid rgba(255,255,255,0.06)",
-                }}
+                className="order-meta"
+                style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12, marginBottom: 12 }}
               >
-                <img
-                  src={it.imageUrl || "https://via.placeholder.com/96"}
-                  alt={it.name}
-                  onError={(e) => {
-                    e.currentTarget.src = "https://via.placeholder.com/96";
-                  }}
-                  style={{
-                    width: 64,
-                    height: 64,
-                    objectFit: "cover",
-                    borderRadius: 8,
-                    background: "rgba(255,255,255,.06)",
-                  }}
-                />
-
-                <div>
-                  <div style={{ fontWeight: 700 }}>{it.name}</div>
-                  <div style={{ opacity: 0.75, fontSize: 13 }}>
-                    {it.addons?.length
-                      ? `مخلفات: ${it.addons.map((a) => a.name).join("، ")}`
-                      : "—"}
-                  </div>
-                </div>
-                <div style={{ textAlign: "end" }}>
-                  <div>×{it.qty}</div>
-                  <div style={{ opacity: 0.8 }}>
-                    {Number(it.price).toLocaleString("fa-IR")} تومان
-                  </div>
-                </div>
+                <div><strong>وضعیت:</strong> {statusLabel}</div>
+                <div><strong>زمان:</strong> {timeLabel}</div>
+                <div><strong>مشتری:</strong> {customerLabel}</div>
               </div>
-            ))}
-          </div>
 
-          <div
-            className="order-total"
-            style={{
-              marginTop: 12,
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <div style={{ opacity: 0.8 }}>مبلغ کل</div>
-            <div style={{ fontWeight: 900 }}>
-              {Number(totalPrice).toLocaleString("fa-IR")} تومان
-            </div>
-          </div>
+              {loading && <div className="empty-hint" style={{ marginBottom: 10 }}>در حال دریافت جزئیات...</div>}
+              {!loading && error && <div className="empty-hint" style={{ marginBottom: 10 }}>{error}</div>}
+
+              <div className="order-items">
+                {!loading && !error && details && items.length === 0 && (
+                  <div className="empty-hint">آیتمی برای نمایش وجود ندارد.</div>
+                )}
+
+                {items.map((it) => (
+                  <div
+                    key={it.id}
+                    className="order-item-row"
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "64px 1fr auto",
+                      gap: 12,
+                      alignItems: "center",
+                      padding: "8px 0",
+                      borderBottom: "1px solid rgba(255,255,255,0.06)",
+                    }}
+                  >
+                    <img
+                      src={it.imageUrl || "https://via.placeholder.com/96"}
+                      alt={it.name}
+                      onError={(e) => { e.currentTarget.src = "https://via.placeholder.com/96"; }}
+                      style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, background: "rgba(255,255,255,.06)" }}
+                    />
+                    <div>
+                      <div style={{ fontWeight: 700 }}>{it.name}</div>
+                      <div style={{ opacity: 0.75, fontSize: 13 }}>
+                        {it.addons?.length ? `مخلفات: ${it.addons.map((a) => a.name).join("، ")}` : "—"}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: "end" }}>
+                      <div>×{it.qty}</div>
+                      <div style={{ opacity: 0.8 }}>{Number(it.price).toLocaleString("fa-IR")} تومان</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="order-total" style={{ marginTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ opacity: 0.8 }}>مبلغ کل</div>
+                <div style={{ fontWeight: 900 }}>{Number(totalPrice).toLocaleString("fa-IR")} تومان</div>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="modal-footer" style={{ display: "flex", gap: 8 }}>

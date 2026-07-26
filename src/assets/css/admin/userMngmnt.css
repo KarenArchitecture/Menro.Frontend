@@ -59,11 +59,13 @@
   display: block;
 }
 
-.user-mgmt__avatar-initials {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--primary-color);
-  text-transform: uppercase;
+.user-mgmt__avatar-icon {
+  color: var(--text-muted, #a1a1aa);
+  font-size: 18px;
+}
+
+.user-mgmt__avatar--lg .user-mgmt__avatar-icon {
+  font-size: 28px;
 }
 
 .user-mgmt__avatar--lg {
@@ -238,11 +240,47 @@
   border-color: rgba(245, 158, 11, 0.35);
 }
 
+.user-mgmt__role-option:has(input[type="checkbox"]:checked) {
+  border-color: rgba(245, 158, 11, 0.45);
+  background: rgba(245, 158, 11, 0.08);
+}
+
 .user-mgmt__role-option input[type="checkbox"] {
-  width: 17px;
-  height: 17px;
-  accent-color: var(--primary-color);
+  appearance: none;
+  -webkit-appearance: none;
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  border-radius: 5px;
+  border: 1.5px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.03);
   cursor: pointer;
+  position: relative;
+  margin: 0;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.user-mgmt__role-option input[type="checkbox"]:hover {
+  border-color: rgba(245, 158, 11, 0.5);
+}
+
+.user-mgmt__role-option input[type="checkbox"]:checked {
+  background: var(--primary-color, #f59e0b);
+  border-color: var(--primary-color, #f59e0b);
+}
+
+.user-mgmt__role-option input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  width: 5px;
+  height: 9px;
+  border: solid #1a1a1a;
+  border-width: 0 2px 2px 0;
+  transform: translate(-50%, -50%) rotate(45deg);
 }
 
 @media (max-width: 720px) {
@@ -252,4 +290,84 @@
   .user-mgmt__role-picker {
     grid-template-columns: 1fr;
   }
+}
+.user-mgmt__phone {
+  direction: ltr;
+  text-align: right;
+  color: var(--text-secondary, #d4d4d8);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---------- Fix: search box + submit button vertical alignment ---------- */
+
+.user-mgmt .blog-mgmt__search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-mgmt .blog-mgmt__search-box .mh-input {
+  height: 38px;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.user-mgmt .blog-mgmt__search-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  width: 38px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+/* ---------- Fix: even column widths in the users table ---------- */
+
+.user-mgmt .table-container table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.user-mgmt .table-container th,
+.user-mgmt .table-container td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+.user-mgmt .table-container th:nth-child(1),
+.user-mgmt .table-container td:nth-child(1) {
+  width: 64px;
+}
+
+.user-mgmt .table-container th:nth-child(2),
+.user-mgmt .table-container td:nth-child(2) {
+  width: 22%;
+}
+
+.user-mgmt .table-container th:nth-child(3),
+.user-mgmt .table-container td:nth-child(3) {
+  width: 150px;
+}
+
+.user-mgmt .table-container th:nth-child(4),
+.user-mgmt .table-container td:nth-child(4) {
+  width: 34%;
+}
+
+.user-mgmt .table-container th:nth-child(5),
+.user-mgmt .table-container td:nth-child(5) {
+  width: 110px;
+  text-align: center;
+}
+
+.user-mgmt .table-container td:nth-child(5) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }

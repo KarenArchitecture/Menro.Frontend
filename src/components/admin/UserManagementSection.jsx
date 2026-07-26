@@ -19,15 +19,6 @@ import "../../assets/css/admin/userMngmnt.css";
 
 const PAGE_SIZE = 20;
 
-function initials(fullName) {
-  if (!fullName) return "";
-  const parts = fullName.trim().split(/\s+/);
-  return parts
-    .slice(0, 2)
-    .map((p) => p[0])
-    .join("");
-}
-
 function toPersianDigits(value) {
   const persianDigits = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
   return String(value).replace(/[0-9]/g, (d) => persianDigits[Number(d)]);
@@ -39,9 +30,6 @@ export default function UserManagementSection() {
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState("");
 
-  // searchDraft is bound to the input as the user types; searchTerm only
-  // updates on submit (button / Enter) — identical pattern to the blog
-  // posts search, per the request.
   const [searchDraft, setSearchDraft] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
@@ -71,8 +59,6 @@ export default function UserManagementSection() {
     return data;
   }, [searchTerm, roleFilter, page]);
 
-  // Load the roles dropdown once — it powers both the list filter and the
-  // "ویرایش نقش‌ها" modal, and doesn't need to change on every page/filter.
   useEffect(() => {
     getUserRoles()
       .then(setAvailableRoles)
@@ -110,7 +96,6 @@ export default function UserManagementSection() {
     };
   }, [searchTerm, roleFilter, page]);
 
-  // Reset to page 1 whenever search/filters change.
   useEffect(() => {
     setPage(1);
   }, [searchTerm, roleFilter]);
@@ -154,9 +139,15 @@ export default function UserManagementSection() {
     setSavingRoles(true);
     setRolesError("");
     try {
-      const updated = await updateUserRoles(rolesModalUser.id, rolesDraft);
-      setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
-      if (viewUser?.id === updated.id) setViewUser(updated);
+      const updatedRoles = await updateUserRoles(rolesModalUser.id, rolesDraft);
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === rolesModalUser.id ? { ...u, roles: updatedRoles } : u,
+        ),
+      );
+      if (viewUser?.id === rolesModalUser.id) {
+        setViewUser((prev) => (prev ? { ...prev, roles: updatedRoles } : prev));
+      }
       setRolesModalUser(null);
     } catch (err) {
       setRolesError(apiErrorMessage(err, "ذخیره نقش‌ها با خطا مواجه شد."));
@@ -245,6 +236,7 @@ export default function UserManagementSection() {
               <tr>
                 <th>تصویر</th>
                 <th>نام کامل</th>
+                <th>شماره تماس</th>
                 <th>نقش‌ها</th>
                 <th>عملیات</th>
               </tr>
@@ -252,14 +244,14 @@ export default function UserManagementSection() {
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={4}>
+                  <td colSpan={5}>
                     <div className="empty-hint">در حال بارگذاری...</div>
                   </td>
                 </tr>
               )}
               {!loading && users.length === 0 && (
                 <tr>
-                  <td colSpan={4}>
+                  <td colSpan={5}>
                     <div className="empty-hint">
                       هیچ کاربری با این فیلتر پیدا نشد.
                     </div>
@@ -273,16 +265,15 @@ export default function UserManagementSection() {
                       <div className="user-mgmt__avatar">
                         {user.profileImageUrl ? (
                           <img src={user.profileImageUrl} alt={user.fullName} />
-                        ) : initials(user.fullName) ? (
-                          <span className="user-mgmt__avatar-initials">
-                            {initials(user.fullName)}
-                          </span>
                         ) : (
-                          <i className="fas fa-circle-user" />
+                          <i className="fas fa-user user-mgmt__avatar-icon" />
                         )}
                       </div>
                     </td>
                     <td>{user.fullName}</td>
+                    <td className="user-mgmt__phone">
+                      {user.phoneNumber || "—"}
+                    </td>
                     <td>
                       <div className="user-mgmt__roles">
                         {user.roles.length > 0 ? (
@@ -339,12 +330,8 @@ export default function UserManagementSection() {
               <div className="user-mgmt__avatar user-mgmt__avatar--lg">
                 {viewUser.profileImageUrl ? (
                   <img src={viewUser.profileImageUrl} alt={viewUser.fullName} />
-                ) : initials(viewUser.fullName) ? (
-                  <span className="user-mgmt__avatar-initials">
-                    {initials(viewUser.fullName)}
-                  </span>
                 ) : (
-                  <i className="fas fa-circle-user" />
+                  <i className="fas fa-user user-mgmt__avatar-icon" />
                 )}
               </div>
               <div className="user-mgmt__view-header-text">

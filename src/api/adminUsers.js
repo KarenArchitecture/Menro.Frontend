@@ -6,32 +6,24 @@ import adminUsersAxios from "./adminUsersAxios";
  *
  * GET /api/admin/users
  *   query: search?, role?, page (default 1), pageSize (default 20)
- *   - `search` matches against FullName, Email, PhoneNumber and UserName (OR),
- *     same spirit as the blog posts title search.
  *   response: {
- *     items: [{
- *       id, fullName, userName, profileImageUrl, email, phoneNumber,
- *       emailConfirmed, phoneNumberConfirmed,  // already on IdentityUser
- *       roles: string[],            // e.g. ["مدیر", "رستوران‌دار"]
- *       restaurantsCount, ordersCount, favoriteFoodsCount
- *     }],
+ *     items: [{ id, fullName, profileImageUrl, phoneNumber, roles }],
  *     page, pageSize, totalCount, totalPages
  *   }
  *
  * GET /api/admin/users/roles
- *   response: string[] — every role name that exists in the system
- *   (powers both the list filter dropdown and the "ویرایش نقش‌ها" modal's
- *   checkbox list; deliberately its own endpoint so it can be cached /
- *   loaded once instead of being re-sent on every user row).
+ *   response: string[]
  *
  * GET /api/admin/users/{id}
- *   response: same shape as a list item (see above) — used to refresh a
- *   single user's detail inside the "مشاهده اطلاعات کاربر" modal without
- *   re-fetching the whole page.
+ *   response: {
+ *     id, fullName, userName, profileImageUrl, email, phoneNumber,
+ *     emailConfirmed, phoneNumberConfirmed, roles,
+ *     restaurantsCount, ordersCount, favoriteFoodsCount
+ *   }
  *
  * PUT /api/admin/users/{id}/roles
  *   body: { roles: string[] }
- *   response: updated list-item-shaped user
+ *   response: string[] — just the updated roles, nothing else
  * ========================================================================== */
 
 export const apiErrorMessage = (
@@ -39,7 +31,15 @@ export const apiErrorMessage = (
   fallback = "خطایی رخ داد. دوباره تلاش کنید.",
 ) => err?.response?.data?.message || err?.response?.data?.title || fallback;
 
-const mapUserFromApi = (dto) => ({
+const mapUserListItem = (dto) => ({
+  id: dto.id,
+  fullName: dto.fullName,
+  profileImageUrl: dto.profileImageUrl || "",
+  phoneNumber: dto.phoneNumber || "",
+  roles: dto.roles || [],
+});
+
+const mapUserDetail = (dto) => ({
   id: dto.id,
   fullName: dto.fullName,
   userName: dto.userName || "",
@@ -65,7 +65,7 @@ export const getUsers = ({ search, role, page = 1, pageSize = 20 } = {}) =>
       },
     })
     .then((r) => ({
-      items: r.data.items.map(mapUserFromApi),
+      items: r.data.items.map(mapUserListItem),
       page: r.data.page,
       pageSize: r.data.pageSize,
       totalCount: r.data.totalCount,
@@ -76,9 +76,7 @@ export const getUserRoles = () =>
   adminUsersAxios.get("/roles").then((r) => r.data);
 
 export const getUserById = (id) =>
-  adminUsersAxios.get(`/${id}`).then((r) => mapUserFromApi(r.data));
+  adminUsersAxios.get(`/${id}`).then((r) => mapUserDetail(r.data));
 
 export const updateUserRoles = (id, roles) =>
-  adminUsersAxios
-    .put(`/${id}/roles`, { roles })
-    .then((r) => mapUserFromApi(r.data));
+  adminUsersAxios.put(`/${id}/roles`, { roles }).then((r) => r.data); // string[]

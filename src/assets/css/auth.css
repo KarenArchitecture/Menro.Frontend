@@ -819,6 +819,18 @@
   display: flex;
   gap: 12px;
   margin-top: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 160px;
+}
+.upf-avatar-remove-btn {
+  color: var(--auth-error);
+  border-color: var(--auth-error);
+}
+.upf-avatar-remove-btn:hover {
+  background: color-mix(in srgb, var(--auth-error) 12%, transparent);
+  color: var(--auth-error);
+  border-color: var(--auth-error);
 }
 
 .upf-link-btn {
@@ -926,6 +938,11 @@
 .upf-input-with-action input {
   flex: 1;
   min-width: 0;
+}
+.upf-input-with-action input,
+.upf-input-with-action .upf-btn {
+  height: 44px;
+  box-sizing: border-box;
 }
 
 .upf-password-input-wrap {

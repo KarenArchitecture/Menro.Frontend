@@ -1,30 +1,44 @@
 // src/pages/AdminPage.jsx
 import { useState, useCallback, useEffect } from "react";
+
+/* ===================== Layout ===================== */
 import usePageStyles from "../hooks/usePageStyles";
 import AdminHeader from "../components/admin/AdminHeader";
 import AdminSidebar from "../components/admin/AdminSidebar";
 
-import DashboardSection from "../components/admin/DashboardSection";
+/* ===================== Sections: restaurant-mgmt ===================== */
 import MenuManagementSection from "../components/admin/MenuManagementSection";
 import CategoriesSection from "../components/admin/CategoriesSection";
-import ThemeSection from "../components/admin/ThemeSection";
-import MusicSection from "../components/admin/MusicSection";
-import FinancialSection from "../components/admin/FinancialSection";
-import AdsBookingSection from "../components/admin/AdsBookingSection";
-import ProfileSection from "../components/admin/ProfileSection";
+import CommentsSection from "../components/admin/CommentsSection";
+import CombosSection from "../components/admin/CombosSection";
+
+/* ===================== Sections: business ===================== */
 import OrdersSection from "../components/admin/OrdersSection";
+import AdsBookingSection from "../components/admin/AdsBookingSection";
+import FinancialSection from "../components/admin/FinancialSection";
+
+/* ===================== Sections: platform-admin ===================== */
+import UserManagementSection from "../components/admin/UserManagementSection";
+import RestaurantsListForAdminSection from "../components/admin/RestaurantsListForAdminSection";
 import CategorySettingsSection from "../components/admin/CategorySettingsSection";
 import RestaurantCategorySettingsSection from "../components/admin/RestaurantCategorySettingsSection";
+
+/* ===================== Sections: content-ads-admin ===================== */
 import AdsSettingsSection from "../components/admin/AdsSettingsSection";
 import AdsRequestsSection from "../components/admin/AdsRequestsSection";
-import RestaurantsListForAdminSection from "../components/admin/RestaurantsListForAdminSection";
-import RestaurantProfileSection from "../components/admin/RestaurantProfileSection";
-import CommentsSection from "../components/admin/CommentsSection";
 import BlogManagementSection from "../components/admin/BlogManagementSection";
 import LandingManagementSection from "../components/admin/LandingManagementSection";
-import CombosSection from "../components/admin/CombosSection";
-import UserManagementSection from "../components/admin/UserManagementSection";
 
+/* ===================== Sections: account ===================== */
+import ProfileSection from "../components/admin/ProfileSection";
+import RestaurantProfileSection from "../components/admin/RestaurantProfileSection";
+
+/* ===================== Sections: misc / unused in current sidebar ===================== */
+import DashboardSection from "../components/admin/DashboardSection";
+import ThemeSection from "../components/admin/ThemeSection";
+import MusicSection from "../components/admin/MusicSection";
+
+/* ===================== Data / context / hooks ===================== */
 import ownerRestaurantAxios from "../api/ownerRestaurantAxios";
 import { useAuth } from "../context/AuthContext";
 import { useMusicSignalR } from "../hooks/useMusicSignalR";
@@ -61,14 +75,11 @@ export default function AdminPage() {
     if (user) load();
   }, [user]);
 
-  useEffect(() => {
-    console.log("hasNewRequest =", hasNewRequest);
-  }, [hasNewRequest]);
   /* ---------------------------
    * SIGNALR (single source of truth)
    * -------------------------- */
   useMusicSignalR(restaurantId, {
-    onCreated: (data) => {
+    onCreated: () => {
       setHasNewRequest(true);
 
       showModal({
@@ -81,8 +92,6 @@ export default function AdminPage() {
           setHasNewRequest(false);
         },
       });
-
-      console.log("🔄 realtime update triggered");
     },
   });
 
@@ -107,8 +116,7 @@ export default function AdminPage() {
 
   const renderActiveView = () => {
     switch (activeTab) {
-      case "dashboard":
-        return <DashboardSection />;
+      // --- restaurant-mgmt ---
       case "menu":
         return (
           <MenuManagementSection
@@ -117,40 +125,53 @@ export default function AdminPage() {
         );
       case "categories":
         return <CategoriesSection />;
-      case "restaurant-category-settings":
-        return <RestaurantCategorySettingsSection />;
-      case "theme":
-        return <ThemeSection />;
-      case "music":
-        return <MusicSection />;
-      case "orders":
-        return <OrdersSection />;
       case "comments":
         return <CommentsSection />;
       case "combos":
         return <CombosSection />;
-      case "blog":
-        return <BlogManagementSection />;
-      case "landing":
-        return <LandingManagementSection />;
-      case "financial":
-        return <FinancialSection />;
+
+      // --- business ---
+      case "orders":
+        return <OrdersSection />;
       case "ads":
         return <AdsBookingSection />;
+      case "financial":
+        return <FinancialSection />;
+
+      // --- platform-admin ---
+      case "user-roles":
+        return <UserManagementSection />;
+      case "restaurants":
+        return <RestaurantsListForAdminSection />;
+      case "category-settings":
+        return <CategorySettingsSection />;
+      case "restaurant-category-settings":
+        return <RestaurantCategorySettingsSection />;
+
+      // --- content-ads-admin ---
       case "ads-settings":
         return <AdsSettingsSection />;
       case "ads-requests":
         return <AdsRequestsSection />;
-      case "restaurants":
-        return <RestaurantsListForAdminSection />;
-      case "restaurant-profile":
-        return <RestaurantProfileSection />;
+      case "blog":
+        return <BlogManagementSection />;
+      case "landing":
+        return <LandingManagementSection />;
+
+      // --- account ---
       case "profile":
         return <ProfileSection />;
-      case "category-settings":
-        return <CategorySettingsSection />;
-      case "user-roles":
-        return <UserManagementSection />;
+      case "restaurant-profile":
+        return <RestaurantProfileSection />;
+
+      // --- misc ---
+      case "dashboard":
+        return <DashboardSection />;
+      case "theme":
+        return <ThemeSection />;
+      case "music":
+        return <MusicSection />;
+
       default:
         return <div>در حال ساخت...</div>;
     }

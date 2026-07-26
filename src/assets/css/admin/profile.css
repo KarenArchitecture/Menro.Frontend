@@ -1,0 +1,13 @@
+/* Reset UserProfileForm's standalone-page centering when nested
+   inside the admin dashboard's content area */
+.content-view .upf-page-wrapper {
+  min-height: auto;
+  display: block;
+  padding: 0;
+}
+
+.content-view .upf-panel {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}

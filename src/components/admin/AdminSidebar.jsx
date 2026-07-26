@@ -13,11 +13,7 @@ const DASHBOARD_ITEM = {
 
 // Everything else is grouped by topic; each group renders as a collapsible
 // (accordion) section. `roles`, when present, gates the WHOLE group —
-// header and every item in it — the same way the old `{ isDivider: true,
-// roles: [...] }` entry used to gate just the divider line. Previously
-// "بلاگ"/"لندینگ" had no `roles` of their own, so they stayed visible even
-// to non-admins after the "مدیریت منرو" divider was hidden; grouping them
-// under one `roles: ["Admin"]` section fixes that.
+// header and every item in it.
 const NAV_GROUPS = [
   {
     key: "restaurant-mgmt",
@@ -47,8 +43,8 @@ const NAV_GROUPS = [
     ],
   },
   {
-    key: "menro-admin",
-    label: "مدیریت منرو",
+    key: "platform-admin",
+    label: "مدیریت پلتفرم",
     roles: ["Admin"], // ✅ فقط برای Admin (منرو)
     items: [
       {
@@ -71,6 +67,13 @@ const NAV_GROUPS = [
         label: "دسته‌بندی انواع رستوران",
         icon: "fas fa-concierge-bell",
       },
+    ],
+  },
+  {
+    key: "content-ads-admin",
+    label: "تبلیغات و محتوا",
+    roles: ["Admin"], // ✅ فقط برای Admin (منرو)
+    items: [
       {
         key: "ads-settings",
         label: "تنظیمات تبلیغات",

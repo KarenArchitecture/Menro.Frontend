@@ -1,10 +1,11 @@
 //RestaurantProfileSection.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   getRestaurantProfile,
   updateRestaurantProfile,
 } from "../../api/ownerRestaurant";
 import restaurantAxios from "../../api/restaurantAxios";
+import "../../assets/css/admin/restaurantProfile.css";
 
 export default function RestaurantProfileSection() {
   // basic fields
@@ -30,6 +31,10 @@ export default function RestaurantProfileSection() {
 
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
+
+  const homeBannerInputRef = useRef(null);
+  const shopBannerInputRef = useRef(null);
+  const logoInputRef = useRef(null);
 
   // subscription info (اکنون واقعاً state، نه مقدار ثابت)
   const [subscriptionType, setSubscriptionType] = useState("نامشخص");
@@ -74,7 +79,26 @@ export default function RestaurantProfileSection() {
 
     loadData();
   }, []);
+  // handling remove restaurant images
+  const handleRemoveHomeBanner = () => {
+    setHomeBannerFile(null);
+    setHomeBannerPreview(null);
+    if (homeBannerInputRef.current) homeBannerInputRef.current.value = "";
+  };
 
+  const handleRemoveShopBanner = () => {
+    setShopBannerFile(null);
+    setShopBannerPreview(null);
+    if (shopBannerInputRef.current) shopBannerInputRef.current.value = "";
+  };
+
+  const handleRemoveLogo = () => {
+    setLogoFile(null);
+    setLogoPreview(null);
+    if (logoInputRef.current) logoInputRef.current.value = "";
+  };
+
+  // SUBMIT
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -94,12 +118,20 @@ export default function RestaurantProfileSection() {
       // files (optional)
       if (homeBannerFile) {
         formData.append("HomeBanner", homeBannerFile);
+      } else if (!homeBannerPreview) {
+        formData.append("RemoveHomeBanner", "true");
       }
+
       if (shopBannerFile) {
         formData.append("ShopBanner", shopBannerFile);
+      } else if (!shopBannerPreview) {
+        formData.append("RemoveShopBanner", "true");
       }
+
       if (logoFile) {
         formData.append("Logo", logoFile);
+      } else if (!logoPreview) {
+        formData.append("RemoveLogo", "true");
       }
 
       // send to backend
@@ -268,29 +300,31 @@ export default function RestaurantProfileSection() {
         <div className="images-grid">
           {/* Home banner */}
           <div className="image-field">
-            <label htmlFor="restaurant-home-banner">
-              عکس بنر صفحه خانه رستوران
-            </label>
-            <div className="image-preview">
+            <label>عکس بنر صفحه خانه رستوران</label>
+
+            <div className="restaurant-profile-image-frame">
               {homeBannerPreview ? (
                 <img
                   src={homeBannerPreview}
                   alt="بنر صفحه خانه رستوران"
+                  className="restaurant-profile-image-frame__img"
                   onError={(e) => {
                     e.currentTarget.src = "/images/placeholder-banner.png";
                   }}
                 />
               ) : (
-                <span className="image-placeholder">
-                  هنوز عکسی انتخاب نشده است
+                <span className="restaurant-profile-image-placeholder">
+                  <i className="fas fa-image" />
+                  عکسی انتخاب نشده
                 </span>
               )}
             </div>
+
             <input
-              id="restaurant-home-banner"
-              name="restaurantHomeBanner"
+              ref={homeBannerInputRef}
               type="file"
               accept="image/*"
+              hidden
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 setHomeBannerFile(file || null);
@@ -298,33 +332,55 @@ export default function RestaurantProfileSection() {
                 else setHomeBannerPreview(null);
               }}
             />
+
+            <button
+              type="button"
+              className="restaurant-profile-upload-btn"
+              onClick={() => homeBannerInputRef.current?.click()}
+            >
+              <i className="fas fa-cloud-arrow-up" />
+              <span>{homeBannerPreview ? "تغییر عکس" : "آپلود عکس"}</span>
+            </button>
+
+            {homeBannerPreview && (
+              <button
+                type="button"
+                className="restaurant-profile-remove-btn"
+                onClick={handleRemoveHomeBanner}
+              >
+                <i className="fas fa-trash" />
+                <span>حذف عکس</span>
+              </button>
+            )}
           </div>
 
           {/* Shop banner */}
           <div className="image-field">
-            <label htmlFor="restaurant-shop-banner">
-              عکس بنر صفحه فروشگاه رستوران
-            </label>
-            <div className="image-preview">
+            <label>عکس بنر صفحه فروشگاه رستوران</label>
+
+            <div className="restaurant-profile-image-frame">
               {shopBannerPreview ? (
                 <img
                   src={shopBannerPreview}
                   alt="بنر صفحه فروشگاه رستوران"
+                  className="restaurant-profile-image-frame__img"
                   onError={(e) => {
                     e.currentTarget.src = "/images/placeholder-banner.png";
                   }}
                 />
               ) : (
-                <span className="image-placeholder">
-                  هنوز عکسی انتخاب نشده است
+                <span className="restaurant-profile-image-placeholder">
+                  <i className="fas fa-image" />
+                  عکسی انتخاب نشده
                 </span>
               )}
             </div>
+
             <input
-              id="restaurant-shop-banner"
-              name="restaurantShopBanner"
+              ref={shopBannerInputRef}
               type="file"
               accept="image/*"
+              hidden
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 setShopBannerFile(file || null);
@@ -332,31 +388,55 @@ export default function RestaurantProfileSection() {
                 else setShopBannerPreview(null);
               }}
             />
+
+            <button
+              type="button"
+              className="restaurant-profile-upload-btn"
+              onClick={() => shopBannerInputRef.current?.click()}
+            >
+              <i className="fas fa-cloud-arrow-up" />
+              <span>{shopBannerPreview ? "تغییر عکس" : "آپلود عکس"}</span>
+            </button>
+
+            {shopBannerPreview && (
+              <button
+                type="button"
+                className="restaurant-profile-remove-btn"
+                onClick={handleRemoveShopBanner}
+              >
+                <i className="fas fa-trash" />
+                <span>حذف عکس</span>
+              </button>
+            )}
           </div>
 
           {/* Logo */}
           <div className="image-field">
-            <label htmlFor="restaurant-logo">عکس لوگو رستوران</label>
-            <div className="image-preview image-preview--logo">
+            <label>عکس لوگو رستوران</label>
+
+            <div className="restaurant-profile-image-frame restaurant-profile-image-frame--circle">
               {logoPreview ? (
                 <img
                   src={logoPreview}
                   alt="لوگو رستوران"
+                  className="restaurant-profile-image-frame__img"
                   onError={(e) => {
                     e.currentTarget.src = "/images/profile-default.jpg";
                   }}
                 />
               ) : (
-                <span className="image-placeholder">
-                  هنوز لوگو انتخاب نشده است
+                <span className="restaurant-profile-image-placeholder">
+                  <i className="fas fa-image" />
+                  لوگویی انتخاب نشده
                 </span>
               )}
             </div>
+
             <input
-              id="restaurant-logo"
-              name="restaurantLogo"
+              ref={logoInputRef}
               type="file"
               accept="image/*"
+              hidden
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 setLogoFile(file || null);
@@ -364,6 +444,26 @@ export default function RestaurantProfileSection() {
                 else setLogoPreview(null);
               }}
             />
+
+            <button
+              type="button"
+              className="restaurant-profile-upload-btn"
+              onClick={() => logoInputRef.current?.click()}
+            >
+              <i className="fas fa-cloud-arrow-up" />
+              <span>{logoPreview ? "تغییر لوگو" : "آپلود لوگو"}</span>
+            </button>
+
+            {logoPreview && (
+              <button
+                type="button"
+                className="restaurant-profile-remove-btn"
+                onClick={handleRemoveLogo}
+              >
+                <i className="fas fa-trash" />
+                <span>حذف لوگو</span>
+              </button>
+            )}
           </div>
         </div>
 

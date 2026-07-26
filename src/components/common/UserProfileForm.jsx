@@ -198,6 +198,13 @@ export default function UserProfileForm() {
     setErrors((prev) => ({ ...prev, image: null }));
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
+  const handleRemoveImage = () => {
+    setProfileImage(null);
+    setProfilePreview(null);
+    setOriginalPreview(null);
+    setErrors((prev) => ({ ...prev, image: null }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const handleNameChange = (e) => {
     const value = e.target.value;
@@ -257,7 +264,12 @@ export default function UserProfileForm() {
 
     const formData = new FormData();
     formData.append("fullName", fullName.trim());
-    if (profileImage) formData.append("profileImage", profileImage);
+
+    if (profileImage) {
+      formData.append("profileImage", profileImage);
+    } else if (!profilePreview) {
+      formData.append("removeProfileImage", "true");
+    }
 
     setIsSubmitting(true);
     try {
@@ -400,6 +412,15 @@ export default function UserProfileForm() {
                     onClick={handleRemoveNewImage}
                   >
                     لغو انتخاب
+                  </button>
+                )}
+                {profilePreview && !profileImage && (
+                  <button
+                    type="button"
+                    className="auth-chip-btn auth-chip-btn-sm upf-avatar-remove-btn"
+                    onClick={handleRemoveImage}
+                  >
+                    حذف عکس
                   </button>
                 )}
               </div>

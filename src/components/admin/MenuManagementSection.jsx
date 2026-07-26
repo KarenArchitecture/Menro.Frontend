@@ -26,7 +26,7 @@ function SortIcon({ active, dir }) {
   );
 }
 
-export default function MenuManagementSection() {
+export default function MenuManagementSection({ onNavigateToCategories }) {
   const [foods, setFoods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -63,7 +63,7 @@ export default function MenuManagementSection() {
   }, []);
 
   const handleAddCategoryClick = () => {
-    // TODO: بعداً مودال افزودن دسته‌بندی از اینجا باز می‌شود
+    onNavigateToCategories?.();
   };
 
   // fetch foods
@@ -515,6 +515,10 @@ export default function MenuManagementSection() {
         foodId={selectedFoodId}
         onClose={() => setIsModalOpen(false)}
         onSaved={fetchFoods}
+        onNavigateToCategories={() => {
+          setIsModalOpen(false);
+          onNavigateToCategories?.();
+        }}
       />
     </>
   );

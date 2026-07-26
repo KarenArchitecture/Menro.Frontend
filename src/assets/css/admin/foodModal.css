@@ -5,7 +5,7 @@
   flex-wrap: wrap;
 }
 
-#food-modal .radio-row .radio-label,
+#food-modal .radio-label,
 #food-modal .discount-toggle {
   display: flex;
   align-items: center;
@@ -23,19 +23,19 @@
     color 0.2s;
 }
 
-#food-modal .radio-row .radio-label:hover,
+#food-modal .radio-label:hover,
 #food-modal .discount-toggle:hover {
   border-color: #f5a623;
 }
 
-#food-modal .radio-row .radio-label:has(input:checked),
+#food-modal .radio-label:has(input:checked),
 #food-modal .discount-toggle:has(input:checked) {
   border-color: #f5a623;
   background: rgba(245, 166, 35, 0.08);
   color: #fff;
 }
 
-#food-modal .radio-row .radio-label input[type="radio"],
+#food-modal .radio-label input[type="radio"],
 #food-modal .discount-toggle input[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;
@@ -52,13 +52,13 @@
     background 0.2s;
 }
 
-#food-modal .radio-row .radio-label input[type="radio"] {
+#food-modal .radio-label input[type="radio"] {
   border-radius: 50%;
 }
-#food-modal .radio-row .radio-label input[type="radio"]:checked {
+#food-modal .radio-label input[type="radio"]:checked {
   border-color: #f5a623;
 }
-#food-modal .radio-row .radio-label input[type="radio"]:checked::after {
+#food-modal .radio-label input[type="radio"]:checked::after {
   content: "";
   position: absolute;
   inset: 3px;
@@ -276,4 +276,23 @@ input {
 #food-modal .discount-preview strong {
   color: #f5a623;
   font-size: 15px;
+}
+#food-modal .discount-row input[type="text"] {
+  margin-bottom: 0;
+}
+
+/* ===== FoodModal: section divider ===== */
+#food-modal .form-divider {
+  border: none;
+  border-top: 1px solid #333;
+  margin: 20px 0;
+}
+
+/* ===== FoodModal: variant "پیش‌فرض" radio + delete button, side by side ===== */
+#food-modal .food-type-item__default-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
 }

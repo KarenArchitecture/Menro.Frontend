@@ -109,7 +109,11 @@ export default function AdminPage() {
       case "dashboard":
         return <DashboardSection />;
       case "menu":
-        return <MenuManagementSection />;
+        return (
+          <MenuManagementSection
+            onNavigateToCategories={() => handleSelectTab("categories")}
+          />
+        );
       case "categories":
         return <CategoriesSection />;
       case "restaurant-category-settings":

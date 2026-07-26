@@ -23,6 +23,7 @@ export default function FoodModal({
   foodId,
   onClose,
   onSaved,
+  onNavigateToCategories,
 }) {
   const title = mode === "edit" ? "ویرایش غذا" : "افزودن غذای جدید";
 
@@ -62,7 +63,7 @@ export default function FoodModal({
   ]);
 
   // show extra column if has variant/discount
-  const showExtraColumn = hasVariants || hasDiscount;
+  const showExtraColumn = hasVariants;
 
   // load categories on open
   useEffect(() => {
@@ -73,7 +74,6 @@ export default function FoodModal({
 
       try {
         const { data } = await adminFoodAxios.get("/categories");
-        console.log("categories fetched:", data);
         setCategories(data || []);
       } catch (err) {
         console.error("خطا در گرفتن دسته‌بندی‌ها", err);
@@ -105,8 +105,6 @@ export default function FoodModal({
     const fetchFood = async () => {
       try {
         const { data } = await adminFoodAxios.get(`/${foodId}`);
-        console.log("food fetched:", data);
-
         setName(data.name || "");
         setIngredients(data.ingredients || "");
         setFoodCategoryId(data.foodCategoryId ?? "");
@@ -293,9 +291,8 @@ export default function FoodModal({
   };
 
   const handleAddCategoryClick = () => {
-    // TODO: بعداً مودال افزودن دسته‌بندی از اینجا باز می‌شود
+    onNavigateToCategories?.();
   };
-
   const handleToggleDiscount = (checked) => {
     setHasDiscount(checked);
     if (!checked) {
@@ -439,9 +436,6 @@ export default function FoodModal({
           : [],
       };
 
-      console.log("SENDING PAYLOAD:");
-      console.log(JSON.stringify(payload, null, 2));
-
       // -------------------- API CALL (/add or /update) --------------------
       let response;
 
@@ -452,9 +446,6 @@ export default function FoodModal({
       } else {
         throw new Error("Invalid mode or missing foodId");
       }
-
-      console.log("SUCCESS:", response?.data);
-
       onSaved?.();
       onClose?.();
     } catch (err) {
@@ -510,7 +501,7 @@ export default function FoodModal({
                   onChange={(e) => setName(e.target.value)}
                 />
               </div>
-
+              <hr className="form-divider" />
               <div className="input-group">
                 <label htmlFor="food-description">توضیح مختصر غذا</label>
                 <textarea
@@ -520,7 +511,7 @@ export default function FoodModal({
                   onChange={(e) => setIngredients(e.target.value)}
                 />
               </div>
-
+              <hr className="form-divider" />
               <div className="input-group">
                 <label htmlFor="food-category">دسته‌بندی</label>
                 {!loadingCategories && categories.length === 0 ? (
@@ -560,6 +551,82 @@ export default function FoodModal({
                   </select>
                 )}
               </div>
+              <hr className="form-divider" />
+              {/* discount toggle — همیشه دیده می‌شود، چه ساده چه با تنوع */}
+              <div className="input-group">
+                <label className="discount-toggle">
+                  <input
+                    type="checkbox"
+                    checked={hasDiscount}
+                    onChange={(e) => handleToggleDiscount(e.target.checked)}
+                  />
+                  این غذا تخفیف دارد؟
+                </label>
+              </div>
+
+              {hasDiscount && (
+                <div className="discount-box">
+                  <div className="discount-row">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="درصد تخفیف (۱ تا ۹۹)"
+                      value={discountPercent}
+                      disabled={discountConfirmed}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, "");
+                        const v = clamp(toIntDigits(raw), 0, 99);
+                        setDiscountPercent(raw ? String(v) : "");
+                        setDiscountConfirmed(false);
+                      }}
+                    />
+
+                    {!discountConfirmed ? (
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={confirmDiscount}
+                      >
+                        تأیید تخفیف
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={() => setDiscountConfirmed(false)}
+                      >
+                        ویرایش
+                      </button>
+                    )}
+                  </div>
+
+                  <small className="discount-hint">
+                    تا زمانی که «تأیید تخفیف» را نزنید، ذخیره انجام نمی‌شود.
+                  </small>
+
+                  {pctValue > 0 && !discountConfirmed && (
+                    <div className="discount-warning">
+                      ⚠️ تخفیف وارد شده اما هنوز تأیید نشده است.
+                    </div>
+                  )}
+
+                  {pctValue > 0 && discountConfirmed && (
+                    <div className="discount-confirmed">
+                      ✅ تخفیف ثبت شد: {pctValue.toLocaleString("fa-IR")}٪
+                    </div>
+                  )}
+
+                  {!hasVariants && basePriceValue > 0 && pctValue > 0 && (
+                    <div className="discount-preview">
+                      قیمت نهایی:{" "}
+                      <strong>
+                        {computedFinalBasePrice.toLocaleString("fa-IR")}
+                      </strong>{" "}
+                      تومان
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="form-column">
@@ -621,7 +688,7 @@ export default function FoodModal({
                   </button>
                 )}
               </div>
-
+              <hr className="form-divider" />
               {/* Step 1: simple vs variants */}
               <div className="input-group">
                 <label>آیا غذا تنوع دارد؟</label>
@@ -653,7 +720,7 @@ export default function FoodModal({
                   قیمت مشخص کنید.
                 </small>
               </div>
-
+              <hr className="form-divider" />
               {/* Base price only when simple */}
               {!hasVariants && (
                 <div className="input-group">
@@ -669,18 +736,6 @@ export default function FoodModal({
                   />
                 </div>
               )}
-
-              {/* discount toggle — همیشه دیده می‌شود، چه ساده چه با تنوع */}
-              <div className="input-group">
-                <label className="discount-toggle">
-                  <input
-                    type="checkbox"
-                    checked={hasDiscount}
-                    onChange={(e) => handleToggleDiscount(e.target.checked)}
-                  />
-                  این غذا تخفیف دارد؟
-                </label>
-              </div>
             </div>
 
             {showExtraColumn && (
@@ -690,7 +745,7 @@ export default function FoodModal({
                     <label>انواع غذا (دارای تنوع)</label>
 
                     <div id="food-types-container">
-                      {variants.map((v) => (
+                      {variants.map((v, index) => (
                         <div key={v.clientId} style={{ marginBottom: 10 }}>
                           <div className="food-type-item">
                             <input
@@ -718,25 +773,27 @@ export default function FoodModal({
                               }}
                             />
 
-                            <label className="radio-label">
-                              <input
-                                type="radio"
-                                name="default_type"
-                                checked={v.isDefault}
-                                onChange={() => makeDefault(v.clientId)}
-                              />{" "}
-                              پیش‌فرض
-                            </label>
+                            <div className="food-type-item__default-row">
+                              <label className="radio-label">
+                                <input
+                                  type="radio"
+                                  name="default_type"
+                                  checked={v.isDefault}
+                                  onChange={() => makeDefault(v.clientId)}
+                                />{" "}
+                                پیش‌فرض
+                              </label>
 
-                            <button
-                              type="button"
-                              className="btn btn-icon btn-danger"
-                              onClick={() => removeVariant(v.clientId)}
-                              title="حذف نوع"
-                              disabled={variants.length === 1}
-                            >
-                              <i className="fas fa-trash" />
-                            </button>
+                              <button
+                                type="button"
+                                className="btn btn-icon btn-danger"
+                                onClick={() => removeVariant(v.clientId)}
+                                title="حذف نوع"
+                                disabled={variants.length === 1}
+                              >
+                                <i className="fas fa-trash" />
+                              </button>
+                            </div>
                           </div>
 
                           <div className="addons-block">
@@ -796,6 +853,9 @@ export default function FoodModal({
                               افزودن مخلفات
                             </button>
                           </div>
+                          {index < variants.length - 1 && (
+                            <hr className="form-divider" />
+                          )}
                         </div>
                       ))}
                     </div>
@@ -812,70 +872,6 @@ export default function FoodModal({
                     <small className="variants-note">
                       یکی از انواع باید «پیش‌فرض» باشد.
                     </small>
-                  </div>
-                )}
-
-                {hasDiscount && (
-                  <div className="discount-box">
-                    <div className="discount-row">
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="درصد تخفیف (۱ تا ۹۹)"
-                        value={discountPercent}
-                        disabled={discountConfirmed}
-                        onChange={(e) => {
-                          const raw = e.target.value.replace(/[^\d]/g, "");
-                          const v = clamp(toIntDigits(raw), 0, 99);
-                          setDiscountPercent(raw ? String(v) : "");
-                          setDiscountConfirmed(false);
-                        }}
-                      />
-
-                      {!discountConfirmed ? (
-                        <button
-                          type="button"
-                          className="btn btn-primary"
-                          onClick={confirmDiscount}
-                        >
-                          تأیید تخفیف
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          className="btn btn-secondary"
-                          onClick={() => setDiscountConfirmed(false)}
-                        >
-                          ویرایش
-                        </button>
-                      )}
-                    </div>
-
-                    <small className="discount-hint">
-                      تا زمانی که «تأیید تخفیف» را نزنید، ذخیره انجام نمی‌شود.
-                    </small>
-
-                    {pctValue > 0 && !discountConfirmed && (
-                      <div className="discount-warning">
-                        ⚠️ تخفیف وارد شده اما هنوز تأیید نشده است.
-                      </div>
-                    )}
-
-                    {pctValue > 0 && discountConfirmed && (
-                      <div className="discount-confirmed">
-                        ✅ تخفیف ثبت شد: {pctValue.toLocaleString("fa-IR")}٪
-                      </div>
-                    )}
-
-                    {!hasVariants && basePriceValue > 0 && pctValue > 0 && (
-                      <div className="discount-preview">
-                        قیمت نهایی:{" "}
-                        <strong>
-                          {computedFinalBasePrice.toLocaleString("fa-IR")}
-                        </strong>{" "}
-                        تومان
-                      </div>
-                    )}
                   </div>
                 )}
               </div>

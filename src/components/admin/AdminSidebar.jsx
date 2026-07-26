@@ -52,6 +52,11 @@ const NAV_GROUPS = [
     roles: ["Admin"], // ✅ فقط برای Admin (منرو)
     items: [
       {
+        key: "user-roles",
+        label: "مدیریت کاربران",
+        icon: "fas fa-person",
+      },
+      {
         key: "restaurants",
         label: "مدیریت رستوران‌ها",
         icon: "fas fa-utensils",

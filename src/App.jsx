@@ -8,7 +8,6 @@ import BlogResultPage from "./pages/BlogResultPage";
 import ChangePasswordPage from "./pages/Authentication/ChangePasswordPage";
 import ChangePhone from "./pages/Authentication/ChangePhone";
 import CheckoutPage from "./pages/CheckoutPage";
-import CommentsPage from "./pages/CommentsPage";
 import FavoritesPage from "./pages/FavoritesPage";
 import ForgotPassword from "./pages/Authentication/ForgotPassword";
 import HomePage from "./pages/HomePage";
@@ -29,14 +28,6 @@ import UserProfileForm from "./components/common/UserProfileForm";
 
 import MobileNav from "./components/common/MobileNav";
 import ProtectedRoute from "./components/common/ProtectedRoute";
-import UnauthorizedPage from "./pages/UnauthorizedPage";
-import ChangePhone from "./pages/ChangePhone";
-import AdminPage from "./pages/AdminPage";
-import BlogPage from "./pages/BlogPage";
-import Orders from "./pages/OrdersPage";
-import BillsPage from "./pages/BillsPage";
-import FavoritesPage from "./pages/FavoritesPage";
-import ProfilePage from "./pages/ProfilePage";
 import FoodCommentsPage from "./pages/FoodCommentsPage";
 import MyCommentsPage from "./pages/MyCommentsPage";
 import {
@@ -118,9 +109,7 @@ export default function App() {
           <Route path="/change-password" element={<ChangePasswordPage />} />
           <Route path="/change-phone" element={<ChangePhone />} />
           <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/comments" element={<CommentsPage />} />
           <Route path="/favorites" element={<FavoritesPage />} />
-          <Route path="/foods/:foodId/comments" element={<CommentsPage />} />
           <Route path="/foods/popular" element={<PopularFoodsBrowsePage />} />
           <Route
             path="/foods/popular/:categoryId"
@@ -133,13 +122,11 @@ export default function App() {
           <Route path="/orders" element={<Orders />} />
           {/* 4. Added the dynamic route for the BillsPage */}
           <Route path="/orders/bill/:id" element={<BillsPage />} />
-          <Route path="/favorites" element={<FavoritesPage />} />
           <Route
             path="/foods/:foodId/comments"
             element={<FoodCommentsPage />}
           />
           <Route path="/comments" element={<MyCommentsPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
           <Route
             path="/profile"
@@ -166,7 +153,6 @@ export default function App() {
           {/* <Route path="/music" element={<MusicPage />} /> */}
           <Route path="/restaurant/:slug/music" element={<MusicPage />} />
           <Route path="/restaurants" element={<RestaurantsBrowsePage />} />
-          <Route path="/unauthorized" element={<UnauthorizedPage />} />
           {/* 404 Catch-All Route */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

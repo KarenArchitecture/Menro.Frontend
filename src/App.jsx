@@ -1,6 +1,7 @@
 // src/App.jsx
 import { Routes, Route, useLocation } from "react-router-dom";
 
+import { Toaster } from "react-hot-toast";
 import AdminMusicPage from "./pages/AdminMusicPage";
 import AdminPage from "./pages/AdminPage";
 import BillsPage from "./pages/BillsPage";
@@ -39,6 +40,8 @@ import RestaurantSwitchConfirmModal from "./components/shop/RestaurantSwitchConf
 
 // --- Page wrapper for 3D depth animation ---
 // (defined ONCE, at module scope, outside App)
+<Toaster position="top-center" toastOptions={{ style: { fontFamily: "Vazirmatn" } }} />
+
 function PageWrapper({ children, hideMobileNav, removePadding }) {
   const { isDrawerOpen } = useDrawerState();
 

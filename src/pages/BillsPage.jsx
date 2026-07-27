@@ -22,7 +22,7 @@ export default function BillsPage() {
   const items = bill.items.map((it, idx) => ({
     id: idx,
     title: it.name,
-    image: resolveFileUrl(it.imageUrl) || "/images/mocha.jpg",
+    image: resolveFileUrl(it.imageUrl, "/images/food/food-placeholder.png"),
     rating: 4.5,
     reviews: "0",
     totalPrice: it.unitPrice * it.quantity,

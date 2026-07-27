@@ -5,6 +5,7 @@ import CartCard from "../components/checkout/CartCard";
 import CheckoutFooter from "../components/checkout/CheckoutFooter";
 import { useCart } from "../components/shop/CartContext";
 import { checkoutCart } from "../api/cart";
+import resolveFileUrl from "../utils/resolveFileUrl";
 
 export default function CheckoutPage() {
   usePageStyles("/styles-checkout.css");
@@ -16,7 +17,7 @@ export default function CheckoutPage() {
       cart.items.map((ci) => ({
         id: ci.id,
         title: `${ci.foodName} - ${ci.variantName}`,
-        img: ci.imageUrl ? `${import.meta.env.VITE_SERVER_URL}${ci.imageUrl}` : "/images/checkout-pic.png",
+        img: resolveFileUrl(ci.imageUrl, "/images/checkout-pic.png"),
         rating: { score: 4.5, count: 0 },
         hasAddons: ci.addons.length > 0,
         options: [{ id: ci.id, title: ci.variantName, unitPrice: ci.unitPrice, qty: ci.quantity }],

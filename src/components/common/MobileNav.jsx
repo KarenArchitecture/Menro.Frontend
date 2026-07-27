@@ -147,8 +147,8 @@ const MobileNav = () => {
                 />
               </svg>
               <span className="text">سفارش‌ها</span>
-              {cart.distinctFoodCount > 0 && (
-                <span className="badge">{toPersianDigits(cart.distinctFoodCount)}</span>
+              {cart.count > 0 && (
+                <span className="badge">{toPersianDigits(cart.count)}</span>
               )}
             </NavLink>
           </li>

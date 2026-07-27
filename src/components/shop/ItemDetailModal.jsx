@@ -20,6 +20,7 @@ import CommentIcon from "../icons/CommentIcon";
 import { useQuery } from "@tanstack/react-query";
 import { getFoodCombos } from "../../api/combos";
 import ComboFoodsModal from "./ComboFoodsModal";
+import { showError } from "../../utils/toast";
 
 const toPersianDigits = (value) => {
   if (value === null || value === undefined) return "۰";
@@ -68,7 +69,7 @@ function ItemDetailModal({ item, onClose, onSelectComboFood }) {
     enabled: !!item?.id,
   });
 
-  const cart = useCart(); // single declaration — used everywhere below
+  const cart = useCart();
   const navigate = useNavigate();
   const [isActive, setIsActive] = useState(false);
 
@@ -126,8 +127,6 @@ function ItemDetailModal({ item, onClose, onSelectComboFood }) {
   const [selectedAddonsByVar, setSelectedAddonsByVar] = useState({});
   const initializedVariants = useRef(new Set());
 
-  // Seed local addon selection state from whatever's already in the cart,
-  // once per variant, so re-opening the modal shows existing selections.
   useEffect(() => {
     variations.forEach((v) => {
       if (initializedVariants.current.has(v.id)) return;
@@ -171,7 +170,18 @@ function ItemDetailModal({ item, onClose, onSelectComboFood }) {
     });
   };
 
+  // Addons belong to a variant, not the food itself. If the variant hasn't
+  // been added to the cart yet (qty === 0), there is nothing to attach the
+  // addon to — block the change and tell the person why, instead of
+  // silently updating local UI state that never reaches the cart.
   const handleAddonQtyChange = (variantId, addon, newQty) => {
+    const existingQty = cart.getVariantItem(item.id, variantId)?.quantity ?? 0;
+
+    if (existingQty <= 0) {
+      showError("ابتدا این نوع را به سبد خرید اضافه کنید تا بتوانید مخلفات آن را انتخاب کنید.");
+      return;
+    }
+
     setSelectedAddonsByVar((prev) => {
       const current = { ...(prev[variantId] || {}) };
       if (newQty <= 0) delete current[addon.id];
@@ -179,21 +189,18 @@ function ItemDetailModal({ item, onClose, onSelectComboFood }) {
       return { ...prev, [variantId]: current };
     });
 
-    const existingQty = cart.getVariantItem(item.id, variantId)?.quantity ?? 0;
-    if (existingQty > 0) {
-      const nextAddons = { ...(selectedAddonsByVar[variantId] || {}) };
-      if (newQty <= 0) delete nextAddons[addon.id];
-      else nextAddons[addon.id] = newQty;
+    const nextAddons = { ...(selectedAddonsByVar[variantId] || {}) };
+    if (newQty <= 0) delete nextAddons[addon.id];
+    else nextAddons[addon.id] = newQty;
 
-      cart.setItem({
-        foodId: item.id,
-        variantId,
-        quantity: existingQty,
-        addons: Object.entries(nextAddons)
-          .filter(([, q]) => q > 0)
-          .map(([foodAddonId, q]) => ({ foodAddonId: Number(foodAddonId), quantity: q })),
-      });
-    }
+    cart.setItem({
+      foodId: item.id,
+      variantId,
+      quantity: existingQty,
+      addons: Object.entries(nextAddons)
+        .filter(([, q]) => q > 0)
+        .map(([foodAddonId, q]) => ({ foodAddonId: Number(foodAddonId), quantity: q })),
+    });
   };
 
   /* ---------- open/close animation ---------- */
@@ -297,6 +304,7 @@ function ItemDetailModal({ item, onClose, onSelectComboFood }) {
                 const qty = cart.getVariantItem(item.id, v.id)?.quantity ?? 0;
                 const addons = addonsByVar[v.id] || [];
                 const unitPrice = Number(v.price || 0) + addonsTotalFor(v.id);
+                const isVariantAdded = qty > 0;
 
                 return (
                   <div key={v.id} className="variant-block">
@@ -328,7 +336,10 @@ function ItemDetailModal({ item, onClose, onSelectComboFood }) {
                             const displayPrice = currentQty === 0 ? a.price : a.price * currentQty;
 
                             return (
-                              <li key={a.id} className={`addon-row ${currentQty > 0 ? "checked" : ""}`}>
+                              <li
+                                key={a.id}
+                                className={`addon-row ${currentQty > 0 ? "checked" : ""} ${!isVariantAdded ? "addon-row--locked" : ""}`}
+                              >
                                 <div className="addon-name">{a.name}</div>
                                 <div className="addon-price-amount">
                                   <div className="addon-price">

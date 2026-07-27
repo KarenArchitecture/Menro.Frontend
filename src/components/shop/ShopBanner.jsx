@@ -100,8 +100,8 @@ function ShopBanner({ banner, onSearchSubmit, onSearchChange, searchValue = "" }
             onClick={() => navigate("/checkout")}
           >
             <ShoppingBagIcon />
-            {cart.distinctFoodCount > 0 && (
-              <span className="shop-cart-badge">{toPersianDigits(cart.distinctFoodCount)}</span>
+            {cart.count > 0 && (
+              <span className="shop-cart-badge">{toPersianDigits(cart.count)}</span>
             )}
           </button>
         </div>

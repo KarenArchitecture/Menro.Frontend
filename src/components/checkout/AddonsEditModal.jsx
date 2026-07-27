@@ -1,7 +1,8 @@
 // src/components/checkout/AddonsEditModal.jsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { useCart } from "../shop/CartContext";
+import usePageStyles from "../../hooks/usePageStyles";
 import BackIcon from "../icons/BackIcon";
 import MokhalafatIcon from "../icons/MokhalafatIcon";
 
@@ -17,12 +18,12 @@ const AddonScrollPicker = ({ value = 0, onChange, max = 10 }) => {
     }, [value]);
 
     return (
-        <div className="addon-qty-scroll" ref={scrollRef} dir="ltr">
+        <div className="aem-qty-scroll" ref={scrollRef} dir="ltr">
         {numbers.map((num) => (
             <button
             key={num}
             type="button"
-            className={`addon-qty-item ${value === num ? (num === 0 ? "active-0" : "active-n") : ""}`}
+            className={`aem-qty-item ${value === num ? (num === 0 ? "active-0" : "active-n") : ""}`}
             onClick={() => onChange(num)}
             >
             {toPersianDigits(num)}
@@ -33,6 +34,8 @@ const AddonScrollPicker = ({ value = 0, onChange, max = 10 }) => {
 };
 
 export default function AddonsEditModal({ open, onClose }) {
+    usePageStyles("/addons-edit-modal.css");
+
     const cart = useCart();
     const [isActive, setIsActive] = useState(false);
 
@@ -51,7 +54,7 @@ export default function AddonsEditModal({ open, onClose }) {
         setTimeout(() => onClose?.(), 250);
     };
 
-    const groupedByFood = React.useMemo(() => {
+    const groupedByFood = useMemo(() => {
         const map = new Map();
         for (const it of cart.items) {
         if (!map.has(it.foodId)) map.set(it.foodId, { foodId: it.foodId, foodName: it.foodName, variants: [] });
@@ -78,74 +81,66 @@ export default function AddonsEditModal({ open, onClose }) {
 
     const modalUI = (
         <>
-        <div className={`modal-backdrop combo-foods-backdrop ${isActive ? "active" : ""}`} onClick={handleClose} />
-        <div className={`bottom-modal combo-foods-modal ${isActive ? "active" : ""}`} dir="rtl">
-            <div className="combo-foods-header">
-            <button type="button" className="icon-btn combo-foods-header__back" onClick={handleClose}>
+        <div className={`aem-backdrop ${isActive ? "active" : ""}`} onClick={handleClose} />
+        <div className={`aem-modal ${isActive ? "active" : ""}`} dir="rtl">
+            <div className="aem-header">
+            <button type="button" className="aem-back-btn" onClick={handleClose} aria-label="بستن">
                 <BackIcon />
             </button>
-            <div className="combo-foods-header__title-group">
+            <div className="aem-title-group">
                 <MokhalafatIcon />
-                <span className="combo-foods-header__title">مخلفات سفارش</span>
+                <span className="aem-title">مخلفات سفارش</span>
             </div>
             </div>
 
-            <div className="sheet-body" style={{ padding: "1.6rem 2rem calc(88px + 1.6rem)" }}>
+            <div className="aem-body">
             {groupedByFood.length === 0 && (
-                <p style={{ textAlign: "center", opacity: 0.7 }}>سبد خرید شما خالی است.</p>
+                <p className="aem-empty">سبد خرید شما خالی است.</p>
             )}
 
             {groupedByFood.map((food) => (
-                <div key={food.foodId} className="variant-list" style={{ marginBottom: "2rem" }}>
-                <div className="section-head">
-                    <p className="section-label">{food.foodName}</p>
-                </div>
+                <div key={food.foodId} className="aem-food-group">
+                <p className="aem-food-title">{food.foodName}</p>
 
                 {food.variants.map((v) => (
-                    <div key={v.id} className="variant-block">
-                    <div className="variant-row">
-                        <div className="variant-pill">
-                        <span className="variant-name">{v.variantName}</span>
-                        <span className="variant-price">
-                            {fmt(v.unitPrice)} <span className="variant-currency">تومان</span>
+                    <div key={v.id} className="aem-variant-block">
+                    <div className="aem-variant-row">
+                        <span className="aem-variant-name">{v.variantName}</span>
+                        <span className="aem-variant-price">
+                        {fmt(v.unitPrice)} <span className="currency">تومان</span>
                         </span>
-                        </div>
-                        <div className="qty-group">
-                        <span className="qty-display">{toPersianDigits(v.quantity)}</span>
-                        </div>
+                        <span className="aem-variant-qty">{toPersianDigits(v.quantity)}</span>
                     </div>
 
                     {v.availableAddons?.length > 0 && (
-                        <div className="modal-subsection">
-                        <div className="subsection-head">
+                        <>
+                        <div className="aem-addons-head">
                             <MokhalafatIcon />
                             <span>مخلفات</span>
                         </div>
 
-                        <ul className="addons-list">
+                        <ul className="aem-addons-list">
                             {v.availableAddons.map((a) => {
                             const displayPrice = a.quantity === 0 ? a.extraPrice : a.extraPrice * a.quantity;
                             return (
-                                <li key={a.foodAddonId} className={`addon-row ${a.quantity > 0 ? "checked" : ""}`}>
-                                <div className="addon-name">{a.name}</div>
-                                <div className="addon-price-amount">
-                                    <div className="addon-price">
-                                    <span className="addon-amount">{toPersianDigits(fmt(displayPrice))}</span>
-                                    <span className="addon-currency">تومان</span>
+                                <li key={a.foodAddonId} className={`aem-addon-row ${a.quantity > 0 ? "checked" : ""}`}>
+                                <div className="aem-addon-name">{a.name}</div>
+                                <div className="aem-addon-price-amount">
+                                    <div className="aem-addon-price">
+                                    <span>{toPersianDigits(fmt(displayPrice))}</span>
+                                    <span className="currency">تومان</span>
                                     </div>
-                                    <div className="addon-control">
                                     <AddonScrollPicker
-                                        value={a.quantity}
-                                        onChange={(newQty) => handleAddonQtyChange(v, a.foodAddonId, newQty)}
-                                        max={10}
+                                    value={a.quantity}
+                                    onChange={(newQty) => handleAddonQtyChange(v, a.foodAddonId, newQty)}
+                                    max={10}
                                     />
-                                    </div>
                                 </div>
                                 </li>
                             );
                             })}
                         </ul>
-                        </div>
+                        </>
                     )}
                     </div>
                 ))}

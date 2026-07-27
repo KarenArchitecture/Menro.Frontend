@@ -27,7 +27,7 @@ export default function ContinueShopping() {
       <div className="cs-images-row">
         {visibleItems.map((item) => (
           <div key={item.id} className="cs-image-wrapper">
-            <img src={resolveFileUrl(item.imageUrl) || "/images/mocha.jpg"} alt="Order Item" className="cs-item-image" />
+            <img src={resolveFileUrl(item.imageUrl, "/images/food/food-placeholder.png")} alt="Order Item" className="cs-item-image" />
             <span className="cs-badge">{item.quantity}</span>
           </div>
         ))}

@@ -54,10 +54,10 @@ export default function Orders() {
           restaurantName: o.restaurantName,
           orderTypeTag: o.tableNumber === null ? "بیرون‌بر" : `میز ${o.tableNumber}`,
           date: new Date(o.createdAt).toLocaleDateString("fa-IR"),
-          logo: resolveFileUrl(o.restaurantLogoUrl) || "/images/menu-logo.jpg",
+          logo: resolveFileUrl(o.restaurantLogoUrl, "/images/restaurant/logo-placeholder.png"),
           items: o.previewItems.map((pi, idx) => ({
             id: idx,
-            image: resolveFileUrl(pi.imageUrl) || "/images/mocha.jpg",
+            image: resolveFileUrl(pi.imageUrl, "/images/food/food-placeholder.png"),
             quantity: pi.quantity,
           })),
           totalPrice: o.totalPrice,

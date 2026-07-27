@@ -2515,3 +2515,7 @@ svg {
     align-items: center;
     gap: 8px;
 }
+
+.addon-row--locked {
+    opacity: 0.45;
+}

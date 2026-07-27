@@ -20,17 +20,16 @@ export default function BurgerPanelSection({
   const sceneRef = useRef(null);
   const burgerRef = useRef(null);
 
-  // ==========================================
-  // === THE FIX: SAFE AUTO-DETECT SCROLLER ===
-  // ==========================================
   const [scrollElement, setScrollElement] = useState(null);
   const customScrollRef = useRef(null);
+
+  // controls whether title/panel are pinned or not
+  const [isPinned, setIsPinned] = useState(false);
 
   useEffect(() => {
     const checkScrollContainer = () => {
       const container = document.querySelector(".app-shell__content");
       if (container) {
-        // Evaluate CSS *after* the DOM is fully painted
         const styles = window.getComputedStyle(container);
         if (styles.overflowY === "auto" || styles.overflowY === "scroll") {
           setScrollElement(container);
@@ -40,23 +39,17 @@ export default function BurgerPanelSection({
       setScrollElement(null);
     };
 
-    // Run on mount
     checkScrollContainer();
-
-    // Re-evaluate if the user resizes the screen (e.g., rotating phone)
     window.addEventListener("resize", checkScrollContainer);
     return () => window.removeEventListener("resize", checkScrollContainer);
   }, []);
 
-  // Keep the Ref in sync with the detected element
   customScrollRef.current = scrollElement;
 
   const scrollConfig = {
     target: sectionRef,
-    // Only pass the container if we found a scrollable one
     ...(scrollElement ? { container: customScrollRef } : {}),
   };
-  // ==========================================
 
   // ===== Burger animation =====
   const { scrollYProgress } = useScroll({
@@ -76,7 +69,7 @@ export default function BurgerPanelSection({
     ["0vh", "-120vh"],
   );
 
-  // ===== Panel: portal + fixed + smooth fade + de-tilt =====
+  // ===== Panel =====
   const { scrollYProgress: sectionProg } = useScroll({
     ...scrollConfig,
     offset: ["start start", "end end"],
@@ -84,7 +77,7 @@ export default function BurgerPanelSection({
 
   const panelOpacity = useTransform(
     sectionProg,
-    [0.0, 0.04, 0.96, 1.0],
+    [0.0, 0.04, 0.985, 1.0], // was 0.96
     [0, 1, 1, 0],
   );
 
@@ -98,20 +91,20 @@ export default function BurgerPanelSection({
     perspective(700px) translate3d(-50%, -50%, 0) rotateX(${panelRotateX})
   `;
 
-  // Mount into portal slightly before/after to avoid mount pop
-  const [active, setActive] = useState(false);
-
+  // pin only while the section is in its active window
   useMotionValueEvent(sectionProg, "change", (v) => {
-    const on = v > -0.02 && v < 1.02;
-    setActive((prev) => (prev !== on ? on : prev));
+    const on = v > 0.03 && v < 0.99; // was 0.97
+    setIsPinned((prev) => (prev === on ? prev : on));
   });
 
   // ===== Title animation =====
   const titleOpacityIn = useTransform(scrollYProgress, [0.04, 0.12], [0, 1]);
-
   const titleY = useTransform(scrollYProgress, [0.06, 0.55], ["-42vh", "0vh"]);
-
-  const titleOpacityOut = useTransform(sectionProg, [0.85, 0.95], [1, 0]);
+  const titleOpacityOut = useTransform(
+    sectionProg,
+    [0.93, 0.985], // was [0.85, 0.95]
+    [1, 0],
+  );
 
   const titleOpacity = useTransform(
     [titleOpacityIn, titleOpacityOut],
@@ -120,9 +113,9 @@ export default function BurgerPanelSection({
 
   const PanelOverlay = (
     <motion.div
-      className="bp__panel"
+      className={`bp__panel ${isPinned ? "is-fixed" : "is-off"}`}
       style={{
-        position: "fixed",
+        position: isPinned ? "fixed" : "absolute",
         left: "50%",
         top: "60%",
         transform: panelTransform,
@@ -131,6 +124,7 @@ export default function BurgerPanelSection({
         opacity: panelOpacity,
         zIndex: 10,
         pointerEvents: "none",
+        visibility: isPinned ? "visible" : "hidden",
       }}
     >
       {meshSrc && (
@@ -146,16 +140,17 @@ export default function BurgerPanelSection({
   return (
     <section ref={sectionRef} className="bp" style={{ height: "300vh" }}>
       <motion.h2
-        className="bp__title"
+        className={`bp__title ${isPinned ? "is-fixed" : "is-off"}`}
         style={{
-          position: "fixed",
-          top: "18%",
-          left: "50%",
-          x: "0%", // Perfectly centered horizontally
-          y: "-50%", // Pushed up slightly
+          position: isPinned ? "fixed" : "absolute",
+          // top: "18%",
+          // right: "-50%",
+          // x: "-50%",
+          // y: "-50%",
           zIndex: 60,
-          opacity: panelOpacity,
+          opacity: titleOpacity, // <-- important: not panelOpacity
           pointerEvents: "none",
+          visibility: isPinned ? "visible" : "hidden",
         }}
       >
         {title}
@@ -189,7 +184,7 @@ export default function BurgerPanelSection({
             <img className="bp__burgerImg" src={burgerSrc} alt={burgerAlt} />
           </motion.div>
 
-          {active &&
+          {isPinned &&
             typeof document !== "undefined" &&
             createPortal(PanelOverlay, document.body)}
         </div>

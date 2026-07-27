@@ -1,0 +1,428 @@
+/* ===========================
+    Backdrop
+=========================== */
+
+.protected-action-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background:
+        radial-gradient(
+            circle at top,
+            rgba(255, 104, 60, 0.12),
+            transparent 45%
+        ),
+        rgba(8, 12, 18, 0.72);
+    backdrop-filter: blur(10px);
+    animation: backdropFade 0.28s ease;
+}
+
+/* ===========================
+    Modal
+=========================== */
+
+.protected-action-modal {
+    position: relative;
+    width: min(92vw, 390px);
+    overflow: hidden;
+    border-radius: 30px;
+    background: linear-gradient(
+        180deg,
+        rgba(45, 58, 72, 0.96),
+        rgba(26, 34, 43, 0.97)
+    );
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+        0 25px 80px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    padding: 42px 28px 28px;
+    text-align: center;
+    animation: modalPop 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ===========================
+    Orange Glow
+=========================== */
+
+.protected-action-glow {
+    position: absolute;
+    top: -90px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 220px;
+    height: 220px;
+    background:
+        radial-gradient(circle,
+            rgba(255,104,60,.38),
+            rgba(255,104,60,.15) 45%,
+        transparent 72%);
+    filter: blur(30px);
+    pointer-events: none;
+}
+
+/* ===========================
+    Close Button
+=========================== */
+
+.protected-action-close {
+    position: absolute;
+    top: 12px;
+    left: 18px;
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    color: #cfd8df;
+    font-size: 24px;
+    cursor: pointer;
+    transition: 0.25s;
+    
+}
+
+.protected-action-close:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* ===========================
+    Heart
+=========================== */
+
+.protected-action-icon {
+    position:relative;
+    width:104px;
+    height:104px;
+    margin:auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+    background:
+        radial-gradient(circle at 30% 25%,
+            rgba(255,255,255,.20),
+            rgba(255,255,255,.05) 45%,
+            rgba(255,255,255,.02) 70%),
+        linear-gradient(
+            180deg,
+            rgba(255,255,255,.06),
+            rgba(255,255,255,.03)
+        );
+    border:1px solid rgba(255,255,255,.08);
+    backdrop-filter:blur(16px);
+    box-shadow:
+        inset 0 1px 1px rgba(255,255,255,.15),
+        inset 0 -10px 20px rgba(0,0,0,.25),
+        0 0 45px rgba(255,104,60,.18);
+    overflow:hidden;
+    animation:
+        orbFloat 5s ease-in-out infinite,
+        orbGlow 4s ease-in-out infinite;
+}
+
+.protected-action-icon svg {
+
+    width:42px;
+
+    height:42px;
+
+    color:#FF683C;
+
+    fill:#FF683C;
+
+    position:relative;
+
+    z-index:3;
+
+    filter:
+
+        drop-shadow(0 0 10px rgba(255,104,60,.45));
+}
+
+/* ===========================
+    Title
+=========================== */
+
+.protected-action-title {
+    margin-top: 26px;
+    margin-bottom: 16px;
+    color: white;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+}
+
+/* ===========================
+    Description
+=========================== */
+
+.protected-action-description {
+    color: #bfc9d2;
+    line-height: 2;
+    font-size: 15px;
+    margin: 0 auto;
+    max-width: 290px;
+}
+
+.protected-action-description span {
+    color: #ff683c;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* ===========================
+    Buttons
+=========================== */
+
+.protected-action-actions {
+    position:relative;
+    overflow:hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 34px;
+}
+
+.protected-action-login {
+    height: 54px;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #ff7a50, #ff683c);
+    transition: 0.28s;
+    isolation:isolate;
+    overflow:hidden;
+}
+
+.protected-action-login::before{
+    content:"";
+    position:absolute;
+    top:0;
+    left:-120%;
+    width:70%;
+    height:100%;
+    border-radius:inherit;
+    background:
+        linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,.35),
+        transparent
+        );
+    transform:skewX(-25deg);
+}
+
+.protected-action-login:hover {
+    filter:brightness(1.05);
+}
+
+.protected-action-later {
+    height: 52px;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.05);
+    color: #d7dee4;
+    font-size: 15px;
+    transition: 0.25s;
+}
+
+.protected-action-later:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* ===========================
+    Animations
+=========================== */
+
+@keyframes modalPop {
+    0% {
+        opacity: 0;
+        transform: translateY(35px) scale(0.88);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes backdropFade {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes pulseHeart {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.08);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* ===========================
+    Glass Shine
+=========================== */
+
+.protected-action-shine{
+    position:absolute;
+    inset:-60%;
+    background:
+        linear-gradient(
+            120deg,
+            transparent 30%,
+            rgba(255,255,255,.08) 48%,
+            rgba(255,255,255,.20) 50%,
+            rgba(255,255,255,.08) 52%,
+            transparent 70%
+        );
+    transform:rotate(18deg);
+    animation:glassMove 7s linear infinite;
+    pointer-events:none;
+}
+
+@keyframes glassMove{
+
+    0%{
+        transform:
+        translateX(-70%)
+        rotate(18deg);
+    }
+
+    100%{
+        transform:
+        translateX(70%)
+        rotate(18deg);
+    }
+
+}
+
+
+@keyframes heartGlow{
+    0%{
+        box-shadow:
+        0 0 0 8px rgba(255,104,60,.08),
+        0 0 24px rgba(255,104,60,.35);
+    }
+
+    50%{
+        box-shadow:
+        0 0 0 14px rgba(255,104,60,.12),
+        0 0 48px rgba(255,104,60,.60);
+    }
+
+    100%{
+        box-shadow:
+        0 0 0 8px rgba(255,104,60,.08),
+        0 0 24px rgba(255,104,60,.35);
+    }
+}
+
+
+.protected-action-login:hover::before{
+    animation:buttonSweep .7s ease;
+}
+
+@keyframes buttonSweep{
+    from{
+        left:-120%;
+    }
+
+    to{
+        left:160%;
+    }
+}
+
+.protected-action-icon::before{
+    content:"";
+    position:absolute;
+    top:8px;
+    left:12px;
+    width:42px;
+    height:20px;
+    border-radius:50%;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255,255,255,.55),
+            rgba(255,255,255,0)
+            );
+    filter:blur(3px);
+    transform:rotate(-18deg);
+    opacity:.9;
+}
+
+.protected-action-icon::after{
+    content:"";
+    position:absolute;
+    width:62px;
+    height:62px;
+    border-radius:50%;
+    background:
+    radial-gradient(circle,
+    rgba(255,104,60,.45),
+    transparent 72%);
+    filter:blur(14px);
+    z-index:0;
+    animation:heartCore 3.5s ease-in-out infinite;
+}
+
+@keyframes orbFloat{
+    0%,100%{
+        transform:translateY(0px);
+    }
+
+    50%{
+        transform:translateY(-6px);
+    }
+}
+
+
+
+@keyframes orbGlow{
+    0%,100%{
+        box-shadow:
+        inset 0 1px 1px rgba(255,255,255,.15),
+        inset 0 -10px 20px rgba(0,0,0,.25),
+        0 0 35px rgba(255,104,60,.15);
+    }
+
+    50%{
+        box-shadow:
+        inset 0 1px 1px rgba(255,255,255,.18),
+        inset 0 -10px 20px rgba(0,0,0,.25),
+        0 0 55px rgba(255,104,60,.30);
+    }
+
+}
+
+
+
+@keyframes heartCore{
+    0%,100%{
+        transform:scale(.92);
+        opacity:.55;
+    }
+
+    50%{
+        transform:scale(1.15);
+        opacity:.95;
+    }
+}

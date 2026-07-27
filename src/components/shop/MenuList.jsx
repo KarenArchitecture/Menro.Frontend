@@ -384,7 +384,7 @@ function MenuList({
   );
 
 
-  if (isLoading) return <p>در حال بارگذاری…</p>;
+  
   if (isError) return <p>خطا در بارگیری منو</p>;
   if (!menuData?.length) return <p>موردی یافت نشد</p>;
   if (!filteredMenuData?.length) return <p>غذایی با این جستجو پیدا نشد</p>;

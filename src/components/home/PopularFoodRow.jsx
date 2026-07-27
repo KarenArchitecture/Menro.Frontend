@@ -3,7 +3,8 @@ import React from "react";
 import SectionHeader from "../common/SectionHeader";
 import FoodCard from "./FoodCard";
 import StateMessage from "../common/StateMessage";
-import ShimmerRow from "../common/ShimmerRow";
+import { FoodCardsSkeleton } from "./HomeSkeletons";
+
 
 function PopularFoodRow({
   data,
@@ -18,10 +19,11 @@ function PopularFoodRow({
   // ───────────── Loading ─────────────
   if (isLoading) {
     return (
-      <section className="popular-food-row">
-        {!hideTitle && <SectionHeader title="در حال بارگذاری..." />}
-        <ShimmerRow height={160} style={{ margin: "2.8rem auto" }} />
-      </section>
+      <FoodCardsSkeleton
+        showHeader={!hideTitle}
+        title="در حال بارگذاری..."
+        count={4}
+      />
     );
   }
 

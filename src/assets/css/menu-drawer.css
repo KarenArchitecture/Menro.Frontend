@@ -12,14 +12,6 @@
     pointer-events: none;
 }
 
-/* blink problem solution */
-/* .menu-drawer,
-.menu-drawer__panel,
-.menu-drawer__backdrop {
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    will-change: transform, opacity;
-} */
 .menu-drawer__panel,
 .menu-drawer__backdrop {
     backface-visibility: hidden;
@@ -69,11 +61,11 @@
     background: #13171e;
     color: #ffffff;
     box-shadow: 0 26px 70px rgba(0, 0, 0, 0.42);
-    transform: translateX(112%);
+    transform: translate3d(130%, 0, 0);
     opacity: 0;
     transition:
-        transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
-        opacity 200ms ease;
+        transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 420ms ease;
 }
 
 .menu-drawer--open .menu-drawer__panel {

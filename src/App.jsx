@@ -6,6 +6,7 @@ import RestaurantPage from "./pages/RestaurantPage";
 import RestaurantsBrowsePage from "./pages/RestaurantsBrowsePage";
 import RecentOrdersBrowsePage from "./pages/RecentOrdersBrowsePage";
 import PopularFoodsBrowsePage from "./pages/PopularFoodsBrowsePage";
+import MusicPage from "./pages/MusicPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -19,9 +20,11 @@ import ChangePhone from "./pages/ChangePhone";
 import AdminPage from "./pages/AdminPage";
 import BlogPage from "./pages/BlogPage";
 import Orders from "./pages/OrdersPage";
+import AdminMusicPage from "./pages/AdminMusicPage";
 // 1. Import the BillsPage
 import BillsPage from "./pages/BillsPage";
-
+import FavoritesPage from "./pages/FavoritesPage";
+import ProfilePage from "./pages/ProfilePage";
 import {
   DrawerStateProvider,
   useDrawerState,
@@ -59,6 +62,8 @@ export default function App() {
     "/landing",
     "/restaurant",
     "/orders/bill",
+    "/music",
+    "/favorites",
   ];
 
   // 3. Added "/orders/bill" so the app shell doesn't add blank padding at the bottom
@@ -86,6 +91,8 @@ export default function App() {
             element={<PopularFoodsBrowsePage />}
           />
           <Route path="/restaurant/:slug" element={<RestaurantPage />} />
+          {/* <Route path="/music" element={<MusicPage />} /> */}
+          <Route path="/restaurant/:slug/music" element={<MusicPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -95,11 +102,18 @@ export default function App() {
             path="/register-restaurant"
             element={<RegisterRestaurantPage />}
           />
-
+          <Route
+            path="/admin/music"
+            element={
+              <ProtectedRoute roles={["admin", "owner"]}>
+                <AdminMusicPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/orders" element={<Orders />} />
           {/* 4. Added the dynamic route for the BillsPage */}
           <Route path="/orders/bill/:id" element={<BillsPage />} />
-
+          <Route path="/favorites" element={<FavoritesPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
           <Route
@@ -108,6 +122,14 @@ export default function App() {
               <ProtectedRoute roles={["admin", "owner"]}>
                 <AdminPage />
               </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              // <ProtectedRoute roles={["user", "admin", "owner"]}>
+              <ProfilePage />
+              // </ProtectedRoute>
             }
           />
         </Routes>

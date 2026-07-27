@@ -337,6 +337,7 @@
   display: block;
   overflow: visible;
   border-radius: 15px;
+  background: linear-gradient(180deg, #171b21 0%, #101317 100%);
 }
 
 .card-img {
@@ -389,6 +390,7 @@
   background: #0c0f14;
   box-shadow: 0 0.8rem 1.8rem rgba(0, 0, 0, 0.35);
   pointer-events: none;
+  background: #15181d;
 }
 
 .restaurant-badge {
@@ -402,6 +404,7 @@
   pointer-events: none;
   -webkit-user-drag: none;
   user-select: none;
+  display: block;
 }
 
 .discount-bubble {
@@ -626,14 +629,6 @@
   font-weight: 600;
 }
 
-/* quick skeleton for food-card */
-.food-card {
-  width: 45%;
-  height: 240px;
-  border-radius: 16px;
-  background: #e5e7eb;
-  /* animation: pulse 1.4s ease-in-out infinite; */
-}
 @keyframes pulse {
   0% {
     opacity: 0.6;
@@ -671,8 +666,10 @@
 
 .food-card {
   width: 147px;
+  min-width: 147px;
+  max-width: 147px;
   height: 250px;
-  flex: 0 0 45%;
+  flex: 0 0 147px;
   padding: 1.2rem 1rem;
   display: flex;
   flex-direction: column;
@@ -681,6 +678,7 @@
   border-radius: 2.3rem;
   gap: 0.6rem;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .food-card-image {
@@ -692,6 +690,7 @@
   overflow: hidden;
   flex-shrink: 0;
   margin-bottom: 0.5rem;
+  background: linear-gradient(180deg, #171b21 0%, #101317 100%);
 }
 
 .food-img {

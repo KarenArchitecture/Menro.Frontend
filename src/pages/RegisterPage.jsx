@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import usePageStyles from "../hooks/usePageStyles";
 import authAxios from "../api/authAxios";
 import { useAuth } from "../Context/AuthContext";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function RegisterPage() {
   usePageStyles("/styles-register.css");
@@ -38,12 +38,23 @@ export default function RegisterPage() {
   }, [navigate]);
 
   /* register mutation */
+  const location = useLocation();
+
+  const params = new URLSearchParams(location.search);
+
+  const returnUrl = params.get("returnUrl");
+
   const registerMutation = useMutation({
     mutationFn: async (payload) => {
       return await registerUser(payload);
     },
     onSuccess: () => {
-      navigate("/", { replace: true });
+      navigate(
+          returnUrl?.startsWith("/")
+              ? returnUrl
+              : "/",
+          { replace:true }
+      );
     },
     onError: (err) => {
       setMsg({ text: err.message, type: "error" });

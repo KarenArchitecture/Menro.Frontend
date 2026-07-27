@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import ReactDOM from "react-dom";
 import { useCart } from "./CartContext";
 
@@ -10,34 +10,116 @@ import MokhalafatIcon from "../icons/MokhalafatIcon";
 import RestaurantCombosButton from "../common/RestaurantCombosButton";
 import resolveFileUrl from "../../utils/resolveFileUrl";
 import StarIcon from "../icons/StarIcon";
+import SmartImage from "../common/SmartImage";
+import { useFavoriteIds, useToggleFavorite } from "../../hooks/useFavorites";
+import useRequireLogin from "../../hooks/useRequireLogin";
+import ProtectedActionModal from "../common/ProtectedActionModal";
+import { useAuth } from "../../context/AuthContext";
+
+
+/* Helper for consistent Persian digits */
+const toPersianDigits = (value) => {
+  if (value === null || value === undefined) return "۰";
+  return String(value).replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[digit]);
+};
+
+/* --- NEW HORIZONTAL SCROLL PICKER COMPONENT --- */
+const AddonScrollPicker = ({ value = 0, onChange, max = 99 }) => {
+  const scrollRef = useRef(null);
+  const numbers = Array.from({ length: max + 1 }, (_, i) => i);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      const activeChild = scrollRef.current.children[value];
+      if (activeChild) {
+        activeChild.scrollIntoView({
+          behavior: "smooth",
+          inline: "center",
+          block: "nearest",
+        });
+      }
+    }
+  }, [value]);
+
+  return (
+    <div className="addon-qty-scroll" ref={scrollRef} dir="ltr">
+      {numbers.map((num) => {
+        let activeClass = "";
+        if (value === num) {
+          activeClass = num === 0 ? "active-0" : "active-n";
+        }
+
+        return (
+          <button
+            key={num}
+            type="button"
+            className={`addon-qty-item ${activeClass}`}
+            onClick={() => onChange(num)}
+          >
+            {toPersianDigits(num)}
+          </button>
+        );
+      })}
+    </div>
+  );
+};
 
 function ItemDetailModal({ item, onClose }) {
   const cart = useCart();
   const [isActive, setIsActive] = useState(false);
 
-  /* Helper for consistent Persian digits */
-  const toPersianDigits = (value) => {
-    if (value === null || value === undefined) return "۰";
-    return String(value).replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[digit]);
+  const {
+    requireLogin,
+    open,
+    closeModal,
+    goToLogin,
+  } = useRequireLogin();
+
+  const { user } = useAuth();
+
+  const {
+    data: favoriteIds = [],
+    isLoading: favoriteLoading,
+  } = useFavoriteIds(!!user);
+
+  const toggleFavorite = useToggleFavorite();
+
+  const isFavorite = favoriteIds.includes(item?.id);
+
+  console.log({
+    foodId: item?.id,
+    favoriteIds,
+    isFavorite,
+  });
+
+  const handleToggleFavorite = () => {
+    console.log("favorite clicked");
+
+    requireLogin({
+      type: "favorites",
+      onAuthenticated: () => {
+        if (!item?.id) return;
+
+        if (toggleFavorite.isPending) return;
+
+        toggleFavorite.mutate(item.id);
+      },
+    });
   };
 
   const formatRating = (value) => {
     const num = Number(value);
-
     if (Number.isFinite(num) && num > 0) {
       return toPersianDigits(num.toFixed(1));
     }
-
     return toPersianDigits("4.5");
   };
 
   const formatVoters = (value) => {
     const num = Number(value);
-
     if (Number.isFinite(num) && num >= 0) {
       return toPersianDigits(num.toLocaleString("en-US"));
     }
-
     return "۰";
   };
 
@@ -49,19 +131,17 @@ function ItemDetailModal({ item, onClose }) {
 
   const defaultVariant = useMemo(
     () => variations.find((v) => v.isDefault) || variations[0] || null,
-    [variations]
+    [variations],
   );
 
-  // helper: which cart key belongs to this variant?
   const getVariantKey = (variantId) =>
     defaultVariant && variantId === defaultVariant.id
       ? baseKey
       : `${baseKey}__${variantId}`;
 
-  /* 3) MAP ADDONS PER VARIANT (backend → frontend shape) */
+  /* 3) MAP ADDONS PER VARIANT */
   const addonsByVar = useMemo(() => {
     const map = {};
-
     variations.forEach((v) => {
       map[v.id] =
         v.addons?.map((a) => ({
@@ -70,14 +150,12 @@ function ItemDetailModal({ item, onClose }) {
           price: a.extraPrice,
         })) || [];
     });
-
     return map;
   }, [variations]);
 
-  /* 4) ADDONS SELECTION STATE */
+  /* 4) ADDONS SELECTION STATE (Now stores objects with qty) */
   const [selectedAddonsByVar, setSelectedAddonsByVar] = useState({});
 
-  // initialize when item / variants change (and preload from cart)
   useEffect(() => {
     if (!item) return;
 
@@ -87,10 +165,25 @@ function ItemDetailModal({ item, onClose }) {
       const key = getVariantKey(v.id);
       const existing = cart.items.get(key);
 
+      init[v.id] = {};
+
       if (existing?.addons?.length > 0) {
-        init[v.id] = new Set(existing.addons);
-      } else {
-        init[v.id] = new Set();
+        existing.addons.forEach((addon) => {
+          // Backward compatibility: check if addon is just an ID string or a proper object
+          if (typeof addon === "object") {
+            init[v.id][addon.id] = addon;
+          } else {
+            const addonDetail = v.addons?.find((a) => a.id === addon);
+            if (addonDetail) {
+              init[v.id][addon] = {
+                id: addonDetail.id,
+                name: addonDetail.name,
+                price: addonDetail.extraPrice,
+                qty: 1,
+              };
+            }
+          }
+        });
       }
     });
 
@@ -100,13 +193,12 @@ function ItemDetailModal({ item, onClose }) {
   /* helpers */
   const fmt = (n) => (Number(n) || 0).toLocaleString("fa-IR");
 
-  const addonSum = (variantId, overrideSet) => {
-    const selected = overrideSet || selectedAddonsByVar[variantId] || new Set();
-    const list = addonsByVar[variantId] || [];
-
-    return list.reduce(
-      (sum, a) => (selected.has(a.id) ? sum + Number(a.price || 0) : sum),
-      0
+  // Updated to calculate using quantity
+  const addonSum = (variantId, overrideState) => {
+    const selected = overrideState || selectedAddonsByVar[variantId] || {};
+    return Object.values(selected).reduce(
+      (sum, a) => sum + Number(a.price || 0) * (a.qty || 1),
+      0,
     );
   };
 
@@ -137,31 +229,40 @@ function ItemDetailModal({ item, onClose }) {
         variantId,
         variantName: variant.name,
         imageUrl: item.imageUrl,
-        addons: Array.from(selectedAddonsByVar[variantId] || []),
+        addons: Object.values(selectedAddonsByVar[variantId] || []),
       },
-      qty
+      qty,
     );
   };
 
-  /* 6) TOGGLE ADDONS */
-  const toggleAddon = (variantId, addonId) => {
+  /* 6) HANDLE ADDON QTY CHANGE (Replaces toggleAddon) */
+  const handleAddonQtyChange = (variantId, addon, newQty) => {
     setSelectedAddonsByVar((prev) => {
-      const oldSet = prev[variantId] || new Set();
-      const updated = new Set(oldSet);
+      const currentVariantAddons = prev[variantId] || {};
+      let nextVariantState;
 
-      updated.has(addonId) ? updated.delete(addonId) : updated.add(addonId);
+      if (newQty === 0) {
+        // Remove from state if 0
+        const { [addon.id]: removed, ...rest } = currentVariantAddons;
+        nextVariantState = rest;
+      } else {
+        // Add or update qty
+        nextVariantState = {
+          ...currentVariantAddons,
+          [addon.id]: { ...addon, qty: newQty },
+        };
+      }
 
-      const nextState = { ...prev, [variantId]: updated };
+      const nextState = { ...prev, [variantId]: nextVariantState };
 
-      // update cart if variant already added
+      // Synchronize with cart immediately if the parent item is already in cart
       const key = getVariantKey(variantId);
       const existing = cart.items.get(key);
 
       if (existing?.qty > 0) {
         const variant = variations.find((v) => v.id === variantId);
-
         if (variant) {
-          const addonsTotal = addonSum(variantId, updated);
+          const addonsTotal = addonSum(variantId, nextVariantState);
           const newPrice = Number(variant.price || 0) + addonsTotal;
 
           cart.setQty(
@@ -169,9 +270,9 @@ function ItemDetailModal({ item, onClose }) {
             {
               ...existing,
               price: newPrice,
-              addons: Array.from(updated),
+              addons: Object.values(nextVariantState),
             },
-            existing.qty
+            existing.qty,
           );
         }
       }
@@ -200,54 +301,35 @@ function ItemDetailModal({ item, onClose }) {
 
   if (!item) return null;
 
-  // console.log("MODAL ITEM FULL:", item);
-  // console.log("MODAL VOTERS CHECK:", {
-  //   voters: item?.voters,
-  //   votersCount: item?.votersCount,
-  //   voterCount: item?.voterCount,
-  //   votes: item?.votes,
-  //   votesCount: item?.votesCount,
-  //   ratingCount: item?.ratingCount,
-  //   ratesCount: item?.ratesCount,
-  //   totalRates: item?.totalRates,
-  // });
-
-
-  const modalImageSrc =
-    resolveFileUrl(item.imageUrl) || "/images/food/food-placeholder.png";
+  const modalImageFallback = "/images/food/food-placeholder.png";
+  const modalImageSrc = resolveFileUrl(item.imageUrl, modalImageFallback);
 
   const modalRating =
-    item?.rating !== undefined &&
-    item?.rating !== null &&
-    item?.rating !== ""
+    item?.rating !== undefined && item?.rating !== null && item?.rating !== ""
       ? item.rating
       : item?.averageRating !== undefined &&
-        item?.averageRating !== null &&
-        item?.averageRating !== ""
-      ? item.averageRating
-      : 4.5;
+          item?.averageRating !== null &&
+          item?.averageRating !== ""
+        ? item.averageRating
+        : 4.5;
 
   const modalVoters =
-    item?.voters !== undefined &&
-    item?.voters !== null &&
-    item?.voters !== ""
+    item?.voters !== undefined && item?.voters !== null && item?.voters !== ""
       ? item.voters
       : item?.votersCount !== undefined &&
-        item?.votersCount !== null &&
-        item?.votersCount !== ""
-      ? item.votersCount
-      : 0;
+          item?.votersCount !== null &&
+          item?.votersCount !== ""
+        ? item.votersCount
+        : 0;
 
   /* 8) RENDER */
   const modalUI = (
     <>
-      {/* backdrop */}
       <div
         className={`modal-backdrop ${isActive ? "active" : ""}`}
         onClick={handleClose}
       />
 
-      {/* modal */}
       <div className={`bottom-modal ${isActive ? "active" : ""}`} dir="rtl">
         <div className="sheet-body modal-content">
           {/* HEADER */}
@@ -278,20 +360,20 @@ function ItemDetailModal({ item, onClose }) {
                     type="button"
                     className="icon-btn modal-top-action"
                     aria-label="علاقه‌مندی"
+                    onClick={handleToggleFavorite}
+                    disabled={!!user && (favoriteLoading || toggleFavorite.isPending)}
                   >
-                    <LikeIcon />
+                    <LikeIcon active={isFavorite} />
                   </button>
                 </div>
               </nav>
 
-              <img
+              <SmartImage
                 src={modalImageSrc}
-                alt={item.name}
+                fallback={modalImageFallback}
+                alt={`تصویر ${item.name}`}
                 className="modal-hero-img"
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = "/images/food/food-placeholder.png";
-                }}
+                lazy={false}
               />
 
               <div className="modal-info-panel">
@@ -299,11 +381,9 @@ function ItemDetailModal({ item, onClose }) {
 
                 <div className="modal-rating">
                   <StarIcon />
-
                   <span className="modal-rating__value">
                     {formatRating(modalRating)}
                   </span>
-
                   <span className="modal-rating__count">
                     ({formatVoters(modalVoters)})
                   </span>
@@ -335,10 +415,10 @@ function ItemDetailModal({ item, onClose }) {
                     {/* VARIANT ROW */}
                     <div className="variant-row">
                       <div className="variant-pill">
-                        <span>{v.name}</span>
-
-                        <span>
-                          {fmt(unitPrice)} <span>تومان</span>
+                        <span className="variant-name">{v.name}</span>
+                        <span className="variant-price">
+                          {fmt(unitPrice)}{" "}
+                          <span className="variant-currency">تومان</span>
                         </span>
                       </div>
 
@@ -349,9 +429,9 @@ function ItemDetailModal({ item, onClose }) {
                         >
                           +
                         </button>
-
-                        <span className="qty-display">{toPersianDigits(qty)}</span>
-
+                        <span className="qty-display">
+                          {toPersianDigits(qty)}
+                        </span>
                         <button
                           className="qty-btn"
                           onClick={() => setVariantQty(v.id, qty - 1)}
@@ -371,27 +451,40 @@ function ItemDetailModal({ item, onClose }) {
 
                         <ul className="addons-list">
                           {addons.map((a) => {
-                            const selected =
-                              selectedAddonsByVar[v.id]?.has(a.id) ?? false;
+                            const currentQty =
+                              selectedAddonsByVar[v.id]?.[a.id]?.qty || 0;
+
+                            // Show base price if qty is 0, else show multiplied price
+                            const displayPrice =
+                              currentQty === 0 ? a.price : a.price * currentQty;
 
                             return (
                               <li
                                 key={a.id}
                                 className={`addon-row ${
-                                  selected ? "checked" : ""
+                                  currentQty > 0 ? "checked" : ""
                                 }`}
                               >
-                                <span>{a.name}</span>
+                                <div className="addon-name">{a.name}</div>
+                                <div className="addon-price-amount">
+                                  <div className="addon-price">
+                                    <span className="addon-amount">
+                                      {toPersianDigits(fmt(displayPrice))}
+                                    </span>
+                                    <span className="addon-currency">
+                                      تومان
+                                    </span>
+                                  </div>
 
-                                <div className="addon-price">
-                                  <span>{fmt(a.price)}</span>
-                                  <span>تومان</span>
-
-                                  <input
-                                    type="checkbox"
-                                    checked={selected}
-                                    onChange={() => toggleAddon(v.id, a.id)}
-                                  />
+                                  <div className="addon-control">
+                                    <AddonScrollPicker
+                                      value={currentQty}
+                                      onChange={(newQty) =>
+                                        handleAddonQtyChange(v.id, a, newQty)
+                                      }
+                                      max={10}
+                                    />
+                                  </div>
                                 </div>
                               </li>
                             );
@@ -408,6 +501,19 @@ function ItemDetailModal({ item, onClose }) {
           </div>
         </div>
       </div>
+      <ProtectedActionModal
+        open={open}
+        onClose={closeModal}
+        onLogin={goToLogin}
+        icon={<LikeIcon active />}
+        description={
+          <>
+            برای افزودن این غذا به
+            <span> علاقه‌مندی‌ها </span>
+            ابتدا وارد حساب کاربری خود شوید.
+          </>
+        }
+      />
     </>
   );
 

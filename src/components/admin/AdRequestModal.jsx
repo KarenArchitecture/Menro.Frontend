@@ -1,5 +1,6 @@
 // src/components/admin/AdRequestModal.jsx
 import React, { useEffect, useState } from "react";
+import { useGlobalUI } from "../common/GlobalUI";
 
 export default function AdRequestModal({
   open,
@@ -13,14 +14,7 @@ export default function AdRequestModal({
   const [rejectReason, setRejectReason] = useState("");
   const [rejectError, setRejectError] = useState("");
 
-  //  Old: hooks were after conditional return (can break hooks rules)
-  /*
-  if (!open || !request) return null;
-
-  const [showRejectInput, setShowRejectInput] = useState(false);
-  const [rejectReason, setRejectReason] = useState("");
-  const [rejectError, setRejectError] = useState("");
-  */
+  const { confirmModal } = useGlobalUI();
 
   // ✅ Reset reject UI when opening a new request / closing
   useEffect(() => {
@@ -43,8 +37,8 @@ export default function AdRequestModal({
     request.adType === "slider"
       ? "اسلایدر صفحه اصلی"
       : request.adType === "banner"
-      ? "بنر تمام صفحه"
-      : request.adType || "نامشخص";
+        ? "بنر تمام صفحه"
+        : request.adType || "نامشخص";
 
   // ✅ New: normalize reserved unit for banner
   // Rule: banner + "روز" should display as "بازدید"
@@ -63,27 +57,33 @@ export default function AdRequestModal({
   } ${request.reservedUnit || ""}`;
   */
 
-  const handleRejectClick = () => {
-    // اولین بار: فقط فیلد رو باز کن
+  const handleRejectClick = async () => {
     if (!showRejectInput) {
       setShowRejectInput(true);
       setRejectError("");
       return;
     }
 
-    // دفعه دوم: حتما باید توضیح داشته باشیم
     const trimmed = rejectReason.trim();
     if (!trimmed) {
       setRejectError("ثبت توضیح برای رد تبلیغ الزامی است.");
       return;
     }
 
+    const ok = await confirmModal({
+      title: "رد تبلیغ",
+      message: "این عملیات قابل بازگشت نیست. آیا مطمئن هستید؟",
+      confirmText: "رد کن",
+      cancelText: "انصراف",
+      danger: true,
+    });
+    if (!ok) return;
+
     setRejectError("");
     onReject?.(request.id, trimmed);
   };
 
-  const handleApproveOrBack = () => {
-    // اگر در حالت رد هستیم، این دکمه نقش "برگشت" دارد
+  const handleApproveOrBack = async () => {
     if (showRejectInput) {
       setShowRejectInput(false);
       setRejectReason("");
@@ -91,7 +91,14 @@ export default function AdRequestModal({
       return;
     }
 
-    // حالت عادی: تایید درخواست
+    const ok = await confirmModal({
+      title: "تایید تبلیغ",
+      message: `آیا از تایید درخواست تبلیغ #${request.code} مطمئن هستید؟`,
+      confirmText: "تایید",
+      cancelText: "انصراف",
+    });
+    if (!ok) return;
+
     onApprove?.(request.id);
   };
 

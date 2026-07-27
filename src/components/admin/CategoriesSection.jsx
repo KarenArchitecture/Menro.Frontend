@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import IconPicker from "./IconPicker";
 import adminGlobalCategoryAxios from "../../api/adminGlobalCategoryAxios.js";
 import adminCustomCategoryAxios from "../../api/adminCustomCategoryAxios.js";
+import { useGlobalUI } from "../common/GlobalUI";
 
 function GenericCategoryIcon() {
   return (
@@ -13,6 +14,7 @@ function GenericCategoryIcon() {
 }
 
 export default function CategoriesSection() {
+  const { notify, confirmModal } = useGlobalUI();
   const [categories, setCategories] = useState(() => {
     try {
       const saved = localStorage.getItem("admin.categories");
@@ -55,6 +57,10 @@ export default function CategoriesSection() {
         setGlobalCategories(res.data);
       } catch (err) {
         console.error("Failed to load global categories", err);
+        notify({
+          type: "error",
+          message: "دریافت دسته‌بندی‌های عمومی با خطا مواجه شد",
+        });
       } finally {
         setLoading(false);
       }
@@ -72,6 +78,10 @@ export default function CategoriesSection() {
       setCustomCategories(res.data);
     } catch (err) {
       console.error("Failed to load custom categories", err);
+      notify({
+        type: "error",
+        message: "دریافت دسته‌بندی‌های رستوران با خطا مواجه شد",
+      });
     } finally {
       setLoadingCustoms(false);
     }
@@ -83,12 +93,22 @@ export default function CategoriesSection() {
 
   // delete
   const removeCustomCategory = async (catId) => {
+    const ok = await confirmModal({
+      title: "حذف دسته‌بندی",
+      message: "آیا از حذف این دسته‌بندی مطمئن هستید؟",
+      confirmText: "حذف شود",
+      cancelText: "انصراف",
+      danger: true,
+    });
+    if (!ok) return;
+
     try {
-      const res = await adminCustomCategoryAxios.delete(`/delete/${catId}`);
-      console.log("Deleted successfully:", res.data.message);
+      await adminCustomCategoryAxios.delete(`/delete/${catId}`);
       await loadCustomCategories();
+      notify({ type: "success", message: "دسته‌بندی حذف شد" });
     } catch (err) {
       console.error("Failed to delete custom category", err);
+      notify({ type: "error", message: "حذف دسته‌بندی با خطا مواجه شد" });
     }
   };
 
@@ -107,7 +127,10 @@ export default function CategoriesSection() {
       setEditIconUrl(cat.icon?.url || null);
     } catch (err) {
       console.error("Failed to fetch category", err);
-      alert(err.response?.data?.message ?? "خطا در دریافت دسته‌بندی");
+      notify({
+        type: "error",
+        message: err.response?.data?.message ?? "خطا در دریافت دسته‌بندی",
+      });
     }
   };
 
@@ -115,44 +138,39 @@ export default function CategoriesSection() {
   const submitCreateCustomCategory = async () => {
     const name = nameInput.trim();
     if (!name) {
-      alert("نام دسته‌بندی را وارد کنید");
+      notify({ type: "warning", message: "نام دسته‌بندی را وارد کنید" });
       return;
     }
 
     try {
-      const dto = {
-        name: name,
-        iconId: selectedIconId,
-      };
-
-      const res = await adminCustomCategoryAxios.post("/add", dto);
-
-      console.log("✅ Added:", res.data);
-
+      const dto = { name, iconId: selectedIconId };
+      await adminCustomCategoryAxios.post("/add", dto);
       await loadCustomCategories();
 
-      // reset
       setNameInput("");
       setSelectedIconId(null);
       setSelectedIconUrl(null);
+      notify({ type: "success", message: "دسته‌بندی اضافه شد" });
     } catch (err) {
       console.error("Failed to create custom category", err);
-      alert(err.response?.data?.message ?? "خطا در افزودن دسته‌بندی");
+      notify({
+        type: "error",
+        message: err.response?.data?.message ?? "خطا در افزودن دسته‌بندی",
+      });
     }
   };
 
   // add from predefined (global)
   const addPredefined = async (globalCat) => {
     try {
-      const res = await adminCustomCategoryAxios.post(
-        "/add-from-global",
-        null,
-        { params: { globalCategoryId: globalCat.id } }
-      );
-      console.log("Added from global:", res.data.message);
+      await adminCustomCategoryAxios.post("/add-from-global", null, {
+        params: { globalCategoryId: globalCat.id },
+      });
       await loadCustomCategories();
+      notify({ type: "success", message: "دسته‌بندی به لیست شما اضافه شد" });
     } catch (err) {
       console.error("Failed to add category from global", err);
+      notify({ type: "error", message: "افزودن دسته‌بندی با خطا مواجه شد" });
     }
   };
 
@@ -160,24 +178,25 @@ export default function CategoriesSection() {
   const saveEdit = async () => {
     const newName = editName.trim().replace(/\s+/g, " ");
     if (!newName) {
-      alert("نام دسته‌بندی نمی‌تواند خالی باشد.");
+      notify({
+        type: "warning",
+        message: "نام دسته‌بندی نمی‌تواند خالی باشد.",
+      });
       return;
     }
 
     try {
-      const dto = {
-        id: editingId,
-        name: newName,
-        iconId: editIconId ?? null,
-      };
-
-      const res = await adminCustomCategoryAxios.put("/update", dto);
-      console.log("✅ Edit response:", res.data);
+      const dto = { id: editingId, name: newName, iconId: editIconId ?? null };
+      await adminCustomCategoryAxios.put("/update", dto);
       await loadCustomCategories();
       cancelEdit();
+      notify({ type: "success", message: "تغییرات ذخیره شد" });
     } catch (err) {
-      console.error("❌ Failed to update category", err);
-      alert(err.response?.data?.message ?? "خطا در ذخیره تغییرات");
+      console.error("Failed to update category", err);
+      notify({
+        type: "error",
+        message: err.response?.data?.message ?? "خطا در ذخیره تغییرات",
+      });
     }
   };
 

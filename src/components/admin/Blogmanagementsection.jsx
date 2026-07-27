@@ -19,6 +19,7 @@ import {
   getBlogHero,
   updateBlogHero,
 } from "../../api/adminBlogs";
+import { useGlobalUI } from "../common/GlobalUI";
 
 // "فیلترهای فید" tab intentionally removed - feed categories are now a fixed,
 // non-editable list (see FEED_CATEGORIES in adminBlogs.js).
@@ -44,19 +45,11 @@ function apiErrorMessage(err, fallback = "خطایی رخ داد. دوباره �
 
 export default function BlogManagementSection() {
   const [activeSubTab, setActiveSubTab] = useState("posts");
-  const [savedFlash, setSavedFlash] = useState("");
-
-  const flashSaved = (label = "تغییرات ذخیره شد") => {
-    setSavedFlash(label);
-    window.clearTimeout(flashSaved._t);
-    flashSaved._t = window.setTimeout(() => setSavedFlash(""), 2200);
-  };
 
   return (
     <div id="blog-management-view" className="blog-mgmt">
       <div className="view-header">
         <h2 className="content-title">مدیریت وبلاگ</h2>
-        {savedFlash && <span className="blog-mgmt__flash">{savedFlash}</span>}
       </div>
 
       <nav className="content-tab-nav">
@@ -75,25 +68,25 @@ export default function BlogManagementSection() {
 
       {activeSubTab === "posts" && (
         <div className="content-tab-pane active">
-          <PostsPane onSaved={flashSaved} />
+          <PostsPane />
         </div>
       )}
 
       {activeSubTab === "display-categories" && (
         <div className="content-tab-pane active">
-          <DisplayCategoriesPane onSaved={flashSaved} />
+          <DisplayCategoriesPane />
         </div>
       )}
 
       {activeSubTab === "sidebar-tags" && (
         <div className="content-tab-pane active">
-          <SidebarTagsPane onSaved={flashSaved} />
+          <SidebarTagsPane />
         </div>
       )}
 
       {activeSubTab === "hero" && (
         <div className="content-tab-pane active">
-          <HeroPane onSaved={flashSaved} />
+          <HeroPane />
         </div>
       )}
     </div>
@@ -147,11 +140,11 @@ function emptyPost(defaultCategoryId = "") {
 
 const PAGE_SIZE = 20;
 
-function PostsPane({ onSaved }) {
+function PostsPane() {
+  const { notify, confirmModal } = useGlobalUI();
   const [posts, setPosts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [apiError, setApiError] = useState("");
   // searchDraft is bound to the input as the user types; searchTerm is only
   // updated when the search button (or Enter) is pressed, and it's the one
   // used to trigger the API call - this avoids firing a request per keystroke.
@@ -162,11 +155,9 @@ function PostsPane({ onSaved }) {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [modalPost, setModalPost] = useState(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [imageError, setImageError] = useState("");
 
   const reloadPosts = useCallback(
     async (categoriesForMapping = categories) => {
@@ -208,7 +199,10 @@ function PostsPane({ onSaved }) {
         }
       } catch (err) {
         if (!cancelled)
-          setApiError(apiErrorMessage(err, "بارگذاری پست‌ها با خطا مواجه شد."));
+          notify({
+            type: "error",
+            message: apiErrorMessage(err, "بارگذاری پست‌ها با خطا مواجه شد."),
+          });
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -231,7 +225,6 @@ function PostsPane({ onSaved }) {
   const handleCoverImageChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setImageError("");
     setUploadingImage(true);
     try {
       const oldFileName = modalPost.coverFileName || null;
@@ -245,7 +238,10 @@ function PostsPane({ onSaved }) {
         coverSrc: url,
       }));
     } catch (err) {
-      setImageError(apiErrorMessage(err, "آپلود تصویر با خطا مواجه شد."));
+      notify({
+        type: "error",
+        message: apiErrorMessage(err, "آپلود تصویر با خطا مواجه شد."),
+      });
     } finally {
       setUploadingImage(false);
     }
@@ -253,13 +249,11 @@ function PostsPane({ onSaved }) {
 
   const openNew = () => {
     setErrors({});
-    setImageError("");
     setModalPost(emptyPost(categories[0]?.id ?? ""));
   };
 
   const openEdit = (post) => {
     setErrors({});
-    setImageError("");
     setModalPost({ ...post });
   };
 
@@ -280,19 +274,21 @@ function PostsPane({ onSaved }) {
     }
 
     setSaving(true);
-    setApiError("");
     try {
       if (modalPost.id) {
         await updateBlogPost(modalPost.id, mapPostToApi(modalPost));
-        onSaved("پست ویرایش شد");
+        notify({ type: "success", message: "پست ویرایش شد" });
       } else {
         await createBlogPost(mapPostToApi(modalPost));
-        onSaved("پست جدید اضافه شد");
+        notify({ type: "success", message: "پست جدید اضافه شد" });
       }
       await reloadPosts();
       setModalPost(null);
     } catch (err) {
-      setApiError(apiErrorMessage(err, "ذخیره پست با خطا مواجه شد."));
+      notify({
+        type: "error",
+        message: apiErrorMessage(err, "ذخیره پست با خطا مواجه شد."),
+      });
     } finally {
       setSaving(false);
     }
@@ -302,36 +298,68 @@ function PostsPane({ onSaved }) {
     try {
       const updated = await toggleBlogPostPublish(post.id);
       await reloadPosts();
-      onSaved(updated?.isPublished ? "پست منتشر شد" : "پست پیش‌نویس شد");
+      notify({
+        type: "success",
+        message: updated?.isPublished ? "پست منتشر شد" : "پست پیش‌نویس شد",
+      });
     } catch (err) {
-      setApiError(apiErrorMessage(err, "تغییر وضعیت پست با خطا مواجه شد."));
+      notify({
+        type: "error",
+        message: apiErrorMessage(err, "تغییر وضعیت پست با خطا مواجه شد."),
+      });
     }
   };
 
   const deletePost = async (id) => {
     try {
       await deleteBlogPost(id);
-      // If we just deleted the last item on a page beyond page 1, step back
-      // a page so the user doesn't land on a now-empty page.
       if (posts.length === 1 && page > 1) {
         setPage((p) => p - 1);
       } else {
         await reloadPosts();
       }
-      setConfirmDeleteId(null);
-      onSaved("پست حذف شد");
+      notify({ type: "success", message: "پست حذف شد" });
     } catch (err) {
-      setApiError(apiErrorMessage(err, "حذف پست با خطا مواجه شد."));
-      setConfirmDeleteId(null);
+      notify({
+        type: "error",
+        message: apiErrorMessage(err, "حذف پست با خطا مواجه شد."),
+      });
     }
+  };
+
+  const handleDeleteClick = async (id) => {
+    const ok = await confirmModal({
+      title: "حذف پست",
+      message: "این پست برای همیشه حذف می‌شود و این عملیات قابل بازگشت نیست.",
+      confirmText: "حذف شود",
+      cancelText: "انصراف",
+      danger: true,
+    });
+    if (!ok) return;
+    await deletePost(id);
   };
 
   return (
     <div className="panel">
-      {apiError && <span className="form-error">{apiError}</span>}
-
       <div className="blog-mgmt__posts-toolbar">
         <div className="blog-mgmt__posts-toolbar-group">
+          <form className="blog-mgmt__search-box" onSubmit={handleSearchSubmit}>
+            <input
+              type="text"
+              className="mh-input"
+              placeholder="جستجو در عنوان پست‌ها..."
+              value={searchDraft}
+              onChange={(e) => setSearchDraft(e.target.value)}
+            />
+            <button
+              type="submit"
+              className="blog-mgmt__search-submit"
+              title="جستجو"
+              aria-label="جستجو"
+            >
+              <i className="fas fa-search" />
+            </button>
+          </form>
           {!loading && totalPages > 1 && (
             <div className="blog-mgmt__pagination">
               <button
@@ -356,24 +384,6 @@ function PostsPane({ onSaved }) {
               </button>
             </div>
           )}
-
-          <form className="blog-mgmt__search-box" onSubmit={handleSearchSubmit}>
-            <input
-              type="text"
-              className="mh-input"
-              placeholder="جستجو در عنوان پست‌ها..."
-              value={searchDraft}
-              onChange={(e) => setSearchDraft(e.target.value)}
-            />
-            <button
-              type="submit"
-              className="blog-mgmt__search-submit"
-              title="جستجو"
-              aria-label="جستجو"
-            >
-              <i className="fas fa-search" />
-            </button>
-          </form>
         </div>
 
         <div className="blog-mgmt__posts-toolbar-group">
@@ -460,7 +470,7 @@ function PostsPane({ onSaved }) {
                     <button
                       className="btn-icon btn-danger"
                       title="حذف"
-                      onClick={() => setConfirmDeleteId(post.id)}
+                      onClick={() => handleDeleteClick(post.id)}
                     >
                       <i className="fas fa-trash" />
                     </button>
@@ -515,7 +525,6 @@ function PostsPane({ onSaved }) {
                 {uploadingImage && (
                   <span className="empty-hint">در حال آپلود...</span>
                 )}
-                {imageError && <span className="form-error">{imageError}</span>}
               </div>
 
               <div className="two-column-form">
@@ -594,39 +603,6 @@ function PostsPane({ onSaved }) {
           </div>
         </div>
       )}
-
-      {confirmDeleteId !== null && (
-        <div
-          className="modal-backdrop"
-          onClick={() => setConfirmDeleteId(null)}
-        >
-          <div
-            className="modal blog-mgmt__modal--confirm"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-header">
-              <h4>حذف پست</h4>
-            </div>
-            <p className="blog-mgmt__muted-text">
-              این پست برای همیشه حذف می‌شود و این عملیات قابل بازگشت نیست.
-            </p>
-            <div className="modal-footer">
-              <button
-                className="btn btn-secondary"
-                onClick={() => setConfirmDeleteId(null)}
-              >
-                انصراف
-              </button>
-              <button
-                className="btn btn-danger"
-                onClick={() => deletePost(confirmDeleteId)}
-              >
-                حذف شود
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -660,12 +636,11 @@ function emptyDisplayCategory() {
 const CATEGORY_TITLE_MAX = 30;
 const CATEGORY_SUBTITLE_MAX = 50;
 
-function DisplayCategoriesPane({ onSaved }) {
+function DisplayCategoriesPane() {
+  const { notify, confirmModal } = useGlobalUI();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [apiError, setApiError] = useState("");
   const [modalCat, setModalCat] = useState(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
 
@@ -683,9 +658,13 @@ function DisplayCategoriesPane({ onSaved }) {
         await reloadCategories();
       } catch (err) {
         if (!cancelled)
-          setApiError(
-            apiErrorMessage(err, "بارگذاری دسته‌بندی‌ها با خطا مواجه شد."),
-          );
+          notify({
+            type: "error",
+            message: apiErrorMessage(
+              err,
+              "بارگذاری دسته‌بندی‌ها با خطا مواجه شد.",
+            ),
+          });
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -720,7 +699,6 @@ function DisplayCategoriesPane({ onSaved }) {
     }
 
     setSaving(true);
-    setApiError("");
     try {
       if (modalCat.id) {
         await updateBlogCategory(modalCat.id, mapCategoryToApi(modalCat));
@@ -729,9 +707,12 @@ function DisplayCategoriesPane({ onSaved }) {
       }
       await reloadCategories();
       setModalCat(null);
-      onSaved("دسته‌بندی نمایشی ذخیره شد");
+      notify({ type: "success", message: "دسته‌بندی نمایشی ذخیره شد" });
     } catch (err) {
-      setApiError(apiErrorMessage(err, "ذخیره دسته‌بندی با خطا مواجه شد."));
+      notify({
+        type: "error",
+        message: apiErrorMessage(err, "ذخیره دسته‌بندی با خطا مواجه شد."),
+      });
     } finally {
       setSaving(false);
     }
@@ -741,12 +722,25 @@ function DisplayCategoriesPane({ onSaved }) {
     try {
       await deleteBlogCategory(id);
       await reloadCategories();
-      setConfirmDeleteId(null);
-      onSaved("دسته‌بندی حذف شد");
+      notify({ type: "success", message: "دسته‌بندی حذف شد" });
     } catch (err) {
-      setApiError(apiErrorMessage(err, "حذف دسته‌بندی با خطا مواجه شد."));
-      setConfirmDeleteId(null);
+      notify({
+        type: "error",
+        message: apiErrorMessage(err, "حذف دسته‌بندی با خطا مواجه شد."),
+      });
     }
+  };
+
+  const handleDeleteClick = async (id) => {
+    const ok = await confirmModal({
+      title: "حذف دسته‌بندی",
+      message: "این دسته‌بندی از صفحه‌ی وبلاگ حذف می‌شود.",
+      confirmText: "حذف شود",
+      cancelText: "انصراف",
+      danger: true,
+    });
+    if (!ok) return;
+    await remove(id);
   };
 
   const move = async (index, dir) => {
@@ -756,14 +750,15 @@ function DisplayCategoriesPane({ onSaved }) {
       await moveBlogCategory(categories[index].id, dir < 0 ? "up" : "down");
       await reloadCategories();
     } catch (err) {
-      setApiError(apiErrorMessage(err, "تغییر ترتیب با خطا مواجه شد."));
+      notify({
+        type: "error",
+        message: apiErrorMessage(err, "تغییر ترتیب با خطا مواجه شد."),
+      });
     }
   };
 
   return (
     <div className="panel">
-      {apiError && <span className="form-error">{apiError}</span>}
-
       <div className="panel-actions blog-mgmt__panel-actions--start">
         <button className="btn btn-primary" onClick={openNew}>
           <i className="fas fa-plus" /> دسته‌بندی نمایشی جدید
@@ -812,7 +807,7 @@ function DisplayCategoriesPane({ onSaved }) {
                 </button>
                 <button
                   className="btn-icon btn-danger"
-                  onClick={() => setConfirmDeleteId(cat.id)}
+                  onClick={() => handleDeleteClick(cat.id)}
                   title="حذف"
                 >
                   <i className="fas fa-trash" />
@@ -919,39 +914,6 @@ function DisplayCategoriesPane({ onSaved }) {
           </div>
         </div>
       )}
-
-      {confirmDeleteId !== null && (
-        <div
-          className="modal-backdrop"
-          onClick={() => setConfirmDeleteId(null)}
-        >
-          <div
-            className="modal blog-mgmt__modal--confirm"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-header">
-              <h4>حذف دسته‌بندی</h4>
-            </div>
-            <p className="blog-mgmt__muted-text">
-              این دسته‌بندی از صفحه‌ی وبلاگ حذف می‌شود.
-            </p>
-            <div className="modal-footer">
-              <button
-                className="btn btn-secondary"
-                onClick={() => setConfirmDeleteId(null)}
-              >
-                انصراف
-              </button>
-              <button
-                className="btn btn-danger"
-                onClick={() => remove(confirmDeleteId)}
-              >
-                حذف شود
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -977,12 +939,11 @@ function emptySidebarTag() {
 // admin can mark "suggested" capped so the block never grows unbounded.
 const MAX_SUGGESTED_TAGS = 10;
 
-function SidebarTagsPane({ onSaved }) {
+function SidebarTagsPane() {
+  const { notify, confirmModal } = useGlobalUI();
   const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [apiError, setApiError] = useState("");
   const [modalTag, setModalTag] = useState(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   // Local-only, no API calls involved: free-text filter and a "suggested
@@ -1007,9 +968,10 @@ function SidebarTagsPane({ onSaved }) {
         await reloadTags();
       } catch (err) {
         if (!cancelled)
-          setApiError(
-            apiErrorMessage(err, "بارگذاری برچسب‌ها با خطا مواجه شد."),
-          );
+          notify({
+            type: "error",
+            message: apiErrorMessage(err, "بارگذاری برچسب‌ها با خطا مواجه شد."),
+          });
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -1053,6 +1015,7 @@ function SidebarTagsPane({ onSaved }) {
       return;
     }
 
+    setError("");
     setSaving(true);
     try {
       if (modalTag.id) {
@@ -1066,10 +1029,12 @@ function SidebarTagsPane({ onSaved }) {
       }
       await reloadTags();
       setModalTag(null);
-      setError("");
-      onSaved("برچسب پیشنهادی ذخیره شد");
+      notify({ type: "success", message: "برچسب پیشنهادی ذخیره شد" });
     } catch (err) {
-      setError(apiErrorMessage(err, "ذخیره برچسب با خطا مواجه شد."));
+      notify({
+        type: "error",
+        message: apiErrorMessage(err, "ذخیره برچسب با خطا مواجه شد."),
+      });
     } finally {
       setSaving(false);
     }
@@ -1080,7 +1045,12 @@ function SidebarTagsPane({ onSaved }) {
     try {
       await toggleBlogTagSuggested(tag.id);
       await reloadTags();
-      onSaved(tag.suggested ? "تگ از حالت پیشنهادی خارج شد" : "تگ پیشنهادی شد");
+      notify({
+        type: "success",
+        message: tag.suggested
+          ? "تگ از حالت پیشنهادی خارج شد"
+          : "تگ پیشنهادی شد",
+      });
     } catch (err) {
       if (err?.response?.status === 409) {
         setLimitError(
@@ -1089,11 +1059,13 @@ function SidebarTagsPane({ onSaved }) {
             `حداکثر تعداد برچسب‌های پیشنهادی (${toPersianDigits(MAX_SUGGESTED_TAGS)} عدد) است.`,
           ),
         );
-        // auto-clear after 5s, same pattern as flashSaved
         window.clearTimeout(toggleSuggested._t);
         toggleSuggested._t = window.setTimeout(() => setLimitError(""), 5000);
       } else {
-        setApiError(apiErrorMessage(err, "تغییر وضعیت تگ با خطا مواجه شد."));
+        notify({
+          type: "error",
+          message: apiErrorMessage(err, "تغییر وضعیت تگ با خطا مواجه شد."),
+        });
       }
     }
   };
@@ -1102,18 +1074,29 @@ function SidebarTagsPane({ onSaved }) {
     try {
       await deleteBlogTag(id);
       await reloadTags();
-      setConfirmDeleteId(null);
-      onSaved("برچسب حذف شد");
+      notify({ type: "success", message: "برچسب حذف شد" });
     } catch (err) {
-      setApiError(apiErrorMessage(err, "حذف برچسب با خطا مواجه شد."));
-      setConfirmDeleteId(null);
+      notify({
+        type: "error",
+        message: apiErrorMessage(err, "حذف برچسب با خطا مواجه شد."),
+      });
     }
+  };
+
+  const handleDeleteClick = async (id) => {
+    const ok = await confirmModal({
+      title: "حذف برچسب",
+      message: "آیا از حذف این برچسب مطمئن هستید؟",
+      confirmText: "حذف شود",
+      cancelText: "انصراف",
+      danger: true,
+    });
+    if (!ok) return;
+    await remove(id);
   };
 
   return (
     <div className="panel">
-      {apiError && <span className="form-error">{apiError}</span>}
-
       <div className="blog-mgmt__posts-toolbar">
         <div className="blog-mgmt__posts-toolbar-group">
           <div className="blog-mgmt__search-box">
@@ -1183,7 +1166,7 @@ function SidebarTagsPane({ onSaved }) {
                 </button>
                 <button
                   className="btn-icon btn-danger"
-                  onClick={() => setConfirmDeleteId(tag.id)}
+                  onClick={() => handleDeleteClick(tag.id)}
                   title="حذف"
                 >
                   <i className="fas fa-trash" />
@@ -1257,36 +1240,6 @@ function SidebarTagsPane({ onSaved }) {
           </div>
         </div>
       )}
-
-      {confirmDeleteId !== null && (
-        <div
-          className="modal-backdrop"
-          onClick={() => setConfirmDeleteId(null)}
-        >
-          <div
-            className="modal blog-mgmt__modal--confirm"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-header">
-              <h4>حذف برچسب</h4>
-            </div>
-            <div className="modal-footer">
-              <button
-                className="btn btn-secondary"
-                onClick={() => setConfirmDeleteId(null)}
-              >
-                انصراف
-              </button>
-              <button
-                className="btn btn-danger"
-                onClick={() => remove(confirmDeleteId)}
-              >
-                حذف شود
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -1303,14 +1256,14 @@ function mapHeroFromApi(h) {
   };
 }
 
-function HeroPane({ onSaved }) {
+function HeroPane() {
+  const { notify } = useGlobalUI();
   const [draft, setDraft] = useState({
     titleLine: "",
     highlight: "",
     searchPlaceholder: "",
   });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -1322,7 +1275,10 @@ function HeroPane({ onSaved }) {
         if (!cancelled) setDraft(mapHeroFromApi(hero));
       } catch (err) {
         if (!cancelled)
-          setError(apiErrorMessage(err, "بارگذاری هیرو با خطا مواجه شد."));
+          notify({
+            type: "error",
+            message: apiErrorMessage(err, "بارگذاری هیرو با خطا مواجه شد."),
+          });
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -1334,7 +1290,10 @@ function HeroPane({ onSaved }) {
 
   const save = async () => {
     if (!draft.titleLine.trim() || !draft.highlight.trim()) {
-      setError("متن اصلی و متن هایلایت نباید خالی باشند.");
+      notify({
+        type: "warning",
+        message: "متن اصلی و متن هایلایت نباید خالی باشند.",
+      });
       return;
     }
 
@@ -1342,10 +1301,12 @@ function HeroPane({ onSaved }) {
     try {
       const updated = await updateBlogHero(draft);
       setDraft(mapHeroFromApi(updated));
-      setError("");
-      onSaved("تنظیمات هیرو ذخیره شد");
+      notify({ type: "success", message: "تنظیمات هیرو ذخیره شد" });
     } catch (err) {
-      setError(apiErrorMessage(err, "ذخیره هیرو با خطا مواجه شد."));
+      notify({
+        type: "error",
+        message: apiErrorMessage(err, "ذخیره هیرو با خطا مواجه شد."),
+      });
     } finally {
       setSaving(false);
     }
@@ -1388,7 +1349,6 @@ function HeroPane({ onSaved }) {
                 }
               />
             </div>
-            {error && <span className="form-error">{error}</span>}
           </div>
 
           <div className="blog-mgmt__hero-preview">

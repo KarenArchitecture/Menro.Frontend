@@ -7,6 +7,7 @@ import {
   apiErrorMessage,
 } from "../../api/adminUsers";
 import "../../assets/css/admin/userMngmnt.css";
+import { useGlobalUI } from "../common/GlobalUI";
 
 /* ======================================================================
  * UserManagementSection
@@ -25,6 +26,7 @@ function toPersianDigits(value) {
 }
 
 export default function UserManagementSection() {
+  const { notify, confirmModal } = useGlobalUI();
   const [users, setUsers] = useState([]);
   const [availableRoles, setAvailableRoles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -136,6 +138,14 @@ export default function UserManagementSection() {
   };
 
   const saveRoles = async () => {
+    const confirmed = await confirmModal({
+      title: "تغییر نقش‌ها",
+      message: `نقش‌های ${rolesModalUser.fullName} تغییر خواهد کرد. ادامه می‌دهید؟`,
+      confirmText: "بله، ذخیره شود",
+      cancelText: "انصراف",
+    });
+    if (!confirmed) return;
+
     setSavingRoles(true);
     setRolesError("");
     try {
@@ -149,13 +159,16 @@ export default function UserManagementSection() {
         setViewUser((prev) => (prev ? { ...prev, roles: updatedRoles } : prev));
       }
       setRolesModalUser(null);
+      notify({
+        type: "success",
+        message: "نقش‌های کاربر با موفقیت به‌روزرسانی شد",
+      });
     } catch (err) {
       setRolesError(apiErrorMessage(err, "ذخیره نقش‌ها با خطا مواجه شد."));
     } finally {
       setSavingRoles(false);
     }
   };
-
   return (
     <div id="user-management-view" className="blog-mgmt user-mgmt">
       <div className="view-header">

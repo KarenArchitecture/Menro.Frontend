@@ -6,8 +6,10 @@ import {
 } from "../../api/ownerRestaurant";
 import restaurantAxios from "../../api/restaurantAxios";
 import "../../assets/css/admin/restaurantProfile.css";
+import { useGlobalUI } from "../common/GlobalUI";
 
 export default function RestaurantProfileSection() {
+  const { notify } = useGlobalUI();
   // basic fields
   const [name, setName] = useState("");
   const [type, setType] = useState(""); // select
@@ -74,6 +76,10 @@ export default function RestaurantProfileSection() {
         setSubscriptionDaysLeft(d.subscriptionDaysLeft ?? 0);
       } catch (err) {
         console.error("Failed to load profile or categories", err);
+        notify({
+          type: "error",
+          message: "دریافت اطلاعات رستوران با خطا مواجه شد",
+        });
       }
     }
 
@@ -138,10 +144,10 @@ export default function RestaurantProfileSection() {
       const res = await updateRestaurantProfile(formData);
 
       console.log("Updated:", res.data);
-      alert("پروفایل با موفقیت بروزرسانی شد");
+      notify({ type: "success", message: "پروفایل با موفقیت بروزرسانی شد" });
     } catch (err) {
       console.error("Update failed:", err);
-      alert("خطا در بروزرسانی پروفایل رستوران");
+      notify({ type: "error", message: "خطا در بروزرسانی پروفایل رستوران" });
     }
   };
 

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
 import ownerRestaurantAxios from "../../api/ownerRestaurantAxios";
 import { useMusicSignalR } from "../../hooks/useMusicSignalR";
-import { useModal } from "../common/GlobalModal";
+import { useGlobalUI } from "../common/GlobalUI";
 // import "./MusicSection.css";
 
 // for api
@@ -56,7 +56,10 @@ const formatDuration = (duration) => {
 };
 
 export default function MusicSection() {
-  // fethcing tools
+  /* -------------------------------------------------------------------
+     STATE
+  ------------------------------------------------------------------- */
+  // tabs / archive / playlists
   const [activeTab, setActiveTab] = useState("search");
   const [playlists, setPlaylists] = useState([]);
   const [selectedPlaylistId, setSelectedPlaylistId] = useState(null);
@@ -65,6 +68,7 @@ export default function MusicSection() {
   useEffect(() => {
     selectedPlaylistIdRef.current = selectedPlaylistId;
   }, [selectedPlaylistId]);
+
   const [tracks, setTracks] = useState([]);
 
   const withAuthToken = (url) => {
@@ -75,30 +79,26 @@ export default function MusicSection() {
     return `${url}${separator}access_token=${encodeURIComponent(token)}`;
   };
 
-  // for requests
+  // track requests
   const [requestedTracks, setRequestedTracks] = useState([]);
   const [loadingRequests, setLoadingRequests] = useState(false);
 
-  // for playing track (from playlist)
+  // playing track (from playlist)
   const [playlistTracks, setPlaylistTracks] = useState([]);
   const [playingPlaylistTrackId, setPlayingPlaylistTrackId] = useState(null);
 
-  // Modal State برای پلی لیست
+  // Modal state: ساخت/ویرایش پلی‌لیست (فرم اختصاصی، خارج از GlobalUI)
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const [playlistModalMode, setPlaylistModalMode] = useState("add");
   const [playlistFormName, setPlaylistFormName] = useState("");
   const [editingPlaylistId, setEditingPlaylistId] = useState(null);
-  const [deleting, setDeleting] = useState(false);
 
-  // Modal State برای ادیت آهنگ
+  // Modal state: ویرایش نام آهنگ (فرم اختصاصی، خارج از GlobalUI)
   const [showTrackModal, setShowTrackModal] = useState(false);
   const [trackFormName, setTrackFormName] = useState("");
   const [editingTrackId, setEditingTrackId] = useState(null);
 
-  // Modal State برای هشدارهای عمومی (جایگزین alert)
-  const [alertMessage, setAlertMessage] = useState("");
-
-  //for playlist track preview from archive
+  // پیش‌نمایش آهنگ از آرشیو
   const previewAudioRef = useRef(new Audio());
   const [previewTrackId, setPreviewTrackId] = useState(null);
   const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
@@ -139,10 +139,6 @@ export default function MusicSection() {
     playingPlaylistTrackIdRef.current = playingPlaylistTrackId;
   }, [playingPlaylistTrackId]);
 
-  // Modal State برای حذف پلی‌لیست
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [playlistToDelete, setPlaylistToDelete] = useState(null);
-
   const searchResults = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return tracks;
@@ -168,8 +164,9 @@ export default function MusicSection() {
 
   /* --- REAL-TIME PROPS --- */
   const { user } = useAuth();
-  const { showModal } = useModal();
+  const { notify, alertModal, confirmModal } = useGlobalUI();
   const [restaurantId, setRestaurantId] = useState(null);
+
   //--restaurant context
   useEffect(() => {
     const loadRestaurantContext = async () => {
@@ -185,10 +182,11 @@ export default function MusicSection() {
       loadRestaurantContext();
     }
   }, [user]);
+
   //--SignalR
   useMusicSignalR(restaurantId, {
     onCreated: async () => {
-      showModal({
+      await alertModal({
         title: "درخواست جدید موسیقی",
         message: "یک درخواست جدید موسیقی از طرف مشتری ثبت شده است.",
         buttonText: "متوجه شدم",
@@ -202,6 +200,7 @@ export default function MusicSection() {
       await handlePlaybackChanged(playerDto);
     },
   });
+
   //--handler for player state auto refresh
   const handlePlaybackChanged = async (playerDto) => {
     try {
@@ -230,7 +229,9 @@ export default function MusicSection() {
     }
   };
 
-  /* --- FETCH DATA --- */
+  /* -------------------------------------------------------------------
+     FETCH DATA
+  ------------------------------------------------------------------- */
   //--fetch player
   const loadPlayerState = async () => {
     try {
@@ -262,12 +263,14 @@ export default function MusicSection() {
       setTracks(mapped);
     } catch (err) {
       console.error(err);
+      notify({ type: "error", message: "دریافت آرشیو موسیقی با خطا مواجه شد" });
     } finally {
       setLoadingArchive(false);
     }
   };
   useEffect(() => {
     loadTracks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   //--fetch playlists
   const loadPlaylists = async () => {
@@ -302,12 +305,14 @@ export default function MusicSection() {
       }
     } catch (err) {
       console.error(err);
+      notify({ type: "error", message: "دریافت پلی‌لیست‌ها با خطا مواجه شد" });
     }
   };
   useEffect(() => {
     loadPlaylists();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  //--fetch playlist/
+  //--fetch playlist
   const refreshPlaylist = async (playlistId) => {
     if (!playlistId) return [];
 
@@ -333,6 +338,7 @@ export default function MusicSection() {
       return mapped;
     } catch (err) {
       console.error(err);
+      notify({ type: "error", message: "دریافت پلی‌لیست با خطا مواجه شد" });
       return [];
     } finally {
       setLoadingPlaylist(false);
@@ -341,8 +347,9 @@ export default function MusicSection() {
   useEffect(() => {
     if (!selectedPlaylistId) return;
     refreshPlaylist(selectedPlaylistId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPlaylistId]);
-  //--fetck track requests
+  //--fetch track requests
   const fetchTrackRequests = async () => {
     try {
       setLoadingRequests(true);
@@ -352,12 +359,17 @@ export default function MusicSection() {
       setRequestedTracks(response.data ?? []);
     } catch (error) {
       console.error("Failed to load track requests", error);
+      notify({
+        type: "error",
+        message: "دریافت درخواست‌های آهنگ با خطا مواجه شد",
+      });
     } finally {
       setLoadingRequests(false);
     }
   };
   useEffect(() => {
     fetchTrackRequests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // add track to playlist
@@ -366,45 +378,59 @@ export default function MusicSection() {
     try {
       await addTrackToPlaylist(selectedPlaylistId, { musicTrackId: track.id });
       await refreshPlaylist(selectedPlaylistId);
+      notify({ type: "success", message: "آهنگ به پلی‌لیست اضافه شد" });
     } catch (err) {
       console.error(err);
+      notify({ type: "error", message: "افزودن آهنگ به پلی‌لیست ناموفق بود" });
     }
   };
 
-  /* --- DELETIONS --- */
-  // remove playlist
-  const handleDeletePlaylist = (id) => {
-    setPlaylistToDelete(id);
-    setShowDeleteModal(true);
-  };
-  const handleConfirmDeletePlaylist = async () => {
-    if (!playlistToDelete) return;
+  /* -------------------------------------------------------------------
+     DELETIONS / MUTATIONS THAT NEED CONFIRMATION
+  ------------------------------------------------------------------- */
+  // remove playlist (entity حذف => تایید سراسری)
+  const handleDeletePlaylist = async (id) => {
+    const confirmed = await confirmModal({
+      title: "حذف پلی‌لیست",
+      message:
+        "آیا از حذف این پلی‌لیست اطمینان دارید؟ این عملیات قابل بازگشت نیست.",
+      confirmText: "بله، حذف شود",
+      cancelText: "خیر",
+      danger: true,
+    });
+
+    if (!confirmed) return;
 
     try {
-      setDeleting(true);
+      await deletePlaylist(id);
 
-      await deletePlaylist(playlistToDelete);
-
-      setShowDeleteModal(false);
-      setPlaylistToDelete(null);
+      notify({ type: "success", message: "پلی‌لیست با موفقیت حذف شد" });
 
       await loadPlaylists();
 
       // اگر پلی‌لیست فعال حذف شد
-      if (selectedPlaylistId === playlistToDelete) {
+      if (selectedPlaylistId === id) {
         setSelectedPlaylistId(null);
         setPlaylistTracks([]);
       }
     } catch (err) {
       console.error(err);
-      alert("حذف پلی‌لیست انجام نشد");
-    } finally {
-      setDeleting(false);
+      notify({ type: "error", message: "حذف پلی‌لیست انجام نشد" });
     }
   };
-  // remove track from playlist
+  // remove track from playlist (اکشن مهم/غیرقابل‌برگشت روی پخش زنده => تایید سراسری)
   const removeFromPlaylist = async (playlistTrackId) => {
     if (!selectedPlaylistId) return;
+
+    // const confirmed = await confirmModal({
+    //   title: "حذف از پلی‌لیست",
+    //   message: "این آهنگ از پلی‌لیست حذف خواهد شد. ادامه می‌دهید؟",
+    //   confirmText: "بله، حذف شود",
+    //   cancelText: "خیر",
+    //   danger: true,
+    // });
+
+    // if (!confirmed) return;
 
     try {
       const oldTracks = [...playlistTracksRef.current];
@@ -418,6 +444,8 @@ export default function MusicSection() {
 
       // لیست جدید را مستقیم بگیر
       const updatedTracks = await refreshPlaylist(selectedPlaylistId);
+
+      notify({ type: "success", message: "آهنگ از پلی‌لیست حذف شد" });
 
       // اگر آهنگ حذف شده در حال پخش نبود
       if (!isCurrentlyPlaying) return;
@@ -461,25 +489,39 @@ export default function MusicSection() {
       await playPlaylistTrack(trackToPlay.id, trackToPlay.musicTrackId);
     } catch (err) {
       console.error(err);
-      setAlertMessage("حذف از پلی‌لیست ناموفق بود");
+      notify({ type: "error", message: "حذف از پلی‌لیست ناموفق بود" });
     }
   };
-  // delete from archive
+  // delete from archive (entity حذف، غیرقابل‌بازگشت => تایید سراسری)
   const deleteTrackFromArchive = async (id) => {
+    const confirmed = await confirmModal({
+      title: "حذف آهنگ",
+      message:
+        "آیا از حذف این آهنگ از آرشیو اطمینان دارید؟ این عملیات قابل بازگشت نیست.",
+      confirmText: "بله، حذف شود",
+      cancelText: "خیر",
+      danger: true,
+    });
+
+    if (!confirmed) return;
+
     const backup = tracks.find((t) => t.id === id);
     setTracks((prev) => prev.filter((t) => t.id !== id));
+
     try {
       await deleteTrack(id);
       setPlaylistTracks((prev) => prev.filter((p) => p.musicTrackId !== id));
-    } catch {
+      notify({ type: "success", message: "آهنگ با موفقیت از آرشیو حذف شد" });
+    } catch (err) {
+      console.error(err);
       setTracks((prev) => [...prev, backup]);
-      setAlertMessage("حذف ناموفق بود");
+      notify({ type: "error", message: "حذف ناموفق بود" });
     }
   };
 
-  // -------------------------
-  // MODALS
-  // -------------------------
+  /* -------------------------------------------------------------------
+     FORM MODALS (ساخت/ویرایش پلی‌لیست و آهنگ — خارج از GlobalUI)
+  ------------------------------------------------------------------- */
   //--archive track modal
   const openEditTrackModal = (trackId, currentTitle) => {
     setEditingTrackId(trackId);
@@ -506,19 +548,24 @@ export default function MusicSection() {
         await refreshPlaylist(selectedPlaylistId);
       }
 
+      notify({ type: "success", message: "نام آهنگ با موفقیت تغییر کرد" });
+
       setShowTrackModal(false);
       setTrackFormName("");
       setEditingTrackId(null);
     } catch (err) {
       console.error(err);
 
-      alert(err?.response?.data?.message ?? "خطا در تغییر نام آهنگ");
+      notify({
+        type: "error",
+        message: err?.response?.data?.message ?? "خطا در تغییر نام آهنگ",
+      });
     }
   };
   //--Playlist Modal
   const openAddPlaylistModal = () => {
     if (playlists.length >= MAX_PLAYLISTS) {
-      setAlertMessage("ظرفیت ساخت پلی‌لیست پر شده است.");
+      notify({ type: "warning", message: "ظرفیت ساخت پلی‌لیست پر شده است." });
       return;
     }
     setPlaylistModalMode("add");
@@ -554,6 +601,11 @@ export default function MusicSection() {
         setSelectedPlaylistId(newPlaylist.id);
 
         setPlaylistTracks([]);
+
+        notify({
+          type: "success",
+          message: "پلی‌لیست جدید با موفقیت ساخته شد",
+        });
       } else {
         await renamePlaylist(editingPlaylistId, {
           name,
@@ -569,6 +621,8 @@ export default function MusicSection() {
               : p,
           ),
         );
+
+        notify({ type: "success", message: "پلی‌لیست با موفقیت ویرایش شد" });
       }
 
       setPlaylistFormName("");
@@ -577,13 +631,20 @@ export default function MusicSection() {
     } catch (err) {
       console.error(err);
 
-      alert(err?.response?.data?.message ?? "خطا در ذخیره پلی‌لیست");
+      notify({
+        type: "error",
+        message:
+          err?.response?.data?.message ??
+          (playlistModalMode === "add"
+            ? "خطا در ساخت پلی‌لیست"
+            : "خطا در ذخیره پلی‌لیست"),
+      });
     }
   };
 
-  // -------------------------
-  // Handlers / Helpers
-  // -------------------------
+  /* -------------------------------------------------------------------
+     HANDLERS / HELPERS
+  ------------------------------------------------------------------- */
   // upload track handler
   const onUploadFiles = async (files) => {
     if (!files?.length) return;
@@ -594,12 +655,15 @@ export default function MusicSection() {
 
     const remainingCapacity = MAX_TRACKS - tracks.length;
     if (audioFiles.length > remainingCapacity) {
-      setAlertMessage(
-        `ظرفیت آرشیو محدود است. فقط ${remainingCapacity} فایل دیگر مجاز است.`,
-      );
+      notify({
+        type: "warning",
+        message: `ظرفیت آرشیو محدود است. فقط ${remainingCapacity} فایل دیگر مجاز است.`,
+      });
       audioFiles = audioFiles.slice(0, remainingCapacity);
       if (!audioFiles.length) return;
     }
+
+    let successCount = 0;
 
     for (const file of audioFiles) {
       try {
@@ -622,10 +686,21 @@ export default function MusicSection() {
             artworkUrl: res.data.coverFileName,
           },
         ]);
+        successCount += 1;
       } catch (err) {
         console.error(err);
-        setAlertMessage("خطا در آپلود موسیقی");
+        notify({ type: "error", message: `خطا در آپلود فایل «${file.name}»` });
       }
+    }
+
+    if (successCount > 0) {
+      notify({
+        type: "success",
+        message:
+          successCount === 1
+            ? "آهنگ با موفقیت بارگذاری شد"
+            : `${successCount} آهنگ با موفقیت بارگذاری شد`,
+      });
     }
   };
 
@@ -639,10 +714,10 @@ export default function MusicSection() {
   const handleOnlineSearch = (e) => {
     e.preventDefault();
     if (!searchUrl.trim()) {
-      setAlertMessage("لطفا لینک را وارد کنید.");
+      notify({ type: "warning", message: "لطفا لینک را وارد کنید." });
       return;
     }
-    setAlertMessage(`در حال جستجوی لینک: ${searchUrl}`);
+    notify({ type: "info", message: `در حال جستجوی لینک: ${searchUrl}` });
     setSearchUrl("");
   };
 
@@ -677,7 +752,7 @@ export default function MusicSection() {
       const audioUrl = audioCacheRef.current[musicTrackId];
 
       if (!audioUrl) {
-        setAlertMessage("فایل صوتی یافت نشد");
+        notify({ type: "error", message: "فایل صوتی یافت نشد" });
         return;
       }
 
@@ -699,7 +774,7 @@ export default function MusicSection() {
       setIsPreviewPlaying(true);
     } catch (err) {
       console.error(err);
-      setAlertMessage("خطا در پخش موسیقی");
+      notify({ type: "error", message: "خطا در پخش موسیقی" });
     }
   };
   useEffect(() => {
@@ -773,8 +848,6 @@ export default function MusicSection() {
     const updateDuration = () => setDuration(audio.duration);
 
     const handleEnded = async () => {
-      console.log("🔥 END EVENT FIRED");
-
       const tracks = playlistTracksRef.current;
       const currentId = playingPlaylistTrackIdRef.current;
 
@@ -789,14 +862,13 @@ export default function MusicSection() {
       try {
         await syncAndPlay(nextTrack, "next");
 
-        // 🔥 force UI consistency after ended
+        // اجبار به هماهنگی UI پس از پایان آهنگ
         if (selectedPlaylistIdRef.current) {
           await refreshPlaylist(selectedPlaylistIdRef.current);
         }
-
-        console.log("🔥 SYNC COMPLETED (ended)");
-      } catch (e) {
-        console.log("💀 SYNC FAILED:", e);
+      } catch (err) {
+        console.error(err);
+        notify({ type: "error", message: "پخش آهنگ بعدی با خطا مواجه شد" });
       }
     };
 
@@ -809,6 +881,7 @@ export default function MusicSection() {
       audio.removeEventListener("loadedmetadata", updateDuration);
       audio.removeEventListener("ended", handleEnded);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   //--toggle global play
   const toggleGlobalPlay = async () => {
@@ -828,8 +901,9 @@ export default function MusicSection() {
       try {
         await audio.play();
         setIsPlaying(true);
-      } catch (e) {
-        console.log(e);
+      } catch (err) {
+        console.error(err);
+        notify({ type: "error", message: "پخش موسیقی ناموفق بود" });
       }
     } else {
       audio.pause();
@@ -887,8 +961,8 @@ export default function MusicSection() {
       const p = audio.play();
 
       if (p?.catch) {
-        p.catch((e) => {
-          console.log("PLAY FAILED:", e);
+        p.catch((err) => {
+          console.error("PLAY FAILED:", err);
         });
       }
 
@@ -897,6 +971,7 @@ export default function MusicSection() {
       setIsPlaying(true);
     } catch (err) {
       console.error(err);
+      notify({ type: "error", message: "پخش آهنگ ناموفق بود" });
     }
   };
   //--central helper for changing playing track *****
@@ -913,7 +988,7 @@ export default function MusicSection() {
 
     await playTrack(track);
   };
-  //--??
+  //--current index of playlist track
   const getCurrentPlaylistTrackIndex = () => {
     return playlistTracks.findIndex(
       (x) => x.id === playingPlaylistTrackIdRef.current,
@@ -921,31 +996,41 @@ export default function MusicSection() {
   };
   //--play next track from playlist
   const playNextTrack = async () => {
-    const currentIndex = getCurrentPlaylistTrackIndex();
+    try {
+      const currentIndex = getCurrentPlaylistTrackIndex();
 
-    if (currentIndex === -1) {
-      const firstTrack = playlistTracks?.[0];
-      await syncAndPlay(firstTrack, "next");
-      return;
+      if (currentIndex === -1) {
+        const firstTrack = playlistTracks?.[0];
+        await syncAndPlay(firstTrack, "next");
+        return;
+      }
+
+      const nextTrack = playlistTracks[currentIndex + 1];
+
+      if (!nextTrack) return;
+
+      await syncAndPlay(nextTrack, "next");
+    } catch (err) {
+      console.error(err);
+      notify({ type: "error", message: "پخش آهنگ بعدی ناموفق بود" });
     }
-
-    const nextTrack = playlistTracks[currentIndex + 1];
-
-    if (!nextTrack) return;
-
-    await syncAndPlay(nextTrack, "next");
   };
   //--play previous track from playlist
   const playPreviousTrack = async () => {
-    const currentIndex = getCurrentPlaylistTrackIndex();
+    try {
+      const currentIndex = getCurrentPlaylistTrackIndex();
 
-    if (currentIndex <= 0) return;
+      if (currentIndex <= 0) return;
 
-    const previousTrack = playlistTracks[currentIndex - 1];
+      const previousTrackItem = playlistTracks[currentIndex - 1];
 
-    await syncAndPlay(previousTrack, "prev");
+      await syncAndPlay(previousTrackItem, "prev");
+    } catch (err) {
+      console.error(err);
+      notify({ type: "error", message: "پخش آهنگ قبلی ناموفق بود" });
+    }
   };
-  //--experimental => central bootstrap and audio manager
+  //--central bootstrap and audio manager
   const ensureTrackLoaded = async (track) => {
     if (!track) return false;
 
@@ -970,16 +1055,17 @@ export default function MusicSection() {
   const playTrack = async (track) => {
     if (!track) return;
 
-    const ok = await ensureTrackLoaded(track);
-    if (!ok) return;
-
     try {
+      const ok = await ensureTrackLoaded(track);
+      if (!ok) return;
+
       await audioRef.current.play();
       setIsPlaying(true);
       setPlayingTrackId(track.musicTrackId);
       setPlayingPlaylistTrackId(track.id);
-    } catch (e) {
-      console.log("PLAY FAILED:", e);
+    } catch (err) {
+      console.error("PLAY FAILED:", err);
+      notify({ type: "error", message: "پخش آهنگ ناموفق بود" });
     }
   };
   //--seek helpers
@@ -1006,35 +1092,56 @@ export default function MusicSection() {
       await refreshPlaylist(selectedPlaylistId);
     } catch (err) {
       console.error(err);
+      notify({ type: "error", message: "جابجایی آهنگ در پلی‌لیست ناموفق بود" });
     }
   };
 
-  // track requests approve/reject
+  /* -------------------------------------------------------------------
+     TRACK REQUESTS: APPROVE / REJECT
+  ------------------------------------------------------------------- */
   const handleApproveRequest = async (track) => {
-    try {
-      // 1. optimistic UI update (حذف از لیست درخواست‌ها)
-      setRequestedTracks((prev) => prev.filter((t) => t.id !== track.id));
+    const previousRequests = requestedTracks;
 
-      // 2. call backend
+    // optimistic UI update (حذف از لیست درخواست‌ها)
+    setRequestedTracks((prev) => prev.filter((t) => t.id !== track.id));
+
+    try {
       await approveTrackRequest(track.id);
 
-      // 3. refresh playlist (خیلی مهم طبق طراحی تو)
       if (selectedPlaylistId) {
         await refreshPlaylist(selectedPlaylistId);
       }
+
+      notify({
+        type: "success",
+        message: "درخواست تایید شد و به پلی‌لیست اضافه شد",
+      });
     } catch (err) {
       console.error(err);
+      setRequestedTracks(previousRequests);
+      notify({ type: "error", message: "خطا در تایید درخواست" });
     }
   };
   const handleRejectRequest = async (trackId) => {
+    const confirmed = await confirmModal({
+      title: "رد درخواست",
+      message: "آیا از رد این درخواست آهنگ اطمینان دارید؟",
+      confirmText: "بله، رد شود",
+      cancelText: "خیر",
+      danger: true,
+    });
+
+    if (!confirmed) return;
+
     try {
       await rejectTrackRequest(trackId);
 
       setRequestedTracks((prev) => prev.filter((t) => t.id !== trackId));
+
+      notify({ type: "success", message: "درخواست رد شد" });
     } catch (err) {
       console.error(err);
-
-      setAlertMessage("خطا در رد درخواست");
+      notify({ type: "error", message: "خطا در رد درخواست" });
     }
   };
 
@@ -1333,6 +1440,10 @@ export default function MusicSection() {
                       await refreshPlaylist(pl.id);
                     } catch (err) {
                       console.error(err);
+                      notify({
+                        type: "error",
+                        message: "فعال‌سازی پلی‌لیست ناموفق بود",
+                      });
                     }
                   }}
                 >
@@ -1557,44 +1668,7 @@ export default function MusicSection() {
       -------------------------------MODALS---------------------------------
       -------------------------------------------------------------------*/}
 
-      {/* مودال تایید حذف پلی‌لیست */}
-      {showDeleteModal && (
-        <div className="mh-modal-backdrop">
-          <div className="mh-modal">
-            <h4
-              className="mh-modal__title"
-              style={{ justifyContent: "center" }}
-            >
-              حذف پلی‌لیست
-            </h4>
-            <p className="mh-modal__text">
-              آیا از حذف این پلی‌لیست اطمینان دارید؟
-            </p>
-            <div className="mh-modal__footer is-center">
-              <button
-                type="button"
-                className="mh-btn mh-btn--ghost"
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  setPlaylistToDelete(null);
-                }}
-              >
-                خیر
-              </button>
-              <button
-                type="button"
-                className="mh-btn mh-btn--reject"
-                onClick={handleConfirmDeletePlaylist}
-                disabled={deleting}
-              >
-                بله، حذف شود
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* مودال ساخت/ویرایش پلی‌لیست */}
+      {/* مودال ساخت/ویرایش پلی‌لیست (فرم اختصاصی) */}
       {showPlaylistModal && (
         <div className="mh-modal-backdrop">
           <div className="mh-modal">
@@ -1633,7 +1707,7 @@ export default function MusicSection() {
         </div>
       )}
 
-      {/* مودال ویرایش نام آهنگ */}
+      {/* مودال ویرایش نام آهنگ (فرم اختصاصی) */}
       {showTrackModal && (
         <div className="mh-modal-backdrop">
           <div className="mh-modal">
@@ -1668,7 +1742,7 @@ export default function MusicSection() {
         </div>
       )}
 
-      {/* مودال پیش نمایش آهنگ */}
+      {/* مودال پیش‌نمایش آهنگ (پلیر اختصاصی) */}
       {showPreviewModal && (
         <div className="mh-modal-backdrop">
           <div className="mh-modal mh-modal--wide">
@@ -1721,30 +1795,6 @@ export default function MusicSection() {
                 <i
                   className={isPreviewPlaying ? "fas fa-pause" : "fas fa-play"}
                 />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* مودال هشدار */}
-      {!!alertMessage && (
-        <div className="mh-modal-backdrop">
-          <div className="mh-modal">
-            <h4
-              className="mh-modal__title"
-              style={{ justifyContent: "center" }}
-            >
-              پیام
-            </h4>
-            <p className="mh-modal__text">{alertMessage}</p>
-            <div className="mh-modal__footer is-center">
-              <button
-                type="button"
-                className="mh-btn mh-btn--primary"
-                onClick={() => setAlertMessage("")}
-              >
-                متوجه شدم
               </button>
             </div>
           </div>

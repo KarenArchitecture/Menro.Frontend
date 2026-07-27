@@ -3,6 +3,7 @@ import IconPicker, { renderIconByKey } from "./IconPicker";
 import fileAxios from "../../api/fileAxios.js";
 import iconAxios from "../../api/iconAxios.js";
 import adminGlobalCategoryAxios from "../../api/adminGlobalCategoryAxios.js";
+import { useGlobalUI } from "../common/GlobalUI";
 
 function GenericCategoryIcon() {
   return (
@@ -14,6 +15,7 @@ function GenericCategoryIcon() {
 }
 
 export default function CategorySettingsSection() {
+  const { notify, confirmModal } = useGlobalUI();
   const [globalCategories, setGlobalCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,12 +32,6 @@ export default function CategorySettingsSection() {
   const [editIconUrl, setEditIconUrl] = useState(null);
   const [editPickerOpen, setEditPickerOpen] = useState(false);
 
-  // Upload feedback
-  const [uploadMessage, setUploadMessage] = useState({
-    text: "تنها فایل‌های SVG مجاز به آپلود هستند.",
-    type: "info",
-  });
-
   // ==== Load global categories ====
   const loadCategories = async () => {
     try {
@@ -43,6 +39,10 @@ export default function CategorySettingsSection() {
       setGlobalCategories(res.data);
     } catch (err) {
       console.error("Failed to load global categories", err);
+      notify({
+        type: "error",
+        message: "دریافت دسته‌بندی‌های عمومی با خطا مواجه شد",
+      });
     } finally {
       setLoading(false);
     }
@@ -57,41 +57,51 @@ export default function CategorySettingsSection() {
     const name = nameInput.trim();
 
     if (!name) {
-      alert("نام دسته‌بندی را وارد کنید");
+      notify({ type: "warning", message: "نام دسته‌بندی را وارد کنید" });
       return;
     }
-
     if (!selectedIconId) {
-      alert("لطفاً آیکن را انتخاب کنید");
+      notify({ type: "warning", message: "لطفاً آیکن را انتخاب کنید" });
       return;
     }
 
     try {
-      const dto = {
-        name: name,
-        iconId: selectedIconId,
-      };
+      const dto = { name, iconId: selectedIconId };
       await adminGlobalCategoryAxios.post("/add", dto);
-
       await loadCategories();
 
-      // reset fields
       setNameInput("");
       setSelectedIconId(null);
       setSelectedIconUrl(null);
+      notify({ type: "success", message: "دسته‌بندی عمومی اضافه شد" });
     } catch (err) {
       console.error("Failed to create global category", err);
-      alert(err.response?.data?.message ?? "خطا در افزودن دسته‌بندی عمومی");
+      notify({
+        type: "error",
+        message: err.response?.data?.message ?? "خطا در افزودن دسته‌بندی عمومی",
+      });
     }
   };
 
   // ==== Delete ====
   const removeGlobalCategory = async (catId) => {
+    const ok = await confirmModal({
+      title: "حذف دسته‌بندی عمومی",
+      message:
+        "این دسته‌بندی از همه‌ی رستوران‌هایی که ازش استفاده می‌کنند حذف می‌شود.",
+      confirmText: "حذف شود",
+      cancelText: "انصراف",
+      danger: true,
+    });
+    if (!ok) return;
+
     try {
       await adminGlobalCategoryAxios.delete(`/delete/${catId}`);
       await loadCategories();
+      notify({ type: "success", message: "دسته‌بندی عمومی حذف شد" });
     } catch (err) {
       console.error("Failed to delete global category", err);
+      notify({ type: "error", message: "حذف دسته‌بندی با خطا مواجه شد" });
     }
   };
 
@@ -112,8 +122,11 @@ export default function CategorySettingsSection() {
       setEditIconUrl(cat.icon?.url ?? null);
     } catch (err) {
       console.error("❌ Failed to fetch global category", err);
-      alert(err.response?.data?.message ?? "خطا در دریافت اطلاعات دسته‌بندی");
-      console.log(id);
+      notify({
+        type: "error",
+        message:
+          err.response?.data?.message ?? "خطا در دریافت اطلاعات دسته‌بندی",
+      });
     }
   };
 
@@ -121,27 +134,25 @@ export default function CategorySettingsSection() {
   const saveEdit = async () => {
     const newName = editName.trim();
     if (!newName) {
-      alert("نام دسته‌بندی نمی‌تواند خالی باشد.");
+      notify({
+        type: "warning",
+        message: "نام دسته‌بندی نمی‌تواند خالی باشد.",
+      });
       return;
     }
 
     try {
-      const dto = {
-        id: editingId,
-        name: newName,
-        iconId: editIconId ?? null,
-      };
-
-      console.log("🚀 Sending update DTO:", dto);
-
-      const res = await adminGlobalCategoryAxios.put("/update", dto);
-      console.log("✅ Updated global category:", res.data);
-
+      const dto = { id: editingId, name: newName, iconId: editIconId ?? null };
+      await adminGlobalCategoryAxios.put("/update", dto);
       await loadCategories();
       cancelEdit();
+      notify({ type: "success", message: "تغییرات ذخیره شد" });
     } catch (err) {
       console.error("❌ Failed to update category", err);
-      alert(err.response?.data?.message ?? "خطا در ذخیره تغییرات");
+      notify({
+        type: "error",
+        message: err.response?.data?.message ?? "خطا در ذخیره تغییرات",
+      });
     }
   };
   const cancelEdit = () => {
@@ -157,26 +168,23 @@ export default function CategorySettingsSection() {
     if (!file) return;
 
     if (!file.name.toLowerCase().endsWith(".svg")) {
-      setUploadMessage({ text: "فقط فایل SVG مجاز است.", type: "error" });
+      notify({ type: "warning", message: "فقط فایل SVG مجاز است." });
       return;
     }
 
     try {
       const formData = new FormData();
       formData.append("Icon", file);
-      formData.append("Label", file.name.replace(/\.svg$/i, "")); // label
+      formData.append("Label", file.name.replace(/\.svg$/i, ""));
 
-      const res = await iconAxios.post("/add", formData, {
+      await iconAxios.post("/add", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      setUploadMessage({
-        text: `آیکن با موفقیت آپلود شد.`,
-        type: "info",
-      });
+      notify({ type: "success", message: "آیکن با موفقیت آپلود شد." });
     } catch (err) {
       console.error("Upload failed:", err);
-      setUploadMessage({ text: "آپلود با خطا مواجه شد.", type: "error" });
+      notify({ type: "error", message: "آپلود با خطا مواجه شد." });
     }
   };
 
@@ -401,11 +409,11 @@ export default function CategorySettingsSection() {
           <span
             style={{
               fontSize: 13,
-              color: uploadMessage.type === "error" ? "#ff4d4d" : "#ffffff",
+              color: "var(--text-secondary)",
               marginInlineStart: 12,
             }}
           >
-            {uploadMessage.text}
+            تنها فایل‌های SVG مجاز به آپلود هستند.
           </span>
         </div>
       </div>

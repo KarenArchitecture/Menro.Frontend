@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../Context/AuthContext";
+import { useGlobalUI } from "../common/GlobalUI";
 
 // Always-visible, non-collapsible top item.
 const DASHBOARD_ITEM = {
@@ -117,7 +118,7 @@ export default function AdminSidebar({
   hasNewRequest = false,
 }) {
   const navigate = useNavigate();
-
+  const { confirmModal } = useGlobalUI();
   // admin role check
   const { user, logout } = useAuth();
   const roles = user?.roles || [];
@@ -168,6 +169,15 @@ export default function AdminSidebar({
 
   // logout handler
   const handleLogout = async () => {
+    const ok = await confirmModal({
+      title: "خروج از حساب",
+      message: "آیا مطمئن هستید که می‌خواهید از حساب خود خارج شوید؟",
+      confirmText: "خروج",
+      cancelText: "انصراف",
+      danger: true,
+    });
+    if (!ok) return;
+
     logout();
     navigate("/", { replace: false });
   };
@@ -176,7 +186,13 @@ export default function AdminSidebar({
     if (item.isLogout) {
       return (
         <li key={item.key} className="nav-item">
-          <Link to="/" onClick={handleLogout}>
+          <Link
+            to="/"
+            onClick={(e) => {
+              e.preventDefault(); // مهم: تا تایید نگرفتیم، ناوبری خودکار Link انجام نشه
+              handleLogout();
+            }}
+          >
             <i className={`nav-icon ${item.icon}`} />
             <span>{item.label}</span>
           </Link>

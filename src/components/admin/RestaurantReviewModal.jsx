@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getRestaurantDetails } from "../../api/adminRestaurants";
+import { useGlobalUI } from "../common/GlobalUI";
 
 export default function RestaurantReviewModal({
   open,
@@ -8,6 +9,7 @@ export default function RestaurantReviewModal({
   onApprove,
   onReject,
 }) {
+  const { notify, confirmModal } = useGlobalUI();
   const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -48,6 +50,12 @@ export default function RestaurantReviewModal({
       .then((res) => {
         setRestaurant(res.data);
       })
+      .catch(() => {
+        notify({
+          type: "error",
+          message: "دریافت اطلاعات رستوران با خطا مواجه شد",
+        });
+      })
       .finally(() => {
         setLoading(false);
       });
@@ -84,13 +92,21 @@ export default function RestaurantReviewModal({
     onReject?.(restaurantId, trimmed);
   };
 
-  const handleApproveOrBack = () => {
+  const handleApproveOrBack = async () => {
     if (showRejectInput) {
       setShowRejectInput(false);
       setRejectReason("");
       setRejectError("");
       return;
     }
+
+    const confirmed = await confirmModal({
+      title: "تایید رستوران",
+      message: `رستوران «${restaurant?.name}» تایید و روی پلتفرم فعال خواهد شد. ادامه می‌دهید؟`,
+      confirmText: "بله، تایید شود",
+      cancelText: "انصراف",
+    });
+    if (!confirmed) return;
 
     onApprove?.(restaurantId);
   };

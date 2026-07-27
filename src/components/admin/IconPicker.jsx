@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import iconAxios from "../../api/iconAxios.js";
 import { useAuth } from "../../Context/AuthContext.jsx";
+import { useGlobalUI } from "../common/GlobalUI";
 export const ICON_BY_KEY = {};
 
 function DefaultIcon() {
@@ -28,6 +29,7 @@ export async function fetchAllIcons() {
 }
 
 export default function IconPicker({ open, onClose, value, onSelect }) {
+  const { notify, confirmModal } = useGlobalUI();
   const [q, setQ] = useState("");
   const [backendIcons, setBackendIcons] = useState([]);
   // role check
@@ -67,19 +69,24 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
 
   // 🔸 delete handler
   const handleDeleteIcon = async (id) => {
-    const confirmed = window.confirm("آیا از حذف این آیکن اطمینان دارید؟");
-    if (!confirmed) return;
+    const ok = await confirmModal({
+      title: "حذف آیکن",
+      message: "آیا از حذف این آیکن اطمینان دارید؟",
+      confirmText: "حذف شود",
+      cancelText: "انصراف",
+      danger: true,
+    });
+    if (!ok) return;
 
     try {
-      console.log("🗑 Deleting icon:", id);
-
-      // فراخوانی مطابق با کنترلر
       await iconAxios.delete(`/delete?id=${id}`);
-
-      // حذف از لیست بدون نیاز به refetch
       setBackendIcons((prev) => prev.filter((x) => x.id !== id));
+      notify({ type: "success", message: "آیکن حذف شد" });
     } catch (err) {
-      alert(err.response?.data?.message ?? "خطا در حذف آیکن");
+      notify({
+        type: "error",
+        message: err.response?.data?.message ?? "خطا در حذف آیکن",
+      });
     }
   };
 

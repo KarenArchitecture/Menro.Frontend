@@ -162,6 +162,7 @@
   background: var(--gui-bg);
   border: 1px solid var(--gui-border);
   border-radius: 14px;
+  border-top: 3px solid var(--gui-primary);
   padding: 24px;
   text-align: center;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);

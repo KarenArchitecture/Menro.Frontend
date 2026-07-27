@@ -1,9 +1,13 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import StarsRating from "../common/StarsRating";
 import { toggleCommentLike } from "../../api/comments";
+import { formatPersianDate } from "../../utils/formatPersianDate";
+import { toPersianDigits } from "../../utils/persianFormat";
+import { DEFAULT_AVATAR } from "../../utils/defaultAvatar";
 
-function CommentCard({ comment, requireLogin }) {
+function CommentCard({ comment, foodId, restaurantName, restaurantSlug, requireLogin }) {
   const queryClient = useQueryClient();
 
   const [liked, setLiked] = useState(comment.liked);
@@ -16,25 +20,24 @@ function CommentCard({ comment, requireLogin }) {
 
   const likeMutation = useMutation({
     mutationFn: (target) => toggleCommentLike({ commentId: comment.id, target }),
-    onError: (_err, target) => {
+    onSuccess: (result, target) => {
+      // ✅ Always trust the server's number — no manual +1/-1 math, no drift possible
       if (target === "comment") {
-        setLiked((prev) => !prev);
-        setLikes((prev) => (liked ? prev + 1 : prev - 1));
+        setLiked(result.liked);
+        setLikes(result.likes);
       } else {
-        setReplyLiked((prev) => !prev);
-        setReplyLikes((prev) => (replyLiked ? prev + 1 : prev - 1));
+        setReplyLiked(result.liked);
+        setReplyLikes(result.likes);
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["food-comments", String(comment.foodId)] });
+      queryClient.invalidateQueries({ queryKey: ["food-comments", String(foodId)] });
     },
   });
 
   const toggleLike = () => {
     requireLogin({
       onAuthenticated: () => {
-        setLiked((prev) => !prev);
-        setLikes((prev) => (liked ? prev - 1 : prev + 1));
         setPop(true);
         setTimeout(() => setPop(false), 250);
         likeMutation.mutate("comment");
@@ -45,8 +48,6 @@ function CommentCard({ comment, requireLogin }) {
   const toggleReplyLike = () => {
     requireLogin({
       onAuthenticated: () => {
-        setReplyLiked((prev) => !prev);
-        setReplyLikes((prev) => (replyLiked ? prev - 1 : prev + 1));
         setReplyPop(true);
         setTimeout(() => setReplyPop(false), 250);
         likeMutation.mutate("reply");
@@ -58,11 +59,19 @@ function CommentCard({ comment, requireLogin }) {
     <div className="comment-block">
       <div className="comment-card">
         <div className="comment-top">
-          <img src={comment.foodImageUrl || "/images/mocha.jpg"} alt="" className="comment-img" />
+          <img
+            src={comment.userAvatarUrl || DEFAULT_AVATAR}
+            alt=""
+            className="comment-avatar"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = DEFAULT_AVATAR;
+            }}
+          />
 
           <div className="comment-meta">
-            <h3 className="comment-title">{comment.foodTitle}</h3>
-            <div className="comment-rating">ثبت نظر و امتیاز ({comment.rating} نظر)</div>
+            <h3 className="comment-title">{comment.userName}</h3>
+            <div className="comment-date">{formatPersianDate(comment.createdAt)}</div>
           </div>
 
           <div className={`comment-likes ${liked ? "liked" : ""}`} onClick={toggleLike}>
@@ -75,19 +84,21 @@ function CommentCard({ comment, requireLogin }) {
               alt="like"
               className={`comment-heart ${pop ? "pop" : ""}`}
             />
-            <span className="comment-like-count">{likes}</span>
+            <span className="comment-like-count">{toPersianDigits(likes)}</span>
           </div>
         </div>
 
         <p className="comment-text">{comment.text}</p>
 
-        <StarsRating initial={comment.rating} readOnly />
+        <StarsRating initial={comment.rating} size="lg" />
       </div>
 
       {comment.reply && (
         <div className="comment-reply">
           <div className="reply-top">
-            <span className="reply-title">پاسخ رستوران منرو</span>
+            <Link to={`/restaurant/${restaurantSlug}`} className="reply-title">
+              پاسخ {restaurantName}
+            </Link>
             <div className={`reply-likes ${replyLiked ? "liked" : ""}`} onClick={toggleReplyLike}>
               <img
                 src={
@@ -98,13 +109,11 @@ function CommentCard({ comment, requireLogin }) {
                 alt="like"
                 className={`comment-heart ${replyPop ? "pop" : ""}`}
               />
-              <span>{replyLikes}</span>
+              <span>{toPersianDigits(replyLikes)}</span>
             </div>
           </div>
 
-          <div className="reply-date">
-            {new Date(comment.reply.date).toLocaleDateString("fa-IR")}
-          </div>
+          <div className="reply-date">{formatPersianDate(comment.reply.date)}</div>
 
           <p className="reply-text">{comment.reply.text}</p>
         </div>

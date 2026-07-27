@@ -1,8 +1,11 @@
 // src/components/admin/AdminSidebar.jsx
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../Context/AuthContext";
+import { getAdminComments } from "../../api/adminComments";
+import { useToast } from "../../context/ToastContext";
+import { toPersianDigits } from "../../utils/persianFormat";
 
 // Always-visible, non-collapsible top item.
 const DASHBOARD_ITEM = {
@@ -163,10 +166,9 @@ export default function AdminSidebar({
 
   const handleSelect = (key) => {
     onSelect?.(key);
-    onClose?.(); // auto-close on mobile
+    onClose?.();
   };
 
-  // logout handler
   const handleLogout = async () => {
     logout();
     navigate("/", { replace: false });
@@ -231,7 +233,6 @@ export default function AdminSidebar({
         >
           منرو
         </h1>
-        {/* Close button shows on MD/SM only (CSS controls visibility) */}
         <button
           type="button"
           className="sidebar-close"

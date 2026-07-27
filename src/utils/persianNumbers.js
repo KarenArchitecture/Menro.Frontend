@@ -30,3 +30,4 @@ export const formatPersianRating = (value) => {
         useGrouping: false,
     }).format(number);
 };
+

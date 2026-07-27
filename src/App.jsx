@@ -29,6 +29,16 @@ import UserProfileForm from "./components/common/UserProfileForm";
 
 import MobileNav from "./components/common/MobileNav";
 import ProtectedRoute from "./components/common/ProtectedRoute";
+import UnauthorizedPage from "./pages/UnauthorizedPage";
+import ChangePhone from "./pages/ChangePhone";
+import AdminPage from "./pages/AdminPage";
+import BlogPage from "./pages/BlogPage";
+import Orders from "./pages/OrdersPage";
+import BillsPage from "./pages/BillsPage";
+import FavoritesPage from "./pages/FavoritesPage";
+import ProfilePage from "./pages/ProfilePage";
+import FoodCommentsPage from "./pages/FoodCommentsPage";
+import MyCommentsPage from "./pages/MyCommentsPage";
 import {
   DrawerStateProvider,
   useDrawerState,
@@ -123,6 +133,14 @@ export default function App() {
           <Route path="/orders" element={<Orders />} />
           {/* 4. Added the dynamic route for the BillsPage */}
           <Route path="/orders/bill/:id" element={<BillsPage />} />
+          <Route path="/favorites" element={<FavoritesPage />} />
+          <Route
+            path="/foods/:foodId/comments"
+            element={<FoodCommentsPage />}
+          />
+          <Route path="/comments" element={<MyCommentsPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/unauthorized" element={<UnauthorizedPage />} />
           <Route
             path="/profile"
             element={

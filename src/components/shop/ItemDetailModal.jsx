@@ -18,7 +18,6 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import CommentIcon from "../icons/CommentIcon";
 
-
 /* Helper for consistent Persian digits */
 const toPersianDigits = (value) => {
   if (value === null || value === undefined) return "۰";
@@ -71,13 +70,8 @@ function ItemDetailModal({ item, onClose }) {
   const navigate = useNavigate();
   const [isActive, setIsActive] = useState(false);
 
-  const {
-    requireLogin,
-    open,
-    closeModal,
-    goToLogin,
-    modalProps,
-  } = useRequireLogin();
+  const { requireLogin, open, closeModal, goToLogin, modalProps } =
+    useRequireLogin();
 
   useEffect(() => {
     console.log("MODAL OPEN STATE:", open);
@@ -85,10 +79,8 @@ function ItemDetailModal({ item, onClose }) {
 
   const { user } = useAuth();
 
-  const {
-    data: favoriteIds = [],
-    isLoading: favoriteLoading,
-  } = useFavoriteIds(!!user);
+  const { data: favoriteIds = [], isLoading: favoriteLoading } =
+    useFavoriteIds(!!user);
 
   const toggleFavorite = useToggleFavorite();
 
@@ -114,6 +106,7 @@ function ItemDetailModal({ item, onClose }) {
 
   const handleOpenComments = () => {
     if (!item?.id) return;
+    navigate(`/foods/${item.id}/comments`);
 
     const commentsUrl = `/foods/${item.id}/comments`;
 
@@ -122,7 +115,6 @@ function ItemDetailModal({ item, onClose }) {
       icon: <CommentIcon />,
       returnUrl: commentsUrl, // 🔑 after login, go to the comments page, not back to the restaurant
       onAuthenticated: () => navigate(commentsUrl),
-
     });
   };
 
@@ -381,7 +373,9 @@ function ItemDetailModal({ item, onClose }) {
                     className="icon-btn modal-top-action"
                     aria-label="علاقه‌مندی"
                     onClick={handleToggleFavorite}
-                    disabled={!!user && (favoriteLoading || toggleFavorite.isPending)}
+                    disabled={
+                      !!user && (favoriteLoading || toggleFavorite.isPending)
+                    }
                   >
                     <LikeIcon active={isFavorite} />
                   </button>
@@ -528,7 +522,6 @@ function ItemDetailModal({ item, onClose }) {
         icon={modalProps.icon}
         title={modalProps.title}
         description={modalProps.description}
-
       />
     </>
   );

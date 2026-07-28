@@ -42,7 +42,7 @@ import MusicSection from "../components/admin/MusicSection";
 import ownerRestaurantAxios from "../api/ownerRestaurantAxios";
 import { useAuth } from "../context/AuthContext";
 import { useMusicSignalR } from "../hooks/useMusicSignalR";
-import { useModal } from "../components/common/GlobalModal";
+import { useGlobalUI } from "../components/common/GlobalUI";
 
 export default function AdminPage() {
   const cssReady = usePageStyles("/admin-dashboard.css");
@@ -57,8 +57,7 @@ export default function AdminPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [hasNewRequest, setHasNewRequest] = useState(false);
 
-  const { showModal } = useModal();
-
+  const { alertModal } = useGlobalUI();
   /* ---------------------------
    * LOAD RESTAURANT CONTEXT
    * -------------------------- */
@@ -82,15 +81,14 @@ export default function AdminPage() {
     onCreated: () => {
       setHasNewRequest(true);
 
-      showModal({
+      alertModal({
         title: "درخواست جدید موسیقی",
         message: "یک درخواست جدید موسیقی از طرف مشتری ثبت شده است.",
-        buttonText: "متوجه شدم",
-        onConfirm: () => {
-          setActiveTab("music");
-          localStorage.setItem("admin-active-tab", "music");
-          setHasNewRequest(false);
-        },
+        buttonText: "مشاهده",
+      }).then(() => {
+        setActiveTab("music");
+        localStorage.setItem("admin-active-tab", "music");
+        setHasNewRequest(false);
       });
     },
   });

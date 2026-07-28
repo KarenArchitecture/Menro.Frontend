@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import adminRestaurantCategoryAxios from "../../api/adminRestaurantCategoryAxios";
+import { useGlobalUI } from "../common/GlobalUI";
 
 function RestaurantTypeIcon() {
   return (
@@ -17,6 +18,7 @@ function RestaurantTypeIcon() {
 }
 
 export default function RestaurantCategorySettingsSection() {
+  const { notify, confirmModal } = useGlobalUI();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,9 +31,6 @@ export default function RestaurantCategorySettingsSection() {
   const [editName, setEditName] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
 
-  // Feedback
-  const [message, setMessage] = useState({ text: "", type: "" }); // info | error
-
   // ==== Load restaurant categories ====
   const loadCategories = async () => {
     try {
@@ -39,7 +38,7 @@ export default function RestaurantCategorySettingsSection() {
       setCategories(res.data);
     } catch (err) {
       console.error("Failed to load restaurant categories", err);
-      setMessage({ text: "خطا در دریافت دسته‌بندی‌ها", type: "error" });
+      notify({ type: "error", message: "خطا در دریافت دسته‌بندی‌ها" });
     } finally {
       setLoading(false);
     }
@@ -54,7 +53,7 @@ export default function RestaurantCategorySettingsSection() {
     const name = nameInput.trim();
 
     if (!name) {
-      alert("نام دسته‌بندی را وارد کنید");
+      notify({ type: "warning", message: "نام دسته‌بندی را وارد کنید" });
       return;
     }
 
@@ -64,10 +63,13 @@ export default function RestaurantCategorySettingsSection() {
 
       await loadCategories();
       setNameInput("");
-      setMessage({ text: "دسته‌بندی با موفقیت افزوده شد", type: "info" });
+      notify({ type: "success", message: "دسته‌بندی با موفقیت افزوده شد" });
     } catch (err) {
       console.error("Failed to create restaurant category", err);
-      alert(err.response?.data?.message ?? "خطا در افزودن دسته‌بندی");
+      notify({
+        type: "error",
+        message: err.response?.data?.message ?? "خطا در افزودن دسته‌بندی",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -75,14 +77,25 @@ export default function RestaurantCategorySettingsSection() {
 
   // ==== Delete ====
   const removeCategory = async (catId) => {
-    if (!window.confirm("آیا از حذف این دسته‌بندی مطمئن هستید؟")) return;
+    const confirmed = await confirmModal({
+      title: "حذف نوع رستوران",
+      message: "آیا از حذف این دسته‌بندی مطمئن هستید؟",
+      confirmText: "بله، حذف شود",
+      cancelText: "انصراف",
+      danger: true,
+    });
+    if (!confirmed) return;
 
     try {
       await adminRestaurantCategoryAxios.delete(`/delete/${catId}`);
       await loadCategories();
+      notify({ type: "success", message: "دسته‌بندی حذف شد" });
     } catch (err) {
       console.error("Failed to delete restaurant category", err);
-      alert(err.response?.data?.message ?? "خطا در حذف دسته‌بندی");
+      notify({
+        type: "error",
+        message: err.response?.data?.message ?? "خطا در حذف دسته‌بندی",
+      });
     }
   };
 
@@ -97,7 +110,11 @@ export default function RestaurantCategorySettingsSection() {
       setEditName(res.data.name);
     } catch (err) {
       console.error("Failed to fetch restaurant category", err);
-      alert(err.response?.data?.message ?? "خطا در دریافت اطلاعات دسته‌بندی");
+      notify({
+        type: "error",
+        message:
+          err.response?.data?.message ?? "خطا در دریافت اطلاعات دسته‌بندی",
+      });
     }
   };
 
@@ -105,7 +122,10 @@ export default function RestaurantCategorySettingsSection() {
   const saveEdit = async () => {
     const newName = editName.trim();
     if (!newName) {
-      alert("نام دسته‌بندی نمی‌تواند خالی باشد.");
+      notify({
+        type: "warning",
+        message: "نام دسته‌بندی نمی‌تواند خالی باشد.",
+      });
       return;
     }
 
@@ -118,9 +138,13 @@ export default function RestaurantCategorySettingsSection() {
 
       await loadCategories();
       cancelEdit();
+      notify({ type: "success", message: "تغییرات با موفقیت ذخیره شد" });
     } catch (err) {
       console.error("Failed to update restaurant category", err);
-      alert(err.response?.data?.message ?? "خطا در ذخیره تغییرات");
+      notify({
+        type: "error",
+        message: err.response?.data?.message ?? "خطا در ذخیره تغییرات",
+      });
     } finally {
       setSavingEdit(false);
     }
@@ -163,18 +187,6 @@ export default function RestaurantCategorySettingsSection() {
             {submitting ? "در حال افزودن…" : "افزودن"}
           </button>
         </div>
-
-        {message.text && (
-          <p
-            style={{
-              fontSize: 13,
-              marginTop: 8,
-              color: message.type === "error" ? "#ff4d4d" : "#ffffff",
-            }}
-          >
-            {message.text}
-          </p>
-        )}
 
         <hr className="form-divider" />
       </div>

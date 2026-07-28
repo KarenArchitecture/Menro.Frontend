@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import iconAxios from "../../api/iconAxios.js";
 import { useAuth } from "../../Context/AuthContext.jsx";
+import { useGlobalUI } from "../common/GlobalUI";
 export const ICON_BY_KEY = {};
 
 function DefaultIcon() {
@@ -28,12 +29,16 @@ export async function fetchAllIcons() {
 }
 
 export default function IconPicker({ open, onClose, value, onSelect }) {
+  const { notify, confirmModal } = useGlobalUI();
   const [q, setQ] = useState("");
   const [backendIcons, setBackendIcons] = useState([]);
+  const [uploading, setUploading] = useState(false);
+
   // role check
   const { user } = useAuth();
   const roles = user?.roles || []; // اگه کاربر نال باشه، آرایه خالی برمی‌گردونه
   const isAdmin = roles.includes("admin"); // بررسی نقش
+
   useEffect(() => {
     if (!open) return;
 
@@ -65,21 +70,65 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
 
   if (!open) return null;
 
-  // 🔸 delete handler
-  const handleDeleteIcon = async (id) => {
-    const confirmed = window.confirm("آیا از حذف این آیکن اطمینان دارید؟");
-    if (!confirmed) return;
+  // 🔸 reload after mutation
+  const reloadIcons = async () => {
+    const data = await fetchAllIcons();
+    setBackendIcons(data || []);
+  };
+
+  // 🔸 upload handler
+  const handleUploadSvg = async (file) => {
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith(".svg")) {
+      notify({ type: "warning", message: "فقط فایل SVG مجاز است." });
+      return;
+    }
 
     try {
-      console.log("🗑 Deleting icon:", id);
+      setUploading(true);
 
-      // فراخوانی مطابق با کنترلر
-      await iconAxios.delete(`/delete?id=${id}`);
+      const formData = new FormData();
+      formData.append("Icon", file);
+      formData.append("Label", file.name.replace(/\.svg$/i, ""));
 
-      // حذف از لیست بدون نیاز به refetch
-      setBackendIcons((prev) => prev.filter((x) => x.id !== id));
+      await iconAxios.post("/add", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      await reloadIcons();
+      notify({ type: "success", message: "آیکن با موفقیت آپلود شد." });
     } catch (err) {
-      alert(err.response?.data?.message ?? "خطا در حذف آیکن");
+      console.error("Upload failed:", err);
+      notify({
+        type: "error",
+        message: err.response?.data?.message ?? "آپلود با خطا مواجه شد.",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // 🔸 delete handler
+  const handleDeleteIcon = async (id) => {
+    const ok = await confirmModal({
+      title: "حذف آیکن",
+      message: "آیا از حذف این آیکن اطمینان دارید؟",
+      confirmText: "حذف شود",
+      cancelText: "انصراف",
+      danger: true,
+    });
+    if (!ok) return;
+
+    try {
+      await iconAxios.delete(`/delete?id=${id}`);
+      setBackendIcons((prev) => prev.filter((x) => x.id !== id));
+      notify({ type: "success", message: "آیکن حذف شد" });
+    } catch (err) {
+      notify({
+        type: "error",
+        message: err.response?.data?.message ?? "خطا در حذف آیکن",
+      });
     }
   };
 
@@ -100,6 +149,33 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
+
+          {isAdmin && (
+            <>
+              <input
+                id="icon-picker-upload-svg"
+                type="file"
+                accept=".svg"
+                hidden
+                onChange={(e) => {
+                  handleUploadSvg(e.target.files?.[0]);
+                  e.target.value = null;
+                }}
+              />
+              <button
+                type="button"
+                className="btn"
+                disabled={uploading}
+                title="آپلود SVG و افزودن به لیست آیکن‌ها"
+                onClick={() =>
+                  document.getElementById("icon-picker-upload-svg").click()
+                }
+              >
+                <i className="fas fa-upload" />{" "}
+                {uploading ? "در حال آپلود…" : "آپلود آیکن جدید"}
+              </button>
+            </>
+          )}
         </div>
 
         <div className="icon-grid" role="listbox" aria-label="Icon grid">

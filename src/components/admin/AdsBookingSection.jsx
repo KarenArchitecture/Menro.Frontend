@@ -2,11 +2,12 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import adminRestaurantAdAxios from "../../api/adminRestaurantAdAxios";
 import adSettingsAxios from "../../api/adSettingsAxios";
+import { useGlobalUI } from "../common/GlobalUI";
 
 export default function AdsBookingSection() {
   const [adType, setAdType] = useState("slider"); // slider | banner
   const [bookingMethod, setBookingMethod] = useState("by_day"); // by_day | by_click
-
+  const { notify, confirmModal } = useGlobalUI();
   // مقدارهای UI
   const [days, setDays] = useState(7); // for slider: days | for banner: views (units for billingType=1)
   const [clicks, setClicks] = useState(10000);
@@ -70,6 +71,11 @@ export default function AdsBookingSection() {
       setClicks(perClick?.minUnits ?? 1000);
     } catch (err) {
       console.error("خطا در لود نرخ تبلیغات:", err);
+
+      notify({
+        type: "error",
+        message: "دریافت نرخ‌های تبلیغات با خطا مواجه شد",
+      });
     }
   }
 
@@ -92,37 +98,39 @@ export default function AdsBookingSection() {
 
   // --- Submit Handler ---
   const handleSubmit = async () => {
-    if (!imageFile) return alert("لطفاً تصویر تبلیغ را آپلود کنید.");
+    if (!imageFile) {
+      notify({ type: "warning", message: "لطفاً تصویر تبلیغ را آپلود کنید." });
+      return;
+    }
+
+    const ok = await confirmModal({
+      title: "ثبت تبلیغ",
+      message: `هزینه‌ی این تبلیغ ${totalCost.toLocaleString("fa-IR")} تومان است. آیا ادامه می‌دهید؟`,
+      confirmText: "پرداخت و ثبت",
+      cancelText: "انصراف",
+    });
+    if (!ok) return;
 
     try {
-      // Placement + Billing — moved up so it's available for the upload call too
       const placementType = adType === "slider" ? 1 : 2;
 
       const billingType =
-        bookingMethod === "by_click"
-          ? 2 // PerClick
-          : placementType === 1
-            ? 1 // Slider -> PerDay
-            : 3; // Banner -> PerView
+        bookingMethod === "by_click" ? 2 : placementType === 1 ? 1 : 3;
 
       const purchasedUnits = bookingMethod === "by_click" ? clicks : days;
 
-      // 1) Upload Image
       const fd = new FormData();
       fd.append("file", imageFile);
-      fd.append("placementType", placementType); // NEW
+      fd.append("placementType", placementType);
 
       const uploadRes = await adminRestaurantAdAxios.post(
         "/upload-ad-image",
         fd,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        },
+        { headers: { "Content-Type": "multipart/form-data" } },
       );
 
       const fileName = uploadRes.data;
 
-      // 2) Create DTO
       const dto = {
         placementType,
         billingType,
@@ -132,12 +140,10 @@ export default function AdsBookingSection() {
         purchasedUnits,
       };
 
-      // 4) Submit Ad
       await adminRestaurantAdAxios.post("/addAd", dto);
 
-      alert("تبلیغ با موفقیت ثبت شد!");
+      notify({ type: "success", message: "تبلیغ با موفقیت ثبت شد!" });
 
-      // Reset Form
       setAdType("slider");
       setBookingMethod("by_day");
       setDays(pricing.minDays);
@@ -153,12 +159,14 @@ export default function AdsBookingSection() {
         errors: err?.response?.data?.errors,
       });
 
-      alert(
-        err?.response?.data?.title ||
+      notify({
+        type: "error",
+        title: "ثبت تبلیغ ناموفق بود",
+        message:
+          err?.response?.data?.title ||
           err?.response?.data?.error ||
-          JSON.stringify(err?.response?.data || {}, null, 2) ||
           "خطایی رخ داد.",
-      );
+      });
     }
   };
 

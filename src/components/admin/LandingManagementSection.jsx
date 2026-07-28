@@ -16,6 +16,7 @@ import {
   moveLandingFaq,
 } from "../../api/AdminLanding";
 import "../../assets/css/admin/landingManagement.css";
+import { useGlobalUI } from "../common/GlobalUI";
 
 /* ======================================================================
  * LandingManagementSection
@@ -48,19 +49,11 @@ function toPersianDigits(value) {
 
 export default function LandingManagementSection() {
   const [activeSubTab, setActiveSubTab] = useState("general");
-  const [savedFlash, setSavedFlash] = useState("");
-
-  const flashSaved = (label = "تغییرات ذخیره شد") => {
-    setSavedFlash(label);
-    window.clearTimeout(flashSaved._t);
-    flashSaved._t = window.setTimeout(() => setSavedFlash(""), 2200);
-  };
 
   return (
     <div id="landing-management-view" className="blog-mgmt landing-mgmt">
       <div className="view-header">
         <h2 className="content-title">مدیریت صفحه لندینگ</h2>
-        {savedFlash && <span className="blog-mgmt__flash">{savedFlash}</span>}
       </div>
 
       {/* <div className="landing-mgmt__info-banner">
@@ -89,19 +82,19 @@ export default function LandingManagementSection() {
 
       {activeSubTab === "general" && (
         <div className="content-tab-pane active">
-          <GeneralTextsPane onSaved={flashSaved} />
+          <GeneralTextsPane />
         </div>
       )}
 
       {activeSubTab === "reasons" && (
         <div className="content-tab-pane active">
-          <ReasonsPane onSaved={flashSaved} />
+          <ReasonsPane />
         </div>
       )}
 
       {activeSubTab === "faq" && (
         <div className="content-tab-pane active">
-          <FaqPane onSaved={flashSaved} />
+          <FaqPane />
         </div>
       )}
     </div>
@@ -116,6 +109,7 @@ const HERO_TITLE_MAX = 60;
 const SPOTLIGHT_TITLE_MAX = 60;
 
 function GeneralTextsPane({ onSaved }) {
+  const { notify } = useGlobalUI();
   const [draft, setDraft] = useState({
     heroHighlight: "",
     heroTitle: "",
@@ -125,23 +119,9 @@ function GeneralTextsPane({ onSaved }) {
   const [saving, setSaving] = useState(false);
   // { type: "success" | "error", message } — cleared automatically after 5s,
   // rendered right next to the "ذخیره تغییرات" button.
-  const [saveStatus, setSaveStatus] = useState(null);
-  const saveStatusTimeoutRef = useRef(null);
-
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
-
-  const flashSaveStatus = (type, message) => {
-    window.clearTimeout(saveStatusTimeoutRef.current);
-    setSaveStatus({ type, message });
-    saveStatusTimeoutRef.current = window.setTimeout(
-      () => setSaveStatus(null),
-      5000,
-    );
-  };
-
-  useEffect(() => () => window.clearTimeout(saveStatusTimeoutRef.current), []);
 
   // heroImageUrl: last known-good URL from the server. heroImageFile /
   // heroImageDataUrl: a newly-picked file staged for upload (not sent until
@@ -246,10 +226,9 @@ function GeneralTextsPane({ onSaved }) {
       setHeroImageDataUrl(null);
       setHeroImageRemoved(false);
       if (heroImageInputRef.current) heroImageInputRef.current.value = "";
-      onSaved("متن‌های عمومی ذخیره شد");
-      flashSaveStatus("success", "تغییرات با موفقیت ذخیره شد");
+      notify({ type: "success", message: "متن‌های عمومی با موفقیت ذخیره شد" });
     } catch {
-      flashSaveStatus("error", "ذخیره تغییرات با خطا مواجه شد.");
+      notify({ type: "error", message: "ذخیره تغییرات با خطا مواجه شد" });
     } finally {
       setSaving(false);
     }
@@ -257,7 +236,7 @@ function GeneralTextsPane({ onSaved }) {
 
   if (loading) {
     return (
-      <div className="panel landing-mgmt__panel">
+      <div className="panel">
         <div className="empty-hint">در حال بارگذاری...</div>
       </div>
     );
@@ -265,7 +244,7 @@ function GeneralTextsPane({ onSaved }) {
 
   if (loadError) {
     return (
-      <div className="panel landing-mgmt__panel">
+      <div className="panel">
         <div className="empty-hint">{loadError}</div>
         <div className="panel-actions">
           <button
@@ -280,7 +259,7 @@ function GeneralTextsPane({ onSaved }) {
   }
 
   return (
-    <div className="panel landing-mgmt__panel">
+    <div className="panel">
       <div className="form-vertical blog-mgmt__form--hero">
         <div className="landing-mgmt__field-title">عکس اصلی صفحه لندینگ</div>
         <p className="blog-mgmt__muted-text">
@@ -435,24 +414,9 @@ function GeneralTextsPane({ onSaved }) {
             <span className="form-error">{errors.spotlightTitle}</span>
           )}
         </div>
-        <p className="blog-mgmt__muted-text">
-          کادر زیر این عنوان (نمایش موکاپ اپلیکیشن) فعلاً ثابت است و از این پنل
-          قابل ویرایش نیست.
-        </p>
       </div>
 
       <div className="panel-actions">
-        {saveStatus && (
-          <span
-            className={
-              saveStatus.type === "success"
-                ? "landing-mgmt__save-status landing-mgmt__save-status--success"
-                : "landing-mgmt__save-status landing-mgmt__save-status--error"
-            }
-          >
-            {saveStatus.message}
-          </span>
-        )}
         <button className="btn btn-primary" disabled={saving} onClick={save}>
           {saving ? "در حال ذخیره..." : "ذخیره تغییرات"}
         </button>
@@ -525,9 +489,9 @@ function emptyReason() {
 }
 
 function ReasonsPane({ onSaved }) {
+  const { notify, confirmModal } = useGlobalUI();
   const [reasons, setReasons] = useState([]);
   const [modalReason, setModalReason] = useState(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [movingId, setMovingId] = useState(null);
@@ -598,7 +562,10 @@ function ReasonsPane({ onSaved }) {
         setReasons((prev) => [...prev, created]);
       }
       closeReasonModal();
-      onSaved("دلیل ذخیره شد");
+      notify({
+        type: "success",
+        message: "دلیل ذخیره شد",
+      });
     } catch (err) {
       const serverMessage =
         err?.response?.data?.message ||
@@ -613,16 +580,24 @@ function ReasonsPane({ onSaved }) {
   };
 
   const remove = async (id) => {
+    const confirmed = await confirmModal({
+      title: "حذف دلیل",
+      message: "این کارت از بخش «چرا منرو؟» صفحه لندینگ حذف می‌شود.",
+      confirmText: "حذف شود",
+      cancelText: "انصراف",
+      danger: true,
+    });
+    if (!confirmed) return;
+
     setDeletingId(id);
     try {
       await deleteLandingReason(id);
       setReasons((prev) => prev.filter((r) => r.id !== id));
-      onSaved("دلیل حذف شد");
+      notify({ type: "success", message: "دلیل با موفقیت حذف شد" });
     } catch {
-      // keep the item in the list on failure so nothing looks silently lost
+      notify({ type: "error", message: "حذف دلیل با خطا مواجه شد" });
     } finally {
       setDeletingId(null);
-      setConfirmDeleteId(null);
     }
   };
 
@@ -640,7 +615,7 @@ function ReasonsPane({ onSaved }) {
         return next;
       });
     } catch {
-      // ignore — order stays as-is on failure
+      notify({ type: "error", message: "جابجایی با خطا مواجه شد" });
     } finally {
       setMovingId(null);
     }
@@ -744,7 +719,7 @@ function ReasonsPane({ onSaved }) {
               <button
                 className="btn-icon btn-danger"
                 disabled={deletingId === reason.id}
-                onClick={() => setConfirmDeleteId(reason.id)}
+                onClick={() => remove(reason.id)}
                 title="حذف"
               >
                 <i className="fas fa-trash" />
@@ -943,41 +918,6 @@ function ReasonsPane({ onSaved }) {
           </div>
         </div>
       )}
-
-      {confirmDeleteId !== null && (
-        <div
-          className="modal-backdrop"
-          onClick={() => deletingId === null && setConfirmDeleteId(null)}
-        >
-          <div
-            className="modal blog-mgmt__modal--confirm"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-header">
-              <h4>حذف دلیل</h4>
-            </div>
-            <p className="blog-mgmt__muted-text">
-              این کارت از بخش «چرا منرو؟» صفحه لندینگ حذف می‌شود.
-            </p>
-            <div className="modal-footer">
-              <button
-                className="btn btn-secondary"
-                disabled={deletingId !== null}
-                onClick={() => setConfirmDeleteId(null)}
-              >
-                انصراف
-              </button>
-              <button
-                className="btn btn-danger"
-                disabled={deletingId !== null}
-                onClick={() => remove(confirmDeleteId)}
-              >
-                {deletingId !== null ? "در حال حذف..." : "حذف شود"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -994,9 +934,9 @@ function emptyFaq() {
 }
 
 function FaqPane({ onSaved }) {
+  const { notify, confirmModal } = useGlobalUI();
   const [faqs, setFaqs] = useState([]);
   const [modalFaq, setModalFaq] = useState(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [movingId, setMovingId] = useState(null);
@@ -1058,25 +998,42 @@ function FaqPane({ onSaved }) {
         setFaqs((prev) => [...prev, created]);
       }
       setModalFaq(null);
-      onSaved("سوال ذخیره شد");
+      notify({
+        type: "success",
+        message: "سوال ذخیره شد",
+      });
     } catch {
-      setErrors({ submit: "ذخیره با خطا مواجه شد. دوباره تلاش کنید." });
+      notify({
+        type: "error",
+        message: "ذخیره با خطا مواجه شد. دوباره تلاش کنید",
+      });
     } finally {
       setSaving(false);
     }
   };
 
   const remove = async (id) => {
+    const confirmed = await confirmModal({
+      title: "حذف سوال",
+      message: "این سوال از بخش «سوالات متداول» صفحه لندینگ حذف می‌شود.",
+      confirmText: "حذف شود",
+      cancelText: "انصراف",
+      danger: true,
+    });
+    if (!confirmed) return;
+
     setDeletingId(id);
     try {
       await deleteLandingFaq(id);
       setFaqs((prev) => prev.filter((f) => f.id !== id));
-      onSaved("سوال حذف شد");
+      notify({
+        type: "success",
+        message: "سوال حذف شد",
+      });
     } catch {
-      // keep the item in the list on failure so nothing looks silently lost
+      notify({ type: "error", message: "حذف سوال با خطا مواجه شد" });
     } finally {
       setDeletingId(null);
-      setConfirmDeleteId(null);
     }
   };
 
@@ -1094,7 +1051,7 @@ function FaqPane({ onSaved }) {
         return next;
       });
     } catch {
-      // ignore — order stays as-is on failure
+      notify({ type: "error", message: "جابجایی با خطا مواجه شد" });
     } finally {
       setMovingId(null);
     }
@@ -1180,7 +1137,7 @@ function FaqPane({ onSaved }) {
                 <button
                   className="btn-icon btn-danger"
                   disabled={deletingId === faq.id}
-                  onClick={() => setConfirmDeleteId(faq.id)}
+                  onClick={() => remove(faq.id)}
                   title="حذف"
                 >
                   <i className="fas fa-trash" />
@@ -1267,41 +1224,6 @@ function FaqPane({ onSaved }) {
                 onClick={save}
               >
                 {saving ? "در حال ذخیره..." : "ذخیره"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {confirmDeleteId !== null && (
-        <div
-          className="modal-backdrop"
-          onClick={() => deletingId === null && setConfirmDeleteId(null)}
-        >
-          <div
-            className="modal blog-mgmt__modal--confirm"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-header">
-              <h4>حذف سوال</h4>
-            </div>
-            <p className="blog-mgmt__muted-text">
-              این سوال از بخش «سوالات متداول» صفحه لندینگ حذف می‌شود.
-            </p>
-            <div className="modal-footer">
-              <button
-                className="btn btn-secondary"
-                disabled={deletingId !== null}
-                onClick={() => setConfirmDeleteId(null)}
-              >
-                انصراف
-              </button>
-              <button
-                className="btn btn-danger"
-                disabled={deletingId !== null}
-                onClick={() => remove(confirmDeleteId)}
-              >
-                {deletingId !== null ? "در حال حذف..." : "حذف شود"}
               </button>
             </div>
           </div>

@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../Context/AuthContext";
+import { useGlobalUI } from "../common/GlobalUI";
 import { getAdminComments } from "../../api/adminComments";
-import { useToast } from "../../context/ToastContext";
 import { toPersianDigits } from "../../utils/persianFormat";
 
 // Always-visible, non-collapsible top item.
@@ -120,16 +120,11 @@ export default function AdminSidebar({
   hasNewRequest = false,
 }) {
   const navigate = useNavigate();
-
+  const { confirmModal } = useGlobalUI();
   // admin role check
   const { user, logout } = useAuth();
   const roles = user?.roles || [];
   const isAdmin = roles.includes("admin");
-
-  // Every group starts open (same overall look as before, just now
-  // collapsible). Whichever group owns the current activeTab is
-  // force-opened below so a selected/deep-linked item never ends up
-  // hidden inside a collapsed section.
   const [openGroups, setOpenGroups] = useState(
     () => new Set(NAV_GROUPS.map((g) => g.key)),
   );
@@ -170,6 +165,15 @@ export default function AdminSidebar({
   };
 
   const handleLogout = async () => {
+    const ok = await confirmModal({
+      title: "خروج از حساب",
+      message: "آیا مطمئن هستید که می‌خواهید از حساب خود خارج شوید؟",
+      confirmText: "خروج",
+      cancelText: "انصراف",
+      danger: true,
+    });
+    if (!ok) return;
+
     logout();
     navigate("/", { replace: false });
   };
@@ -178,7 +182,13 @@ export default function AdminSidebar({
     if (item.isLogout) {
       return (
         <li key={item.key} className="nav-item">
-          <Link to="/" onClick={handleLogout}>
+          <Link
+            to="/"
+            onClick={(e) => {
+              e.preventDefault(); // مهم: تا تایید نگرفتیم، ناوبری خودکار Link انجام نشه
+              handleLogout();
+            }}
+          >
             <i className={`nav-icon ${item.icon}`} />
             <span>{item.label}</span>
           </Link>
@@ -249,7 +259,6 @@ export default function AdminSidebar({
         </ul>
 
         {NAV_GROUPS.map((group) => {
-          // اگر نقش تعریف شده و نقش کاربر جزوش نیست → کل بخش مخفی
           if (group.roles && !isAdmin) return null;
 
           const isGroupOpen = openGroups.has(group.key);

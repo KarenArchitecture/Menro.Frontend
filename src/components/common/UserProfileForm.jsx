@@ -9,6 +9,7 @@ import { Link, useLocation } from "react-router-dom";
 import useRequireLogin from "../../hooks/useRequireLogin";
 import ProtectedActionModal from "./ProtectedActionModal";
 import "../../assets/css/auth.css";
+import { useGlobalUI } from "../common/GlobalUI";
 
 const MAX_NAME_LENGTH = 50; // matches User.FullName [MaxLength(50)]
 const MAX_IMAGE_SIZE = 1_000_000; // 1MB, matches backend check
@@ -46,6 +47,7 @@ function EyeOffIcon() {
 }
 
 export default function UserProfileForm() {
+  const { notify, confirmModal } = useGlobalUI();
   const { user, refreshUser } = useAuth();
   const location = useLocation();
   const returnTo = encodeURIComponent(location.pathname);
@@ -109,9 +111,10 @@ export default function UserProfileForm() {
       return true;
     } catch (err) {
       console.error("خطا در دریافت پروفایل:", err);
-      setStatus({
+      notify({
         type: "error",
-        text: "دریافت اطلاعات پروفایل با خطا مواجه شد. لطفاً صفحه را رفرش کنید.",
+        message:
+          "دریافت اطلاعات پروفایل با خطا مواجه شد. لطفاً صفحه را رفرش کنید.",
       });
       return false;
     }
@@ -239,12 +242,12 @@ export default function UserProfileForm() {
       setNewPassword("");
       setShowNewPassword(false);
       setHasPassword(true);
-      setStatus({ type: "success", text: "رمز عبور با موفقیت تنظیم شد" });
+      notify({ type: "success", message: "رمز عبور با موفقیت تنظیم شد" });
     } catch (err) {
       const serverMessage = err?.response?.data?.message;
-      setStatus({
+      notify({
         type: "error",
-        text:
+        message:
           serverMessage || "تنظیم رمز عبور با خطا مواجه شد. دوباره تلاش کنید.",
       });
     } finally {
@@ -278,15 +281,15 @@ export default function UserProfileForm() {
       // Issue 3: refetch just this form's data instead of reloading the
       // whole page (previously: navigate(0)).
       await loadProfile();
-      setStatus({ type: "success", text: "تغییرات با موفقیت ذخیره شد" });
+      notify({ type: "success", message: "تغییرات با موفقیت ذخیره شد" });
       setProfileImage(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (err) {
       console.error(err);
       const serverMessage = err?.response?.data?.message || err?.response?.data;
-      setStatus({
+      notify({
         type: "error",
-        text:
+        message:
           typeof serverMessage === "string" && serverMessage
             ? serverMessage
             : "ذخیره تغییرات با خطا مواجه شد. دوباره تلاش کنید.",

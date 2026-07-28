@@ -1116,8 +1116,11 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f2f2f2;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
   flex-shrink: 0;
+  color: var(--text-muted, #a1a1aa);
+  font-size: 20px;
 }
 .food-mgmt__thumb img {
   width: 100%;
@@ -1127,6 +1130,14 @@ textarea {
 .food-mgmt__thumb--card {
   width: 60px;
   height: 60px;
+}
+.food-mgmt__thumb--card {
+  width: 60px;
+  height: 60px;
+}
+
+.food-mgmt__thumb--card i {
+  font-size: 26px;
 }
 
 /* Product Types */
@@ -4660,6 +4671,7 @@ textarea {
 .blog-mgmt__search-box .mh-input {
   flex: 1 1 auto;
   min-width: 220px;
+  margin-top: 10px;
 }
 
 .blog-mgmt__search-submit {
@@ -5024,12 +5036,25 @@ textarea {
   font-weight: 700;
 }
 
-.combos-mgmt__rail-thumb {
+.combos-mgmt__rail-thumb-wrap {
   width: 40px;
   height: 40px;
   border-radius: 8px;
-  object-fit: cover;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
   flex-shrink: 0;
+  color: var(--text-muted, #a1a1aa);
+  font-size: 18px;
+}
+.combos-mgmt__rail-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .combos-mgmt__rail-name {
@@ -5072,12 +5097,25 @@ textarea {
   border-bottom: 1px solid var(--border-color);
 }
 
-.combos-mgmt__editor-thumb {
+.combos-mgmt__editor-thumb-wrap {
   width: 52px;
   height: 52px;
   border-radius: 10px;
-  object-fit: cover;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
   flex-shrink: 0;
+  color: var(--text-muted, #a1a1aa);
+  font-size: 22px;
+}
+.combos-mgmt__editor-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .combos-mgmt__combo-grid {
@@ -5096,10 +5134,22 @@ textarea {
   border: 1px solid var(--border-color);
 }
 
-.combos-mgmt__combo-thumb {
+.combos-mgmt__combo-thumb-wrap {
   width: 100%;
   height: 110px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted, #a1a1aa);
+  font-size: 34px;
+}
+.combos-mgmt__combo-thumb {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .combos-mgmt__combo-info {
@@ -5184,13 +5234,25 @@ textarea {
   border-color: var(--primary-color);
   background: rgba(245, 158, 11, 0.08);
 }
-
-.combos-mgmt__picker-thumb {
+.combos-mgmt__picker-thumb-wrap {
   width: 40px;
   height: 40px;
   border-radius: 8px;
-  object-fit: cover;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
   flex-shrink: 0;
+  color: var(--text-muted, #a1a1aa);
+  font-size: 18px;
+}
+.combos-mgmt__picker-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .combos-mgmt__picker-info {

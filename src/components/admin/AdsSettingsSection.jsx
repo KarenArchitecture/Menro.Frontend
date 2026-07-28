@@ -1,6 +1,7 @@
 // src/components/admin/AdsSettingsSection.jsx
 import { useEffect, useState } from "react";
 import adSettingsAxios from "../../api/adSettingsAxios";
+import { useGlobalUI } from "../common/GlobalUI";
 
 const AD_TYPES = [
   { key: "slider", label: "اسلایدر صفحه اصلی", icon: "fas fa-images" },
@@ -37,11 +38,9 @@ const DEFAULT_SETTINGS = {
 export default function AdsSettingsSection() {
   const [adType, setAdType] = useState("slider");
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
-
+  const { notify } = useGlobalUI();
   const [dayError, setDayError] = useState("");
   const [clickError, setClickError] = useState("");
-  const [submitStatus, setSubmitStatus] = useState(null);
-  const [submitMessage, setSubmitMessage] = useState("");
 
   const current = settings[adType];
   const isBanner = adType === "banner";
@@ -66,21 +65,6 @@ export default function AdsSettingsSection() {
     try {
       const response = await adSettingsAxios.get("", { params: { placement } });
       const list = response.data;
-
-      // 👇👇 همین‌جا بذار
-      console.log("RAW LIST:", list);
-      console.log(
-        "billingType types:",
-        Array.isArray(list)
-          ? list.map((x) => [x.billingType, typeof x.billingType])
-          : list,
-      );
-      console.log(
-        "keys:",
-        Array.isArray(list) && list[0] ? Object.keys(list[0]) : null,
-      );
-      // 👆👆
-
       if (!Array.isArray(list) || list.length === 0) {
         console.warn("No settings found for this placement.");
         return;
@@ -108,6 +92,10 @@ export default function AdsSettingsSection() {
       }));
     } catch (err) {
       console.error("Error loading settings:", err);
+      notify({
+        type: "error",
+        message: "دریافت تنظیمات تبلیغات با خطا مواجه شد",
+      });
     }
   }
 
@@ -159,25 +147,16 @@ export default function AdsSettingsSection() {
     e.preventDefault();
     setDayError("");
     setClickError("");
-    setSubmitStatus(null);
-    setSubmitMessage("");
 
     const { minDays, maxDays, minClicks, maxClicks } = current;
     let hasError = false;
 
     if (minDays < 1 || minDays > maxDays) {
-      // New message: "بازدید"
       setDayError(
         isBanner
           ? "حداقل بازدید باید معتبر باشد."
           : "حداقل روز باید معتبر باشد.",
       );
-
-      // Old: always day
-      /*
-      setDayError("حداقل روز باید معتبر باشد.");
-      */
-
       hasError = true;
     }
 
@@ -187,8 +166,10 @@ export default function AdsSettingsSection() {
     }
 
     if (hasError) {
-      setSubmitStatus("error");
-      setSubmitMessage("لطفاً خطاهای مشخص‌شده را برطرف کنید.");
+      notify({
+        type: "warning",
+        message: "لطفاً خطاهای مشخص‌شده را برطرف کنید.",
+      });
       return;
     }
 
@@ -196,12 +177,10 @@ export default function AdsSettingsSection() {
 
     try {
       await adSettingsAxios.post("", dtos);
-      setSubmitStatus("success");
-      setSubmitMessage("تنظیمات با موفقیت ذخیره شد");
+      notify({ type: "success", message: "تنظیمات با موفقیت ذخیره شد" });
     } catch (err) {
       console.error(err);
-      setSubmitStatus("error");
-      setSubmitMessage("خطا در ذخیره تنظیمات");
+      notify({ type: "error", message: "خطا در ذخیره تنظیمات" });
     }
   }
 
@@ -400,16 +379,6 @@ export default function AdsSettingsSection() {
               </div>
             </div>
 
-            {submitMessage && (
-              <p
-                className={`field-message ${
-                  submitStatus === "success" ? "field-success" : "field-error"
-                }`}
-              >
-                {submitMessage}
-              </p>
-            )}
-
             <div className="total-cost">
               {/* ✅ New */}
               <span>قیمت پایه ({unit1Label} / کلیک):</span>
@@ -417,15 +386,6 @@ export default function AdsSettingsSection() {
                 {current.pricePerDay.toLocaleString("fa-IR")} /{" "}
                 {current.pricePerClick.toLocaleString("fa-IR")} تومان
               </strong>
-
-              {/* Old  */}
-              {/*
-              <span>قیمت پایه (روز / کلیک):</span>
-              <strong>
-                {current.pricePerDay.toLocaleString("fa-IR")} /{" "}
-                {current.pricePerClick.toLocaleString("fa-IR")} تومان
-              </strong>
-              */}
             </div>
 
             <button className="btn btn-primary full-width" type="submit">

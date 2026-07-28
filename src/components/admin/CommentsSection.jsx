@@ -6,6 +6,7 @@ import {
   approveComment,
   rejectComment,
 } from "../../api/adminComments";
+import { useGlobalUI } from "../common/GlobalUI";
 
 const TABS = [
   { key: "pending", label: "در انتظار پاسخ" },
@@ -14,6 +15,7 @@ const TABS = [
 ];
 
 export default function CommentsSection() {
+  const { notify, confirmModal } = useGlobalUI();
   const [activeTab, setActiveTab] = useState("pending");
   const [selected, setSelected] = useState(null);
   const queryClient = useQueryClient();
@@ -46,15 +48,33 @@ export default function CommentsSection() {
     queryClient.invalidateQueries({ queryKey: ["admin-comments"] });
 
   const handleApprove = async (id, replyText) => {
-    await approveComment(id, replyText);
-    invalidateAll();
-    setSelected(null);
+    try {
+      await approveComment(id, replyText);
+      invalidateAll();
+      setSelected(null);
+      notify({ type: "success", message: "نظر با موفقیت تایید شد" });
+    } catch (err) {
+      console.error("خطا در تایید نظر:", err);
+      notify({ type: "error", message: "تایید نظر با خطا مواجه شد" });
+    }
   };
 
   const handleReject = async (id, reason) => {
-    await rejectComment(id, reason);
-    invalidateAll();
-    setSelected(null);
+    const ok = await confirmModal({
+      title: "رد نظر",
+      message: "این نظر رد شود؟ این تصمیم برای کاربر قابل مشاهده خواهد بود.",
+      danger: true,
+    });
+    if (!ok) return;
+    try {
+      await rejectComment(id, reason);
+      invalidateAll();
+      setSelected(null);
+      notify({ type: "success", message: "نظر رد شد" });
+    } catch (err) {
+      console.error("خطا در رد نظر:", err);
+      notify({ type: "error", message: "رد نظر با خطا مواجه شد" });
+    }
   };
 
   const statusPillClass = (status) =>
@@ -115,7 +135,9 @@ export default function CommentsSection() {
               <div className="order-bar__meta">
                 <span>{c.userName}</span>
                 <span className="dot-sep">·</span>
-                <span style={{ color: "#f59e0b" }}>{renderStars(c.rating)}</span>
+                <span style={{ color: "#f59e0b" }}>
+                  {renderStars(c.rating)}
+                </span>
                 <span className="dot-sep">·</span>
                 <span>{c.date}</span>
               </div>

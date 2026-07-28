@@ -1,8 +1,10 @@
 // src/components/admin/orders/OrderModal.jsx
 import React, { useEffect, useState } from "react";
 import adminOrderAxios from "../../api/adminOrderAxios";
+import { useGlobalUI } from "../common/GlobalUI";
 
 export default function OrderModal({ open, order, onClose, onApprove }) {
+  const { notify, confirmModal } = useGlobalUI();
   const [details, setDetails] = useState(null); // AdminOrderDetailsDto
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -26,7 +28,11 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
         const res = await adminOrderAxios.get(`/${order.id}`);
         if (!cancelled) setDetails(res.data);
       } catch (e) {
-        if (!cancelled) setError("خطا در دریافت جزئیات سفارش");
+        if (!cancelled) {
+          console.error("خطا در دریافت جزئیات سفارش:", e);
+          setError("خطا در دریافت جزئیات سفارش");
+          notify({ type: "error", message: "خطا در دریافت جزئیات سفارش" });
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -53,24 +59,24 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
     status === "Pending"
       ? "در انتظار تأیید"
       : status === "Confirmed"
-      ? "در انتظار تحویل"
-      : status === "Delivered"
-      ? "تحویل شده"
-      : status === "Paid"
-      ? "پرداخت شده"
-      : "در تاریخچه";
+        ? "در انتظار تحویل"
+        : status === "Delivered"
+          ? "تحویل شده"
+          : status === "Paid"
+            ? "پرداخت شده"
+            : "در تاریخچه";
 
   // ✅ متن دکمه اصلی طبق خواسته شما
   const primaryActionLabel =
     status === "Pending"
       ? "تأیید"
       : status === "Confirmed"
-      ? "تحویل شد"
-      : status === "Delivered"
-      ? "پرداخت شد"
-      : status === "Paid"
-      ? "پایان سفارش"
-      : null;
+        ? "تحویل شد"
+        : status === "Delivered"
+          ? "پرداخت شد"
+          : status === "Paid"
+            ? "پایان سفارش"
+            : null;
 
   // ✅ میز/بیرون‌بر
   const tableLabel =
@@ -114,6 +120,8 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
 
       const newStatus = res.data.status;
 
+      notify({ type: "success", message: "وضعیت سفارش با موفقیت تغییر کرد" });
+
       // لیست والد آپدیت بشه
       onApprove?.(dto.id, newStatus);
 
@@ -121,6 +129,7 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
       onClose?.();
     } catch (e) {
       setError("خطا در تغییر وضعیت سفارش");
+      notify({ type: "error", message: "خطا در تغییر وضعیت سفارش" });
     } finally {
       setLoading(false);
     }
@@ -130,6 +139,15 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
   const handleCancelClick = async () => {
     if (loading || error || !details) return;
 
+    const confirmed = await confirmModal({
+      title: "لغو سفارش",
+      message: `سفارش #${dto.restaurantOrderNumber} لغو خواهد شد. این عملیات قابل بازگشت نیست. ادامه می‌دهید؟`,
+      confirmText: "بله، لغو شود",
+      cancelText: "انصراف",
+      danger: true,
+    });
+    if (!confirmed) return;
+
     try {
       setLoading(true);
 
@@ -137,10 +155,13 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
 
       const newStatus = res.data.status;
 
+      notify({ type: "success", message: "سفارش با موفقیت لغو شد" });
+
       onApprove?.(dto.id, newStatus);
       onClose?.();
     } catch (e) {
       setError("خطا در لغو سفارش");
+      notify({ type: "error", message: "خطا در لغو سفارش" });
     } finally {
       setLoading(false);
     }

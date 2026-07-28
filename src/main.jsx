@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./Context/AuthContext.jsx";
-import { ModalProvider } from "./components/common/GlobalModal";
+import { GlobalUIProvider } from "./components/common/GlobalUI/GlobalUIProvider";
 
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./assets/css/generic.css";
@@ -18,9 +18,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
       <AuthProvider>
-        <ModalProvider>
+        <GlobalUIProvider>
           <App />
-        </ModalProvider>
+        </GlobalUIProvider>
       </AuthProvider>
     </BrowserRouter>
   </QueryClientProvider>,

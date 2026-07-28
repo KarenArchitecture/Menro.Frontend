@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import AdRequestModal from "./AdRequestModal";
 import adminRestaurantAdAxios from "../../api/adminRestaurantAdAxios";
+import { useGlobalUI } from "../common/GlobalUI";
 
 /* ---------- helpers ---------- */
 const now = Date.now();
@@ -49,7 +50,7 @@ export default function AdsRequestsSection() {
   const [showHistory, setShowHistory] = useState(false);
   const [selected, setSelected] = useState(null);
   const [rangeKey, setRangeKey] = useState("today");
-
+  const { notify } = useGlobalUI();
   /* ---------- Load Pending Ads ---------- */
   async function loadPending() {
     try {
@@ -68,25 +69,11 @@ export default function AdsRequestsSection() {
           restaurantName: ad.restaurantName,
           adType,
           reservedAmount: ad.purchasedUnits,
-
-          // ✅ NEW: banner PerDay => بازدید
           reservedUnit: getReservedUnitLabel({ billing: ad.billing, adType }),
-
-          // ❌ OLD (kept): always day for PerDay
-          /*
-          reservedUnit:
-            ad.billing === "PerDay"
-              ? "روز"
-              : ad.billing === "PerClick"
-              ? "کلیک"
-              : "",
-          */
-
           paidAmount: ad.cost,
           imageUrl: ad.imageUrl,
           adText: ad.commercialText,
           targetUrl: ad.targetUrl,
-
           requestedAt: ad.createdAtShamsi,
           ts: new Date(ad.createdAt).getTime(),
         };
@@ -98,6 +85,10 @@ export default function AdsRequestsSection() {
       });
     } catch (err) {
       console.error("Error loading pending ads:", err);
+      notify({
+        type: "error",
+        message: "دریافت درخواست‌های تبلیغات با خطا مواجه شد",
+      });
     }
   }
 
@@ -126,29 +117,17 @@ export default function AdsRequestsSection() {
             ad.status === "Approved"
               ? "approved"
               : ad.status === "Rejected"
-              ? "rejected"
-              : null,
-
+                ? "rejected"
+                : null,
           decisionReason: ad.adminNotes || null,
-
           restaurantName: ad.restaurantName,
           adType,
-
           reservedAmount: ad.purchasedUnits,
-
-          // ✅ NEW: banner PerDay => بازدید
           reservedUnit: getReservedUnitLabel({ billing: ad.billing, adType }),
-
-          // ❌ OLD (kept): PerDay => روز, else کلیک
-          /*
-          reservedUnit: ad.billing === "PerDay" ? "روز" : "کلیک",
-          */
-
           paidAmount: ad.cost,
           imageUrl: ad.imageUrl,
           adText: ad.commercialText,
           targetUrl: ad.targetUrl,
-
           requestedAt: ad.createdAtShamsi,
           ts: new Date(ad.createdAt).getTime(),
         };
@@ -160,19 +139,23 @@ export default function AdsRequestsSection() {
       });
     } catch (err) {
       console.error("Error loading history ads:", err);
+      notify({
+        type: "error",
+        message: "دریافت تاریخچه‌ی تبلیغات با خطا مواجه شد",
+      });
     }
   }
 
   /* ---------- Filtering Logic (same as before) ---------- */
   const activeRange = useMemo(
     () => ranges.find((r) => r.key === rangeKey) || ranges[0],
-    [rangeKey]
+    [rangeKey],
   );
 
   const { list, counts } = useMemo(() => {
     const pendingAll = requests.filter((r) => r.status === "pending");
     const historyFiltered = requests.filter(
-      (r) => r.status === "history" && activeRange.test(r.ts)
+      (r) => r.status === "history" && activeRange.test(r.ts),
     );
 
     return {
@@ -189,20 +172,16 @@ export default function AdsRequestsSection() {
       setRequests((prev) =>
         prev.map((r) =>
           r.id === requestId
-            ? {
-                ...r,
-                status: "history",
-                decision: "approved",
-                ts: Date.now(),
-              }
-            : r
-        )
+            ? { ...r, status: "history", decision: "approved", ts: Date.now() }
+            : r,
+        ),
       );
 
       setSelected(null);
+      notify({ type: "success", message: "تبلیغ با موفقیت تایید شد." });
     } catch (err) {
       console.error("Approve error:", err);
-      alert("خطا در تایید تبلیغ.");
+      notify({ type: "error", message: "تایید تبلیغ با خطا مواجه شد." });
     }
   };
 
@@ -224,14 +203,15 @@ export default function AdsRequestsSection() {
                 decisionReason: reason,
                 ts: Date.now(),
               }
-            : r
-        )
+            : r,
+        ),
       );
 
       setSelected(null);
+      notify({ type: "success", message: "تبلیغ رد شد." });
     } catch (err) {
       console.error("Reject error:", err);
-      alert("خطا در رد کردن تبلیغ.");
+      notify({ type: "error", message: "رد کردن تبلیغ با خطا مواجه شد." });
     }
   };
 
@@ -295,7 +275,7 @@ export default function AdsRequestsSection() {
             req.adType === "slider" ? "اسلایدر صفحه اصلی" : "بنر تمام صفحه";
 
           const reservedLabel = `${req.reservedAmount.toLocaleString(
-            "fa-IR"
+            "fa-IR",
           )} ${req.reservedUnit}`;
 
           return (

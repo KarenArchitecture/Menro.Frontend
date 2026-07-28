@@ -5,8 +5,10 @@ import {
   updateRestaurantStatus,
 } from "../../api/adminRestaurants";
 import RestaurantReviewModal from "./RestaurantReviewModal";
+import { useGlobalUI } from "../common/GlobalUI";
 
 export default function RestaurantsAdminSection() {
+  const { notify } = useGlobalUI();
   const [restaurants, setRestaurants] = useState([]);
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -24,6 +26,12 @@ export default function RestaurantsAdminSection() {
     try {
       const res = await getRestaurants(currentStatus);
       setRestaurants(res.data);
+    } catch (err) {
+      console.error("Error loading restaurants:", err);
+      notify({
+        type: "error",
+        message: "دریافت لیست رستوران‌ها با خطا مواجه شد",
+      });
     } finally {
       setLoading(false);
     }
@@ -38,8 +46,10 @@ export default function RestaurantsAdminSection() {
       await updateRestaurantStatus(id, STATUS.approved, null);
       setSelected(null);
       loadRestaurants(status);
+      notify({ type: "success", message: "رستوران با موفقیت تایید شد" });
     } catch (err) {
       console.error("Error approving restaurant:", err);
+      notify({ type: "error", message: "تایید رستوران با خطا مواجه شد" });
     }
   };
 
@@ -48,8 +58,10 @@ export default function RestaurantsAdminSection() {
       await updateRestaurantStatus(id, STATUS.rejected, reason);
       setSelected(null);
       loadRestaurants(status);
+      notify({ type: "success", message: "رستوران رد شد" });
     } catch (err) {
       console.error("Error rejecting restaurant:", err);
+      notify({ type: "error", message: "رد رستوران با خطا مواجه شد" });
     }
   };
 

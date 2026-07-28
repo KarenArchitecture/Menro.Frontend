@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useGlobalUI } from "../common/GlobalUI";
+
 
 const SWATCHES = [
   {
@@ -34,14 +36,13 @@ const TYPES = [
 ];
 
 export default function ThemeSection() {
+  const { notify } = useGlobalUI();
   const [theme, setTheme] = useState("orange");
   const [restaurantType, setRestaurantType] = useState("modern");
 
   // API later
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    console.log("Saved:", { theme, restaurantType });
   };
 
   return (

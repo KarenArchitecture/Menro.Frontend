@@ -5,14 +5,6 @@
   already exist for BlogManagementSection — only landing-specific bits
   (prefixed landing-mgmt__) are added here.
    ========================================================================== */
-
-/* ----- Scrollable panel wrapper (فقط برای صفحه لندینگ) ----- */
-.landing-mgmt__panel {
-  max-height: calc(100vh - 40px);
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
 .landing-mgmt__info-banner {
   display: flex;
   align-items: flex-start;

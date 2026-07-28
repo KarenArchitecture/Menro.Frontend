@@ -2,6 +2,7 @@
 import { useMemo, useState, useEffect } from "react";
 import OrderModal from "./OrderModal";
 import adminOrderAxios from "../../api/adminOrderAxios";
+import { useGlobalUI } from "../common/GlobalUI";
 
 /* ---------- helpers ---------- */
 
@@ -82,6 +83,7 @@ function isHistoryStatus(status) {
 }
 
 export default function OrdersSection() {
+  const { notify, confirmModal } = useGlobalUI();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -91,7 +93,7 @@ export default function OrdersSection() {
 
   const activeRange = useMemo(
     () => ranges.find((r) => r.key === rangeKey) || ranges[0],
-    [rangeKey]
+    [rangeKey],
   );
 
   // Apply time filter ONLY to history
@@ -99,7 +101,7 @@ export default function OrdersSection() {
     const pendingAll = orders.filter((o) => !isHistoryStatus(o.status));
 
     const historyFiltered = orders.filter(
-      (o) => isHistoryStatus(o.status) && activeRange.test(o.createdAt)
+      (o) => isHistoryStatus(o.status) && activeRange.test(o.createdAt),
     );
 
     return {
@@ -112,12 +114,12 @@ export default function OrdersSection() {
   const handleAdvance = (orderId, nextStatus) => {
     // 1) لیست را آپدیت کن
     setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status: nextStatus } : o))
+      prev.map((o) => (o.id === orderId ? { ...o, status: nextStatus } : o)),
     );
 
     // 2) اگر همون سفارش داخل selected بازه، اون رو هم آپدیت کن
     setSelected((prev) =>
-      prev && prev.id === orderId ? { ...prev, status: nextStatus } : prev
+      prev && prev.id === orderId ? { ...prev, status: nextStatus } : prev,
     );
 
     // 3) مودال بسته شود
@@ -144,7 +146,9 @@ export default function OrdersSection() {
         }
       } catch (e) {
         if (!cancelled) {
+          console.error("خطا در دریافت سفارش‌ها:", e);
           setError("خطا در دریافت سفارش‌ها");
+          notify({ type: "error", message: "خطا در دریافت سفارش‌ها" });
         }
       } finally {
         if (!cancelled) setLoading(false);

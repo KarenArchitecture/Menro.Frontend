@@ -179,22 +179,29 @@ input {
 }
 
 #food-modal #food-types-container {
-  max-height: 420px; /* هر عددی که با ارتفاع مودال هماهنگ‌تره */
-  overflow-y: auto;
-  padding-left: 6px; /* جا برای اسکرول‌بار، که وسط اینپوت‌ها رو نگیره */
+  max-height: 420px;
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+  padding-left: 6px;
   margin-bottom: 12px;
+
+  scrollbar-width: thin;
+  scrollbar-color: #555 rgba(255, 255, 255, 0.08);
 }
 
-/* اسکرول‌بار باریک و هماهنگ با تم تیره (اختیاری ولی بهتره) */
 #food-modal #food-types-container::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 #food-modal #food-types-container::-webkit-scrollbar-thumb {
-  background: #444;
-  border-radius: 3px;
+  background: #555;
+  border-radius: 4px;
+}
+#food-modal #food-types-container::-webkit-scrollbar-thumb:hover {
+  background: #f5a623;
 }
 #food-modal #food-types-container::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
 }
 
 /* discount text box */

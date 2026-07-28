@@ -236,7 +236,7 @@ function GeneralTextsPane({ onSaved }) {
 
   if (loading) {
     return (
-      <div className="panel landing-mgmt__panel">
+      <div className="panel">
         <div className="empty-hint">در حال بارگذاری...</div>
       </div>
     );
@@ -244,7 +244,7 @@ function GeneralTextsPane({ onSaved }) {
 
   if (loadError) {
     return (
-      <div className="panel landing-mgmt__panel">
+      <div className="panel">
         <div className="empty-hint">{loadError}</div>
         <div className="panel-actions">
           <button
@@ -259,7 +259,7 @@ function GeneralTextsPane({ onSaved }) {
   }
 
   return (
-    <div className="panel landing-mgmt__panel">
+    <div className="panel">
       <div className="form-vertical blog-mgmt__form--hero">
         <div className="landing-mgmt__field-title">عکس اصلی صفحه لندینگ</div>
         <p className="blog-mgmt__muted-text">

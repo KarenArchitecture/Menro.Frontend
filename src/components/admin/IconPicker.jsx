@@ -32,10 +32,13 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
   const { notify, confirmModal } = useGlobalUI();
   const [q, setQ] = useState("");
   const [backendIcons, setBackendIcons] = useState([]);
+  const [uploading, setUploading] = useState(false);
+
   // role check
   const { user } = useAuth();
   const roles = user?.roles || []; // اگه کاربر نال باشه، آرایه خالی برمی‌گردونه
   const isAdmin = roles.includes("admin"); // بررسی نقش
+
   useEffect(() => {
     if (!open) return;
 
@@ -66,6 +69,45 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
   }, [q, backendIcons]);
 
   if (!open) return null;
+
+  // 🔸 reload after mutation
+  const reloadIcons = async () => {
+    const data = await fetchAllIcons();
+    setBackendIcons(data || []);
+  };
+
+  // 🔸 upload handler
+  const handleUploadSvg = async (file) => {
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith(".svg")) {
+      notify({ type: "warning", message: "فقط فایل SVG مجاز است." });
+      return;
+    }
+
+    try {
+      setUploading(true);
+
+      const formData = new FormData();
+      formData.append("Icon", file);
+      formData.append("Label", file.name.replace(/\.svg$/i, ""));
+
+      await iconAxios.post("/add", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      await reloadIcons();
+      notify({ type: "success", message: "آیکن با موفقیت آپلود شد." });
+    } catch (err) {
+      console.error("Upload failed:", err);
+      notify({
+        type: "error",
+        message: err.response?.data?.message ?? "آپلود با خطا مواجه شد.",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   // 🔸 delete handler
   const handleDeleteIcon = async (id) => {
@@ -107,6 +149,33 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
+
+          {isAdmin && (
+            <>
+              <input
+                id="icon-picker-upload-svg"
+                type="file"
+                accept=".svg"
+                hidden
+                onChange={(e) => {
+                  handleUploadSvg(e.target.files?.[0]);
+                  e.target.value = null;
+                }}
+              />
+              <button
+                type="button"
+                className="btn"
+                disabled={uploading}
+                title="آپلود SVG و افزودن به لیست آیکن‌ها"
+                onClick={() =>
+                  document.getElementById("icon-picker-upload-svg").click()
+                }
+              >
+                <i className="fas fa-upload" />{" "}
+                {uploading ? "در حال آپلود…" : "آپلود آیکن جدید"}
+              </button>
+            </>
+          )}
         </div>
 
         <div className="icon-grid" role="listbox" aria-label="Icon grid">

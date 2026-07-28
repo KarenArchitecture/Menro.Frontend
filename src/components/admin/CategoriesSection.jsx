@@ -12,6 +12,18 @@ function GenericCategoryIcon() {
     </svg>
   );
 }
+function extractApiErrorMessage(err, fallback) {
+  const data = err.response?.data;
+  if (!data) return fallback;
+  if (typeof data === "string") return data;
+  if (data.message) return data.message;
+  if (data.title) return data.title;
+  if (data.errors) {
+    const first = Object.values(data.errors)[0];
+    if (Array.isArray(first) && first[0]) return first[0];
+  }
+  return fallback;
+}
 
 export default function CategoriesSection() {
   const { notify, confirmModal } = useGlobalUI();
@@ -155,7 +167,10 @@ export default function CategoriesSection() {
       console.error("Failed to create custom category", err);
       notify({
         type: "error",
-        message: err.response?.data?.message ?? "خطا در افزودن دسته‌بندی",
+        message:
+          err.response?.status === 409
+            ? "این دسته‌بندی از قبل وجود دارد."
+            : extractApiErrorMessage(err, "خطا در افزودن دسته‌بندی"),
       });
     }
   };
@@ -170,7 +185,13 @@ export default function CategoriesSection() {
       notify({ type: "success", message: "دسته‌بندی به لیست شما اضافه شد" });
     } catch (err) {
       console.error("Failed to add category from global", err);
-      notify({ type: "error", message: "افزودن دسته‌بندی با خطا مواجه شد" });
+      notify({
+        type: "error",
+        message:
+          err.response?.status === 409
+            ? "این دسته‌بندی قبلاً به لیست شما اضافه شده است."
+            : extractApiErrorMessage(err, "افزودن دسته‌بندی با خطا مواجه شد"),
+      });
     }
   };
 
@@ -195,7 +216,10 @@ export default function CategoriesSection() {
       console.error("Failed to update category", err);
       notify({
         type: "error",
-        message: err.response?.data?.message ?? "خطا در ذخیره تغییرات",
+        message:
+          err.response?.status === 409
+            ? "این نام قبلاً برای دسته‌بندی دیگری استفاده شده است."
+            : extractApiErrorMessage(err, "خطا در ذخیره تغییرات"),
       });
     }
   };

@@ -341,7 +341,7 @@ export default function MenuManagementSection({ onNavigateToCategories }) {
                       {row.imageSrc ? (
                         <img src={row.imageSrc} alt={row.name} />
                       ) : (
-                        <i className="fas fa-image" />
+                        <i className="fas fa-utensils" />
                       )}
                     </div>
                   </td>
@@ -431,7 +431,7 @@ export default function MenuManagementSection({ onNavigateToCategories }) {
                     {row.imageSrc ? (
                       <img src={row.imageSrc} alt={row.name} />
                     ) : (
-                      <i className="fas fa-image" />
+                      <i className="fas fa-utensils" />
                     )}
                   </div>
                 </span>

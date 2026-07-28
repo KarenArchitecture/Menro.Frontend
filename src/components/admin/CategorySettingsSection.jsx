@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
-import IconPicker, { renderIconByKey } from "./IconPicker";
-import fileAxios from "../../api/fileAxios.js";
-import iconAxios from "../../api/iconAxios.js";
+import IconPicker from "./IconPicker";
 import adminGlobalCategoryAxios from "../../api/adminGlobalCategoryAxios.js";
 import { useGlobalUI } from "../common/GlobalUI";
 
@@ -12,6 +10,19 @@ function GenericCategoryIcon() {
       <path d="M7 12h10M12 7v10" stroke="currentColor" strokeWidth="1.8" />
     </svg>
   );
+}
+
+function extractApiErrorMessage(err, fallback) {
+  const data = err.response?.data;
+  if (!data) return fallback;
+  if (typeof data === "string") return data;
+  if (data.message) return data.message;
+  if (data.title) return data.title;
+  if (data.errors) {
+    const first = Object.values(data.errors)[0];
+    if (Array.isArray(first) && first[0]) return first[0];
+  }
+  return fallback;
 }
 
 export default function CategorySettingsSection() {
@@ -78,7 +89,10 @@ export default function CategorySettingsSection() {
       console.error("Failed to create global category", err);
       notify({
         type: "error",
-        message: err.response?.data?.message ?? "خطا در افزودن دسته‌بندی عمومی",
+        message:
+          err.response?.status === 409
+            ? "این دسته‌بندی از قبل وجود دارد."
+            : extractApiErrorMessage(err, "خطا در افزودن دسته‌بندی عمومی"),
       });
     }
   };
@@ -108,8 +122,6 @@ export default function CategorySettingsSection() {
   // ==== Get category for edit ====
   const getGlobalCategory = async (id) => {
     try {
-      console.log("Sending GET request with id:", id);
-
       const res = await adminGlobalCategoryAxios.get("/read", {
         params: { catId: id },
       });
@@ -124,8 +136,7 @@ export default function CategorySettingsSection() {
       console.error("❌ Failed to fetch global category", err);
       notify({
         type: "error",
-        message:
-          err.response?.data?.message ?? "خطا در دریافت اطلاعات دسته‌بندی",
+        message: extractApiErrorMessage(err, "خطا در دریافت اطلاعات دسته‌بندی"),
       });
     }
   };
@@ -151,7 +162,10 @@ export default function CategorySettingsSection() {
       console.error("❌ Failed to update category", err);
       notify({
         type: "error",
-        message: err.response?.data?.message ?? "خطا در ذخیره تغییرات",
+        message:
+          err.response?.status === 409
+            ? "این نام قبلاً برای دسته‌بندی دیگری استفاده شده است."
+            : extractApiErrorMessage(err, "خطا در ذخیره تغییرات"),
       });
     }
   };
@@ -161,31 +175,6 @@ export default function CategorySettingsSection() {
     setEditIconId(null);
     setEditIconUrl(null);
     setEditPickerOpen(false);
-  };
-
-  // ==== Upload SVG ====
-  const handleUploadSvg = async (file) => {
-    if (!file) return;
-
-    if (!file.name.toLowerCase().endsWith(".svg")) {
-      notify({ type: "warning", message: "فقط فایل SVG مجاز است." });
-      return;
-    }
-
-    try {
-      const formData = new FormData();
-      formData.append("Icon", file);
-      formData.append("Label", file.name.replace(/\.svg$/i, ""));
-
-      await iconAxios.post("/add", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      notify({ type: "success", message: "آیکن با موفقیت آپلود شد." });
-    } catch (err) {
-      console.error("Upload failed:", err);
-      notify({ type: "error", message: "آپلود با خطا مواجه شد." });
-    }
   };
 
   return (
@@ -236,7 +225,6 @@ export default function CategorySettingsSection() {
             onClose={() => setIconPickerOpen(false)}
             value={selectedIconId}
             onSelect={(icon) => {
-              console.log("✅ Icon selected (global):", icon);
               setSelectedIconId(icon?.id ?? null);
               setSelectedIconUrl(icon?.url ?? null);
               setIconPickerOpen(false);
@@ -343,9 +331,9 @@ export default function CategorySettingsSection() {
                   {editIconUrl ? (
                     <img
                       src={editIconUrl}
-                      alt="icon"
                       width={24}
                       height={24}
+                      alt="icon"
                       style={{ objectFit: "contain", verticalAlign: "middle" }}
                     />
                   ) : (
@@ -376,47 +364,11 @@ export default function CategorySettingsSection() {
         onClose={() => setEditPickerOpen(false)}
         value={editIconId}
         onSelect={(icon) => {
-          console.log("✅ Icon selected (edit):", icon);
           setEditIconId(icon?.id ?? null);
           setEditIconUrl(icon?.url ?? null);
           setEditPickerOpen(false);
         }}
       />
-
-      {/* Upload panel */}
-      <div className="panel" style={{ marginTop: 24 }}>
-        <h4>افزودن آیکن جدید</h4>
-        <div
-          className="input-group-inline"
-          style={{ marginBottom: 12, gap: 8, alignItems: "center" }}
-        >
-          <input
-            id="settings-upload-svg"
-            type="file"
-            accept=".svg"
-            hidden
-            onChange={(e) => handleUploadSvg(e.target.files?.[0])}
-          />
-          <button
-            className="btn"
-            title="آپلود SVG و افزودن به لیست آیکن‌ها"
-            onClick={() =>
-              document.getElementById("settings-upload-svg").click()
-            }
-          >
-            <i className="fas fa-upload" /> آپلود SVG
-          </button>
-          <span
-            style={{
-              fontSize: 13,
-              color: "var(--text-secondary)",
-              marginInlineStart: 12,
-            }}
-          >
-            تنها فایل‌های SVG مجاز به آپلود هستند.
-          </span>
-        </div>
-      </div>
     </div>
   );
 }

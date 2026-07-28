@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import Panel from "./Panel";
 import LineChart from "./LineChart";
 import adminDashboardAxios from "../../api/adminDashboardAxios";
+import { useGlobalUI } from "../common/GlobalUI";
 
 export default function DashboardSection() {
+  const { notify, confirmModal } = useGlobalUI();
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -14,6 +16,7 @@ export default function DashboardSection() {
         setDashboardData(data);
       } catch (err) {
         console.error("خطا در دریافت داده داشبورد:", err);
+        notify({ type: "error", message: "خطا در دریافت اطلاعات داشبورد" });
       } finally {
         setLoading(false);
       }

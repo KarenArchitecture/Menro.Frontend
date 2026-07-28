@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../Context/AuthContext";
+import { useGlobalUI } from "../../components/common/GlobalUI";
 import ProfileHeader from "../../components/profile/ProfileHeader";
 import ProfileStats from "../../components/profile/ProfileStats";
 import ProfileActions from "../../components/profile/ProfileActions";
@@ -9,9 +10,10 @@ import "../../assets/css/styles-profile.css";
 export default function ProfilePage() {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const { confirmModal } = useGlobalUI();
 
   const user = {
-    name: "کافه‌گرد ۵۹۶۸",
+    name: "کافه‌گرد",
     stats: [
       { value: 213, label: "خرید موفق" },
       { value: 32, label: "بازدید از رستوران‌ها" },
@@ -19,8 +21,14 @@ export default function ProfilePage() {
     ],
   };
 
-  const handleLogout = () => {
-    if (window.confirm("از حساب کاربری خود خارج می‌شوید؟")) {
+  const handleLogout = async () => {
+    const confirmed = await confirmModal({
+      title: "خروج از حساب",
+      message: "از حساب کاربری خود خارج می‌شوید؟",
+      confirmText: "بله، خارج شوم",
+      cancelText: "انصراف",
+    });
+    if (confirmed) {
       logout();
     }
   };

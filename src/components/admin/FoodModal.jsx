@@ -31,6 +31,8 @@ export default function FoodModal({
   // for modal
   const { notify } = useGlobalUI();
 
+  const [imageLoadFailed, setImageLoadFailed] = useState(false);
+
   // برای ریست کردن فرم بعد بسته شدن
   const [name, setName] = useState("");
   const [ingredients, setIngredients] = useState("");
@@ -105,6 +107,7 @@ export default function FoodModal({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
+  useEffect(() => setImageLoadFailed(false), [imagePreview]);
 
   // food details
   useEffect(() => {
@@ -672,16 +675,19 @@ export default function FoodModal({
                 <label>پیش‌نمایش تصویر غذا</label>
 
                 <div className="food-modal__image-frame">
-                  {imagePreview ? (
+                  {imagePreview && !imageLoadFailed ? (
                     <img
                       src={imagePreview}
                       alt="پیش‌نمایش عکس غذا"
                       className="food-modal__image-frame-img"
+                      onError={() => setImageLoadFailed(true)}
                     />
                   ) : (
                     <span className="food-modal__image-placeholder">
                       <i className="fas fa-image" />
-                      عکسی انتخاب نشده
+                      {mode === "edit"
+                        ? "این غذا عکسی ندارد"
+                        : "عکسی انتخاب نشده"}
                     </span>
                   )}
                 </div>

@@ -28,7 +28,11 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
         const res = await adminOrderAxios.get(`/${order.id}`);
         if (!cancelled) setDetails(res.data);
       } catch (e) {
-        if (!cancelled) setError("خطا در دریافت جزئیات سفارش");
+        if (!cancelled) {
+          console.error("خطا در دریافت جزئیات سفارش:", e);
+          setError("خطا در دریافت جزئیات سفارش");
+          notify({ type: "error", message: "خطا در دریافت جزئیات سفارش" });
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }

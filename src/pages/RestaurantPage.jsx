@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import usePageStyles from "../hooks/usePageStyles";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 // import "../../public/shop.css";
 // import AppHeader from "../components/common/AppHeader";
 
@@ -28,6 +29,7 @@ function RestaurantContent() {
   const navigate = useNavigate();
   const { slug } = useParams();
   const cart = useCart();
+  const location = useLocation();
 
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedItem, setSelectedItem] = useState(null);
@@ -85,6 +87,7 @@ function RestaurantContent() {
     enabled: !!slug,
     refetchOnWindowFocus: false,
   });
+  useDocumentTitle(banner?.name || location.state?.restaurantName || "رستوران");
 
   const { data: categories = [] } = useQuery({
     queryKey: ["restaurantCategories", slug],

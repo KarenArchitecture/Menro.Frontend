@@ -3,8 +3,10 @@ import Panel from "./Panel";
 import LineChart from "./LineChart";
 import adminDashboardAxios from "../../api/adminDashboardAxios";
 import { useGlobalUI } from "../common/GlobalUI";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 export default function DashboardSection() {
+  useDocumentTitle("داشبورد");
   const { notify, confirmModal } = useGlobalUI();
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import adminRestaurantCategoryAxios from "../../api/adminRestaurantCategoryAxios";
 import { useGlobalUI } from "../common/GlobalUI";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 function RestaurantTypeIcon() {
   return (
@@ -18,6 +19,7 @@ function RestaurantTypeIcon() {
 }
 
 export default function RestaurantCategorySettingsSection() {
+  useDocumentTitle("دسته‌بندی انواع رستوران");
   const { notify, confirmModal } = useGlobalUI();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);

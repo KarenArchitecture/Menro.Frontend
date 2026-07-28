@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import BillItemCard from "../components/Bills/BillItemCard";
 import "../assets/css/styles-bills.css";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 // Utility function to convert numbers to Persian digits
 const toPersianNum = (num) =>
@@ -63,6 +64,7 @@ const DUMMY_BILL_ITEMS = [
 export default function BillsPage() {
   const navigate = useNavigate();
   const orderTotal = 27400000;
+  useDocumentTitle("فاکتور خرید - بیرون‌بر ۲۶۳");
 
   return (
     <div className="bills-page-container">

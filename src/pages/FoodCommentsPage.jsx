@@ -7,9 +7,11 @@ import FoodCommentsHeader from "../components/comments/FoodCommentsHeader";
 import ProtectedActionModal from "../components/common/ProtectedActionModal";
 import useRequireLogin from "../hooks/useRequireLogin";
 import { getFoodComments, createComment } from "../api/comments";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 import "../assets/css/styles-comments.css";
 
 export default function FoodCommentsPage() {
+  useDocumentTitle("نظرات");
   const { foodId } = useParams();
   const queryClient = useQueryClient();
   const { requireLogin, open, closeModal, goToLogin, modalProps } =

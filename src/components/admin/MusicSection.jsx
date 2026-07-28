@@ -3,6 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import ownerRestaurantAxios from "../../api/ownerRestaurantAxios";
 import { useMusicSignalR } from "../../hooks/useMusicSignalR";
 import { useGlobalUI } from "../common/GlobalUI";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 // import "./MusicSection.css";
 
 // for api
@@ -56,6 +57,7 @@ const formatDuration = (duration) => {
 };
 
 export default function MusicSection() {
+  useDocumentTitle("پخش‌کننده موسیقی");
   /* -------------------------------------------------------------------
      STATE
   ------------------------------------------------------------------- */

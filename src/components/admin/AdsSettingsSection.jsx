@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import adSettingsAxios from "../../api/adSettingsAxios";
 import { useGlobalUI } from "../common/GlobalUI";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 const AD_TYPES = [
   { key: "slider", label: "اسلایدر صفحه اصلی", icon: "fas fa-images" },
@@ -36,6 +37,7 @@ const DEFAULT_SETTINGS = {
 };
 
 export default function AdsSettingsSection() {
+  useDocumentTitle("تنظیمات تبلیغات");
   const [adType, setAdType] = useState("slider");
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const { notify } = useGlobalUI();

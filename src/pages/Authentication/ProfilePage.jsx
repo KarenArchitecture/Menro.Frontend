@@ -6,11 +6,13 @@ import ProfileStats from "../../components/profile/ProfileStats";
 import ProfileActions from "../../components/profile/ProfileActions";
 import AdBanner from "../../components/common/AdBanner";
 import "../../assets/css/styles-profile.css";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 export default function ProfilePage() {
+  useDocumentTitle("پروفایل کاربری");
   const { logout } = useAuth();
   const navigate = useNavigate();
-  const { confirmModal } = useGlobalUI();
+  const { notify, confirmModal } = useGlobalUI();
 
   const user = {
     name: "کافه‌گرد",

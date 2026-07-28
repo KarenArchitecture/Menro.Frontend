@@ -4,6 +4,7 @@ import authAxios from "../../api/authAxios";
 import { useAuth } from "../../Context/AuthContext";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import "../../assets/css/auth.css";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 /* ────────────────────────────────
 function OTP({ length = 5, onValue }) {
 ──────────────────────────────── */
@@ -73,6 +74,7 @@ function OTP({ length = 5, onValue }) {
 }
 
 export default function LoginPage() {
+  useDocumentTitle("ورود");
   const navigate = useNavigate();
   const location = useLocation();
   const { completeLogin } = useAuth();

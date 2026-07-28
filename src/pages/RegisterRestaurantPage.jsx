@@ -7,6 +7,7 @@ import {
 } from "../api/restaurants";
 import usePageStyles from "../hooks/usePageStyles";
 import { useAuth } from "../Context/AuthContext";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 //  HH:MM  ➔  HH:MM:SS
 const normalizeTime = (t) => (t.length === 5 ? `${t}:00` : t);
@@ -27,6 +28,7 @@ const NATIONAL_CODE_LENGTH = 10;
 const PHONE_LENGTH = 11;
 
 export default function RegisterRestaurantPage() {
+  useDocumentTitle("ثبت رستوران");
   /* load CSS (/public) */
   usePageStyles("/register-rastaurant.css");
   const { refreshUser } = useAuth();

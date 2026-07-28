@@ -5,20 +5,15 @@ import "../assets/css/styles-favorites.css";
 import FavoritesHeader from "../components/favorites/FavoritesHeader";
 import { FoodCardsSkeleton } from "../components/home/HomeSkeletons";
 import { useFavoriteFoods } from "../hooks/useFavorites";
-export default function FavoritesPage() {
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
-  const {
-    data,
-    isLoading,
-    error,
-  } = useFavoriteFoods();
+export default function FavoritesPage() {
+  useDocumentTitle("علاقه‌مندی‌ها");
+  const { data, isLoading, error } = useFavoriteFoods();
 
   const favorites = data ?? [];
 
-  console.log(
-    "Favorite First Item:",
-    JSON.stringify(data?.[0], null, 2)
-  );
+  console.log("Favorite First Item:", JSON.stringify(data?.[0], null, 2));
   console.log("Favorites Error:", error);
 
   if (isLoading) {
@@ -26,21 +21,14 @@ export default function FavoritesPage() {
       <div className="favorites-page">
         <FavoritesHeader />
 
-        <FoodCardsSkeleton
-          title=""
-          showHeader={false}
-          count={6}
-        />
+        <FoodCardsSkeleton title="" showHeader={false} count={6} />
       </div>
     );
   }
 
   if (error) {
     return (
-      <StateMessage
-        kind="error"
-        title="خطا در دریافت علاقه‌مندی‌ها"
-      >
+      <StateMessage kind="error" title="خطا در دریافت علاقه‌مندی‌ها">
         لطفاً دوباره تلاش کنید.
       </StateMessage>
     );
@@ -54,9 +42,7 @@ export default function FavoritesPage() {
     );
   }
 
-  
   return (
-    
     <div className="favorites-page">
       <FavoritesHeader />
 

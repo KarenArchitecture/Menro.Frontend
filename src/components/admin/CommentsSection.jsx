@@ -7,6 +7,7 @@ import {
   rejectComment,
 } from "../../api/adminComments";
 import { useGlobalUI } from "../common/GlobalUI";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 const TABS = [
   { key: "pending", label: "در انتظار پاسخ" },
@@ -15,6 +16,7 @@ const TABS = [
 ];
 
 export default function CommentsSection() {
+  useDocumentTitle("مدیریت نظرات");
   const { notify, confirmModal } = useGlobalUI();
   const [activeTab, setActiveTab] = useState("pending");
   const [selected, setSelected] = useState(null);

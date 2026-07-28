@@ -1,8 +1,10 @@
 // src/pages/UnauthorizedPage.jsx
 import { Link, useLocation } from "react-router-dom";
 import "../../assets/css/auth.css";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 export default function UnauthorizedPage() {
+  useDocumentTitle("دسترسی غیرمجاز");
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const returnUrl = params.get("returnUrl");

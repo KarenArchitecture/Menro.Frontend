@@ -1,5 +1,6 @@
 // src/pages/AdminPage.jsx
 import { useState, useCallback, useEffect } from "react";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 /* ===================== Layout ===================== */
 import usePageStyles from "../hooks/usePageStyles";
@@ -45,6 +46,7 @@ import { useMusicSignalR } from "../hooks/useMusicSignalR";
 import { useGlobalUI } from "../components/common/GlobalUI";
 
 export default function AdminPage() {
+  useDocumentTitle("پنل مدیریت");
   const cssReady = usePageStyles("/admin-dashboard.css");
 
   const [activeTab, setActiveTab] = useState(

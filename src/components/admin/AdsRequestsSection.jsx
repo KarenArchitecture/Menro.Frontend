@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import AdRequestModal from "./AdRequestModal";
 import adminRestaurantAdAxios from "../../api/adminRestaurantAdAxios";
 import { useGlobalUI } from "../common/GlobalUI";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 /* ---------- helpers ---------- */
 const now = Date.now();
@@ -46,6 +47,8 @@ function getReservedUnitLabel({ billing, adType }) {
 }
 
 export default function AdsRequestsSection() {
+  useDocumentTitle("درخواست‌های تبلیغات");
+
   const [requests, setRequests] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [selected, setSelected] = useState(null);

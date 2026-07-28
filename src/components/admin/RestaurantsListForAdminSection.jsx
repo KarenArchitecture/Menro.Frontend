@@ -6,8 +6,10 @@ import {
 } from "../../api/adminRestaurants";
 import RestaurantReviewModal from "./RestaurantReviewModal";
 import { useGlobalUI } from "../common/GlobalUI";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 export default function RestaurantsAdminSection() {
+  useDocumentTitle("مدیریت رستوران‌ها");
   const { notify } = useGlobalUI();
   const [restaurants, setRestaurants] = useState([]);
   const [selected, setSelected] = useState(null);

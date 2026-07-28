@@ -17,6 +17,7 @@ import {
 } from "../../api/AdminLanding";
 import "../../assets/css/admin/landingManagement.css";
 import { useGlobalUI } from "../common/GlobalUI";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 /* ======================================================================
  * LandingManagementSection
@@ -48,6 +49,7 @@ function toPersianDigits(value) {
 }
 
 export default function LandingManagementSection() {
+  useDocumentTitle("مدیریت صفحه اصلی");
   const [activeSubTab, setActiveSubTab] = useState("general");
 
   return (

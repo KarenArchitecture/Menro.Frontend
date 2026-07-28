@@ -7,8 +7,10 @@ import PreviousOrders from "../components/home/PreviousOrders";
 import PopularFoodAndAdBannerLazyList from "../components/home/PopularFoodAndAdBannerLazyList";
 import SectionHeader from "../components/common/SectionHeader";
 import StateMessage from "../components/common/StateMessage";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 export default function HomePage() {
+  useDocumentTitle("خانه");
   const [searchQuery, setSearchQuery] = useState("");
   const isSearchActive = Boolean(searchQuery.trim());
 
@@ -46,12 +48,19 @@ export default function HomePage() {
 
         {/* ✅ Search label */}
         {isSearchActive && (
-          <SectionHeader title={`نتایج جستجو (${totalResults.toLocaleString("fa-IR")})`} />
+          <SectionHeader
+            title={`نتایج جستجو (${totalResults.toLocaleString("fa-IR")})`}
+          />
         )}
 
         {/* ✅ Random restaurants (also supports search mode) */}
-        {(!isSearchActive || restaurantCount === null || restaurantCount > 0) && (
-          <RestaurantList searchQuery={searchQuery} onSearchCount={setRestaurantCount} />
+        {(!isSearchActive ||
+          restaurantCount === null ||
+          restaurantCount > 0) && (
+          <RestaurantList
+            searchQuery={searchQuery}
+            onSearchCount={setRestaurantCount}
+          />
         )}
 
         {/* ✅ Latest orders only in normal mode */}
@@ -76,4 +85,3 @@ export default function HomePage() {
     </>
   );
 }
-

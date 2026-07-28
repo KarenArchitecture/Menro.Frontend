@@ -3,6 +3,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import FoodModal from "./FoodModal";
 import adminFoodAxios from "../../api/adminFoodAxios";
 import { useGlobalUI } from "../common/GlobalUI";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 function toIntDigits(v) {
   return Number(String(v || "0").replace(/[^\d]/g, ""));
@@ -28,7 +29,7 @@ function SortIcon({ active, dir }) {
 }
 
 export default function MenuManagementSection({ onNavigateToCategories }) {
-  // for global modals
+  useDocumentTitle("مدیریت منو");
   const { notify, confirmModal } = useGlobalUI();
 
   const [foods, setFoods] = useState([]);

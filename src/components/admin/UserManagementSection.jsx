@@ -8,6 +8,7 @@ import {
 } from "../../api/adminUsers";
 import "../../assets/css/admin/userMngmnt.css";
 import { useGlobalUI } from "../common/GlobalUI";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 /* ======================================================================
  * UserManagementSection
@@ -26,6 +27,7 @@ function toPersianDigits(value) {
 }
 
 export default function UserManagementSection() {
+  useDocumentTitle("مدیریت کاربران");
   const { notify, confirmModal } = useGlobalUI();
   const [users, setUsers] = useState([]);
   const [availableRoles, setAvailableRoles] = useState([]);

@@ -7,8 +7,10 @@ import {
 import restaurantAxios from "../../api/restaurantAxios";
 import "../../assets/css/admin/restaurantProfile.css";
 import { useGlobalUI } from "../common/GlobalUI";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 export default function RestaurantProfileSection() {
+  useDocumentTitle("پروفایل رستوران");
   const { notify } = useGlobalUI();
   // basic fields
   const [name, setName] = useState("");

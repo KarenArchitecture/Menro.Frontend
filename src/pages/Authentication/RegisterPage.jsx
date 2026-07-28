@@ -3,8 +3,10 @@ import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "../../Context/AuthContext";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import "../../assets/css/auth.css";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 export default function RegisterPage() {
+  useDocumentTitle("ثبت نام");
   const navigate = useNavigate();
   const { registerUser } = useAuth();
 

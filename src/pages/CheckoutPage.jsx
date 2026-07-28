@@ -6,8 +6,10 @@ import CheckoutHeader from "../components/checkout/CheckoutHeader";
 import CartCard from "../components/checkout/CartCard";
 import CheckoutFooter from "../components/checkout/CheckoutFooter";
 import { createOrder } from "../api/orders";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 export default function CheckoutPage() {
+  useDocumentTitle("تسویه حساب");
   usePageStyles("/styles-checkout.css");
 
   const location = useLocation();

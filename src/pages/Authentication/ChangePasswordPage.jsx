@@ -3,8 +3,10 @@ import { useMutation } from "@tanstack/react-query";
 import authAxios from "../../api/authAxios";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import "../../assets/css/auth.css";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 export default function ChangePasswordPage() {
+  useDocumentTitle("تغییر رمز عبور");
   const navigate = useNavigate();
   const location = useLocation();
   const returnUrl = new URLSearchParams(location.search).get("returnUrl");

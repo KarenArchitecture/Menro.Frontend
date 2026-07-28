@@ -9,6 +9,7 @@ import GlassFooter from "../components/common/GlassFooter";
 import FooterFruitsScene from "../components/common/FooterFruitsScene";
 import MobileHeader from "../components/common/MobileHeader";
 import { getBlogPageBootstrap } from "../api/blogs";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 import "../assets/css/styles-blog.css";
 
@@ -17,6 +18,7 @@ const leftIcons = [
 ];
 
 const BlogPage = () => {
+  useDocumentTitle("بلاگ‌ها");
   const [bootstrap, setBootstrap] = useState(null);
   const [loading, setLoading] = useState(true);
 

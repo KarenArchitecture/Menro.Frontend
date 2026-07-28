@@ -1,7 +1,9 @@
 // src/components/orders/ContinueShopping.jsx
 import React from "react";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 const ContinueShopping = () => {
+  useDocumentTitle("سفارش");
   // Mock data using mocha.jpg
   const orderItems = [
     { id: 1, image: "/images/mocha.jpg", quantity: 13 },

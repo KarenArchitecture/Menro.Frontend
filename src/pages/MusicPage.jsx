@@ -7,6 +7,7 @@ import MusicTrack from "../components/music/MusicTrack";
 import MusicRequestModal from "../components/music/MusicRequestModal";
 import OrderSuccessModal from "../components/common/OrderSuccessModal";
 import { useModal } from "../components/common/GlobalModal";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 import "../assets/css/styles-music.css";
 
@@ -15,6 +16,7 @@ import { useMusicSignalR } from "../hooks/useMusicSignalR";
 import { getPublicMusic, requestTrack } from "../api/music";
 
 export default function MusicPage() {
+  useDocumentTitle("پخش‌کننده موسیقی");
   const navigate = useNavigate();
   const location = useLocation();
 

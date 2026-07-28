@@ -2,6 +2,7 @@ import React from "react";
 import { useLocation } from "react-router-dom";
 import FoodCard from "../components/home/FoodCard";
 import RestaurantCard from "../components/home/RestaurantCard";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 const foodPlaceholders = [
   {
@@ -86,6 +87,7 @@ const restaurantPlaceholders = [
 ];
 
 export default function ShowAllFoodsPage() {
+  useDocumentTitle("همه غذاها");
   const { pathname } = useLocation();
   const isRestaurants = pathname.startsWith("/restaurants");
 

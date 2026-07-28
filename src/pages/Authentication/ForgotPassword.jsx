@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import authAxios from "../../api/authAxios";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import "../../assets/css/auth.css";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 /* ────────────────────────────────
 function OTP({ length = 5, onValue }) {
 ──────────────────────────────── */
@@ -87,6 +88,7 @@ function StepProgress({ step, total = 3 }) {
 }
 
 export default function ForgotPassword() {
+  useDocumentTitle("فراموشی رمز عبور");
   const navigate = useNavigate();
   const location = useLocation();
   const returnUrl = new URLSearchParams(location.search).get("returnUrl");

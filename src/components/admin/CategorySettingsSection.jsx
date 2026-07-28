@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import IconPicker from "./IconPicker";
 import adminGlobalCategoryAxios from "../../api/adminGlobalCategoryAxios.js";
 import { useGlobalUI } from "../common/GlobalUI";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 function GenericCategoryIcon() {
   return (
@@ -26,6 +27,7 @@ function extractApiErrorMessage(err, fallback) {
 }
 
 export default function CategorySettingsSection() {
+  useDocumentTitle("دسته‌بندی‌های عمومی");
   const { notify, confirmModal } = useGlobalUI();
   const [globalCategories, setGlobalCategories] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -28,12 +28,12 @@ function RestaurantCard({ restaurant }) {
 
   const coverSrc = resolveFileUrl(
     bannerImageUrl,
-    "/images/restaurant/restaurant-home-placeholder.png"
+    "/images/restaurant/restaurant-home-placeholder.png",
   );
 
   const logoSrc = resolveFileUrl(
     logoImageUrl,
-    "/images/restaurant/logo-placeholder.png"
+    "/images/restaurant/logo-placeholder.png",
   );
 
   const coverFallback = "/images/restaurant/restaurant-home-placeholder.png";
@@ -61,7 +61,8 @@ function RestaurantCard({ restaurant }) {
 
         {discount > 0 && (
           <div className="discount-bubble">
-            تا <span className="discount_num">{formattedDiscount}%</span> درصد تخفیف
+            تا <span className="discount_num">{formattedDiscount}%</span> درصد
+            تخفیف
           </div>
         )}
 
@@ -80,9 +81,7 @@ function RestaurantCard({ restaurant }) {
         <span className="time-badge">
           <span className="time-badge__time">{formattedHours}</span>
 
-          <span
-            className={`time-badge__status ${isOpen ? "open" : "closed"}`}
-          >
+          <span className={`time-badge__status ${isOpen ? "open" : "closed"}`}>
             {isOpen ? "باز است" : "بسته است"}
           </span>
         </span>
@@ -112,6 +111,7 @@ function RestaurantCard({ restaurant }) {
   return (
     <Link
       to={`/restaurant/${encodeURIComponent(slug)}`}
+      state={{ restaurantName: name }}
       className="card card-link"
       style={{
         display: "block",

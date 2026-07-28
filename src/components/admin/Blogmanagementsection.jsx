@@ -20,6 +20,7 @@ import {
   updateBlogHero,
 } from "../../api/adminBlogs";
 import { useGlobalUI } from "../common/GlobalUI";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 // "فیلترهای فید" tab intentionally removed - feed categories are now a fixed,
 // non-editable list (see FEED_CATEGORIES in adminBlogs.js).
@@ -44,6 +45,7 @@ function apiErrorMessage(err, fallback = "خطایی رخ داد. دوباره �
 }
 
 export default function BlogManagementSection() {
+  useDocumentTitle("مدیریت بلاگ");
   const [activeSubTab, setActiveSubTab] = useState("posts");
 
   return (

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useGlobalUI } from "../common/GlobalUI";
-
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 const SWATCHES = [
   {
@@ -36,6 +36,7 @@ const TYPES = [
 ];
 
 export default function ThemeSection() {
+  useDocumentTitle("مدیریت قالب");
   const { notify } = useGlobalUI();
   const [theme, setTheme] = useState("orange");
   const [restaurantType, setRestaurantType] = useState("modern");

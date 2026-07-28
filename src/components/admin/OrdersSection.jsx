@@ -3,6 +3,7 @@ import { useMemo, useState, useEffect } from "react";
 import OrderModal from "./OrderModal";
 import adminOrderAxios from "../../api/adminOrderAxios";
 import { useGlobalUI } from "../common/GlobalUI";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 /* ---------- helpers ---------- */
 
@@ -83,6 +84,7 @@ function isHistoryStatus(status) {
 }
 
 export default function OrdersSection() {
+  useDocumentTitle("مدیریت سفارش‌ها");
   const { notify, confirmModal } = useGlobalUI();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -1,5 +1,6 @@
 import React from "react";
 import LineChart from "./LineChart";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 const accountDetails = [
   { label: "نام صاحب حساب:", value: "کاربر ادمین" },
@@ -52,13 +53,14 @@ function last7DaysFA() {
     const d = new Date();
     d.setDate(d.getDate() - i);
     labels.push(
-      d.toLocaleDateString("fa-IR", { month: "short", day: "numeric" })
+      d.toLocaleDateString("fa-IR", { month: "short", day: "numeric" }),
     );
   }
   return labels;
 }
 
 export default function FinancialSection() {
+  useDocumentTitle("مدیریت مالی");
   return (
     <div className="financial-grid">
       {/* Account details */}

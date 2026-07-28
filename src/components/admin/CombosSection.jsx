@@ -6,8 +6,10 @@ import ComboPickerModal from "./ComboPickerModal";
 import resolveFileUrl from "../../utils/resolveFileUrl";
 import { toPersianDigits } from "../../utils/persianFormat";
 import { useGlobalUI } from "../common/GlobalUI";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 export default function CombosSection() {
+  useDocumentTitle("ترکیب‌های پیشنهادی");
   const { notify, confirmModal } = useGlobalUI();
   const [foods, setFoods] = useState([]);
   const [loadingFoods, setLoadingFoods] = useState(true);

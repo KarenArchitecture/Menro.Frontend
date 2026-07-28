@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import RatingModal from "../common/RatingModal";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 const PreviousOrderCard = ({ order }) => {
   const {
@@ -124,6 +125,7 @@ const PreviousOrderCard = ({ order }) => {
 
 // --- EXPORTING A MOCK LIST TO TEST BOTH STATES ---
 export default function PreviousOrdersList() {
+  useDocumentTitle("سفارش قبلی");
   // Mock data representing the two cards in your screenshot
   const mockOrders = [
     {

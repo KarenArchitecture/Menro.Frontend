@@ -3,8 +3,10 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import adminRestaurantAdAxios from "../../api/adminRestaurantAdAxios";
 import adSettingsAxios from "../../api/adSettingsAxios";
 import { useGlobalUI } from "../common/GlobalUI";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 export default function AdsBookingSection() {
+  useDocumentTitle("رزرو تبلیغات");
   const [adType, setAdType] = useState("slider"); // slider | banner
   const [bookingMethod, setBookingMethod] = useState("by_day"); // by_day | by_click
   const { notify, confirmModal } = useGlobalUI();

@@ -3,6 +3,7 @@ import IconPicker from "./IconPicker";
 import adminGlobalCategoryAxios from "../../api/adminGlobalCategoryAxios.js";
 import adminCustomCategoryAxios from "../../api/adminCustomCategoryAxios.js";
 import { useGlobalUI } from "../common/GlobalUI";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 function GenericCategoryIcon() {
   return (
@@ -26,6 +27,7 @@ function extractApiErrorMessage(err, fallback) {
 }
 
 export default function CategoriesSection() {
+  useDocumentTitle("دسته‌بندی‌های رستوران");
   const { notify, confirmModal } = useGlobalUI();
   const [categories, setCategories] = useState(() => {
     try {

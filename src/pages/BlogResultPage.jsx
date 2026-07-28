@@ -9,6 +9,7 @@ import BlogSidebar from "../components/blog/BlogSidebar";
 import GlassFooter from "../components/common/GlassFooter";
 import FooterFruitsScene from "../components/common/FooterFruitsScene";
 import { getBlogPageBootstrap } from "../api/blogs";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 import "../assets/css/styles-blog.css";
 import "../assets/css/blog-result.css";
@@ -90,6 +91,17 @@ const BlogResultPage = () => {
   const handleClearFilter = useCallback(() => {
     navigate("/blog");
   }, [navigate]);
+
+  const pageTitle =
+    resultType === "tag"
+      ? `برچسب ${tagName}`
+      : resultType === "category"
+        ? `دسته‌بندی ${categoryName}`
+        : searchQuery
+          ? `جستجوی «${searchQuery}»`
+          : "نتایج جستجو در بلاگ‌ها";
+
+  useDocumentTitle(pageTitle);
 
   return (
     <div className="result-page-wrapper blog-page-wrapper" dir="rtl">

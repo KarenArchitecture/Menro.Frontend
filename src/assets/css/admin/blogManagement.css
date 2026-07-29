@@ -1,0 +1,962 @@
+/* ============================================================================
+   blog-management.css
+   Self-contained stylesheet for BlogManagementSection.jsx (#blog-management-view)
+
+   Extracted from admin-dashboard.css. Import this file ALONE (no need to also
+   import admin-dashboard.css) and the Blog admin page will keep its current
+   look. It bundles:
+     1) Fonts, color tokens, and base resets the page relies on
+     2) Shared admin-dashboard component styles used by the Blog page
+        (buttons, modal, tabs, panel, table, forms, custom-icon list, etc.)
+     3) All blog-mgmt__* rules specific to the Blog page
+
+   NOTE: several shared classes below (.btn, .modal, .panel-actions, ...) are
+   defined more than once in admin-dashboard.css at different points in the
+   cascade (later rules override earlier ones for the same selector). To keep
+   the exact same computed styles, those duplicate declarations are preserved
+   here in the same order they appear in admin-dashboard.css.
+   ============================================================================ */
+
+/* --- Fonts --- */
+@import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap");
+
+/* --- Color tokens (shared design tokens used throughout the dashboard) --- */
+:root {
+  --primary-color: #f59e0b;
+  --primary-color-dark: #d97706;
+  --bg-dark: #121212;
+  --bg-light: #1e1e1e;
+  --border-color: #2f2f2f;
+  --text-primary: #eaeaea;
+  --text-secondary: #bbb;
+  --text-muted: #888;
+  --status-active: #10b981;
+  --status-danger: #ef4444;
+
+  /* Used by .mh-input / .blog-mgmt__search-submit (originally scoped to
+     .music-hub elsewhere in admin-dashboard.css); defined here at :root so
+     the blog search box renders identically without that ancestor class. */
+  --mh-border: rgba(255, 255, 255, 0.09);
+  --mh-accent: var(--primary-color, #f59e0b);
+}
+
+/* --- Base resets --- */
+body {
+  font-family: "Vazirmatn", sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Base typography, scoped to the Blog view root instead of .dashboard-container
+   so it's self-contained even if this component isn't mounted inside the rest
+   of the admin dashboard shell. */
+#blog-management-view h1,
+#blog-management-view h2,
+#blog-management-view h3,
+#blog-management-view h4,
+#blog-management-view h5,
+#blog-management-view h6 {
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0 0 0.75rem 0;
+}
+#blog-management-view h1 {
+  font-size: 1.75rem;
+}
+#blog-management-view h2 {
+  font-size: 1.5rem;
+}
+#blog-management-view h3 {
+  font-size: 1.25rem;
+}
+#blog-management-view h4 {
+  font-size: 1.125rem;
+}
+#blog-management-view h5 {
+  font-size: 1rem;
+}
+#blog-management-view h6 {
+  font-size: 0.875rem;
+}
+#blog-management-view p,
+#blog-management-view li {
+  font-size: 1rem;
+}
+#blog-management-view small {
+  font-size: 0.875rem;
+}
+#blog-management-view button,
+#blog-management-view input,
+#blog-management-view select,
+#blog-management-view textarea {
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+/* ============================================================================
+   SHARED ADMIN-DASHBOARD COMPONENTS USED BY THE BLOG PAGE
+   ============================================================================ */
+
+/* --- View header / title --- */
+#blog-management-view .view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+#blog-management-view .content-title {
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+/* --- Internal tabs (پست‌ها / دسته‌بندی‌های نمایشی / برچسب‌ها / هیرو) --- */
+#blog-management-view .content-tab-nav {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 25px;
+}
+
+#blog-management-view .content-tab-link {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  padding: 15px 20px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1rem;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#blog-management-view .content-tab-link:hover {
+  color: var(--text-primary);
+}
+
+#blog-management-view .content-tab-link.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+#blog-management-view .content-tab-pane {
+  display: none;
+}
+
+#blog-management-view .content-tab-pane.active {
+  display: block;
+}
+
+/* --- Panel --- */
+#blog-management-view .panel {
+  background-color: var(--bg-light);
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+#blog-management-view .panel-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* --- Table --- */
+#blog-management-view table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: right;
+}
+#blog-management-view table thead {
+  border-bottom: 2px solid var(--border-color);
+}
+#blog-management-view table th {
+  padding: 15px 10px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-align: right;
+}
+#blog-management-view table td {
+  padding: 15px 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+#blog-management-view .table-container {
+  overflow-y: auto;
+}
+
+/* --- Status chip (published / draft) --- */
+#blog-management-view .status-chip {
+  padding: 4px 15px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+#blog-management-view .status-chip.active {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--status-active);
+}
+#blog-management-view .status-chip.danger {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--status-danger);
+}
+
+/* --- Buttons --- */
+#blog-management-view .btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 700;
+  transition: background-color 0.3s ease;
+}
+#blog-management-view .btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+#blog-management-view .btn-primary:hover {
+  background-color: var(--primary-color-dark);
+}
+#blog-management-view .btn-secondary {
+  background-color: #333;
+  color: var(--text-secondary);
+}
+#blog-management-view .btn-secondary:hover {
+  background-color: #444;
+}
+#blog-management-view .btn-icon {
+  background: none;
+  color: var(--text-secondary);
+  padding: 8px;
+  margin: 0.3rem;
+}
+#blog-management-view .btn-icon:hover {
+  color: var(--text-primary);
+}
+#blog-management-view .btn-danger:hover {
+  color: var(--status-danger);
+}
+
+/* --- Forms --- */
+#blog-management-view .input-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+}
+#blog-management-view .input-group input[type="text"],
+#blog-management-view .input-group input[type="password"],
+#blog-management-view .input-group input[type="tel"],
+#blog-management-view .input-group input[type="file"] {
+  width: 100%;
+  padding: 12px;
+  background-color: #252525;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: var(--text-primary);
+  box-sizing: border-box;
+}
+
+#blog-management-view select {
+  width: 100%;
+  padding: 12px;
+  background-color: #252525;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: var(--text-primary);
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+#blog-management-view textarea {
+  width: 100%;
+  padding: 12px;
+  background-color: #252525;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: var(--text-primary);
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+#blog-management-view .radio-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+#blog-management-view .two-column-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+}
+
+/* --- Modal (backdrop / dialog / header / footer / form) --- */
+#blog-management-view .modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+#blog-management-view .modal {
+  width: min(720px, 92vw);
+  background: #1b1b1b;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 16px;
+}
+#blog-management-view .modal-header,
+#blog-management-view .modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+#blog-management-view .modal-header h4 {
+  margin: 0;
+}
+#blog-management-view .form-vertical {
+  display: grid;
+  gap: 10px;
+}
+
+/* Later overrides for the same selectors (admin-dashboard.css applies these
+   after the block above, so they win where properties overlap): */
+#blog-management-view .btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.06);
+  transition: background 0.15s ease;
+}
+#blog-management-view .btn-icon:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+#blog-management-view .btn-icon.btn-danger {
+  color: #ef4444;
+}
+#blog-management-view .btn-icon.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+#blog-management-view .modal {
+  background: var(--card-bg, #161b22);
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+}
+
+#blog-management-view .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+#blog-management-view .modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 1.5rem;
+}
+
+#blog-management-view .form-vertical label {
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+#blog-management-view .form-vertical input[type="text"],
+#blog-management-view .form-vertical input[type="file"] {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: #fff;
+}
+
+#blog-management-view .form-error {
+  color: #f87171;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+#blog-management-view .btn {
+  height: 36px;
+  border-radius: 10px;
+  padding: 0 12px;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text, #fff);
+}
+#blog-management-view .btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+#blog-management-view .btn-primary {
+  border-color: transparent;
+  background: #f59e0b;
+  color: #101010;
+}
+#blog-management-view .btn-icon {
+  width: 36px;
+  min-width: 36px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+#blog-management-view .btn-danger {
+  background: rgba(220, 38, 38, 0.15);
+  color: #fca5a5;
+  border-color: rgba(220, 38, 38, 0.25);
+}
+#blog-management-view .btn-danger:hover {
+  background: rgba(220, 38, 38, 0.22);
+}
+
+/* --- Custom icon list (reused for the display-categories list) --- */
+#blog-management-view .custom-icons-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+#blog-management-view .custom-icon-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+#blog-management-view .custom-icon-row .icon {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+}
+#blog-management-view .custom-icon-row img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+#blog-management-view .custom-icon-row .name {
+  flex: 1 1 auto;
+  color: var(--text, #fff);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#blog-management-view .custom-icon-row .actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (max-width: 720px) {
+  #blog-management-view .panel-actions {
+    justify-content: stretch;
+  }
+  #blog-management-view .custom-icons-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Empty / loading hint --- */
+#blog-management-view .empty-hint {
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px dashed rgba(148, 163, 184, 0.35);
+  border-radius: 12px;
+  padding: 12px 16px;
+  text-align: center;
+}
+
+/* --- Search input reused by the posts/tags toolbars --- */
+#blog-management-view .mh-input {
+  font-size: 1rem !important;
+  flex: 1;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--mh-border);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text-primary);
+  outline: none;
+  font: inherit;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+#blog-management-view .mh-input:focus {
+  border-color: var(--mh-accent);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+}
+
+/* Responsive tweaks shared with the rest of the dashboard that also affect
+   this page's layout: */
+@media (max-width: 768px) {
+  #blog-management-view .panel {
+    padding: 18px;
+  }
+  #blog-management-view .content-title {
+    margin-bottom: 10px;
+  }
+  #blog-management-view .two-column-form {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  #blog-management-view .two-column-form .input-group input,
+  #blog-management-view .two-column-form .input-group select,
+  #blog-management-view .two-column-form .input-group textarea,
+  #blog-management-view .two-column-form .file-input {
+    width: 100%;
+  }
+  #blog-management-view .modal-footer {
+    flex-direction: column-reverse;
+    gap: 12px;
+  }
+}
+
+/* ============================================================================
+   BLOG PAGE SPECIFIC STYLES (blog-mgmt__*)
+   ============================================================================ */
+
+/* ---------- Display-categories list ---------- */
+#blog-management-view .blog-mgmt__thumb {
+  width: 120px;
+  height: 80px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #1a1f27;
+  flex-shrink: 0;
+}
+#blog-management-view .blog-mgmt__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+#blog-management-view .blog-mgmt__cat-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+#blog-management-view .blog-mgmt__cat-row {
+  flex: 0 1 auto;
+  width: auto;
+  min-width: 220px;
+  max-width: 420px;
+  align-items: center;
+}
+#blog-management-view .blog-mgmt__cat-row .blog-mgmt__cat-name {
+  flex: 0 1 auto;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.4;
+  min-width: 0;
+}
+#blog-management-view .blog-mgmt__cat-name strong {
+  display: block;
+  color: var(--text, #fff);
+  word-break: break-word;
+}
+#blog-management-view .blog-mgmt__cat-subtitle {
+  display: block;
+  color: var(--text-muted, rgba(255, 255, 255, 0.55));
+  font-size: 12px;
+  word-break: break-word;
+}
+#blog-management-view .blog-mgmt__cat-row .blog-mgmt__cat-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--cat-color, #5a302f);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  flex: 0 0 auto;
+}
+
+/* Label + live "x/n" character counter above title/subtitle inputs. */
+#blog-management-view .blog-mgmt__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+#blog-management-view .blog-mgmt__char-count {
+  font-size: 11px;
+  color: var(--text-muted, rgba(255, 255, 255, 0.5));
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Posts pane toolbar (search + pagination + filters) ---------- */
+#blog-management-view .blog-mgmt__posts-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+#blog-management-view .blog-mgmt__posts-toolbar-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 10px;
+}
+#blog-management-view .blog-mgmt__posts-toolbar-group .btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+#blog-management-view .blog-mgmt__search-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+#blog-management-view .blog-mgmt__search-box .mh-input {
+  flex: 1 1 auto;
+  min-width: 220px;
+  margin-top: 10px;
+}
+#blog-management-view .blog-mgmt__search-submit {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid var(--mh-border, rgba(255, 255, 255, 0.12));
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary, #fff);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+#blog-management-view .blog-mgmt__search-submit:hover {
+  background: var(--primary-color, #f59e0b);
+  border-color: var(--primary-color, #f59e0b);
+  color: #101010;
+}
+
+/* ---------- Add/update post modal ---------- */
+#blog-management-view .blog-mgmt__cover-frame {
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
+  margin: 0 auto 10px;
+  border: 1px solid #333;
+  border-radius: 12px;
+  background: #1c1c1c;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#blog-management-view .blog-mgmt__cover-frame-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+#blog-management-view .blog-mgmt__cover-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #666;
+  font-size: 13px;
+}
+#blog-management-view .blog-mgmt__cover-placeholder i {
+  font-size: 28px;
+  color: #444;
+}
+
+/* ---------- Posts list pagination (prev/next row) ---------- */
+#blog-management-view .blog-mgmt__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+#blog-management-view .blog-mgmt__pagination-label {
+  font-size: 13px;
+  color: var(--text-muted, rgba(255, 255, 255, 0.55));
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+#blog-management-view .blog-mgmt__pagination .btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ---------- Posts table - internal scroll instead of page scroll ---------- */
+#blog-management-view .blog-mgmt__posts-scroll {
+  max-height: calc(100vh - 380px);
+  min-height: 240px;
+  overflow-y: auto;
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) var(--bg-light);
+}
+#blog-management-view .blog-mgmt__posts-scroll thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-light);
+  z-index: 1;
+}
+#blog-management-view .blog-mgmt__posts-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+#blog-management-view .blog-mgmt__posts-scroll::-webkit-scrollbar-track {
+  background: var(--bg-light);
+  border-radius: 8px;
+}
+#blog-management-view .blog-mgmt__posts-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 8px;
+  border: 2px solid var(--bg-light);
+}
+#blog-management-view .blog-mgmt__posts-scroll::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}
+
+@media (max-width: 720px) {
+  #blog-management-view .blog-mgmt__pagination {
+    flex-wrap: wrap;
+  }
+  #blog-management-view .blog-mgmt__posts-toolbar-group {
+    width: 100%;
+  }
+  #blog-management-view .blog-mgmt__search-box .mh-input {
+    min-width: 0;
+  }
+  #blog-management-view .blog-mgmt__posts-scroll {
+    max-height: calc(100vh - 460px);
+  }
+}
+
+/* ---------- Space between "دسته‌بندی نمایشی جدید" and the list below ---------- */
+#blog-management-view .blog-mgmt__panel-actions--start {
+  margin-bottom: 18px;
+}
+
+/* ---------- Sidebar tags toolbar - counter + limit warning ---------- */
+#blog-management-view .blog-mgmt__tags-actions-group {
+  position: relative;
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+#blog-management-view .blog-mgmt__tag-counter {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+#blog-management-view .blog-mgmt__tag-limit-error {
+  position: relative;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--status-danger);
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  #blog-management-view .blog-mgmt__tags-actions-group {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* ---------- Sidebar tags list - internal scroll ---------- */
+#blog-management-view .blog-mgmt__tags-scroll {
+  max-height: calc(100vh - 380px);
+  min-height: 240px;
+  overflow-y: auto;
+  padding-inline-end: 4px;
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) var(--bg-light);
+}
+#blog-management-view .blog-mgmt__tags-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+#blog-management-view .blog-mgmt__tags-scroll::-webkit-scrollbar-track {
+  background: var(--bg-light);
+  border-radius: 8px;
+}
+#blog-management-view .blog-mgmt__tags-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 8px;
+  border: 2px solid var(--bg-light);
+}
+#blog-management-view .blog-mgmt__tags-scroll::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}
+
+@media (max-width: 720px) {
+  #blog-management-view .blog-mgmt__tags-scroll {
+    max-height: calc(100vh - 480px);
+    min-height: 220px;
+  }
+}
+
+/* ---------- Sidebar suggested-tags list ---------- */
+#blog-management-view .blog-mgmt__admin-tags-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+#blog-management-view .blog-mgmt__admin-tag-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px 140px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+#blog-management-view .blog-mgmt__admin-tag-item:hover {
+  border-color: rgba(245, 158, 11, 0.35);
+  background: rgba(255, 255, 255, 0.035);
+}
+#blog-management-view .blog-mgmt__admin-tag-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+#blog-management-view .blog-mgmt__tag-hash {
+  color: var(--primary-color);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+#blog-management-view .blog-mgmt__admin-tag-name {
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#blog-management-view .blog-mgmt__tag-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+#blog-management-view .blog-mgmt__admin-tag-count {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* ---------- "Suggested tag" toggle + custom checkbox ---------- */
+#blog-management-view .blog-mgmt__suggested-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+}
+
+#blog-management-view input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+  width: 19px;
+  height: 19px;
+  margin: 0;
+  border-radius: 6px;
+  border: 1.5px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.03);
+  position: relative;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+#blog-management-view input[type="checkbox"]:hover {
+  border-color: var(--primary-color);
+}
+#blog-management-view input[type="checkbox"]:checked {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+#blog-management-view input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 5px;
+  height: 9px;
+  border: solid #171310;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) translate(-1px, -1.5px);
+}
+#blog-management-view input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+  #blog-management-view .blog-mgmt__admin-tag-item {
+    grid-template-columns: 1fr;
+    justify-items: start;
+    gap: 8px;
+  }
+  #blog-management-view .blog-mgmt__tag-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

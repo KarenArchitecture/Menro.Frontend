@@ -39,23 +39,6 @@ export default function RestaurantsBrowsePage() {
     [data],
   );
 
-  // asset resolver (same pattern you already use)
-  const apiOrigin = useMemo(
-    () => new URL(publicAxios.defaults.baseURL).origin,
-    [],
-  );
-  const appOrigin = useMemo(() => window.location.origin, []);
-
-  const toAssetUrl = (url, fallback) => {
-    const candidate = url || fallback;
-    if (!candidate) return undefined;
-    if (/^https?:\/\//i.test(candidate)) return candidate;
-    const withSlash = candidate.startsWith("/") ? candidate : `/${candidate}`;
-    if (withSlash.startsWith("/img/")) return `${apiOrigin}${withSlash}`;
-    if (withSlash.startsWith("/images/")) return `${appOrigin}${withSlash}`;
-    return `${appOrigin}${withSlash}`;
-  };
-
   // sentinel observer
   const sentinelRef = useRef(null);
 
@@ -121,16 +104,14 @@ export default function RestaurantsBrowsePage() {
               <RestaurantCard
                 restaurant={{
                   name: r.name,
-                  type: r.category,
-                  hours: `${r.openTime ?? "نامشخص"} تا ${r.closeTime ?? "نامشخص"}`,
+                  category: r.category,
+                  openTime: r.openTime,
+                  closeTime: r.closeTime,
                   discount: r.discount || 0,
                   rating: Number(r.rating) || 0,
-                  ratingCount: r.voters || 0,
-                  imageUrl: toAssetUrl(
-                    r.bannerImageUrl,
-                    "/images/res-card-1.png",
-                  ),
-                  logoUrl: toAssetUrl(r.logoImageUrl, "/images/logo-green.png"),
+                  voters: r.voters || 0,
+                  bannerImageUrl: r.bannerImageUrl,
+                  logoImageUrl: r.logoImageUrl,
                   isOpen: !!r.isOpen,
                   slug: r.slug,
                 }}

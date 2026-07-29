@@ -26,22 +26,19 @@ export const getBlogPosts = ({
 export const getBlogPost = (id) =>
   adminBlogsAxios.get(`/posts/${id}`).then((r) => r.data);
 
-export const uploadBlogPostCoverImage = (file, oldFileName) => {
-  const formData = new FormData();
-  formData.append("file", file);
-  if (oldFileName) formData.append("oldFileName", oldFileName);
-  return adminBlogsAxios
-    .post("/posts/cover-image", formData, {
+export const createBlogPost = (formData) =>
+  adminBlogsAxios
+    .post("/posts", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     })
     .then((r) => r.data);
-};
 
-export const createBlogPost = (payload) =>
-  adminBlogsAxios.post("/posts", payload).then((r) => r.data);
-
-export const updateBlogPost = (id, payload) =>
-  adminBlogsAxios.put(`/posts/${id}`, payload).then((r) => r.data);
+export const updateBlogPost = (id, formData) =>
+  adminBlogsAxios
+    .put(`/posts/${id}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+    .then((r) => r.data);
 
 export const toggleBlogPostPublish = (id) =>
   adminBlogsAxios.patch(`/posts/${id}/publish`).then((r) => r.data);

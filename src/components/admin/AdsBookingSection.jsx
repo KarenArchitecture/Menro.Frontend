@@ -100,6 +100,11 @@ export default function AdsBookingSection() {
 
   // --- Submit Handler ---
   const handleSubmit = async () => {
+    if (!advertisementText.trim()) {
+      notify({ type: "warning", message: "لطفاً شعار تبلیغاتی را وارد کنید." });
+      return;
+    }
+
     if (!imageFile) {
       notify({ type: "warning", message: "لطفاً تصویر تبلیغ را آپلود کنید." });
       return;
@@ -115,34 +120,21 @@ export default function AdsBookingSection() {
 
     try {
       const placementType = adType === "slider" ? 1 : 2;
-
       const billingType =
         bookingMethod === "by_click" ? 2 : placementType === 1 ? 1 : 3;
-
       const purchasedUnits = bookingMethod === "by_click" ? clicks : days;
 
       const fd = new FormData();
-      fd.append("file", imageFile);
-      fd.append("placementType", placementType);
+      fd.append("PlacementType", placementType);
+      fd.append("BillingType", billingType);
+      fd.append("Cost", totalCost);
+      fd.append("CommercialText", advertisementText);
+      fd.append("PurchasedUnits", purchasedUnits);
+      fd.append("Image", imageFile);
 
-      const uploadRes = await adminRestaurantAdAxios.post(
-        "/upload-ad-image",
-        fd,
-        { headers: { "Content-Type": "multipart/form-data" } },
-      );
-
-      const fileName = uploadRes.data;
-
-      const dto = {
-        placementType,
-        billingType,
-        cost: totalCost,
-        imageFileName: fileName,
-        commercialText: advertisementText,
-        purchasedUnits,
-      };
-
-      await adminRestaurantAdAxios.post("/addAd", dto);
+      await adminRestaurantAdAxios.post("/addAd", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
       notify({ type: "success", message: "تبلیغ با موفقیت ثبت شد!" });
 
@@ -165,6 +157,7 @@ export default function AdsBookingSection() {
         type: "error",
         title: "ثبت تبلیغ ناموفق بود",
         message:
+          err?.response?.data?.message ||
           err?.response?.data?.title ||
           err?.response?.data?.error ||
           "خطایی رخ داد.",
@@ -302,13 +295,14 @@ export default function AdsBookingSection() {
         </div>
         {/* Step 4 */}
         <div className="config-step">
-          <h4>متن نمایشی تبلیغاتی</h4>
+          <h4>متن نمایشی تبلیغاتی *</h4>
           <div className="input-group">
             <input
               type="text"
               placeholder="شعار تبلیغاتی"
               value={advertisementText}
               onChange={(e) => setAdvertisementText(e.target.value)}
+              required
             />
           </div>
         </div>

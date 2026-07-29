@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getBlogPosts,
-  uploadBlogPostCoverImage,
   createBlogPost,
   updateBlogPost,
   toggleBlogPostPublish,
@@ -103,10 +102,9 @@ function mapPostFromApi(p, categories = []) {
   return {
     id: p.id,
     title: p.title,
-    // GET responses return a ready-to-use URL built server-side via
-    // FileUrlService - use it for both preview and to derive the file name.
     coverSrc: p.coverImageUrl || "",
     coverFileName: p.coverImageUrl ? p.coverImageUrl.split("/").pop() : "",
+    removeImage: false,
     readingMins: p.readingMinutes,
     categoryId: p.categoryId,
     categoryTitle:
@@ -117,27 +115,29 @@ function mapPostFromApi(p, categories = []) {
   };
 }
 
-function mapPostToApi(draft) {
-  return {
-    title: draft.title,
-    // Only ever send the bare file name - never the full URL.
-    coverImageUrl: draft.coverFileName || null,
-    readingMinutes: Number(draft.readingMins),
-    categoryId: draft.categoryId,
-    isPublished: !!draft.published,
-  };
-}
-
 function emptyPost(defaultCategoryId = "") {
   return {
     id: null,
     title: "",
+    coverFile: null,
     coverFileName: "",
     coverSrc: "",
+    removeImage: false,
     readingMins: 5,
     categoryId: defaultCategoryId,
     published: true,
   };
+}
+
+function mapPostToFormData(draft) {
+  const fd = new FormData();
+  fd.append("Title", draft.title);
+  fd.append("ReadingMinutes", String(Number(draft.readingMins)));
+  fd.append("CategoryId", draft.categoryId);
+  fd.append("IsPublished", String(!!draft.published));
+  if (draft.coverFile) fd.append("CoverImage", draft.coverFile);
+  if (draft.removeImage) fd.append("RemoveImage", "true");
+  return fd;
 }
 
 const PAGE_SIZE = 20;
@@ -159,7 +159,7 @@ function PostsPane() {
   const [modalPost, setModalPost] = useState(null);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef(null);
 
   const reloadPosts = useCallback(
     async (categoriesForMapping = categories) => {
@@ -224,29 +224,29 @@ function PostsPane() {
     setSearchTerm(searchDraft);
   };
 
-  const handleCoverImageChange = async (e) => {
+  const handleCoverImageChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploadingImage(true);
-    try {
-      const oldFileName = modalPost.coverFileName || null;
-      const { fileName, url } = await uploadBlogPostCoverImage(
-        file,
-        oldFileName,
-      );
+
+    const reader = new FileReader();
+    reader.onload = () => {
       setModalPost((prev) => ({
         ...prev,
-        coverFileName: fileName,
-        coverSrc: url,
+        coverFile: file,
+        coverSrc: reader.result,
+        removeImage: false,
       }));
-    } catch (err) {
-      notify({
-        type: "error",
-        message: apiErrorMessage(err, "آپلود تصویر با خطا مواجه شد."),
-      });
-    } finally {
-      setUploadingImage(false);
-    }
+    };
+    reader.readAsDataURL(file);
+  };
+  const handleRemoveCoverImage = () => {
+    setModalPost((prev) => ({
+      ...prev,
+      coverFile: null,
+      coverSrc: "",
+      removeImage: true,
+    }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const openNew = () => {
@@ -278,10 +278,10 @@ function PostsPane() {
     setSaving(true);
     try {
       if (modalPost.id) {
-        await updateBlogPost(modalPost.id, mapPostToApi(modalPost));
+        await updateBlogPost(modalPost.id, mapPostToFormData(modalPost));
         notify({ type: "success", message: "پست ویرایش شد" });
       } else {
-        await createBlogPost(mapPostToApi(modalPost));
+        await createBlogPost(mapPostToFormData(modalPost));
         notify({ type: "success", message: "پست جدید اضافه شد" });
       }
       await reloadPosts();
@@ -513,19 +513,50 @@ function PostsPane() {
 
               <div className="input-group">
                 <label>تصویر کاور</label>
-                {modalPost.coverSrc && (
-                  <div className="blog-mgmt__thumb" style={{ marginBottom: 8 }}>
-                    <img src={modalPost.coverSrc} alt={modalPost.title} />
-                  </div>
-                )}
+
+                <div className="blog-mgmt__cover-frame">
+                  {modalPost.coverSrc ? (
+                    <img
+                      src={modalPost.coverSrc}
+                      alt={modalPost.title}
+                      className="blog-mgmt__cover-frame-img"
+                    />
+                  ) : (
+                    <span className="blog-mgmt__cover-placeholder">
+                      <i className="fas fa-image" />
+                      {modalPost.id ? "این پست عکسی ندارد" : "عکسی انتخاب نشده"}
+                    </span>
+                  )}
+                </div>
+
                 <input
+                  ref={fileInputRef}
                   type="file"
                   accept="image/*"
-                  disabled={uploadingImage}
+                  className="landing-mgmt__hero-image-input"
                   onChange={handleCoverImageChange}
                 />
-                {uploadingImage && (
-                  <span className="empty-hint">در حال آپلود...</span>
+
+                <button
+                  type="button"
+                  className="landing-mgmt__hero-image-upload-btn"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <i className="fas fa-cloud-arrow-up" />
+                  <span>
+                    {modalPost.coverSrc ? "تغییر عکس کاور" : "آپلود عکس کاور"}
+                  </span>
+                </button>
+
+                {modalPost.coverSrc && (
+                  <button
+                    type="button"
+                    className="landing-mgmt__hero-image-remove"
+                    onClick={handleRemoveCoverImage}
+                  >
+                    <i className="fas fa-trash" />
+                    <span>حذف عکس</span>
+                  </button>
                 )}
               </div>
 

@@ -7,6 +7,7 @@ import resolveFileUrl from "../../utils/resolveFileUrl";
 import { toPersianDigits } from "../../utils/persianFormat";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+import "../../assets/css/admin/CombosSection.css";
 
 export default function CombosSection() {
   useDocumentTitle("ترکیب‌های پیشنهادی");

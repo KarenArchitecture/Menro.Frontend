@@ -5,7 +5,7 @@ import {
   updateRestaurantProfile,
 } from "../../api/ownerRestaurant";
 import restaurantAxios from "../../api/restaurantAxios";
-import "../../assets/css/admin/restaurantProfile.css";
+import "../../assets/css/admin/restaurantProfileSection.css";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 

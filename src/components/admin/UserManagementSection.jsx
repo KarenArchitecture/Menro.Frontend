@@ -6,7 +6,7 @@ import {
   updateUserRoles,
   apiErrorMessage,
 } from "../../api/adminUsers";
-import "../../assets/css/admin/userMngmnt.css";
+import "../../assets/css/admin/userManagementSection.css";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 

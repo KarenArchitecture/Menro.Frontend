@@ -4,7 +4,6 @@ import adminLandingAxios from "./AdminLandingAxios";
  * Mirrors AdminLandingController.cs 1:1:
  *   GET  /general                 -> getLandingGeneral
  *   PUT  /general                 -> updateLandingGeneral
- *   POST /general/hero-image      -> uploadLandingHeroImage
  *   GET  /reasons                 -> getLandingReasons
  *   POST /reasons                 -> createLandingReason
  *   PUT  /reasons/{id}            -> updateLandingReason
@@ -23,22 +22,6 @@ import adminLandingAxios from "./AdminLandingAxios";
  * (same purpose as mapBlogPostFromApi in adminBlogs.js).
  * ========================================================================== */
 
-/* ---------------------------- helpers ---------------------------- */
-
-// Pulls the bare file name back out of a full hero image URL so it can be
-// sent as `oldFileName` when uploading a replacement image (same convention
-// as the cover-image cleanup on BlogPostsController).
-export const extractFileNameFromUrl = (url) => {
-  if (!url) return null;
-  try {
-    const pathname = new URL(url).pathname;
-    return decodeURIComponent(pathname.split("/").pop() || "") || null;
-  } catch {
-    const parts = url.split("/");
-    return parts[parts.length - 1] || null;
-  }
-};
-
 /* ---------------------------- General (hero) ---------------------------- */
 
 export const getLandingGeneral = () =>
@@ -50,28 +33,21 @@ export const updateLandingGeneral = ({
   heroHighlight,
   heroTitle,
   spotlightTitle,
-  heroImageFileName,
-}) =>
-  adminLandingAxios
-    .put("/general", {
-      heroHighlight,
-      heroTitle,
-      spotlightTitle,
-      heroImageFileName: heroImageFileName || null,
-    })
-    .then((r) => r.data); // LandingGeneralResponse
-
-// Pass the currently-stored file name as oldFileName when replacing an
-// existing image so the old file gets cleaned up on the server.
-export const uploadLandingHeroImage = (file, oldFileName) => {
+  heroImageFile,
+  removeHeroImage = false,
+}) => {
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("HeroHighlight", heroHighlight);
+  formData.append("HeroTitle", heroTitle);
+  formData.append("SpotlightTitle", spotlightTitle);
+  formData.append("RemoveHeroImage", String(!!removeHeroImage));
+  if (heroImageFile) formData.append("HeroImage", heroImageFile);
+
   return adminLandingAxios
-    .post("/general/hero-image", formData, {
-      params: oldFileName ? { oldFileName } : undefined,
+    .put("/general", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     })
-    .then((r) => r.data); // { fileName, url }
+    .then((r) => r.data); // LandingGeneralResponse
 };
 
 /* ---------------------------- Reasons ("چرا منرو؟") ---------------------------- */

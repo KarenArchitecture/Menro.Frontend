@@ -20,7 +20,7 @@ import {
 } from "../../api/adminBlogs";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
-import "../../assets/css/admin/blogManagement.css";
+import "../../assets/css/admin/blogManagementSection.css";
 
 // "فیلترهای فید" tab intentionally removed - feed categories are now a fixed,
 // non-editable list (see FEED_CATEGORIES in adminBlogs.js).

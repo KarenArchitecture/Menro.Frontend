@@ -2,8 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   getLandingGeneral,
   updateLandingGeneral,
-  uploadLandingHeroImage,
-  extractFileNameFromUrl,
   getLandingReasons,
   createLandingReason,
   updateLandingReason,
@@ -199,23 +197,12 @@ function GeneralTextsPane({ onSaved }) {
     setErrors({});
     setSaving(true);
     try {
-      let heroImageFileName = heroImageRemoved
-        ? null
-        : extractFileNameFromUrl(heroImageUrl);
-
-      if (heroImageFile) {
-        const uploaded = await uploadLandingHeroImage(
-          heroImageFile,
-          extractFileNameFromUrl(heroImageUrl),
-        );
-        heroImageFileName = uploaded.fileName;
-      }
-
       const result = await updateLandingGeneral({
         heroHighlight: draft.heroHighlight.trim(),
         heroTitle: draft.heroTitle.trim(),
         spotlightTitle: draft.spotlightTitle.trim(),
-        heroImageFileName,
+        heroImageFile,
+        removeHeroImage: heroImageRemoved,
       });
 
       setDraft({

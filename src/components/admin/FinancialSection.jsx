@@ -1,6 +1,7 @@
 import React from "react";
 import LineChart from "./LineChart";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+import "../../assets/css/admin/financialSection.css";
 
 const accountDetails = [
   { label: "نام صاحب حساب:", value: "کاربر ادمین" },

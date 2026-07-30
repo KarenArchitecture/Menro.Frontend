@@ -1,0 +1,99 @@
+/* Financial Page Styles --- */
+
+#financial-view .account-details .detail-item {
+  padding: 16px 0;
+  font-size: 1rem;
+}
+
+#financial-view .account-details .detail-item span {
+  font-size: 1.0625rem;
+  color: var(--text-secondary);
+}
+
+#financial-view .account-details .detail-item strong {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+#financial-view .account-details .detail-item strong[data-mono="true"] {
+  font-feature-settings: "tnum" 1;
+  letter-spacing: 0.3px;
+}
+
+#financial-view .panel h3 {
+  font-size: 1.2rem;
+}
+
+#financial-view table {
+  font-size: 1rem;
+}
+
+#financial-view table th {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+#financial-view table td {
+  font-size: 1.0625rem;
+  color: var(--text-primary);
+  line-height: 1.8;
+  font-weight: 500;
+}
+
+#financial-view .status-chip {
+  font-size: 0.95rem;
+  padding: 6px 12px;
+  border-radius: 14px;
+}
+
+#financial-view .table-container {
+  max-height: 320px;
+  overflow-y: auto;
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) var(--bg-light);
+}
+
+#financial-view .table-container::-webkit-scrollbar {
+  width: 8px;
+}
+#financial-view .table-container::-webkit-scrollbar-track {
+  background: var(--bg-light);
+  border-radius: 8px;
+}
+#financial-view .table-container::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 8px;
+  border: 2px solid var(--bg-light);
+}
+#financial-view .table-container::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}
+
+.financial-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 25px;
+}
+
+.financial-grid .full-width {
+  grid-column: 1 / -1;
+}
+
+.account-details .detail-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.9rem;
+}
+
+.account-details .detail-item:last-child {
+  border-bottom: none;
+}
+
+.account-details .detail-item span {
+  color: var(--text-secondary);
+}

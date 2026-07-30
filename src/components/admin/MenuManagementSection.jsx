@@ -4,6 +4,7 @@ import FoodModal from "./FoodModal";
 import adminFoodAxios from "../../api/adminFoodAxios";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+import "../../assets/css/admin/menuManagementSection.css";
 
 function toIntDigits(v) {
   return Number(String(v || "0").replace(/[^\d]/g, ""));

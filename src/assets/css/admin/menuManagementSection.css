@@ -1,0 +1,256 @@
+/* =======================================================
+   Foods (مدیریت غذاها) — toolbar restyle
+   Add/replace these rules in admin-dashboard.css.
+   Reuses the same visual language as .mh-input /
+   .blog-mgmt__search-submit / #blog-management-view checkbox
+   so the Foods toolbar matches the Blog toolbar.
+   ======================================================= */
+
+/* ---------- Search box ---------- */
+.food-mgmt__search-box {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* was 0 */
+}
+
+.food-mgmt__search-box .mh-input {
+  min-width: 240px;
+}
+
+/* was: border:none; background:transparent; padding:6px 10px;
+   -> now a real icon button matching .blog-mgmt__search-submit */
+.food-mgmt__search-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid var(--mh-border, rgba(255, 255, 255, 0.12));
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.food-mgmt__search-submit:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #101010;
+}
+
+/* ---------- "فقط غذاهای فعال" toggle ---------- */
+.food-mgmt__active-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* was 6px */
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.02);
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.food-mgmt__active-toggle:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+/* custom checkbox, same pattern as #blog-management-view input[type="checkbox"] */
+.food-mgmt__active-toggle input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+  width: 19px;
+  height: 19px;
+  margin: 0;
+  border-radius: 6px;
+  border: 1.5px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.03);
+  position: relative;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.food-mgmt__active-toggle input[type="checkbox"]:hover {
+  border-color: var(--primary-color);
+}
+
+.food-mgmt__active-toggle input[type="checkbox"]:checked {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.food-mgmt__active-toggle input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 5px;
+  height: 9px;
+  border: solid #171310;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) translate(-1px, -1.5px);
+}
+
+.food-mgmt__active-toggle input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* ---------- Category dropdown ---------- */
+/* new class, replaces the old inline style={{maxWidth:220}} on the <select> */
+.food-mgmt__category-select {
+  min-width: 200px;
+  max-width: 240px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--mh-border, rgba(255, 255, 255, 0.12));
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.food-mgmt__category-select option {
+  background-color: #1c1c1c;
+  color: var(--text-primary);
+  padding: 8px 12px;
+}
+
+.food-mgmt__category-select:hover {
+  border-color: rgba(245, 158, 11, 0.5);
+}
+
+.food-mgmt__category-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+}
+
+/* ---------- Table header/cell alignment ---------- */
+/* new class added to <table> in FoodsSection so headers (and cells, to stay
+   aligned with them) are centered instead of the default text-align:right */
+.foods-table th {
+  text-align: center;
+}
+
+.foods-table td {
+  text-align: center;
+}
+
+.foods-table td .food-mgmt__thumb {
+  margin: 0 auto;
+}
+
+/* --- Admin Foods tab: new classes --- */
+.food-mgmt__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.food-mgmt__toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.food-mgmt__search-box {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.food-mgmt__search-submit {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 6px 10px;
+}
+.food-mgmt__active-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+}
+.food-mgmt__th-sortable {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+.food-mgmt__sort-icon {
+  margin-inline-start: 6px;
+  font-size: 11px;
+  opacity: 0.5;
+}
+.food-mgmt__sort-icon--active {
+  opacity: 1;
+}
+.food-mgmt__add-category-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  border: 1.5px dashed #f5a623;
+  border-radius: 10px;
+  background: rgba(245, 166, 35, 0.08);
+  color: #f5a623;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.food-mgmt__add-category-btn:hover {
+  background: rgba(245, 166, 35, 0.15);
+}
+.food-mgmt__thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+  color: var(--text-muted, #a1a1aa);
+  font-size: 20px;
+}
+.food-mgmt__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.food-mgmt__thumb--card {
+  width: 60px;
+  height: 60px;
+}
+.food-mgmt__thumb--card {
+  width: 60px;
+  height: 60px;
+}
+
+.food-mgmt__thumb--card i {
+  font-size: 26px;
+}

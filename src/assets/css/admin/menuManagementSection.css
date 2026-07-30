@@ -2,45 +2,9 @@
    Foods (مدیریت غذاها) — toolbar restyle
    Add/replace these rules in admin-dashboard.css.
    Reuses the same visual language as .mh-input /
-   .blog-mgmt__search-submit / #blog-management-view checkbox
-   so the Foods toolbar matches the Blog toolbar.
    ======================================================= */
 
 /* ---------- Search box ---------- */
-.food-mgmt__search-box {
-  display: flex;
-  align-items: center;
-  gap: 6px; /* was 0 */
-}
-
-.food-mgmt__search-box .mh-input {
-  min-width: 240px;
-}
-
-/* was: border:none; background:transparent; padding:6px 10px;
-   -> now a real icon button matching .blog-mgmt__search-submit */
-.food-mgmt__search-submit {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-  padding: 0;
-  border-radius: 10px;
-  border: 1px solid var(--mh-border, rgba(255, 255, 255, 0.12));
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
-  cursor: pointer;
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease;
-}
-
-.food-mgmt__search-submit:hover {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
-  color: #101010;
-}
 
 /* ---------- "فقط غذاهای فعال" toggle ---------- */
 .food-mgmt__active-toggle {
@@ -65,7 +29,6 @@
   border-color: rgba(245, 158, 11, 0.35);
 }
 
-/* custom checkbox, same pattern as #blog-management-view input[type="checkbox"] */
 .food-mgmt__active-toggle input[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;
@@ -158,32 +121,6 @@
   margin: 0 auto;
 }
 
-/* --- Admin Foods tab: new classes --- */
-.food-mgmt__toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-.food-mgmt__toolbar-group {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.food-mgmt__search-box {
-  display: flex;
-  align-items: center;
-  gap: 0;
-}
-.food-mgmt__search-submit {
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  padding: 6px 10px;
-}
 .food-mgmt__active-toggle {
   display: flex;
   align-items: center;

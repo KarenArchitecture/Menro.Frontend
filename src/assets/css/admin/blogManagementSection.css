@@ -625,59 +625,6 @@ ul {
   color: var(--text-muted, rgba(255, 255, 255, 0.5));
   font-variant-numeric: tabular-nums;
 }
-
-/* ---------- Posts pane toolbar (search + pagination + filters) ---------- */
-#blog-management-view .blog-mgmt__posts-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-#blog-management-view .blog-mgmt__posts-toolbar-group {
-  display: flex;
-  align-items: center;
-  flex-wrap: nowrap;
-  gap: 10px;
-}
-#blog-management-view .blog-mgmt__posts-toolbar-group .btn {
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-#blog-management-view .blog-mgmt__search-box {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-#blog-management-view .blog-mgmt__search-box .mh-input {
-  flex: 1 1 auto;
-  min-width: 220px;
-  margin-top: 10px;
-}
-#blog-management-view .blog-mgmt__search-submit {
-  flex: 0 0 auto;
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
-  border: 1px solid var(--mh-border, rgba(255, 255, 255, 0.12));
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-primary, #fff);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease;
-}
-#blog-management-view .blog-mgmt__search-submit:hover {
-  background: var(--primary-color, #f59e0b);
-  border-color: var(--primary-color, #f59e0b);
-  color: #101010;
-}
-
 /* ---------- Add/update post modal ---------- */
 #blog-management-view .blog-mgmt__cover-frame {
   width: 100%;
@@ -709,25 +656,6 @@ ul {
 #blog-management-view .blog-mgmt__cover-placeholder i {
   font-size: 28px;
   color: #444;
-}
-
-/* ---------- Posts list pagination (prev/next row) ---------- */
-#blog-management-view .blog-mgmt__pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-#blog-management-view .blog-mgmt__pagination-label {
-  font-size: 13px;
-  color: var(--text-muted, rgba(255, 255, 255, 0.55));
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-#blog-management-view .blog-mgmt__pagination .btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-  pointer-events: none;
 }
 
 /* ---------- Posts table - internal scroll instead of page scroll ---------- */
@@ -762,15 +690,6 @@ ul {
 }
 
 @media (max-width: 720px) {
-  #blog-management-view .blog-mgmt__pagination {
-    flex-wrap: wrap;
-  }
-  #blog-management-view .blog-mgmt__posts-toolbar-group {
-    width: 100%;
-  }
-  #blog-management-view .blog-mgmt__search-box .mh-input {
-    min-width: 0;
-  }
   #blog-management-view .blog-mgmt__posts-scroll {
     max-height: calc(100vh - 460px);
   }

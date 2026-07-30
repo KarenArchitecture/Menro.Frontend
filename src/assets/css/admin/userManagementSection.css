@@ -10,11 +10,7 @@
    .btn-secondary, .btn-danger, .btn-icon, .modal-backdrop, .modal,
    .modal-header, .modal-footer, .form-vertical, .form-error, .empty-hint,
    .status-chip(.active/.danger), .table-container, table/th/td,
-   .blog-mgmt__posts-toolbar(-group), .blog-mgmt__search-box/-submit,
-   .blog-mgmt__pagination(-label), .blog-mgmt__posts-scroll,
-   .blog-mgmt__modal--confirm, .blog-mgmt__muted-text.
    ========================================================================== */
-
 .user-mgmt__info-banner {
   display: flex;
   align-items: flex-start;
@@ -299,32 +295,6 @@
   white-space: nowrap;
 }
 
-/* ---------- Fix: search box + submit button vertical alignment ---------- */
-
-.user-mgmt .blog-mgmt__search-box {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.user-mgmt .blog-mgmt__search-box .mh-input {
-  height: 38px;
-  box-sizing: border-box;
-  margin: 0;
-}
-
-.user-mgmt .blog-mgmt__search-submit {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 38px;
-  width: 38px;
-  flex-shrink: 0;
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
 /* ---------- Fix: even column widths in the users table ---------- */
 
 .user-mgmt .table-container table {
@@ -370,4 +340,50 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+}
+/* ============================================================================
+   کلاس‌هایی که UserManagementSection از استایل صفحه بلاگ
+   قرض گرفته بود و اینجا rename و برای #user-management-view بازنویسی شده.
+   این بلوک رو داخل userManagementSection.css قرار بده.
+
+   نکته: برخلاف Landing، همه‌ی این ۷ کلاس واقعاً توی blogManagementSection.css
+   تعریف شده بودن (یعنی الان استایل واقعی می‌گیرن)، پس اگه این بلوک رو کپی
+   نکنی، ظاهر تولبار/صفحه‌بندی/جدول کاربران به‌هم می‌ریزه.
+   ============================================================================ */
+
+/* ---------- اسکرول داخلی جدول کاربران (به‌جای اسکرول کل صفحه) ---------- */
+#user-management-view .user-mgmt__table-scroll {
+  max-height: calc(100vh - 240px);
+  min-height: 240px;
+  overflow-y: auto;
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) var(--bg-light);
+}
+#user-management-view .user-mgmt__table-scroll thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-light);
+  z-index: 1;
+}
+#user-management-view .user-mgmt__table-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+#user-management-view .user-mgmt__table-scroll::-webkit-scrollbar-track {
+  background: var(--bg-light);
+  border-radius: 8px;
+}
+#user-management-view .user-mgmt__table-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 8px;
+  border: 2px solid var(--bg-light);
+}
+#user-management-view .user-mgmt__table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}
+
+@media (max-width: 720px) {
+  #user-management-view .user-mgmt__table-scroll {
+    max-height: calc(100vh - 460px);
+  }
 }

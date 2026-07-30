@@ -1,0 +1,296 @@
+/* src/components/admin/RestaurantAdsSection.css
+   استایل‌های اختصاصی تب «تبلیغات من» (پنل مدیر رستوران).
+   این فایل مستقل از admin-dashboard.css است و فقط کلاس‌های جدید/اختصاصی
+   این کامپوننت را تعریف می‌کند؛ کلاس‌های عمومی مثل .panel، .order-bar،
+   .status-pill، .chip و .btn از admin-dashboard.css به ارث می‌رسند. */
+
+.rad-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* ---------- Header ---------- */
+.rad-header {
+  align-items: flex-start;
+  margin-bottom: 0;
+}
+
+.rad-subtitle {
+  margin-top: 4px;
+  margin-bottom: 0;
+  text-align: right;
+  font-size: 0.9rem;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.6));
+}
+
+.rad-reserve-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+/* ---------- Section wrapper ---------- */
+.rad-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rad-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rad-section-header h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary, #eaeaea);
+}
+
+.rad-section-header h4 i {
+  color: var(--primary-color, #f59e0b);
+}
+
+/* ---------- Refresh button ---------- */
+.rad-refresh-btn {
+  color: var(--text-secondary, #bbb);
+}
+
+.rad-refresh-btn:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.rad-spinning i {
+  animation: rad-spin 0.9s linear infinite;
+}
+
+@keyframes rad-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Active ads grid ---------- */
+.rad-active-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.rad-active-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rad-active-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rad-active-card__code {
+  font-size: 0.8rem;
+  color: var(--text-muted, #888);
+}
+
+.rad-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--primary-color, #f59e0b);
+}
+
+.rad-type-badge--slider {
+  background: rgba(56, 189, 248, 0.16);
+  color: #38bdf8;
+}
+
+.rad-type-badge--banner {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.rad-active-card__text {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #e5e7eb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Capacity progress bar ---------- */
+.rad-capacity-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #bbb);
+}
+
+.rad-capacity-percent {
+  color: var(--text-muted, #888);
+}
+
+.rad-capacity-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.rad-capacity-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.rad-capacity-fill--low {
+  background: #10b981; /* still plenty left */
+}
+
+.rad-capacity-fill--mid {
+  background: #f59e0b; /* getting used up */
+}
+
+.rad-capacity-fill--high {
+  background: #ef4444; /* almost exhausted */
+}
+
+.rad-active-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.78rem;
+  color: var(--text-muted, #888);
+}
+
+.rad-active-card__meta i {
+  margin-left: 4px;
+}
+
+/* ---------- Tabs header reuses .orders-header, small tweak ---------- */
+.rad-tabs-header {
+  margin-bottom: 0;
+}
+
+/* ---------- Detail modal ---------- */
+.rad-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.rad-modal {
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.rad-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rad-modal-image {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--border-color, #2f2f2f);
+}
+
+.rad-modal-text {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #e5e7eb;
+  line-height: 1.6;
+}
+
+.rad-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.rad-modal-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rad-modal-grid-full {
+  grid-column: 1 / -1;
+}
+
+.rad-modal-grid-label {
+  font-size: 0.75rem;
+  color: var(--text-muted, #888);
+}
+
+.rad-modal-link {
+  font-size: 0.85rem;
+  color: var(--primary-color, #f59e0b);
+  word-break: break-all;
+}
+
+.rad-reject-reason {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .rad-header {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .rad-reserve-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .rad-modal-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .rad-active-grid {
+    grid-template-columns: 1fr;
+  }
+}

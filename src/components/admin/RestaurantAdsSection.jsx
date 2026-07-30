@@ -19,7 +19,7 @@
 //   اگر نام فیلدها یا مسیرها در بک‌اند شما فرق دارد، فقط بخش‌های map‌شده را اصلاح کنید.
 
 import React, { useEffect, useMemo, useState, useCallback } from "react";
-import restaurantAdAxios from "../../api/restaurantAdAxios";
+import ownerRestaurantAds from "../../api/ownerRestaurantAds";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 import "../../assets/css/admin/RestaurantAdsSection.css";
@@ -293,7 +293,7 @@ export default function RestaurantAdsSection({ onNavigateToBooking }) {
 
   const loadPending = useCallback(async () => {
     try {
-      const res = await restaurantAdAxios.get("/pending");
+      const res = await ownerRestaurantAds.get("/pending");
       setPending(res.data.map(mapAd));
     } catch (err) {
       console.error("Error loading pending ads:", err);
@@ -306,7 +306,7 @@ export default function RestaurantAdsSection({ onNavigateToBooking }) {
 
   const loadHistory = useCallback(async () => {
     try {
-      const res = await restaurantAdAxios.get("/history");
+      const res = await ownerRestaurantAds.get("/history");
       setHistory(res.data.map(mapAd));
     } catch (err) {
       console.error("Error loading ads history:", err);
@@ -320,7 +320,7 @@ export default function RestaurantAdsSection({ onNavigateToBooking }) {
   const loadActive = useCallback(async () => {
     setLoadingActive(true);
     try {
-      const res = await restaurantAdAxios.get("/active");
+      const res = await ownerRestaurantAds.get("/active");
       setActive(res.data.map(mapAd));
     } catch (err) {
       console.error("Error loading active ads:", err);

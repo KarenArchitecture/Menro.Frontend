@@ -43,6 +43,11 @@ const NAV_GROUPS = [
       { key: "orders", label: "مدیریت سفارش‌ها", icon: "fas fa-receipt" },
       // { key: "financial", label: "مالی", icon: "fas fa-file-invoice-dollar" },
       { key: "ads", label: "رزرو تبلیغات", icon: "fas fa-bullhorn" },
+      {
+        key: "restaurantAds",
+        label: "تبلیغات رستوران",
+        icon: "fas fa-bullhorn",
+      },
     ],
   },
   {

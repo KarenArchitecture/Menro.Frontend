@@ -16,6 +16,7 @@ import CombosSection from "../components/admin/CombosSection";
 /* ===================== Sections: business ===================== */
 import OrdersSection from "../components/admin/OrdersSection";
 import AdsBookingSection from "../components/admin/AdsBookingSection";
+import RestaurantAdsSection from "../components/admin/RestaurantAdsSection";
 import FinancialSection from "../components/admin/FinancialSection";
 
 /* ===================== Sections: platform-admin ===================== */
@@ -135,6 +136,8 @@ export default function AdminPage() {
         return <OrdersSection />;
       case "ads":
         return <AdsBookingSection />;
+      case "restaurantAds":
+        return <RestaurantAdsSection />;
       case "financial":
         return <FinancialSection />;
 

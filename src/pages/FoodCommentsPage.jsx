@@ -56,8 +56,19 @@ export default function FoodCommentsPage() {
     });
   };
 
-  const food = data;
-  const comments = data?.comments || [];
+  const comments = Array.isArray(data) ? data : data?.comments || [];
+  const firstComment = comments[0];
+
+  const food = Array.isArray(data)
+    ? {
+        foodTitle: firstComment?.foodTitle,
+        foodImageUrl: firstComment?.foodImageUrl,
+        approvedCommentsCount: comments.length,
+        hasUserCommented: false, // فعلاً بک‌اند این فیلد رو برنمی‌گردونه
+        restaurantName: firstComment?.restaurantName,
+        restaurantSlug: firstComment?.restaurantSlug,
+      }
+    : data;
 
   return (
     <div className="comments-page">

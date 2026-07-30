@@ -235,6 +235,7 @@ function RestaurantContent() {
             rating: selectedItem?.rating ?? modalData?.rating,
           }}
           onClose={handleCloseModal}
+          onSelectComboFood={handleSelectItem}
         />
       )}
 
@@ -249,11 +250,7 @@ function RestaurantContent() {
 
 function RestaurantPage() {
   usePageStyles("/shop.css");
-  return (
-    <CartProvider>
-      <RestaurantContent />
-    </CartProvider>
-  );
+  return <RestaurantContent />; // CartProvider now lives in App.jsx
 }
 
 export default RestaurantPage;

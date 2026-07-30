@@ -20,6 +20,9 @@ export const browseUserRecentOrders = ({ take = 6, cursor = null } = {}) =>
     })
     .then((r) => r.data);
 
+export const getUserOrderHistory = () =>
+  userAxios.get("/orders/history").then((r) => r.data);
+
 // 🛒 Create a new order (guest OR logged-in)
 export const createOrder = async (orderPayload) => {
   try {

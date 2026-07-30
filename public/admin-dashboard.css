@@ -1,3 +1,4 @@
+/* public/admin-dashboard.css */
 /* --- General & Fonts --- */
 @import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap");
 
@@ -4977,7 +4978,7 @@ textarea {
 }
 
 /* ==========================================================================
-   CombosSection (ترکیب‌های پیشنهادی)
+   CombosSection — category-grouped, alphabetized, scroll-capped
    ========================================================================== */
 
 .combos-mgmt__panel {
@@ -4992,19 +4993,85 @@ textarea {
   align-items: flex-start;
 }
 
-/* --- left rail: food list --- */
 .combos-mgmt__rail {
   width: 34%;
   flex-shrink: 0;
 }
 
+.combos-mgmt__rail-scroll,
+.combos-mgmt__picker-scroll,
+.combos-mgmt__combo-scroll {
+    max-height: 520px;
+    overflow-y: auto;
+    padding-inline-end: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) var(--bg-light);
+}
+
+.combos-mgmt__rail-scroll::-webkit-scrollbar,
+.combos-mgmt__picker-scroll::-webkit-scrollbar,
+.combos-mgmt__combo-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+.combos-mgmt__rail-scroll::-webkit-scrollbar-thumb,
+.combos-mgmt__picker-scroll::-webkit-scrollbar-thumb,
+.combos-mgmt__combo-scroll::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 8px;
+}
+
+/* --- category group headers (accordion), reused everywhere --- */
+.combos-mgmt__cat-group {
+    margin-bottom: 10px;
+}
+
+.combos-mgmt__cat-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.combos-mgmt__cat-toggle span:first-child {
+    flex: 1;
+    text-align: right;
+    color: var(--text-primary);
+}
+
+.combos-mgmt__cat-toggle i {
+    font-size: 10px;
+    transition: transform 0.2s ease;
+    color: var(--text-muted);
+}
+
+.combos-mgmt__cat-toggle.open i {
+    transform: rotate(180deg);
+}
+
+.combos-mgmt__combo-cat-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin: 4px 0 8px;
+}
+
+/* --- left rail items --- */
 .combos-mgmt__rail-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  max-height: 520px;
-  overflow-y: auto;
-  padding-inline-end: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 6px;
 }
 
 .combos-mgmt__rail-item {
@@ -5119,9 +5186,10 @@ textarea {
 }
 
 .combos-mgmt__combo-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 12px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 4px;
 }
 
 .combos-mgmt__combo-card {
@@ -5202,12 +5270,10 @@ textarea {
 }
 
 .combos-mgmt__picker-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 10px;
-  max-height: 420px;
-  overflow-y: auto;
-  padding-inline-end: 4px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+    margin-bottom: 4px;
 }
 
 .combos-mgmt__picker-item {
@@ -5298,13 +5364,38 @@ textarea {
 }
 
 @media (max-width: 900px) {
-  .combos-mgmt__body {
-    flex-direction: column;
-  }
-  .combos-mgmt__rail {
-    width: 100%;
-  }
-  .combos-mgmt__rail-list {
-    max-height: 260px;
-  }
+    .combos-mgmt__body {
+        flex-direction: column;
+    }
+    .combos-mgmt__rail {
+        width: 100%;
+    }
+    .combos-mgmt__rail-scroll {
+        max-height: 300px;
+    }
+}
+
+.combos-mgmt__rail-item {
+    position: relative; /* anchor for the badge */
+}
+
+.combos-mgmt__rail-badge {
+    flex-shrink: 0;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: rgba(245, 158, 11, 0.18);
+    color: var(--primary-color);
+    font-size: 11px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-inline-start: auto; /* pushes it to the visual left in RTL */
+}
+
+.combos-mgmt__rail-item.is-active .combos-mgmt__rail-badge {
+    background: var(--primary-color);
+    color: #101010;
 }

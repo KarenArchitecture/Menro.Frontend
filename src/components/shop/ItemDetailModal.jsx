@@ -1,10 +1,10 @@
+// src/components/shop/ItemDetailModal.jsx
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import ReactDOM from "react-dom";
 import { useCart } from "./CartContext";
 
 import BackIcon from "../icons/BackIcon";
 import LikeIcon from "../icons/LikeIcon";
-import MessageIcon from "../icons/MessageIcon";
 import ModalCategoryIcon from "../icons/ModalCategoryIcon";
 import MokhalafatIcon from "../icons/MokhalafatIcon";
 import RestaurantCombosButton from "../common/RestaurantCombosButton";
@@ -17,14 +17,16 @@ import ProtectedActionModal from "../common/ProtectedActionModal";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import CommentIcon from "../icons/CommentIcon";
+import { useQuery } from "@tanstack/react-query";
+import { getFoodCombos } from "../../api/combos";
+import ComboFoodsModal from "./ComboFoodsModal";
+import { showError } from "../../utils/toast";
 
-/* Helper for consistent Persian digits */
 const toPersianDigits = (value) => {
   if (value === null || value === undefined) return "۰";
   return String(value).replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[digit]);
 };
 
-/* --- NEW HORIZONTAL SCROLL PICKER COMPONENT --- */
 const AddonScrollPicker = ({ value = 0, onChange, max = 99 }) => {
   const scrollRef = useRef(null);
   const numbers = Array.from({ length: max + 1 }, (_, i) => i);
@@ -46,10 +48,7 @@ const AddonScrollPicker = ({ value = 0, onChange, max = 99 }) => {
     <div className="addon-qty-scroll" ref={scrollRef} dir="ltr">
       {numbers.map((num) => {
         let activeClass = "";
-        if (value === num) {
-          activeClass = num === 0 ? "active-0" : "active-n";
-        }
-
+        if (value === num) activeClass = num === 0 ? "active-0" : "active-n";
         return (
           <button
             key={num}
@@ -65,7 +64,15 @@ const AddonScrollPicker = ({ value = 0, onChange, max = 99 }) => {
   );
 };
 
-function ItemDetailModal({ item, onClose }) {
+function ItemDetailModal({ item, onClose, onSelectComboFood }) {
+  const [combosModalOpen, setCombosModalOpen] = useState(false);
+
+  const { data: combos = [] } = useQuery({
+    queryKey: ["food-combos", item?.id],
+    queryFn: () => getFoodCombos(item.id),
+    enabled: !!item?.id,
+  });
+
   const cart = useCart();
   const navigate = useNavigate();
   const [isActive, setIsActive] = useState(false);
@@ -73,24 +80,11 @@ function ItemDetailModal({ item, onClose }) {
   const { requireLogin, open, closeModal, goToLogin, modalProps } =
     useRequireLogin();
 
-  useEffect(() => {
-    console.log("MODAL OPEN STATE:", open);
-  }, [open]);
-
   const { user } = useAuth();
-
   const { data: favoriteIds = [], isLoading: favoriteLoading } =
     useFavoriteIds(!!user);
-
   const toggleFavorite = useToggleFavorite();
-
   const isFavorite = favoriteIds.includes(item?.id);
-
-  console.log({
-    foodId: item?.id,
-    favoriteIds,
-    isFavorite,
-  });
 
   const handleToggleFavorite = () => {
     requireLogin({
@@ -106,51 +100,55 @@ function ItemDetailModal({ item, onClose }) {
 
   const handleOpenComments = () => {
     if (!item?.id) return;
-    navigate(`/foods/${item.id}/comments`);
-
     const commentsUrl = `/foods/${item.id}/comments`;
-
     requireLogin({
       type: "comments",
       icon: <CommentIcon />,
-      returnUrl: commentsUrl, // 🔑 after login, go to the comments page, not back to the restaurant
+      returnUrl: commentsUrl,
       onAuthenticated: () => navigate(commentsUrl),
     });
   };
 
+  const handleSelectComboFood = (food) => {
+    setCombosModalOpen(false);
+    onSelectComboFood?.(food);
+  };
+
   const formatRating = (value) => {
     const num = Number(value);
-    if (Number.isFinite(num) && num > 0) {
-      return toPersianDigits(num.toFixed(1));
-    }
+    if (Number.isFinite(num) && num > 0) return toPersianDigits(num.toFixed(1));
     return toPersianDigits("4.5");
   };
 
   const formatVoters = (value) => {
     const num = Number(value);
-    if (Number.isFinite(num) && num >= 0) {
+    if (Number.isFinite(num) && num >= 0)
       return toPersianDigits(num.toLocaleString("en-US"));
-    }
     return "۰";
   };
 
-  /* 1) REAL VARIANTS FROM BACKEND */
+  /* ---------- variants + addon state (backend-backed) ---------- */
+
   const variations = useMemo(() => item?.variants || [], [item]);
 
-  /* 2) BASE KEY + DEFAULT VARIANT */
-  const baseKey = useMemo(() => cart.keyOf(item), [cart, item]);
+  const [selectedAddonsByVar, setSelectedAddonsByVar] = useState({});
+  const initializedVariants = useRef(new Set());
 
-  const defaultVariant = useMemo(
-    () => variations.find((v) => v.isDefault) || variations[0] || null,
-    [variations],
-  );
+  useEffect(() => {
+    variations.forEach((v) => {
+      if (initializedVariants.current.has(v.id)) return;
+      const cartItem = cart.getVariantItem(item.id, v.id);
+      if (cartItem) {
+        const map = {};
+        cartItem.addons.forEach((a) => {
+          map[a.foodAddonId] = a.quantity;
+        });
+        setSelectedAddonsByVar((prev) => ({ ...prev, [v.id]: map }));
+      }
+      initializedVariants.current.add(v.id);
+    });
+  }, [variations, cart, item?.id]);
 
-  const getVariantKey = (variantId) =>
-    defaultVariant && variantId === defaultVariant.id
-      ? baseKey
-      : `${baseKey}__${variantId}`;
-
-  /* 3) MAP ADDONS PER VARIANT */
   const addonsByVar = useMemo(() => {
     const map = {};
     variations.forEach((v) => {
@@ -164,141 +162,80 @@ function ItemDetailModal({ item, onClose }) {
     return map;
   }, [variations]);
 
-  /* 4) ADDONS SELECTION STATE (Now stores objects with qty) */
-  const [selectedAddonsByVar, setSelectedAddonsByVar] = useState({});
-
-  useEffect(() => {
-    if (!item) return;
-
-    const init = {};
-
-    variations.forEach((v) => {
-      const key = getVariantKey(v.id);
-      const existing = cart.items.get(key);
-
-      init[v.id] = {};
-
-      if (existing?.addons?.length > 0) {
-        existing.addons.forEach((addon) => {
-          // Backward compatibility: check if addon is just an ID string or a proper object
-          if (typeof addon === "object") {
-            init[v.id][addon.id] = addon;
-          } else {
-            const addonDetail = v.addons?.find((a) => a.id === addon);
-            if (addonDetail) {
-              init[v.id][addon] = {
-                id: addonDetail.id,
-                name: addonDetail.name,
-                price: addonDetail.extraPrice,
-                qty: 1,
-              };
-            }
-          }
-        });
-      }
-    });
-
-    setSelectedAddonsByVar(init);
-  }, [item, variations, baseKey]);
-
-  /* helpers */
   const fmt = (n) => (Number(n) || 0).toLocaleString("fa-IR");
 
-  // Updated to calculate using quantity
-  const addonSum = (variantId, overrideState) => {
-    const selected = overrideState || selectedAddonsByVar[variantId] || {};
-    return Object.values(selected).reduce(
-      (sum, a) => sum + Number(a.price || 0) * (a.qty || 1),
+  const addonsToPayload = (variantId) =>
+    Object.entries(selectedAddonsByVar[variantId] || {})
+      .filter(([, qty]) => qty > 0)
+      .map(([foodAddonId, qty]) => ({
+        foodAddonId: Number(foodAddonId),
+        quantity: qty,
+      }));
+
+  const addonsTotalFor = (variantId) =>
+    Object.entries(selectedAddonsByVar[variantId] || {}).reduce(
+      (sum, [addonId, qty]) => {
+        const addon = addonsByVar[variantId]?.find(
+          (a) => a.id === Number(addonId),
+        );
+        return sum + (addon?.price || 0) * qty;
+      },
       0,
     );
+
+  const setVariantQty = (variantId, newQty) => {
+    cart.setItem({
+      foodId: item.id,
+      variantId,
+      quantity: Math.max(0, newQty),
+      addons: addonsToPayload(variantId),
+    });
   };
 
-  /* 5) QUANTITY CHANGE */
-  const setVariantQty = (variantId, newQty) => {
-    if (!item) return;
+  // Addons belong to a variant, not the food itself. If the variant hasn't
+  // been added to the cart yet (qty === 0), there is nothing to attach the
+  // addon to — block the change and tell the person why, instead of
+  // silently updating local UI state that never reaches the cart.
+  const handleAddonQtyChange = (variantId, addon, newQty) => {
+    const existingQty = cart.getVariantItem(item.id, variantId)?.quantity ?? 0;
 
-    const variant = variations.find((v) => v.id === variantId);
-    if (!variant) return;
-
-    const key = getVariantKey(variantId);
-    const qty = Math.max(0, newQty);
-
-    if (qty === 0) {
-      cart.setQty(key, null, 0);
+    if (existingQty <= 0) {
+      showError(
+        "ابتدا این نوع را به سبد خرید اضافه کنید تا بتوانید مخلفات آن را انتخاب کنید.",
+      );
       return;
     }
 
-    const addonsTotal = addonSum(variantId);
-    const price = Number(variant.price || 0) + addonsTotal;
-
-    cart.setQty(
-      key,
-      {
-        id: key,
-        name: `${item.name} - ${variant.name}`,
-        price,
-        variantId,
-        variantName: variant.name,
-        imageUrl: item.imageUrl,
-        addons: Object.values(selectedAddonsByVar[variantId] || []),
-      },
-      qty,
-    );
-  };
-
-  /* 6) HANDLE ADDON QTY CHANGE (Replaces toggleAddon) */
-  const handleAddonQtyChange = (variantId, addon, newQty) => {
     setSelectedAddonsByVar((prev) => {
-      const currentVariantAddons = prev[variantId] || {};
-      let nextVariantState;
+      const current = { ...(prev[variantId] || {}) };
+      if (newQty <= 0) delete current[addon.id];
+      else current[addon.id] = newQty;
+      return { ...prev, [variantId]: current };
+    });
 
-      if (newQty === 0) {
-        // Remove from state if 0
-        const { [addon.id]: removed, ...rest } = currentVariantAddons;
-        nextVariantState = rest;
-      } else {
-        // Add or update qty
-        nextVariantState = {
-          ...currentVariantAddons,
-          [addon.id]: { ...addon, qty: newQty },
-        };
-      }
+    const nextAddons = { ...(selectedAddonsByVar[variantId] || {}) };
+    if (newQty <= 0) delete nextAddons[addon.id];
+    else nextAddons[addon.id] = newQty;
 
-      const nextState = { ...prev, [variantId]: nextVariantState };
-
-      // Synchronize with cart immediately if the parent item is already in cart
-      const key = getVariantKey(variantId);
-      const existing = cart.items.get(key);
-
-      if (existing?.qty > 0) {
-        const variant = variations.find((v) => v.id === variantId);
-        if (variant) {
-          const addonsTotal = addonSum(variantId, nextVariantState);
-          const newPrice = Number(variant.price || 0) + addonsTotal;
-
-          cart.setQty(
-            key,
-            {
-              ...existing,
-              price: newPrice,
-              addons: Object.values(nextVariantState),
-            },
-            existing.qty,
-          );
-        }
-      }
-
-      return nextState;
+    cart.setItem({
+      foodId: item.id,
+      variantId,
+      quantity: existingQty,
+      addons: Object.entries(nextAddons)
+        .filter(([, q]) => q > 0)
+        .map(([foodAddonId, q]) => ({
+          foodAddonId: Number(foodAddonId),
+          quantity: q,
+        })),
     });
   };
 
-  /* 7) OPEN/CLOSE ANIMATION */
+  /* ---------- open/close animation ---------- */
+
   useEffect(() => {
     if (!item) return;
-
     const t = setTimeout(() => setIsActive(true), 10);
     document.body.classList.add("modal-open");
-
     return () => {
       clearTimeout(t);
       document.body.classList.remove("modal-open");
@@ -333,7 +270,6 @@ function ItemDetailModal({ item, onClose }) {
         ? item.votersCount
         : 0;
 
-  /* 8) RENDER */
   const modalUI = (
     <>
       <div
@@ -343,7 +279,6 @@ function ItemDetailModal({ item, onClose }) {
 
       <div className={`bottom-modal ${isActive ? "active" : ""}`} dir="rtl">
         <div className="sheet-body modal-content">
-          {/* HEADER */}
           <div className="modal-hero">
             <div className="modal-img-wrap">
               <nav className="img-topbar">
@@ -410,7 +345,6 @@ function ItemDetailModal({ item, onClose }) {
             </div>
           </div>
 
-          {/* VARIANTS + ADDONS */}
           <div className="variant-list">
             <div className="modal-section">
               <div className="section-head">
@@ -419,14 +353,13 @@ function ItemDetailModal({ item, onClose }) {
               </div>
 
               {variations.map((v) => {
-                const key = getVariantKey(v.id);
-                const qty = cart.items.get(key)?.qty ?? 0;
+                const qty = cart.getVariantItem(item.id, v.id)?.quantity ?? 0;
                 const addons = addonsByVar[v.id] || [];
-                const unitPrice = Number(v.price || 0) + addonSum(v.id);
+                const unitPrice = Number(v.price || 0) + addonsTotalFor(v.id);
+                const isVariantAdded = qty > 0;
 
                 return (
                   <div key={v.id} className="variant-block">
-                    {/* VARIANT ROW */}
                     <div className="variant-row">
                       <div className="variant-pill">
                         <span className="variant-name">{v.name}</span>
@@ -455,7 +388,6 @@ function ItemDetailModal({ item, onClose }) {
                       </div>
                     </div>
 
-                    {/* ADDONS LIST */}
                     {addons.length > 0 && (
                       <div className="modal-subsection">
                         <div className="subsection-head">
@@ -466,18 +398,14 @@ function ItemDetailModal({ item, onClose }) {
                         <ul className="addons-list">
                           {addons.map((a) => {
                             const currentQty =
-                              selectedAddonsByVar[v.id]?.[a.id]?.qty || 0;
-
-                            // Show base price if qty is 0, else show multiplied price
+                              selectedAddonsByVar[v.id]?.[a.id] || 0;
                             const displayPrice =
                               currentQty === 0 ? a.price : a.price * currentQty;
 
                             return (
                               <li
                                 key={a.id}
-                                className={`addon-row ${
-                                  currentQty > 0 ? "checked" : ""
-                                }`}
+                                className={`addon-row ${currentQty > 0 ? "checked" : ""} ${!isVariantAdded ? "addon-row--locked" : ""}`}
                               >
                                 <div className="addon-name">{a.name}</div>
                                 <div className="addon-price-amount">
@@ -511,10 +439,15 @@ function ItemDetailModal({ item, onClose }) {
               })}
             </div>
 
-            <RestaurantCombosButton />
+            {combos.length > 0 && (
+              <RestaurantCombosButton
+                onClick={() => setCombosModalOpen(true)}
+              />
+            )}
           </div>
         </div>
       </div>
+
       <ProtectedActionModal
         open={open}
         onClose={closeModal}
@@ -522,6 +455,13 @@ function ItemDetailModal({ item, onClose }) {
         icon={modalProps.icon}
         title={modalProps.title}
         description={modalProps.description}
+      />
+
+      <ComboFoodsModal
+        open={combosModalOpen}
+        combos={combos}
+        onClose={() => setCombosModalOpen(false)}
+        onSelectFood={handleSelectComboFood}
       />
     </>
   );

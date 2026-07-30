@@ -4,9 +4,11 @@ import ComingSoonModal from "./ComingSoonModal";
 import { toPersianDigits } from "../../utils/persianNumbers";
 import useRequireLogin from "../../hooks/useRequireLogin";
 import ProtectedActionModal from "../common/ProtectedActionModal";
+import { useCart } from "../shop/CartContext";
 import { NavLink, useNavigate } from "react-router-dom";
 
 const MobileNav = () => {
+  const cart = useCart();
   const { isDrawerOpen } = useDrawerState();
   const [mounted, setMounted] = useState(false);
   const [isComingSoonOpen, setIsComingSoonOpen] = useState(false);
@@ -145,7 +147,9 @@ const MobileNav = () => {
                 />
               </svg>
               <span className="text">سفارش‌ها</span>
-              <span className="badge">{toPersianDigits(3)}</span>
+              {cart.count > 0 && (
+                <span className="badge">{toPersianDigits(cart.count)}</span>
+              )}
             </NavLink>
           </li>
 

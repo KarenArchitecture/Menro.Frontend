@@ -1,23 +1,26 @@
 // src/components/admin/CombosSection.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import adminFoodAxios from "../../api/adminFoodAxios";
-import { getCombosForFood, setCombosForFood } from "../../api/adminCombos";
+import {
+  getCombosForFood,
+  setCombosForFood,
+  getComboCounts,
+} from "../../api/adminCombos";
 import ComboPickerModal from "./ComboPickerModal";
 import resolveFileUrl from "../../utils/resolveFileUrl";
 import { toPersianDigits } from "../../utils/persianFormat";
-import { useGlobalUI } from "../common/GlobalUI";
-import useDocumentTitle from "../../hooks/useDocumentTitle";
+import { groupFoodsByCategory } from "../../utils/groupFoodsByCategory";
 
 export default function CombosSection() {
-  useDocumentTitle("ترکیب‌های پیشنهادی");
-  const { notify, confirmModal } = useGlobalUI();
   const [foods, setFoods] = useState([]);
   const [loadingFoods, setLoadingFoods] = useState(true);
+  const [comboCounts, setComboCounts] = useState({}); // { foodId: count }
 
   const [query, setQuery] = useState("");
   const [selectedFoodId, setSelectedFoodId] = useState(null);
+  const [openCats, setOpenCats] = useState(new Set()); // empty = everything closed by default
 
-  const [comboIds, setComboIds] = useState([]); // ids currently linked to selectedFoodId
+  const [comboIds, setComboIds] = useState([]);
   const [loadingCombos, setLoadingCombos] = useState(false);
   const [savingCombos, setSavingCombos] = useState(false);
 
@@ -29,21 +32,43 @@ export default function CombosSection() {
       const { data } = await adminFoodAxios.get("/read-all");
       setFoods(data || []);
     } catch (err) {
-      notify({ type: "error", message: "خطا در دریافت لیست غذاها" });
+      console.error("خطا در دریافت لیست غذاها:", err);
     } finally {
       setLoadingFoods(false);
     }
   };
 
+  const fetchComboCounts = async () => {
+    try {
+      const counts = await getComboCounts();
+      setComboCounts(counts || {});
+    } catch (err) {
+      console.error("خطا در دریافت تعداد ترکیب‌ها:", err);
+    }
+  };
+
   useEffect(() => {
     fetchFoods();
+    fetchComboCounts();
   }, []);
 
-  const filteredFoods = useMemo(() => {
+  const groupedRail = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return foods;
-    return foods.filter((f) => f.name?.toLowerCase().includes(q));
+    const filtered = q
+      ? foods.filter((f) => f.name?.toLowerCase().includes(q))
+      : foods;
+    return groupFoodsByCategory(filtered);
   }, [foods, query]);
+
+  const isOpen = (cat) => openCats.has(cat);
+  const toggleGroup = (cat) => {
+    setOpenCats((prev) => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat);
+      else next.add(cat);
+      return next;
+    });
+  };
 
   const selectedFood = foods.find((f) => f.id === selectedFoodId) || null;
 
@@ -71,6 +96,11 @@ export default function CombosSection() {
     [foods, comboIds],
   );
 
+  const groupedCombos = useMemo(
+    () => groupFoodsByCategory(comboFoods),
+    [comboFoods],
+  );
+
   const candidateFoods = useMemo(
     () =>
       foods.filter((f) => f.id !== selectedFoodId && !comboIds.includes(f.id)),
@@ -81,17 +111,15 @@ export default function CombosSection() {
     if (!selectedFoodId) return;
     setSavingCombos(true);
     const prevIds = comboIds;
-    setComboIds(nextIds); // optimistic update
+    setComboIds(nextIds);
     try {
       await setCombosForFood(selectedFoodId, nextIds);
-      notify({ type: "success", message: "ترکیب‌ها با موفقیت ذخیره شد" });
+      // keep the rail badge for THIS food in sync immediately, no full refetch needed
+      setComboCounts((prev) => ({ ...prev, [selectedFoodId]: nextIds.length }));
     } catch (err) {
       console.error("خطا در ذخیره ترکیب‌ها:", err);
       setComboIds(prevIds);
-      notify({
-        type: "error",
-        message: "ذخیره ترکیب‌ها ناموفق بود. دوباره تلاش کنید.",
-      });
+      alert("ذخیره ترکیب‌ها ناموفق بود. دوباره تلاش کنید.");
     } finally {
       setSavingCombos(false);
     }
@@ -104,8 +132,7 @@ export default function CombosSection() {
   };
 
   const handleRemoveCombo = (foodId) => {
-    const next = comboIds.filter((id) => id !== foodId);
-    persistCombos(next);
+    persistCombos(comboIds.filter((id) => id !== foodId));
   };
 
   const fmt = (n) => (Number(n) || 0).toLocaleString("fa-IR");
@@ -126,7 +153,7 @@ export default function CombosSection() {
         </p>
 
         <div className="combos-mgmt__body">
-          {/* LEFT: food list / picker */}
+          {/* LEFT: grouped food rail */}
           <div className="combos-mgmt__rail">
             <div className="blog-mgmt__search-box" style={{ marginBottom: 12 }}>
               <input
@@ -138,33 +165,64 @@ export default function CombosSection() {
               />
             </div>
 
-            <div className="combos-mgmt__rail-list">
-              {filteredFoods.length === 0 && (
+            <div className="combos-mgmt__rail-scroll">
+              {groupedRail.length === 0 && (
                 <div className="empty-hint">غذایی یافت نشد.</div>
               )}
 
-              {filteredFoods.map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  className={`combos-mgmt__rail-item ${
-                    selectedFoodId === f.id ? "is-active" : ""
-                  }`}
-                  onClick={() => handleSelectFood(f.id)}
+              {groupedRail.map((group) => (
+                <div
+                  key={group.categoryName}
+                  className="combos-mgmt__cat-group"
                 >
-                  <div className="combos-mgmt__rail-thumb-wrap">
-                    {f.imageUrl ? (
-                      <img
-                        src={resolveFileUrl(f.imageUrl)}
-                        alt={f.name}
-                        className="combos-mgmt__rail-thumb"
-                      />
-                    ) : (
-                      <i className="fas fa-utensils" />
-                    )}
-                  </div>
-                  <span className="combos-mgmt__rail-name">{f.name}</span>
-                </button>
+                  <button
+                    type="button"
+                    className={`combos-mgmt__cat-toggle ${isOpen(group.categoryName) ? "open" : ""}`}
+                    onClick={() => toggleGroup(group.categoryName)}
+                  >
+                    <span>{group.categoryName}</span>
+                    <span className="pill-count">
+                      {toPersianDigits(group.foods.length)}
+                    </span>
+                    <i className="fas fa-chevron-down" />
+                  </button>
+
+                  {isOpen(group.categoryName) && (
+                    <div className="combos-mgmt__rail-list">
+                      {group.foods.map((f) => {
+                        const count = comboCounts[f.id] || 0;
+                        return (
+                          <button
+                            key={f.id}
+                            type="button"
+                            className={`combos-mgmt__rail-item ${selectedFoodId === f.id ? "is-active" : ""}`}
+                            onClick={() => handleSelectFood(f.id)}
+                          >
+                            <img
+                              src={resolveFileUrl(
+                                f.imageUrl,
+                                "/images/food/food-placeholder.png",
+                              )}
+                              alt={f.name}
+                              className="combos-mgmt__rail-thumb"
+                            />
+                            <span className="combos-mgmt__rail-name">
+                              {f.name}
+                            </span>
+                            {count > 0 && (
+                              <span
+                                className="combos-mgmt__rail-badge"
+                                title={`${count} ترکیب`}
+                              >
+                                {toPersianDigits(count)}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </div>
@@ -179,17 +237,14 @@ export default function CombosSection() {
             ) : (
               <>
                 <div className="combos-mgmt__editor-header">
-                  <div className="combos-mgmt__editor-thumb-wrap">
-                    {selectedFood.imageUrl ? (
-                      <img
-                        src={resolveFileUrl(selectedFood.imageUrl)}
-                        alt={selectedFood.name}
-                        className="combos-mgmt__editor-thumb"
-                      />
-                    ) : (
-                      <i className="fas fa-utensils" />
+                  <img
+                    src={resolveFileUrl(
+                      selectedFood.imageUrl,
+                      "/images/food/food-placeholder.png",
                     )}
-                  </div>
+                    alt={selectedFood.name}
+                    className="combos-mgmt__editor-thumb"
+                  />
                   <div>
                     <h3 style={{ margin: 0 }}>{selectedFood.name}</h3>
                     <span className="pill-count">
@@ -216,36 +271,52 @@ export default function CombosSection() {
                     بزنید تا شروع کنید.
                   </div>
                 ) : (
-                  <div className="combos-mgmt__combo-grid">
-                    {comboFoods.map((cf) => (
-                      <div key={cf.id} className="combos-mgmt__combo-card">
-                        <button
-                          type="button"
-                          className="combos-mgmt__combo-remove"
-                          onClick={() => handleRemoveCombo(cf.id)}
-                          disabled={savingCombos}
-                          title="حذف از ترکیب‌ها"
-                        >
-                          <i className="fas fa-times" />
-                        </button>
-                        <div className="combos-mgmt__combo-thumb-wrap">
-                          {cf.imageUrl ? (
-                            <img
-                              src={resolveFileUrl(cf.imageUrl)}
-                              alt={cf.name}
-                              className="combos-mgmt__combo-thumb"
-                            />
-                          ) : (
-                            <i className="fas fa-utensils" />
-                          )}
+                  <div className="combos-mgmt__combo-scroll">
+                    {groupedCombos.map((group) => (
+                      <div
+                        key={group.categoryName}
+                        className="combos-mgmt__cat-group"
+                      >
+                        <div className="combos-mgmt__combo-cat-label">
+                          {group.categoryName}
+                          <span className="pill-count">
+                            {toPersianDigits(group.foods.length)}
+                          </span>
                         </div>
-                        <div className="combos-mgmt__combo-info">
-                          <span className="combos-mgmt__combo-name">
-                            {cf.name}
-                          </span>
-                          <span className="combos-mgmt__combo-price">
-                            {fmt(cf.price)} تومان
-                          </span>
+
+                        <div className="combos-mgmt__combo-grid">
+                          {group.foods.map((cf) => (
+                            <div
+                              key={cf.id}
+                              className="combos-mgmt__combo-card"
+                            >
+                              <button
+                                type="button"
+                                className="combos-mgmt__combo-remove"
+                                onClick={() => handleRemoveCombo(cf.id)}
+                                disabled={savingCombos}
+                                title="حذف از ترکیب‌ها"
+                              >
+                                <i className="fas fa-times" />
+                              </button>
+                              <img
+                                src={resolveFileUrl(
+                                  cf.imageUrl,
+                                  "/images/food/food-placeholder.png",
+                                )}
+                                alt={cf.name}
+                                className="combos-mgmt__combo-thumb"
+                              />
+                              <div className="combos-mgmt__combo-info">
+                                <span className="combos-mgmt__combo-name">
+                                  {cf.name}
+                                </span>
+                                <span className="combos-mgmt__combo-price">
+                                  {fmt(cf.price)} تومان
+                                </span>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     ))}

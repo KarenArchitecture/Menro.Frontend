@@ -6,7 +6,6 @@ import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 /* ---------- helpers ---------- */
-
 // time filter
 const now = Date.now();
 const DAY = 24 * 60 * 60 * 1000;
@@ -92,6 +91,7 @@ export default function OrdersSection() {
   const [showHistory, setShowHistory] = useState(false);
   const [selected, setSelected] = useState(null);
   const [rangeKey, setRangeKey] = useState("today"); // today|week|month|year|all
+  const [search, setSearch] = useState("");
 
   const activeRange = useMemo(
     () => ranges.find((r) => r.key === rangeKey) || ranges[0],
@@ -106,8 +106,18 @@ export default function OrdersSection() {
       (o) => isHistoryStatus(o.status) && activeRange.test(o.createdAt),
     );
 
+    const searchFiltered = (arr) => {
+      const q = search.trim();
+      if (!q) return arr;
+      return arr.filter(
+        (o) =>
+          String(o.restaurantOrderNumber).includes(q) ||
+          (o.tableNumber !== null && String(o.tableNumber).includes(q))
+      );
+    };
+
     return {
-      list: showHistory ? historyFiltered : pendingAll,
+      list: searchFiltered(showHistory ? historyFiltered : pendingAll),
       counts: { pending: pendingAll.length, history: historyFiltered.length },
     };
   }, [orders, activeRange, showHistory]);
@@ -167,14 +177,18 @@ export default function OrdersSection() {
     <div className="panel orders-panel">
       <div className="view-header orders-header">
         <h3>سفارش‌ها</h3>
-
         {/* controls wrapper keeps layout stable */}
         <div className="orders-controls">
+          <input
+            type="text"
+            className="mh-input"
+            placeholder="جستجوی شماره سفارش یا میز..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{ maxWidth: 220 }}
+          />
           {/* filters: keep space with visibility toggle */}
-          <div
-            className="orders-filters"
-            style={{ visibility: showHistory ? "visible" : "hidden" }}
-          >
+          <div className="orders-filters" style={{ visibility: showHistory ? "visible" : "hidden" }}>
             {ranges.map((r) => (
               <button
                 key={r.key}

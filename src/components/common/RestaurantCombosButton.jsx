@@ -1,12 +1,13 @@
+// src/components/common/RestaurantCombosButton.jsx
 import React from "react";
 
-export default function RestaurantCombosButton() {
+export default function RestaurantCombosButton({ onClick }) {
   return (
     <button
       id="restaurant-combos-button"
       className="combos-entry-card"
       type="button"
-      // onClick={...}
+      onClick={onClick}
     >
       <div className="combos-entry-icon" aria-hidden="true">
         <img src="/images/combos-icon.svg" alt="Hamburger and Drink Icon" />

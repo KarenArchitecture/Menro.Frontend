@@ -52,6 +52,7 @@ export default function FoodModal({
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [existingImageName, setExistingImageName] = useState(null);
+  const [imageRemoved, setImageRemoved] = useState(false);
   const fileInputRef = useRef(null);
 
   //  simple vs variants
@@ -121,6 +122,7 @@ export default function FoodModal({
         setFoodCategoryId(data.foodCategoryId ?? "");
         setImagePreview(data.imageUrl);
         setExistingImageName(data.imageName);
+        setImageRemoved(false);
 
         // load discount percentage
         const serverPctRaw = data.discount ?? 0;
@@ -192,6 +194,31 @@ export default function FoodModal({
   }, [isOpen, mode]);
 
   // ---- helpers: variants ----
+
+  // Flattens a nested object/array into FormData using ASP.NET Core's
+  // model-binding bracket notation (Variants[0].Addons[0].Name), so
+  // [FromForm] on the backend can bind it correctly.
+  function appendFormValue(formData, key, value) {
+    if (value === null || value === undefined) return;
+
+    if (Array.isArray(value)) {
+      value.forEach((item, index) =>
+        appendFormValue(formData, `${key}[${index}]`, item),
+      );
+      return;
+    }
+
+    if (typeof value === "object" && !(value instanceof File)) {
+      Object.entries(value).forEach(([childKey, childValue]) => {
+        const composedKey = `${childKey[0].toUpperCase()}${childKey.slice(1)}`;
+        appendFormValue(formData, `${key}.${composedKey}`, childValue);
+      });
+      return;
+    }
+
+    formData.append(key, value);
+  }
+
   const onToggleHasVariants = (flag) => {
     setHasVariants(flag);
     if (flag && variants.length === 0) {
@@ -303,6 +330,7 @@ export default function FoodModal({
     setImageFile(null);
     setImagePreview(null);
     setExistingImageName(null);
+    setImageRemoved(true);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -350,6 +378,7 @@ export default function FoodModal({
 
     setImagePreview(null);
     setImageFile(null);
+    setImageRemoved(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
 
     setVariants([
@@ -368,8 +397,6 @@ export default function FoodModal({
     if (isSubmitting) return;
     setIsSubmitting(true);
 
-    let uploadedFileName = null;
-
     try {
       // -------------------- validation discount --------------------
       if (hasDiscount) {
@@ -387,20 +414,6 @@ export default function FoodModal({
           notify({ type: "warning", message: "لطفاً تخفیف را تأیید کنید." });
           return;
         }
-      }
-
-      // -------------------- upload image --------------------
-      if (imageFile) {
-        const formData = new FormData();
-        formData.append("file", imageFile);
-
-        const uploadRes = await adminFoodAxios.post(
-          "/upload-food-image",
-          formData,
-          { headers: { "Content-Type": "multipart/form-data" } },
-        );
-
-        uploadedFileName = uploadRes.data;
       }
 
       // -------------------- validation variants --------------------
@@ -438,51 +451,57 @@ export default function FoodModal({
         }
       }
 
-      // -------------------- payload --------------------
+      // -------------------- shared payload pieces --------------------
       const basePriceValuePayload = !hasVariants ? toIntDigits(price) : null;
 
-      const payload = {
-        id: foodId,
-        name: name.trim(),
-        ingredients: ingredients.trim() || null,
-        foodCategoryId: Number(foodCategoryId || 0),
-        price: basePriceValuePayload ?? 0,
-        imageName:
-          typeof uploadedFileName === "string"
-            ? uploadedFileName
-            : uploadedFileName?.fileName ||
-              existingImageName?.fileName ||
-              existingImageName ||
-              null,
-        hasVariants,
-
-        discountPercent: hasDiscount
-          ? clamp(toIntDigits(discountPercent), 1, 99)
-          : null,
-
-        variants: hasVariants
-          ? variants.map((v) => ({
-              name: v.name.trim(),
-              price: toIntDigits(v.price),
-              isDefault: v.isDefault,
-              addons: v.addons.map((a) => ({
-                name: a.name.trim(),
-                extraPrice: toIntDigits(a.price),
-              })),
-            }))
-          : [],
-      };
-
-      // -------------------- API CALL (/add or /update) --------------------
-      let response;
+      const variantsPayload = hasVariants
+        ? variants.map((v) => ({
+            name: v.name.trim(),
+            price: toIntDigits(v.price),
+            isDefault: v.isDefault,
+            addons: v.addons.map((a) => ({
+              name: a.name.trim(),
+              extraPrice: toIntDigits(a.price),
+            })),
+          }))
+        : [];
 
       if (mode === "create") {
-        response = await adminFoodAxios.post("/add", payload);
+        // -------------------- combined create: fields + image in one call --------------------
+        const formData = new FormData();
+        formData.append("Name", name.trim());
+        if (ingredients.trim())
+          formData.append("Ingredients", ingredients.trim());
+        formData.append("Price", String(basePriceValuePayload ?? 0));
+        formData.append("FoodCategoryId", String(Number(foodCategoryId || 0)));
+        formData.append("HasVariants", String(hasVariants));
+        if (imageFile) formData.append("ImageFile", imageFile);
+        appendFormValue(formData, "Variants", variantsPayload);
+
+        await adminFoodAxios.post("/add", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
       } else if (mode === "edit" && foodId) {
-        response = await adminFoodAxios.put("/update", payload);
+        // -------------------- combined update: fields + image (اختیاری) + RemoveImage در یک فراخوانی --------------------
+        const formData = new FormData();
+        formData.append("Id", String(foodId));
+        formData.append("Name", name.trim());
+        if (ingredients.trim())
+          formData.append("Ingredients", ingredients.trim());
+        formData.append("Price", String(basePriceValuePayload ?? 0));
+        formData.append("FoodCategoryId", String(Number(foodCategoryId || 0)));
+        formData.append("HasVariants", String(hasVariants));
+        formData.append("RemoveImage", String(imageRemoved));
+        if (imageFile) formData.append("ImageFile", imageFile);
+        appendFormValue(formData, "Variants", variantsPayload);
+
+        await adminFoodAxios.put("/update", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
       } else {
         throw new Error("Invalid mode or missing foodId");
       }
+
       onSaved?.();
       onClose?.();
     } catch (err) {
@@ -702,6 +721,7 @@ export default function FoodModal({
                     if (!file) return;
 
                     setImageFile(file);
+                    setImageRemoved(false);
 
                     const reader = new FileReader();
                     reader.onload = (ev) => setImagePreview(ev.target.result);

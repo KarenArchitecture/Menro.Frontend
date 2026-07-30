@@ -4698,6 +4698,39 @@ textarea {
   color: #101010;
 }
 
+/* ---------- Blog admin: for add/update modal ---------- */
+.blog-mgmt__cover-frame {
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
+  margin: 0 auto 10px;
+  border: 1px solid #333;
+  border-radius: 12px;
+  background: #1c1c1c;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.blog-mgmt__cover-frame-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.blog-mgmt__cover-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #666;
+  font-size: 13px;
+}
+.blog-mgmt__cover-placeholder i {
+  font-size: 28px;
+  color: #444;
+}
+
 /* ---------- Blog admin: posts list pagination (prev/next row) ---------- */
 .blog-mgmt__pagination {
   display: flex;

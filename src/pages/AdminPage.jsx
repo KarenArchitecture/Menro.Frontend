@@ -15,7 +15,6 @@ import CombosSection from "../components/admin/CombosSection";
 
 /* ===================== Sections: business ===================== */
 import OrdersSection from "../components/admin/OrdersSection";
-import AdsBookingSection from "../components/admin/AdsBookingSection";
 import RestaurantAdsSection from "../components/admin/RestaurantAdsSection";
 import FinancialSection from "../components/admin/FinancialSection";
 
@@ -26,8 +25,7 @@ import CategorySettingsSection from "../components/admin/CategorySettingsSection
 import RestaurantCategorySettingsSection from "../components/admin/RestaurantCategorySettingsSection";
 
 /* ===================== Sections: content-ads-admin ===================== */
-import AdsSettingsSection from "../components/admin/AdsSettingsSection";
-import AdsRequestsSection from "../components/admin/AdsRequestsSection";
+import AdsManagementSection from "../components/admin/AdsManagementSection";
 import BlogManagementSection from "../components/admin/BlogManagementSection";
 import LandingManagementSection from "../components/admin/LandingManagementSection";
 
@@ -134,8 +132,6 @@ export default function AdminPage() {
       // --- business ---
       case "orders":
         return <OrdersSection />;
-      case "ads":
-        return <AdsBookingSection />;
       case "restaurantAds":
         return <RestaurantAdsSection />;
       case "financial":
@@ -152,10 +148,8 @@ export default function AdminPage() {
         return <RestaurantCategorySettingsSection />;
 
       // --- content-ads-admin ---
-      case "ads-settings":
-        return <AdsSettingsSection />;
-      case "ads-requests":
-        return <AdsRequestsSection />;
+      case "ads-management":
+        return <AdsManagementSection />;
       case "blog":
         return <BlogManagementSection />;
       case "landing":

@@ -4,7 +4,7 @@
 // این کامپوننت مشابه AdsRequestsSection.jsx (سمت ادمین کل) است اما:
 //   ۱. فقط تبلیغات همان رستورانِ لاگین‌شده را نشان می‌دهد (خواندنی، بدون تایید/رد)
 //   ۲. یک بخش «تبلیغات فعال» با نوار ظرفیت باقیمانده + دکمه رفرش کوچک دارد
-//   ۳. یک دکمه «رزرو تبلیغ جدید» دارد که کاربر را به تب رزرو تبلیغات می‌برد
+//   ۳. یک دکمه «رزرو تبلیغ جدید» دارد که مودال AdBookingModal را باز می‌کند
 //
 // ⚠️ فرض‌های API (لطفاً مطابق بک‌اند خودتان تنظیم کنید):
 //   - یک axios instance اختصاصی برای این پنل به نام `restaurantAdAxios` که baseURL آن
@@ -22,6 +22,7 @@ import React, { useEffect, useMemo, useState, useCallback } from "react";
 import ownerRestaurantAds from "../../api/ownerRestaurantAds";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+import AdBookingModal from "./AdBookingModal";
 import "../../assets/css/admin/RestaurantAdsSection.css";
 
 /* ---------- helpers ---------- */
@@ -90,28 +91,6 @@ function mapAd(ad) {
     endDateRaw: ad.endDate,
     ts: ad.createdAt ? new Date(ad.createdAt).getTime() : Date.now(),
   };
-}
-
-// تلاش برای هدایت کاربر به تب «رزرو تبلیغات».
-// اگر prop مخصوص (onNavigateToBooking) از بیرون داده نشود، یک رویداد سراسری
-// پخش می‌کنیم تا کامپوننت والد/روتر برنامه بتواند آن را گوش بدهد، به‌علاوه‌ی
-// یک fallback ساده روی هش صفحه.
-function goToBookingTab(onNavigateToBooking) {
-  if (typeof onNavigateToBooking === "function") {
-    onNavigateToBooking();
-    return;
-  }
-  window.dispatchEvent(
-    new CustomEvent("menro:navigate-view", { detail: { view: "ads-view" } }),
-  );
-  const sidebarLink = document.querySelector(
-    '[data-view="ads-view"], a[href="#ads-view"]',
-  );
-  if (sidebarLink) {
-    sidebarLink.click();
-  } else {
-    window.location.hash = "ads-view";
-  }
 }
 
 /* ---------- small presentational bits ---------- */
@@ -277,7 +256,7 @@ function AdDetailModal({ ad, onClose }) {
 
 /* ---------- main component ---------- */
 
-export default function RestaurantAdsSection({ onNavigateToBooking }) {
+export default function RestaurantAdsSection() {
   useDocumentTitle("تبلیغات من");
 
   const { notify } = useGlobalUI();
@@ -290,6 +269,7 @@ export default function RestaurantAdsSection({ onNavigateToBooking }) {
   const [showHistory, setShowHistory] = useState(false);
   const [rangeKey, setRangeKey] = useState("today");
   const [selected, setSelected] = useState(null);
+  const [showBooking, setShowBooking] = useState(false);
 
   const loadPending = useCallback(async () => {
     try {
@@ -367,7 +347,7 @@ export default function RestaurantAdsSection({ onNavigateToBooking }) {
         </div>
         <button
           className="btn btn-primary rad-reserve-btn"
-          onClick={() => goToBookingTab(onNavigateToBooking)}
+          onClick={() => setShowBooking(true)}
         >
           <i className="fa-solid fa-plus" /> رزرو تبلیغ جدید
         </button>
@@ -489,6 +469,16 @@ export default function RestaurantAdsSection({ onNavigateToBooking }) {
       </div>
 
       <AdDetailModal ad={selected} onClose={() => setSelected(null)} />
+
+      {showBooking && (
+        <AdBookingModal
+          onClose={() => setShowBooking(false)}
+          onSuccess={() => {
+            loadPending();
+            loadActive();
+          }}
+        />
+      )}
     </div>
   );
 }

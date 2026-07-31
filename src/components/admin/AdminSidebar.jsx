@@ -42,7 +42,6 @@ const NAV_GROUPS = [
     items: [
       { key: "orders", label: "مدیریت سفارش‌ها", icon: "fas fa-receipt" },
       // { key: "financial", label: "مالی", icon: "fas fa-file-invoice-dollar" },
-      { key: "ads", label: "رزرو تبلیغات", icon: "fas fa-bullhorn" },
       {
         key: "restaurantAds",
         label: "تبلیغات رستوران",
@@ -83,13 +82,8 @@ const NAV_GROUPS = [
     roles: ["Admin"], // ✅ فقط برای Admin (منرو)
     items: [
       {
-        key: "ads-settings",
-        label: "تنظیمات تبلیغات",
-        icon: "fas fa-sliders-h",
-      },
-      {
-        key: "ads-requests",
-        label: "درخواست‌های تبلیغات",
+        key: "ads-management",
+        label: "تبلیغات منرو",
         icon: "fas fa-clipboard-check",
       },
       { key: "blog", label: "مدیریت بلاگ", icon: "fas fa-blog" },

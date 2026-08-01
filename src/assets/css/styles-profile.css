@@ -1,352 +1,354 @@
 .profile-header {
-  position: relative;
-  text-align: center;
-  padding-top: 24px;
+    position: relative;
+    text-align: center;
+    padding-top: 24px;
 }
 
 /* Top bar */
 .profile-header__topbar {
-  position: absolute;
-  top: 16px;
-  right: 16px; /* RTL friendly */
+    position: absolute;
+    top: 2.7rem;
+    right: 0; /* RTL friendly */
 }
 /* Page wrapper needs to be the positioning context for the logout button */
 .profile-page {
-  position: relative;
+    position: relative;
+    padding: 0 2.5rem;
+}
+
+.profile-page .single-banner {
+    margin-top: 0;
+    margin-bottom: 3rem !important;
 }
 
 /* Logout button — top-left corner, flush to the edge (LTR position
   regardless of RTL layout, since it sits opposite the "منو" button which
    is top-right) */
 .profile-logout-btn {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  z-index: 5;
+    position: absolute;
+    top: 3rem;
+    left: 2.5rem;
+    z-index: 5;
 
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 1rem;
+    border: none;
 
-  background: #1c1f26;
-  color: #fff;
+    background: #0C0F14;
+    color: #fff;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
 }
 
 .profile-logout-btn svg {
-  width: 18px;
-  height: 18px;
 }
 
 @media (hover: hover) {
-  .profile-logout-btn:hover {
-    transform: scale(1.08);
-  }
+    .profile-logout-btn:hover {
+        transform: scale(1.08);
+    }
 }
 
 .profile-logout-btn:active {
-  transform: scale(0.95);
+    transform: scale(0.95);
 }
 
 /* Avatar wrapper */
 .profile-header__avatar-wrapper {
-  position: relative;
-  margin: 40px auto 16px;
-  width: 140px;
-  height: 140px;
+    position: relative;
+    margin: 40px auto 16px;
+    width: 140px;
+    height: 140px;
 }
 
 /* Avatar core */
 /* Root */
 .profile-avatar {
-  position: relative;
-  width: 160px;
-  margin: 60px auto 0;
-  text-align: center;
+    position: relative;
+    width: 160px;
+    margin: 60px auto 0;
+    text-align: center;
 }
 
 /* Glow layer */
 .profile-avatar__glow {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 140px;
-  height: 140px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 120, 60, 0.6) 0%,
-    rgba(255, 120, 60, 0.25) 40%,
-    transparent 70%
-  );
-  filter: blur(14px);
-  z-index: 1;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle,
+        rgba(255, 120, 60, 0.6) 0%,
+        rgba(255, 120, 60, 0.25) 40%,
+        transparent 70%
+    );
+    filter: blur(14px);
+    z-index: 1;
 }
 
 /* Gradient ring */
 .profile-avatar__ring {
-  position: relative;
-  width: 140px;
-  height: 140px;
-  margin: 0 auto;
-  border-radius: 50%;
-  padding: 4px;
-  background: linear-gradient(180deg, #ff7a3d, #ff3d2e);
-  z-index: 2;
+    position: relative;
+    width: 140px;
+    height: 140px;
+    margin: 0 auto;
+    border-radius: 50%;
+    padding: 4px;
+    background: linear-gradient(180deg, #ff7a3d, #ff3d2e);
+    z-index: 2;
 }
 
 /* Inner circle */
 .profile-avatar__inner {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: #1c1f26;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: #1c1f26;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
 /* Image */
 .profile-avatar__inner img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 /* Placeholder */
 .profile-avatar__placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .profile-avatar__placeholder img {
-  width: 60%;
-  height: 60%;
-  object-fit: contain;
+    width: 60%;
+    height: 60%;
+    object-fit: contain;
 }
 
 /* Edit button */
 .profile-avatar__edit {
-  position: absolute;
-  bottom: 30px; /* sits on the ring edge */
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 3;
+    position: absolute;
+    bottom: 60px; /* sits on the ring edge */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
 
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
 
-  background: #1c1f26;
-  color: #fff;
-  font-size: 16px;
-  cursor: pointer;
+    background: #1c1f26;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
 /* Username */
 .profile-avatar__name {
-  margin-top: 14px;
-  font-size: 20px;
-  font-weight: 600;
-  color: #fff;
+    margin-top: 2.5rem;
+    font-size: 3rem;
+    font-weight: 600;
+    color: #fafaf4;
 }
 @media (hover: hover) {
-  .profile-avatar__edit:hover {
-    transform: translateX(-50%) scale(1.08);
-  }
+    .profile-avatar__edit:hover {
+        transform: translateX(-50%) scale(1.08);
+    }
 }
 
 /* Container */
 .profile-stats {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  margin-top: 32px;
-  padding: 0 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4.2rem;
 }
 
 /* Each stat */
 .stat-item {
-  flex: 1;
-  text-align: center;
-  position: relative;
+    flex: 1;
+    text-align: center;
+    position: relative;
 }
 
 /* Divider lines (except last) */
 .stat-item:not(:last-child)::after {
-  content: "";
-  position: absolute;
-  top: 10%;
-  left: 0;
-  width: 1px;
-  height: 80%;
-  background: rgba(255, 255, 255, 0.08);
+    content: "";
+    position: absolute;
+    top: 10%;
+    left: 0;
+    width: 1px;
+    height: 80%;
+    background: rgba(255, 255, 255, 0.08);
 }
 
 /* Value */
 .stat-item__value {
-  font-size: 20px;
-  font-weight: 700;
-  color: #fff;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #fff;
 }
 
 /* Label */
 .stat-item__label {
-  margin-top: 6px;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
+    margin-top: 6px;
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.6);
 }
 /* Container */
 .profile-actions {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
 
-  margin-top: 32px;
-  padding: 0 12px;
+    margin-top: 32px;
+    margin-bottom: 32px;
 }
 
 /* Card */
 .action-card {
-  background: #1c1f26;
-  border: none;
-  border-radius: 16px;
-  padding: 1rem 0.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  cursor: pointer;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-  height: 15rem;
-  border-radius: 6rem;
-  width: 10rem;
+    background: #1c1f26;
+    border: none;
+    border-radius: 16px;
+    padding: 1rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    cursor: pointer;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+    height: 15rem;
+    border-radius: 6rem;
+    width: 10rem;
 }
 
 /* Icon */
 .action-card__icon {
-  width: 8rem;
-  height: 8rem;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+    width: 8rem;
+    height: 8rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
 }
 
 .action-card__icon img {
-  width: 50%;
-  height: 50%;
-  object-fit: contain;
+    width: 50%;
+    height: 50%;
+    object-fit: contain;
 }
 /* Label */
 .action-card__label {
-  margin-top: 8px;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
+    margin-top: 1.6rem;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #fff;
 }
 
 /* Hover (desktop only) */
 @media (hover: hover) {
-  .action-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
-  }
+    .action-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    }
 }
 
 /* Active (mobile tap feedback) */
 .action-card:active {
-  transform: scale(0.97);
+    transform: scale(0.97);
 }
 /* ===== FIX FOOD CARD FOR GRID ===== */
 
 /* make card behave vertically */
 .favorites-grid .food-card {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 /* fix image ratio (VERY IMPORTANT) */
 .favorites-grid .food-card-image {
-  width: 100%;
-  aspect-ratio: 1 / 1; /* square like design */
-  height: auto;
-  border-radius: 1.4rem;
-  overflow: hidden;
+    width: 100%;
+    aspect-ratio: 1 / 1; /* square like design */
+    height: auto;
+    border-radius: 1.4rem;
+    overflow: hidden;
 }
 
 /* fix image */
 .favorites-grid .food-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 /* tighten spacing */
 .favorites-grid .food-info {
-  margin-top: 0.6rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
+    margin-top: 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
 }
 
 /* fix title */
 .favorites-grid .food-title {
-  font-size: 1.05rem;
-  line-height: 1.4;
-  margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.4;
+    margin: 0;
 }
 
 /* ✅ PRICE FIX */
 .favorites-grid .food-price {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #d17842;
-  margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #d17842;
+    margin: 0;
 }
 
 .favorites-grid .food-price span {
-  font-size: 0.8rem;
-  color: #fff;
-  margin-right: 4px;
+    font-size: 0.8rem;
+    color: #fff;
+    margin-right: 4px;
 }
 
 /* CTA row spacing */
 .favorites-grid .food-price-row {
-  margin-top: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
 }
 
 /* button full width */
 .favorites-grid .add-btn {
-  width: 100%;
-  height: 3rem;
-  font-size: 0.9rem;
-  border-radius: 0.8rem;
+    width: 100%;
+    height: 3rem;
+    font-size: 0.9rem;
+    border-radius: 0.8rem;
 }

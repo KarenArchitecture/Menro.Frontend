@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import {
   getRestaurantProfile,
   updateRestaurantProfile,
+  checkSlugAvailability,
 } from "../../api/ownerRestaurant";
 import restaurantAxios from "../../api/restaurantAxios";
 import "../../assets/css/admin/restaurantProfileSection.css";
@@ -12,12 +13,19 @@ import useDocumentTitle from "../../hooks/useDocumentTitle";
 export default function RestaurantProfileSection() {
   useDocumentTitle("پروفایل رستوران");
   const { notify } = useGlobalUI();
+  const [submitting, setSubmitting] = useState(false);
   // basic fields
   const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [originalSlug, setOriginalSlug] = useState("");
+  const [slugAvailable, setSlugAvailable] = useState(null); // null | true | false
+  const [checkingSlug, setCheckingSlug] = useState(false);
   const [type, setType] = useState(""); // select
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const [bankAccount, setBankAccount] = useState("");
+  const [nationalCode, setNationalCode] = useState("");
+  const [shebaNumber, setShebaNumber] = useState("");
   const [description, setDescription] = useState("");
   const [openTime, setOpenTime] = useState("");
   const [closeTime, setCloseTime] = useState("");
@@ -44,6 +52,10 @@ export default function RestaurantProfileSection() {
   const [subscriptionType, setSubscriptionType] = useState("نامشخص");
   const [subscriptionDaysLeft, setSubscriptionDaysLeft] = useState(0);
 
+  // restaurant approval status (فقط نمایشی؛ توسط ادمین تغییر می‌کند)
+  const [restaurantStatus, setRestaurantStatus] = useState(null);
+  const [rejectReason, setRejectReason] = useState(null);
+
   // --------------------------------------------
   // Load categories + restaurant profile together
   // --------------------------------------------
@@ -60,10 +72,14 @@ export default function RestaurantProfileSection() {
 
         // fill basic fields
         setName(d.name);
+        setSlug(d.slug || "");
+        setOriginalSlug(d.slug || "");
         setType(String(d.restaurantCategoryId)); // important
         setAddress(d.address);
         setPhone(d.phoneNumber);
         setBankAccount(d.bankAccountNumber);
+        setNationalCode(d.nationalCode || "");
+        setShebaNumber(d.shebaNumber || "");
         setDescription(d.description);
         setOpenTime(d.openTime);
         setCloseTime(d.closeTime);
@@ -76,6 +92,10 @@ export default function RestaurantProfileSection() {
         // subscription
         setSubscriptionType(d.subscriptionType || "نامشخص");
         setSubscriptionDaysLeft(d.subscriptionDaysLeft ?? 0);
+
+        // approval status (اختیاری؛ اگر بک‌اند نفرستد چیزی نمایش داده نمی‌شود)
+        setRestaurantStatus(d.status || null);
+        setRejectReason(d.rejectReason || null);
       } catch (err) {
         console.error("Failed to load profile or categories", err);
         notify({
@@ -106,20 +126,92 @@ export default function RestaurantProfileSection() {
     if (logoInputRef.current) logoInputRef.current.value = "";
   };
 
+  // --------------------------------------------
+  // Slug handling
+  // --------------------------------------------
+  const sanitizeSlug = (value) =>
+    value
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "")
+      .replace(/-+/g, "-");
+
+  const handleSlugChange = (e) => {
+    setSlug(sanitizeSlug(e.target.value));
+    setSlugAvailable(null); // با هر تغییر، نتیجه‌ی چک قبلی دیگر معتبر نیست
+  };
+
+  const handleCheckSlug = async () => {
+    const trimmed = slug.trim();
+    if (!trimmed) {
+      notify({ type: "warning", message: "ابتدا یک اسلاگ وارد کنید." });
+      return;
+    }
+
+    // اگر همون اسلاگ فعلی رستوران هست، نیازی به چک نیست
+    if (trimmed === originalSlug) {
+      setSlugAvailable(true);
+      return;
+    }
+
+    setCheckingSlug(true);
+    try {
+      const res = await checkSlugAvailability(trimmed);
+      setSlugAvailable(Boolean(res.data?.available));
+    } catch (err) {
+      console.error("Slug check failed:", err);
+      notify({
+        type: "error",
+        message: "بررسی در دسترس بودن اسلاگ با خطا مواجه شد",
+      });
+      setSlugAvailable(null);
+    } finally {
+      setCheckingSlug(false);
+    }
+  };
+
   // SUBMIT
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const trimmedSlug = slug.trim();
+
+    // بررسی خاموش اسلاگ - فقط در صورت تکراری بودن state تغییر می‌کند
+    if (trimmedSlug && trimmedSlug !== originalSlug) {
+      setSubmitting(true);
+      try {
+        const slugRes = await checkSlugAvailability(trimmedSlug);
+        const available = Boolean(slugRes.data?.available);
+        if (!available) {
+          setSlugAvailable(false); // فقط در خطا نمایش داده شود
+          setSubmitting(false);
+          return;
+        }
+        // available === true → عمداً setSlugAvailable صدا زده نمی‌شود تا فلش نزند
+      } catch (err) {
+        console.error("Slug check failed:", err);
+        setSubmitting(false);
+        notify({
+          type: "error",
+          message: "بررسی در دسترس بودن اسلاگ با خطا مواجه شد",
+        });
+        return;
+      }
+    }
 
     try {
       const formData = new FormData();
 
       // required text fields
       formData.append("Name", name);
+      formData.append("Slug", trimmedSlug);
       formData.append("RestaurantCategoryId", type);
       formData.append("Address", address);
       formData.append("Description", description);
       formData.append("PhoneNumber", phone);
       formData.append("BankAccountNumber", bankAccount);
+      formData.append("NationalCode", nationalCode);
+      formData.append("ShebaNumber", shebaNumber);
       formData.append("OpenTime", openTime);
       formData.append("CloseTime", closeTime);
 
@@ -142,26 +234,55 @@ export default function RestaurantProfileSection() {
         formData.append("RemoveLogo", "true");
       }
 
-      // send to backend
       const res = await updateRestaurantProfile(formData);
 
       console.log("Updated:", res.data);
+      if (trimmedSlug) {
+        setOriginalSlug(trimmedSlug);
+        // اینجا هم دیگه لازم نیست setSlugAvailable(true) کنیم، چون فیلد دیگه دِرتی نیست
+        // (slug === originalSlug شده و اون پیام‌ها اصلاً رندر نمی‌شن)
+      }
       notify({ type: "success", message: "پروفایل با موفقیت بروزرسانی شد" });
     } catch (err) {
       console.error("Update failed:", err);
       notify({ type: "error", message: "خطا در بروزرسانی پروفایل رستوران" });
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
     <div className="panel restaurant-profile-panel">
       <div className="view-header">
-        <h3>مدیریت رستوران</h3>
+        <h3>
+          <i className="fa-solid fa-store" /> مدیریت رستوران
+        </h3>
+
+        {restaurantStatus && (
+          <span
+            className={`status-pill restaurant-status-pill restaurant-status-pill--${restaurantStatus.toLowerCase()}`}
+          >
+            {restaurantStatus === "Approved" && "تایید شده"}
+            {restaurantStatus === "Pending" && "در انتظار تایید"}
+            {restaurantStatus === "Rejected" && "رد شده"}
+            {!["Approved", "Pending", "Rejected"].includes(restaurantStatus) &&
+              restaurantStatus}
+          </span>
+        )}
       </div>
+
+      {restaurantStatus === "Rejected" && rejectReason && (
+        <div className="restaurant-reject-banner">
+          <i className="fa-solid fa-circle-info" /> دلیل رد رستوران:{" "}
+          {rejectReason}
+        </div>
+      )}
 
       {/* Subscription box */}
       <div className="subscription-box">
-        <div className="subscription-box__title">اشتراک رستوران</div>
+        <div className="subscription-box__title">
+          <i className="fa-solid fa-crown" /> اشتراک رستوران
+        </div>
         <div className="subscription-box__row">
           <span>نوع اشتراک:</span>
           <strong id="restaurant-subscription-type">
@@ -217,6 +338,53 @@ export default function RestaurantProfileSection() {
           </div>
         </div>
 
+        {/* Slug */}
+        <div className="input-group">
+          <label htmlFor="restaurant-slug">
+            آدرس اختصاصی (Slug)
+            <span className="slug-label-hint">
+              — اختیاری، اگر خالی بماند اسلاگ فعلی حفظ می‌شود
+            </span>
+          </label>
+          <div className="slug-input-group">
+            <span className="slug-prefix">menro.ir/restaurant/</span>
+            <input
+              id="restaurant-slug"
+              name="restaurantSlug"
+              type="text"
+              dir="ltr"
+              value={slug}
+              onChange={handleSlugChange}
+              placeholder={originalSlug || "my-restaurant"}
+              className="slug-input"
+            />
+            <button
+              type="button"
+              className="slug-check-btn"
+              onClick={handleCheckSlug}
+              disabled={checkingSlug || !slug.trim()}
+            >
+              {checkingSlug ? (
+                <i className="fa-solid fa-spinner fa-spin" />
+              ) : (
+                "بررسی"
+              )}
+            </button>
+          </div>
+
+          {slugAvailable === true && slug.trim() !== originalSlug && (
+            <div className="slug-status slug-status--ok">
+              <i className="fa-solid fa-circle-check" /> این اسلاگ در دسترس است
+            </div>
+          )}
+          {slugAvailable === false && (
+            <div className="slug-status slug-status--taken">
+              <i className="fa-solid fa-circle-xmark" /> این اسلاگ قبلاً استفاده
+              شده است
+            </div>
+          )}
+        </div>
+
         {/* Address */}
         <div className="input-group">
           <label htmlFor="restaurant-address">آدرس</label>
@@ -230,36 +398,19 @@ export default function RestaurantProfileSection() {
           />
         </div>
 
-        {/* Phone + Bank account */}
-        <div className="form-grid">
-          <div className="input-group">
-            <label htmlFor="restaurant-phone">شماره تماس رستوران</label>
-            <input
-              id="restaurant-phone"
-              name="restaurantPhone"
-              type="tel"
-              maxLength={11}
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="مثال: 09123456789"
-              required
-            />
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="restaurant-bank-account">
-              شماره حساب صاحب رستوران
-            </label>
-            <input
-              id="restaurant-bank-account"
-              name="restaurantBankAccount"
-              type="text"
-              value={bankAccount}
-              onChange={(e) => setBankAccount(e.target.value)}
-              placeholder="مثال: شماره شبا یا حساب"
-              required
-            />
-          </div>
+        {/* Phone */}
+        <div className="input-group">
+          <label htmlFor="restaurant-phone">شماره تماس رستوران</label>
+          <input
+            id="restaurant-phone"
+            name="restaurantPhone"
+            type="tel"
+            maxLength={11}
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="مثال: 09123456789"
+            required
+          />
         </div>
 
         {/* Description */}
@@ -299,6 +450,66 @@ export default function RestaurantProfileSection() {
               onChange={(e) => setCloseTime(e.target.value)}
               required
             />
+          </div>
+        </div>
+
+        <hr style={{ border: "1px solid #444", margin: "20px 0" }} />
+
+        {/* Owner financial info */}
+        <div className="owner-details-heading">
+          <i className="fa-solid fa-id-card" />
+          <span>اطلاعات تکمیلی صاحب رستوران</span>
+        </div>
+
+        <div className="form-grid">
+          <div className="input-group">
+            <label htmlFor="restaurant-national-code">کد ملی</label>
+            <input
+              id="restaurant-national-code"
+              name="restaurantNationalCode"
+              type="text"
+              inputMode="numeric"
+              maxLength={10}
+              value={nationalCode}
+              onChange={(e) =>
+                setNationalCode(e.target.value.replace(/\D/g, ""))
+              }
+              placeholder="مثال: 0012345678"
+              required
+            />
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="restaurant-bank-account">شماره حساب بانکی</label>
+            <input
+              id="restaurant-bank-account"
+              name="restaurantBankAccount"
+              type="text"
+              value={bankAccount}
+              onChange={(e) => setBankAccount(e.target.value)}
+              placeholder="شماره حساب بانکی خود را وارد کنید"
+              required
+            />
+          </div>
+        </div>
+
+        <div className="input-group">
+          <label htmlFor="restaurant-sheba">شماره شبا (اختیاری)</label>
+          <div className="sheba-input-group">
+            <input
+              id="restaurant-sheba"
+              name="restaurantSheba"
+              type="text"
+              inputMode="numeric"
+              maxLength={24}
+              value={shebaNumber}
+              onChange={(e) =>
+                setShebaNumber(e.target.value.replace(/\D/g, ""))
+              }
+              placeholder="۲۴ رقم، بدون IR"
+              className="sheba-input"
+            />
+            <span className="sheba-prefix">IR</span>
           </div>
         </div>
 
@@ -477,8 +688,8 @@ export default function RestaurantProfileSection() {
 
         <hr style={{ border: "1px solid #444", margin: "20px 0" }} />
 
-        <button type="submit" className="btn btn-primary">
-          ذخیره تغییرات رستوران
+        <button type="submit" className="btn btn-primary" disabled={submitting}>
+          {submitting ? "در حال ذخیره..." : "ذخیره تغییرات رستوران"}
         </button>
       </form>
     </div>

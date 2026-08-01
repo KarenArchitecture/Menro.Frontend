@@ -8,6 +8,8 @@ import AdminHeader from "../components/admin/AdminHeader";
 import AdminSidebar from "../components/admin/AdminSidebar";
 
 /* ===================== Sections: restaurant-mgmt ===================== */
+import RestaurantProfileSection from "../components/admin/RestaurantProfileSection";
+import RestaurantTablesSection from "../components/admin/RestaurantTablesSection";
 import MenuManagementSection from "../components/admin/MenuManagementSection";
 import CategoriesSection from "../components/admin/CategoriesSection";
 import CommentsSection from "../components/admin/CommentsSection";
@@ -31,7 +33,6 @@ import LandingManagementSection from "../components/admin/LandingManagementSecti
 
 /* ===================== Sections: account ===================== */
 import ProfileSection from "../components/admin/ProfileSection";
-import RestaurantProfileSection from "../components/admin/RestaurantProfileSection";
 
 /* ===================== Sections: misc / unused in current sidebar ===================== */
 import DashboardSection from "../components/admin/DashboardSection";
@@ -116,6 +117,10 @@ export default function AdminPage() {
   const renderActiveView = () => {
     switch (activeTab) {
       // --- restaurant-mgmt ---
+      case "restaurant-profile":
+        return <RestaurantProfileSection />;
+      case "restaurant-tables":
+        return <RestaurantTablesSection />;
       case "menu":
         return (
           <MenuManagementSection
@@ -158,8 +163,6 @@ export default function AdminPage() {
       // --- account ---
       case "profile":
         return <ProfileSection />;
-      case "restaurant-profile":
-        return <RestaurantProfileSection />;
 
       // --- misc ---
       case "dashboard":

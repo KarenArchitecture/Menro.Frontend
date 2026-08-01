@@ -22,6 +22,16 @@ const NAV_GROUPS = [
     key: "restaurant-mgmt",
     label: "مدیریت رستوران",
     items: [
+      {
+        key: "restaurant-profile",
+        label: "پروفایل رستوران",
+        icon: "fas fa-store",
+      },
+      {
+        key: "restaurant-tables",
+        label: "میزهای رستوران",
+        icon: "fas fa-chair",
+      },
       { key: "menu", label: "مدیریت منو", icon: "fas fa-utensils" },
       {
         key: "categories",
@@ -96,11 +106,6 @@ const NAV_GROUPS = [
     items: [
       // { key: "theme", label: "مدیریت قالب", icon: "fas fa-palette" },
       { key: "profile", label: "پروفایل کاربری", icon: "fas fa-user-circle" },
-      {
-        key: "restaurant-profile",
-        label: "پروفایل رستوران",
-        icon: "fas fa-store",
-      },
       {
         key: "logout",
         label: "خروج از حساب",

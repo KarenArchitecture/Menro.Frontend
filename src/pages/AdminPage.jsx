@@ -22,7 +22,7 @@ import FinancialSection from "../components/admin/FinancialSection";
 
 /* ===================== Sections: platform-admin ===================== */
 import UserManagementSection from "../components/admin/UserManagementSection";
-import RestaurantsListForAdminSection from "../components/admin/RestaurantsListForAdminSection";
+import RestaurantsManagementSection from "../components/admin/RestaurantsManagementSection";
 import CategorySettingsSection from "../components/admin/CategorySettingsSection";
 import RestaurantCategorySettingsSection from "../components/admin/RestaurantCategorySettingsSection";
 
@@ -146,7 +146,7 @@ export default function AdminPage() {
       case "user-roles":
         return <UserManagementSection />;
       case "restaurants":
-        return <RestaurantsListForAdminSection />;
+        return <RestaurantsManagementSection />;
       case "category-settings":
         return <CategorySettingsSection />;
       case "restaurant-category-settings":

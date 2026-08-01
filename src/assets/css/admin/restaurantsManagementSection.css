@@ -1,0 +1,273 @@
+/* ==========================================================================
+   RestaurantManagementSection
+   Append this file's contents to admin-dashboard.css (or keep it as a
+   separate stylesheet imported after it — either way it relies on the
+   :root custom properties already defined there: --primary-color,
+   --border-color, --text-primary, --text-secondary, --text-muted,
+   --bg-light, --bg-dark).
+
+   Reuses as-is (no new classes needed): .panel, .btn, .btn-primary,
+   .btn-secondary, .btn-icon, .modal-backdrop, .modal, .modal-header,
+   .modal-footer, .form-error, .empty-hint, .table-container, table/th/td
+   ========================================================================== */
+
+/* ---------- Avatar / Logo (view-modal header) ---------- */
+
+.restaurant-mgmt__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  font-size: 20px;
+}
+.table-container .restaurant-mgmt__avatar {
+  margin: auto;
+}
+
+.restaurant-mgmt__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.restaurant-mgmt__avatar-icon {
+  color: var(--text-muted, #a1a1aa);
+  font-size: 18px;
+}
+
+.restaurant-mgmt__avatar--lg {
+  width: 68px;
+  height: 68px;
+  font-size: 30px;
+}
+.restaurant-mgmt__avatar--sm {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+.restaurant-mgmt__avatar--lg .restaurant-mgmt__avatar-icon {
+  font-size: 28px;
+}
+
+/* ---------- View modal ---------- */
+
+.restaurant-mgmt__view-modal {
+  max-width: 480px;
+}
+
+.restaurant-mgmt__view-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.restaurant-mgmt__view-header-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.restaurant-mgmt__view-header-text strong {
+  font-size: 1.05rem;
+  color: var(--text-primary);
+}
+
+.restaurant-mgmt__muted {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.restaurant-mgmt__view-header-text .restaurant-mgmt__muted {
+  direction: ltr;
+}
+
+/* ---------- Rating row ---------- */
+
+.restaurant-mgmt__rating-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+}
+
+.restaurant-mgmt__stars {
+  display: flex;
+  gap: 2px;
+  color: var(--primary-color, #f59e0b);
+  font-size: 15px;
+}
+
+.restaurant-mgmt__rating-value {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Detail grid ---------- */
+
+.restaurant-mgmt__detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+.restaurant-mgmt__detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.restaurant-mgmt__detail-item--full {
+  grid-column: 1 / -1;
+}
+
+.restaurant-mgmt__detail-item span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.restaurant-mgmt__detail-item strong {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  word-break: break-word;
+}
+
+@media (max-width: 720px) {
+  .restaurant-mgmt__detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- List table ---------- */
+
+.restaurant-mgmt__phone {
+  direction: ltr;
+  text-align: right;
+  color: var(--text-secondary, #d4d4d8);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.restaurant-mgmt .table-container table {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.restaurant-mgmt .table-container tbody tr {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.restaurant-mgmt .table-container th,
+.restaurant-mgmt .table-container td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  border-bottom: none; /* خط دیگه از خودِ ردیف میاد، نه از تک‌تک سلول‌ها */
+}
+
+/* ستون ۱: عکس */
+.restaurant-mgmt .table-container th:nth-child(1),
+.restaurant-mgmt .table-container td:nth-child(1) {
+  width: 32px;
+  text-align: center;
+}
+
+/* ستون ۲: نام رستوران */
+.restaurant-mgmt .table-container th:nth-child(2),
+.restaurant-mgmt .table-container td:nth-child(2) {
+  width: 45%;
+}
+
+/* ستون ۳: شماره تماس */
+.restaurant-mgmt .table-container th:nth-child(3),
+.restaurant-mgmt .table-container td:nth-child(3) {
+  width: 30%;
+}
+
+/* ستون ۴: عملیات */
+.restaurant-mgmt .table-container th:nth-child(4),
+.restaurant-mgmt .table-container td:nth-child(4) {
+  width: 100px;
+  text-align: center;
+}
+
+/* ---------- Internal table scroll (same behaviour as user-mgmt) ---------- */
+
+#restaurant-management-view .restaurant-mgmt__table-scroll {
+  max-height: calc(100vh - 240px);
+  min-height: 240px;
+  overflow-y: auto;
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) var(--bg-light);
+}
+#restaurant-management-view .restaurant-mgmt__table-scroll thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-light);
+  z-index: 1;
+}
+#restaurant-management-view .restaurant-mgmt__table-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+#restaurant-management-view
+  .restaurant-mgmt__table-scroll::-webkit-scrollbar-track {
+  background: var(--bg-light);
+  border-radius: 8px;
+}
+#restaurant-management-view
+  .restaurant-mgmt__table-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 8px;
+  border: 2px solid var(--bg-light);
+}
+#restaurant-management-view
+  .restaurant-mgmt__table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}
+
+@media (max-width: 720px) {
+  #restaurant-management-view .restaurant-mgmt__table-scroll {
+    max-height: calc(100vh - 460px);
+  }
+}
+.restaurant-mgmt__reject-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--text-secondary, #d4d4d8);
+}
+
+.restaurant-mgmt__reject-banner i {
+  color: var(--status-danger, #ef4444);
+  margin-top: 2px;
+  flex-shrink: 0;
+}

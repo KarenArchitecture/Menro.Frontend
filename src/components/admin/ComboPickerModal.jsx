@@ -137,14 +137,19 @@ export default function ComboPickerModal({
                             }`}
                             onClick={() => toggle(f.id)}
                           >
-                            <img
-                              src={resolveFileUrl(
-                                f.imageUrl,
-                                "/images/food/food-placeholder.png",
+                            <span className="combos-mgmt__picker-thumb-wrap">
+                              <i className="fas fa-utensils" />
+                              {f.imageUrl && (
+                                <img
+                                  src={resolveFileUrl(f.imageUrl)}
+                                  alt={f.name}
+                                  className="combos-mgmt__picker-thumb"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = "none";
+                                  }}
+                                />
                               )}
-                              alt={f.name}
-                              className="combos-mgmt__picker-thumb"
-                            />
+                            </span>
 
                             <div className="combos-mgmt__picker-info">
                               <span className="combos-mgmt__picker-name">

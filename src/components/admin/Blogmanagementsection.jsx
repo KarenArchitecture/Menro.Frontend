@@ -20,6 +20,8 @@ import {
 } from "../../api/adminBlogs";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+import "../../assets/css/admin/admin.css";
+import "../../assets/css/admin/blogManagementSection.css";
 
 // "فیلترهای فید" tab intentionally removed - feed categories are now a fixed,
 // non-editable list (see FEED_CATEGORIES in adminBlogs.js).
@@ -343,9 +345,9 @@ function PostsPane() {
 
   return (
     <div className="panel">
-      <div className="blog-mgmt__posts-toolbar">
-        <div className="blog-mgmt__posts-toolbar-group">
-          <form className="blog-mgmt__search-box" onSubmit={handleSearchSubmit}>
+      <div className="admin-toolbar">
+        <div className="admin-toolbar-group">
+          <form className="admin-search-box" onSubmit={handleSearchSubmit}>
             <input
               type="text"
               className="mh-input"
@@ -355,7 +357,7 @@ function PostsPane() {
             />
             <button
               type="submit"
-              className="blog-mgmt__search-submit"
+              className="admin-search-submit"
               title="جستجو"
               aria-label="جستجو"
             >
@@ -363,7 +365,7 @@ function PostsPane() {
             </button>
           </form>
           {!loading && totalPages > 1 && (
-            <div className="blog-mgmt__pagination">
+            <div className="admin-pagination">
               <button
                 type="button"
                 className="btn btn-secondary"
@@ -372,7 +374,7 @@ function PostsPane() {
               >
                 قبلی
               </button>
-              <span className="blog-mgmt__pagination-label">
+              <span className="admin-pagination-label">
                 صفحه {toPersianDigits(page)} از {toPersianDigits(totalPages)} (
                 {toPersianDigits(totalCount)} پست)
               </span>
@@ -388,7 +390,7 @@ function PostsPane() {
           )}
         </div>
 
-        <div className="blog-mgmt__posts-toolbar-group">
+        <div className="admin-toolbar-group">
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}

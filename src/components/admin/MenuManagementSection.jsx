@@ -4,6 +4,7 @@ import FoodModal from "./FoodModal";
 import adminFoodAxios from "../../api/adminFoodAxios";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+import "../../assets/css/admin/menuManagementSection.css";
 
 function toIntDigits(v) {
   return Number(String(v || "0").replace(/[^\d]/g, ""));
@@ -230,12 +231,9 @@ export default function MenuManagementSection({ onNavigateToCategories }) {
       </div>
 
       <div className="panel">
-        <div className="food-mgmt__toolbar">
-          <div className="food-mgmt__toolbar-group">
-            <form
-              className="food-mgmt__search-box"
-              onSubmit={handleSearchSubmit}
-            >
+        <div className="admin-toolbar">
+          <div className="admin-toolbar-group">
+            <form className="admin-search-box" onSubmit={handleSearchSubmit}>
               <input
                 type="text"
                 className="mh-input"
@@ -245,7 +243,7 @@ export default function MenuManagementSection({ onNavigateToCategories }) {
               />
               <button
                 type="submit"
-                className="food-mgmt__search-submit"
+                className="admin-search-submit"
                 title="جستجو"
                 aria-label="جستجو"
               >
@@ -262,7 +260,7 @@ export default function MenuManagementSection({ onNavigateToCategories }) {
               فقط غذاهای فعال
             </label>
           </div>
-          <div className="blog-mgmt__posts-toolbar-group">
+          <div className="admin-toolbar-group">
             {!loadingCategories && categories.length === 0 ? (
               <button
                 type="button"

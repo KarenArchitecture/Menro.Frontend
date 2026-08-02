@@ -1,9 +1,27 @@
 // src/components/common/GlobalUI/ConfirmModal.jsx
+import { useEffect } from "react";
 
 export default function ModalRoot({ modal, onClose }) {
-  if (!modal) return null;
+  const isConfirm = modal?.kind === "confirm";
 
-  const isConfirm = modal.kind === "confirm";
+  useEffect(() => {
+    if (!modal) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        onClose(true);
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        onClose(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [modal, onClose]);
+
+  if (!modal) return null;
 
   return (
     <div className="gui-modal-backdrop" onClick={() => onClose(false)}>

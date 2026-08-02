@@ -1,7 +1,7 @@
 /* ==========================================================================
   LandingManagementSection additions
   Append these rules to admin-dashboard.css.
-  Reuses .blog-mgmt / .panel / .modal / .custom-icon-row primitives that
+  Reuses / .panel / .modal / .custom-icon-row primitives that
   already exist for BlogManagementSection — only landing-specific bits
   (prefixed landing-mgmt__) are added here.
    ========================================================================== */
@@ -411,4 +411,34 @@
   border-color: var(--accent, #f97316);
   background: color-mix(in srgb, var(--accent, #f97316) 20%, #16161c);
   color: var(--accent, #f97316);
+}
+/* ============================================================================
+   قرض گرفته بود و اینجا rename و برای #landing-management-view بازنویسی شده.
+   این بلوک رو داخل landingManagement.css قرار بده.
+   ============================================================================ */
+
+/* ردیف لیبل + شمارنده کاراکتر بالای اینپوت‌ها (هیرو، عنوان اسپاتلایت، دلیل‌ها، سوال/پاسخ FAQ) */
+#landing-management-view .landing-mgmt__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+#landing-management-view .landing-mgmt__char-count {
+  font-size: 11px;
+  color: var(--text-muted, rgba(255, 255, 255, 0.5));
+  font-variant-numeric: tabular-nums;
+}
+
+/* زیرمتن توضیحات هر «دلیل» زیر عنوانش در لیست چرا منرو؟ */
+#landing-management-view .landing-mgmt__reason-subtitle {
+  display: block;
+  color: var(--text-muted, rgba(255, 255, 255, 0.55));
+  font-size: 12px;
+  word-break: break-word;
+}
+
+/* فاصله بین دکمه «جدید» و لیست زیرش (در پنل دلایل و پنل FAQ) */
+#landing-management-view .landing-mgmt__panel-actions--start {
+  margin-bottom: 18px;
 }

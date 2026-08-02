@@ -10,6 +10,9 @@ import ComboPickerModal from "./ComboPickerModal";
 import resolveFileUrl from "../../utils/resolveFileUrl";
 import { toPersianDigits } from "../../utils/persianFormat";
 import { groupFoodsByCategory } from "../../utils/groupFoodsByCategory";
+import { useGlobalUI } from "../common/GlobalUI";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
+import "../../assets/css/admin/CombosSection.css";
 
 export default function CombosSection() {
   const [foods, setFoods] = useState([]);
@@ -198,14 +201,19 @@ export default function CombosSection() {
                             className={`combos-mgmt__rail-item ${selectedFoodId === f.id ? "is-active" : ""}`}
                             onClick={() => handleSelectFood(f.id)}
                           >
-                            <img
-                              src={resolveFileUrl(
-                                f.imageUrl,
-                                "/images/food/food-placeholder.png",
+                            <span className="combos-mgmt__rail-thumb-wrap">
+                              <i className="fas fa-utensils" />
+                              {f.imageUrl && (
+                                <img
+                                  src={resolveFileUrl(f.imageUrl)}
+                                  alt={f.name}
+                                  className="combos-mgmt__rail-thumb"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = "none";
+                                  }}
+                                />
                               )}
-                              alt={f.name}
-                              className="combos-mgmt__rail-thumb"
-                            />
+                            </span>
                             <span className="combos-mgmt__rail-name">
                               {f.name}
                             </span>
@@ -237,16 +245,21 @@ export default function CombosSection() {
             ) : (
               <>
                 <div className="combos-mgmt__editor-header">
-                  <img
-                    src={resolveFileUrl(
-                      selectedFood.imageUrl,
-                      "/images/food/food-placeholder.png",
+                  <span className="combos-mgmt__editor-thumb-wrap">
+                    <i className="fas fa-utensils" />
+                    {selectedFood.imageUrl && (
+                      <img
+                        src={resolveFileUrl(selectedFood.imageUrl)}
+                        alt={selectedFood.name}
+                        className="combos-mgmt__editor-thumb"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
                     )}
-                    alt={selectedFood.name}
-                    className="combos-mgmt__editor-thumb"
-                  />
-                  <div>
-                    <h3 style={{ margin: 0 }}>{selectedFood.name}</h3>
+                  </span>
+                  <div className="combos-mgmt__editor-header-info">
+                    <h3>{selectedFood.name}</h3>
                     <span className="pill-count">
                       {toPersianDigits(comboFoods.length)} ترکیب فعال
                     </span>
@@ -299,14 +312,19 @@ export default function CombosSection() {
                               >
                                 <i className="fas fa-times" />
                               </button>
-                              <img
-                                src={resolveFileUrl(
-                                  cf.imageUrl,
-                                  "/images/food/food-placeholder.png",
+                              <span className="combos-mgmt__combo-thumb-wrap">
+                                <i className="fas fa-utensils" />
+                                {cf.imageUrl && (
+                                  <img
+                                    src={resolveFileUrl(cf.imageUrl)}
+                                    alt={cf.name}
+                                    className="combos-mgmt__combo-thumb"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = "none";
+                                    }}
+                                  />
                                 )}
-                                alt={cf.name}
-                                className="combos-mgmt__combo-thumb"
-                              />
+                              </span>
                               <div className="combos-mgmt__combo-info">
                                 <span className="combos-mgmt__combo-name">
                                   {cf.name}

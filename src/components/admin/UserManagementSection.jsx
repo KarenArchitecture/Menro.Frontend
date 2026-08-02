@@ -6,7 +6,8 @@ import {
   updateUserRoles,
   apiErrorMessage,
 } from "../../api/adminUsers";
-import "../../assets/css/admin/userMngmnt.css";
+import "../../assets/css/admin/admin.css";
+import "../../assets/css/admin/userManagementSection.css";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 
@@ -172,7 +173,7 @@ export default function UserManagementSection() {
     }
   };
   return (
-    <div id="user-management-view" className="blog-mgmt user-mgmt">
+    <div id="user-management-view" className="user-mgmt">
       <div className="view-header">
         <h2 className="content-title">مدیریت کاربران</h2>
       </div>
@@ -180,10 +181,10 @@ export default function UserManagementSection() {
       <div className="panel">
         {apiError && <span className="form-error">{apiError}</span>}
 
-        <div className="blog-mgmt__posts-toolbar">
-          <div className="blog-mgmt__posts-toolbar-group">
+        <div className="admin-toolbar">
+          <div className="admin-toolbar-group">
             {!loading && totalPages > 1 && (
-              <div className="blog-mgmt__pagination">
+              <div className="admin-pagination">
                 <button
                   type="button"
                   className="btn btn-secondary"
@@ -192,7 +193,7 @@ export default function UserManagementSection() {
                 >
                   قبلی
                 </button>
-                <span className="blog-mgmt__pagination-label">
+                <span className="admin-pagination-label">
                   صفحه {toPersianDigits(page)} از {toPersianDigits(totalPages)}{" "}
                   ({toPersianDigits(totalCount)} کاربر)
                 </span>
@@ -207,10 +208,7 @@ export default function UserManagementSection() {
               </div>
             )}
 
-            <form
-              className="blog-mgmt__search-box"
-              onSubmit={handleSearchSubmit}
-            >
+            <form className="admin-search-box" onSubmit={handleSearchSubmit}>
               <input
                 type="text"
                 className="mh-input"
@@ -220,7 +218,7 @@ export default function UserManagementSection() {
               />
               <button
                 type="submit"
-                className="blog-mgmt__search-submit"
+                className="admin-search-submit"
                 title="جستجو"
                 aria-label="جستجو"
               >
@@ -229,7 +227,7 @@ export default function UserManagementSection() {
             </form>
           </div>
 
-          <div className="blog-mgmt__posts-toolbar-group">
+          <div className="admin-toolbar-group">
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
@@ -245,7 +243,7 @@ export default function UserManagementSection() {
           </div>
         </div>
 
-        <div className="table-container blog-mgmt__posts-scroll">
+        <div className="table-container user-mgmt__table-scroll">
           <table>
             <thead>
               <tr>

@@ -22,6 +22,16 @@ const NAV_GROUPS = [
     key: "restaurant-mgmt",
     label: "مدیریت رستوران",
     items: [
+      {
+        key: "restaurant-profile",
+        label: "پروفایل رستوران",
+        icon: "fas fa-store",
+      },
+      {
+        key: "restaurant-tables",
+        label: "میزهای رستوران",
+        icon: "fas fa-chair",
+      },
       { key: "menu", label: "مدیریت منو", icon: "fas fa-utensils" },
       {
         key: "categories",
@@ -42,7 +52,11 @@ const NAV_GROUPS = [
     items: [
       { key: "orders", label: "مدیریت سفارش‌ها", icon: "fas fa-receipt" },
       // { key: "financial", label: "مالی", icon: "fas fa-file-invoice-dollar" },
-      { key: "ads", label: "رزرو تبلیغات", icon: "fas fa-bullhorn" },
+      {
+        key: "restaurantAds",
+        label: "تبلیغات رستوران",
+        icon: "fas fa-bullhorn",
+      },
     ],
   },
   {
@@ -78,13 +92,8 @@ const NAV_GROUPS = [
     roles: ["Admin"], // ✅ فقط برای Admin (منرو)
     items: [
       {
-        key: "ads-settings",
-        label: "تنظیمات تبلیغات",
-        icon: "fas fa-sliders-h",
-      },
-      {
-        key: "ads-requests",
-        label: "درخواست‌های تبلیغات",
+        key: "ads-management",
+        label: "تبلیغات منرو",
         icon: "fas fa-clipboard-check",
       },
       { key: "blog", label: "مدیریت بلاگ", icon: "fas fa-blog" },
@@ -97,11 +106,6 @@ const NAV_GROUPS = [
     items: [
       // { key: "theme", label: "مدیریت قالب", icon: "fas fa-palette" },
       { key: "profile", label: "پروفایل کاربری", icon: "fas fa-user-circle" },
-      {
-        key: "restaurant-profile",
-        label: "پروفایل رستوران",
-        icon: "fas fa-store",
-      },
       {
         key: "logout",
         label: "خروج از حساب",

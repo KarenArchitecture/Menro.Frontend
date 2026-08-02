@@ -1,0 +1,73 @@
+/* src/components/admin/AdBookingModal.css
+   استایل اختصاصی مودال «رزرو تبلیغ جدید».
+   کلاس‌های محتوای فرم (booking-layout، config-step، choice-grid، ad-preview،
+   cost-summary-details و...) از admin-dashboard.css به ارث می‌رسند؛ این فایل فقط
+   لایه‌ی overlay/مودال (تقریباً تمام‌صفحه) را تعریف می‌کند. */
+
+.adbook-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 20px;
+}
+
+.adbook-modal {
+  width: 100%;
+  max-width: 1200px;
+  height: 92vh;
+  max-height: 920px;
+  background: var(--surface-color, #1b1b1b);
+  border: 1px solid var(--border-color, #2f2f2f);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.adbook-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border-color, #2f2f2f);
+  flex-shrink: 0;
+}
+
+.adbook-modal__header h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.adbook-modal__header h3 i {
+  color: var(--primary-color, #f59e0b);
+}
+
+.adbook-modal__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 22px;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .adbook-overlay {
+    padding: 0;
+  }
+  .adbook-modal {
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+  .adbook-modal__body {
+    padding: 16px;
+  }
+}

@@ -1,0 +1,212 @@
+/* src/components/admin/RestaurantTablesSection.css
+   استایل اختصاصی تب «میزهای رستوران». مستقل از admin-dashboard.css؛ فقط
+   کلاس‌های .panel، .btn-icon و .empty-hint از آن به ارث می‌رسد. */
+
+.rtab-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.rtab-header {
+  align-items: flex-start;
+}
+
+.rtab-subtitle {
+  margin-top: 4px;
+  margin-bottom: 0;
+  text-align: right;
+  font-size: 0.9rem;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.6));
+}
+
+.rtab-count-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--primary-color, #f59e0b);
+  font-weight: 700;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* ---------- Grid ---------- */
+.rtab-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.rtab-empty {
+  grid-column: 1 / -1;
+}
+
+/* ---------- Card (base) ---------- */
+.rtab-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 120px;
+  padding: 18px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease,
+    background 0.15s ease;
+}
+
+/* ---------- Add card ---------- */
+.rtab-card--add {
+  cursor: pointer;
+  color: var(--text-secondary, #bbb);
+  background: transparent;
+  border: 1.5px dashed rgba(245, 158, 11, 0.4);
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.rtab-card--add i {
+  font-size: 1.3rem;
+  color: var(--primary-color, #f59e0b);
+}
+
+.rtab-card--add:hover {
+  border-color: var(--primary-color, #f59e0b);
+  background: rgba(245, 158, 11, 0.06);
+  color: var(--text-primary, #eaeaea);
+  transform: translateY(-2px);
+}
+
+/* ---------- Existing table card ---------- */
+.rtab-card:not(.rtab-card--add):not(.rtab-card--adding):hover {
+  border-color: rgba(245, 158, 11, 0.35);
+  transform: translateY(-2px);
+}
+
+.rtab-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(245, 158, 11, 0.14);
+  color: var(--primary-color, #f59e0b);
+  font-size: 1.05rem;
+}
+
+.rtab-card__label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary, #eaeaea);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.rtab-card__icon-slot {
+  position: relative;
+  width: 44px;
+  height: 44px;
+}
+
+.rtab-card__icon-slot .rtab-card__icon,
+.rtab-card__icon-slot .rtab-card__actions--hover {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.rtab-card__icon-slot .rtab-card__icon {
+  opacity: 1;
+}
+
+.rtab-card__icon-slot .rtab-card__actions--hover {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.85);
+  white-space: nowrap;
+}
+
+.rtab-card:hover .rtab-card__icon-slot .rtab-card__icon {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.85);
+}
+
+.rtab-card:hover .rtab-card__icon-slot .rtab-card__actions--hover {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.rtab-delete-btn:hover {
+  color: #ef4444;
+}
+
+/* ---------- Adding / editing state (input mode) ---------- */
+.rtab-card--adding,
+.rtab-card--editing {
+  align-items: stretch;
+  border-color: var(--primary-color, #f59e0b);
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.rtab-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-color, #3a3a3a);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--text-primary, #eaeaea);
+  font-family: inherit;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.rtab-input:focus {
+  outline: none;
+  border-color: var(--primary-color, #f59e0b);
+}
+
+.rtab-card__actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.rtab-confirm-btn {
+  color: #10b981;
+}
+
+.rtab-cancel-btn {
+  color: var(--text-muted, #888);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 600px) {
+  .rtab-header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .rtab-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+}

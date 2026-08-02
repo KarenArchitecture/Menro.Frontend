@@ -1,9 +1,11 @@
 // src/components/admin/AdsRequestsSection.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import AdRequestModal from "./AdRequestModal";
+import AdsSettingsModal from "./AdsSettingsModal";
 import adminRestaurantAdAxios from "../../api/adminRestaurantAdAxios";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+import "../../assets/css/admin/AdsManagementSection.css";
 
 /* ---------- helpers ---------- */
 const now = Date.now();
@@ -46,13 +48,14 @@ function getReservedUnitLabel({ billing, adType }) {
   */
 }
 
-export default function AdsRequestsSection() {
+export default function AdsManagementSection() {
   useDocumentTitle("درخواست‌های تبلیغات");
 
   const [requests, setRequests] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [selected, setSelected] = useState(null);
   const [rangeKey, setRangeKey] = useState("today");
+  const [showSettings, setShowSettings] = useState(false);
   const { notify } = useGlobalUI();
   /* ---------- Load Pending Ads ---------- */
   async function loadPending() {
@@ -252,9 +255,7 @@ export default function AdsRequestsSection() {
           {/* tabs */}
           <div className="orders-tabs">
             <button
-              className={`btn ${
-                !showHistory ? "btn-primary" : "btn-secondary"
-              }`}
+              className={`btn ${!showHistory ? "btn-primary" : "btn-secondary"}`}
               onClick={() => setShowHistory(false)}
             >
               درخواست‌های فعال ({counts.pending})
@@ -267,6 +268,16 @@ export default function AdsRequestsSection() {
             </button>
           </div>
         </div>
+
+        {/* settings — separate top-level child, pushed to the far edge */}
+        <button
+          type="button"
+          className="btn btn-secondary admin-toolbar-btn"
+          onClick={() => setShowSettings(true)}
+        >
+          <i className="fas fa-cog" />
+          <span>تنظیمات تبلیغات</span>
+        </button>
       </div>
 
       {/* list */}
@@ -335,6 +346,10 @@ export default function AdsRequestsSection() {
         onApprove={selected?.status === "pending" ? handleApprove : undefined}
         onReject={selected?.status === "pending" ? handleReject : undefined}
       />
+
+      {showSettings && (
+        <AdsSettingsModal onClose={() => setShowSettings(false)} />
+      )}
     </div>
   );
 }

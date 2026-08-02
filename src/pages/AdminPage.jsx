@@ -8,6 +8,8 @@ import AdminHeader from "../components/admin/AdminHeader";
 import AdminSidebar from "../components/admin/AdminSidebar";
 
 /* ===================== Sections: restaurant-mgmt ===================== */
+import RestaurantProfileSection from "../components/admin/RestaurantProfileSection";
+import RestaurantTablesSection from "../components/admin/RestaurantTablesSection";
 import MenuManagementSection from "../components/admin/MenuManagementSection";
 import CategoriesSection from "../components/admin/CategoriesSection";
 import CommentsSection from "../components/admin/CommentsSection";
@@ -15,24 +17,22 @@ import CombosSection from "../components/admin/CombosSection";
 
 /* ===================== Sections: business ===================== */
 import OrdersSection from "../components/admin/OrdersSection";
-import AdsBookingSection from "../components/admin/AdsBookingSection";
+import RestaurantAdsSection from "../components/admin/RestaurantAdsSection";
 import FinancialSection from "../components/admin/FinancialSection";
 
 /* ===================== Sections: platform-admin ===================== */
 import UserManagementSection from "../components/admin/UserManagementSection";
-import RestaurantsListForAdminSection from "../components/admin/RestaurantsListForAdminSection";
+import RestaurantsManagementSection from "../components/admin/RestaurantsManagementSection";
 import CategorySettingsSection from "../components/admin/CategorySettingsSection";
 import RestaurantCategorySettingsSection from "../components/admin/RestaurantCategorySettingsSection";
 
 /* ===================== Sections: content-ads-admin ===================== */
-import AdsSettingsSection from "../components/admin/AdsSettingsSection";
-import AdsRequestsSection from "../components/admin/AdsRequestsSection";
+import AdsManagementSection from "../components/admin/AdsManagementSection";
 import BlogManagementSection from "../components/admin/BlogManagementSection";
 import LandingManagementSection from "../components/admin/LandingManagementSection";
 
 /* ===================== Sections: account ===================== */
 import ProfileSection from "../components/admin/ProfileSection";
-import RestaurantProfileSection from "../components/admin/RestaurantProfileSection";
 
 /* ===================== Sections: misc / unused in current sidebar ===================== */
 import DashboardSection from "../components/admin/DashboardSection";
@@ -117,6 +117,10 @@ export default function AdminPage() {
   const renderActiveView = () => {
     switch (activeTab) {
       // --- restaurant-mgmt ---
+      case "restaurant-profile":
+        return <RestaurantProfileSection />;
+      case "restaurant-tables":
+        return <RestaurantTablesSection />;
       case "menu":
         return (
           <MenuManagementSection
@@ -133,8 +137,8 @@ export default function AdminPage() {
       // --- business ---
       case "orders":
         return <OrdersSection />;
-      case "ads":
-        return <AdsBookingSection />;
+      case "restaurantAds":
+        return <RestaurantAdsSection />;
       case "financial":
         return <FinancialSection />;
 
@@ -142,17 +146,15 @@ export default function AdminPage() {
       case "user-roles":
         return <UserManagementSection />;
       case "restaurants":
-        return <RestaurantsListForAdminSection />;
+        return <RestaurantsManagementSection />;
       case "category-settings":
         return <CategorySettingsSection />;
       case "restaurant-category-settings":
         return <RestaurantCategorySettingsSection />;
 
       // --- content-ads-admin ---
-      case "ads-settings":
-        return <AdsSettingsSection />;
-      case "ads-requests":
-        return <AdsRequestsSection />;
+      case "ads-management":
+        return <AdsManagementSection />;
       case "blog":
         return <BlogManagementSection />;
       case "landing":
@@ -161,8 +163,6 @@ export default function AdminPage() {
       // --- account ---
       case "profile":
         return <ProfileSection />;
-      case "restaurant-profile":
-        return <RestaurantProfileSection />;
 
       // --- misc ---
       case "dashboard":

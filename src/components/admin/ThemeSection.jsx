@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+import "../../assets/css/admin/themeSection.css";
 
 const SWATCHES = [
   {

@@ -7,3 +7,6 @@ export const updateRestaurantProfile = (formData) =>
   ownerRestaurantAxios.put("/profile", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
+
+export const checkSlugAvailability = (slug) =>
+  ownerRestaurantAxios.get("/check-slug", { params: { slug } });

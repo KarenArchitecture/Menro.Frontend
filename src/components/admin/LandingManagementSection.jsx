@@ -2,8 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   getLandingGeneral,
   updateLandingGeneral,
-  uploadLandingHeroImage,
-  extractFileNameFromUrl,
   getLandingReasons,
   createLandingReason,
   updateLandingReason,
@@ -53,7 +51,7 @@ export default function LandingManagementSection() {
   const [activeSubTab, setActiveSubTab] = useState("general");
 
   return (
-    <div id="landing-management-view" className="blog-mgmt landing-mgmt">
+    <div id="landing-management-view" className="landing-mgmt">
       <div className="view-header">
         <h2 className="content-title">مدیریت صفحه لندینگ</h2>
       </div>
@@ -199,23 +197,12 @@ function GeneralTextsPane({ onSaved }) {
     setErrors({});
     setSaving(true);
     try {
-      let heroImageFileName = heroImageRemoved
-        ? null
-        : extractFileNameFromUrl(heroImageUrl);
-
-      if (heroImageFile) {
-        const uploaded = await uploadLandingHeroImage(
-          heroImageFile,
-          extractFileNameFromUrl(heroImageUrl),
-        );
-        heroImageFileName = uploaded.fileName;
-      }
-
       const result = await updateLandingGeneral({
         heroHighlight: draft.heroHighlight.trim(),
         heroTitle: draft.heroTitle.trim(),
         spotlightTitle: draft.spotlightTitle.trim(),
-        heroImageFileName,
+        heroImageFile,
+        removeHeroImage: heroImageRemoved,
       });
 
       setDraft({
@@ -262,9 +249,9 @@ function GeneralTextsPane({ onSaved }) {
 
   return (
     <div className="panel">
-      <div className="form-vertical blog-mgmt__form--hero">
+      <div className="form-vertical landing-mgmt__form--hero">
         <div className="landing-mgmt__field-title">عکس اصلی صفحه لندینگ</div>
-        <p className="blog-mgmt__muted-text">
+        <p className="landing-mgmt__muted-text">
           این عکس به‌عنوان تصویر اول (هیرو) صفحه لندینگ نمایش داده می‌شود.
           پیشنهاد می‌شود عکسی با ابعاد ۱۹۲۰×۱۰۸۰ (افقی) آپلود شود تا در نمایش
           دسکتاپ کامل و بدون افت کیفیت جا بگیرد.
@@ -342,13 +329,13 @@ function GeneralTextsPane({ onSaved }) {
         </div>
       </div>
 
-      <div className="form-vertical blog-mgmt__form--hero landing-mgmt__section-spacer">
+      <div className="form-vertical landing-mgmt__form--hero landing-mgmt__section-spacer">
         <div className="landing-mgmt__field-title">هیرو اصلی صفحه</div>
 
         <div className="input-group">
-          <div className="blog-mgmt__label-row">
+          <div className="landing-mgmt__label-row">
             <label>کلمه هایلایت (نارنجی)</label>
-            <span className="blog-mgmt__char-count">
+            <span className="landing-mgmt__char-count">
               {toPersianDigits(draft.heroHighlight.length)}/
               {toPersianDigits(HERO_TITLE_MAX)}
             </span>
@@ -367,9 +354,9 @@ function GeneralTextsPane({ onSaved }) {
         </div>
 
         <div className="input-group">
-          <div className="blog-mgmt__label-row">
+          <div className="landing-mgmt__label-row">
             <label>ادامه متن هیرو</label>
-            <span className="blog-mgmt__char-count">
+            <span className="landing-mgmt__char-count">
               {toPersianDigits(draft.heroTitle.length)}/
               {toPersianDigits(HERO_TITLE_MAX)}
             </span>
@@ -391,15 +378,15 @@ function GeneralTextsPane({ onSaved }) {
         <span>{draft.heroTitle}</span>
       </div>
 
-      <div className="form-vertical blog-mgmt__form--hero landing-mgmt__section-spacer">
+      <div className="form-vertical landing-mgmt__form--hero landing-mgmt__section-spacer">
         <div className="landing-mgmt__field-title">
           عنوان بخش «با منرو تو چشم باش»
         </div>
 
         <div className="input-group">
-          <div className="blog-mgmt__label-row">
+          <div className="landing-mgmt__label-row">
             <label>متن عنوان</label>
-            <span className="blog-mgmt__char-count">
+            <span className="landing-mgmt__char-count">
               {toPersianDigits(draft.spotlightTitle.length)}/
               {toPersianDigits(SPOTLIGHT_TITLE_MAX)}
             </span>
@@ -649,7 +636,7 @@ function ReasonsPane({ onSaved }) {
 
   return (
     <div className="panel">
-      <div className="panel-actions blog-mgmt__panel-actions--start">
+      <div className="panel-actions landing-mgmt__panel-actions--start">
         {reasons.length >= REASONS_LIMIT && (
           <span className="landing-mgmt__limit-hint">
             حداکثر {toPersianDigits(REASONS_LIMIT)} دلیل قابل ثبت است. برای
@@ -687,7 +674,7 @@ function ReasonsPane({ onSaved }) {
             </span>
             <div className="name landing-mgmt__reason-name">
               <strong>{reason.title}</strong>
-              <small className="blog-mgmt__cat-subtitle">
+              <small className="landing-mgmt__reason-subtitle">
                 {reason.description}
               </small>
             </div>
@@ -748,9 +735,9 @@ function ReasonsPane({ onSaved }) {
             </div>
             <div className="form-vertical">
               <div className="input-group">
-                <div className="blog-mgmt__label-row">
+                <div className="landing-mgmt__label-row">
                   <label>عنوان</label>
-                  <span className="blog-mgmt__char-count">
+                  <span className="landing-mgmt__char-count">
                     {toPersianDigits(modalReason.title.length)}/
                     {toPersianDigits(REASON_TITLE_MAX)}
                   </span>
@@ -769,9 +756,9 @@ function ReasonsPane({ onSaved }) {
               </div>
 
               <div className="input-group">
-                <div className="blog-mgmt__label-row">
+                <div className="landing-mgmt__label-row">
                   <label>توضیحات</label>
-                  <span className="blog-mgmt__char-count">
+                  <span className="landing-mgmt__char-count">
                     {toPersianDigits(modalReason.description.length)}/
                     {toPersianDigits(REASON_DESC_MAX)}
                   </span>
@@ -818,7 +805,7 @@ function ReasonsPane({ onSaved }) {
                     انتخاب از لیست
                   </button>
                 </div>
-                <p className="blog-mgmt__muted-text">
+                <p className="landing-mgmt__muted-text">
                   کلاس آیکون را مستقیم بنویسید یا با دکمه «انتخاب از لیست» یکی
                   از آیکون‌های پراستفاده را انتخاب کنید.
                 </p>
@@ -826,14 +813,14 @@ function ReasonsPane({ onSaved }) {
 
               <div className="input-group">
                 <label>رنگ آیکون</label>
-                <div className="blog-mgmt__color-row">
+                <div className="landing-mgmt__color-row">
                   <input
                     type="color"
                     value={modalReason.color}
                     onChange={(e) =>
                       setModalReason({ ...modalReason, color: e.target.value })
                     }
-                    className="blog-mgmt__color-swatch"
+                    className="landing-mgmt__color-swatch"
                   />
                   <input
                     type="text"
@@ -1085,7 +1072,7 @@ function FaqPane({ onSaved }) {
 
   return (
     <div className="panel">
-      <div className="panel-actions blog-mgmt__panel-actions--start">
+      <div className="panel-actions landing-mgmt__panel-actions--start">
         <button className="btn btn-primary" onClick={openNew}>
           <i className="fas fa-plus" /> سوال جدید
         </button>
@@ -1167,9 +1154,9 @@ function FaqPane({ onSaved }) {
             </div>
             <div className="form-vertical">
               <div className="input-group">
-                <div className="blog-mgmt__label-row">
+                <div className="landing-mgmt__label-row">
                   <label>متن سوال</label>
-                  <span className="blog-mgmt__char-count">
+                  <span className="landing-mgmt__char-count">
                     {toPersianDigits(modalFaq.question.length)}/
                     {toPersianDigits(FAQ_QUESTION_MAX)}
                   </span>
@@ -1188,9 +1175,9 @@ function FaqPane({ onSaved }) {
               </div>
 
               <div className="input-group">
-                <div className="blog-mgmt__label-row">
+                <div className="landing-mgmt__label-row">
                   <label>متن پاسخ</label>
-                  <span className="blog-mgmt__char-count">
+                  <span className="landing-mgmt__char-count">
                     {toPersianDigits(modalFaq.answer.length)}/
                     {toPersianDigits(FAQ_ANSWER_MAX)}
                   </span>

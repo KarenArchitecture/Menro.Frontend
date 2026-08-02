@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import adminRestaurantCategoryAxios from "../../api/adminRestaurantCategoryAxios";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+import "../../assets/css/admin/RestaurantCategorySettingsSection.css";
 
 function RestaurantTypeIcon() {
   return (
@@ -201,19 +202,25 @@ export default function RestaurantCategorySettingsSection() {
             <p>در حال بارگذاری...</p>
           ) : categories.length === 0 ? (
             <div className="category-item">
-              <RestaurantTypeIcon />
-              <span
-                className="category-title"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                هنوز نوع رستورانی اضافه نشده است.
-              </span>
+              <div className="category-meta">
+                <span className="category-icon-box">
+                  <RestaurantTypeIcon />
+                </span>
+                <span
+                  className="category-title"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  هنوز نوع رستورانی اضافه نشده است.
+                </span>
+              </div>
             </div>
           ) : (
             categories.map((cat) => (
               <div key={cat.id} className="category-item">
                 <div className="category-meta">
-                  <RestaurantTypeIcon />
+                  <span className="category-icon-box">
+                    <RestaurantTypeIcon />
+                  </span>
                   <span className="category-title">{cat.name}</span>
                 </div>
 

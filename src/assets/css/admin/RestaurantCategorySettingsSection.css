@@ -1,0 +1,78 @@
+/* ============================================================
+   RestaurantCategorySettingsSection
+   استایل مخصوص بخش «دسته‌بندی انواع رستوران»
+   تولبار عمومی (در صورت نیاز) از admin.css استفاده می‌کنه؛
+   این فایل فقط استایل‌های اختصاصی همین بخش (فرم افزودن + لیست) رو داره.
+   ============================================================ */
+
+.category-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.category-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  width: auto;
+  max-width: 100%;
+  padding: 8px 10px 8px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--mh-border, rgba(255, 255, 255, 0.1));
+  background: rgba(255, 255, 255, 0.03);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.category-item:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.category-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.category-icon-box {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--primary-color);
+}
+
+.category-icon-box svg {
+  width: 20px;
+  height: 20px;
+}
+
+.category-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.category-item .item-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-inline-start: 4px;
+  padding-inline-start: 10px;
+  border-inline-start: 1px solid var(--mh-border, rgba(255, 255, 255, 0.1));
+}
+
+@media (max-width: 480px) {
+  .category-item {
+    width: 100%;
+  }
+}

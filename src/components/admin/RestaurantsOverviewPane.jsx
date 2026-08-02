@@ -4,6 +4,7 @@ import {
   getRestaurantsOverview,
   apiErrorMessage,
 } from "../../api/adminRestaurants";
+import adminRestaurantCategoryAxios from "../../api/adminRestaurantCategoryAxios";
 import RestaurantDetailsModal from "./RestaurantDetailsModal";
 
 const PAGE_SIZE = 20;
@@ -24,7 +25,28 @@ export default function RestaurantsOverviewPane() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
+  const [categories, setCategories] = useState([]);
+  const [categoryFilter, setCategoryFilter] = useState("all");
+
   const [selectedId, setSelectedId] = useState(null);
+
+  // گرفتن لیست دسته‌بندی‌های رستوران برای پر کردن dropdown فیلتر
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await adminRestaurantCategoryAxios.get("/read-all");
+        const list = Array.isArray(res.data) ? res.data : res.data.items || [];
+        if (!cancelled) setCategories(list);
+      } catch (err) {
+        // خطای گرفتن دسته‌بندی‌ها رو silent می‌گیریم تا کل صفحه خراب نشه
+        console.error("خطا در بارگذاری دسته‌بندی‌های رستوران:", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -34,6 +56,7 @@ export default function RestaurantsOverviewPane() {
         setApiError("");
         const data = await getRestaurantsOverview({
           search: searchTerm.trim() || undefined,
+          categoryId: categoryFilter !== "all" ? categoryFilter : undefined,
           page,
           pageSize: PAGE_SIZE,
         });
@@ -54,11 +77,11 @@ export default function RestaurantsOverviewPane() {
     return () => {
       cancelled = true;
     };
-  }, [searchTerm, page]);
+  }, [searchTerm, page, categoryFilter]);
 
   useEffect(() => {
     setPage(1);
-  }, [searchTerm]);
+  }, [searchTerm, categoryFilter]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -114,6 +137,20 @@ export default function RestaurantsOverviewPane() {
                 <i className="fas fa-search" />
               </button>
             </form>
+          </div>
+          <div className="admin-toolbar-group">
+            <select
+              className="admin-toolbar-select"
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+            >
+              <option value="all">همه دسته‌ها</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 

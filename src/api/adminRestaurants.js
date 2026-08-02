@@ -25,15 +25,16 @@ export function updateRestaurantStatus(
 
 /* ---------------------------------------------------------------------
  * RestaurantsOverviewPane — لیست کامل رستوران‌ها (تب "لیست رستوران‌ها")
- * صفحه‌بندی و جستجوی سمت سرور
+ * صفحه‌بندی، جستجو و فیلتر دسته‌بندی سمت سرور
  * ------------------------------------------------------------------- */
 export async function getRestaurantsOverview({
   search,
+  categoryId,
   page = 1,
   pageSize = 20,
 } = {}) {
   const res = await adminRestaurantsAxios.get("/overview", {
-    params: { search, page, pageSize },
+    params: { search, categoryId, page, pageSize },
   });
   return res.data; // { items, totalCount, totalPages, page }
 }

@@ -527,18 +527,38 @@ table td {
   color: var(--status-active);
 }
 
+/* ============================================================
+   .btn — تعریف یکتا و کانونیک؛ نسخه‌های تکراری‌اش (که قبلاً پایین‌تر
+   توی فایل با height:36px دوباره تعریف شده بودن) حذف شدن.
+   هر جای دیگه‌ی سایت که از .btn استفاده می‌کنه از همینجا استایل می‌گیره.
+   ============================================================ */
 .btn {
-  padding: 10px 20px;
-  border: none;
+  height: 42px;
+  box-sizing: border-box;
+  padding: 0 20px;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
   cursor: pointer;
   font-family: inherit;
   font-weight: 700;
-  transition: background-color 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+.btn:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 .btn-primary {
+  border-color: transparent;
   background-color: var(--primary-color);
-  color: white;
+  color: #101010;
 }
 .btn-primary:hover {
   background-color: var(--primary-color-dark);
@@ -730,17 +750,6 @@ textarea {
   color: var(--text-secondary);
 }
 
-#categories-view .input-group-inline input {
-  font-size: 1.0625rem;
-  height: 44px;
-  padding: 10px 14px;
-}
-#categories-view .input-group-inline .btn {
-  font-size: 1rem;
-  height: 44px;
-  padding: 0 16px;
-}
-
 #categories-view .predefined-tags .tag {
   font-size: 1rem;
   padding: 10px 18px;
@@ -758,16 +767,29 @@ textarea {
   font-size: 1rem;
 }
 
+/* ============================================================
+   .input-group-inline — تعریف یکتا و کانونیک؛ نسخه‌های تکراری‌اش
+   (که پایین‌تر توی فایل با gap و height متفاوت دوباره تعریف شده
+   بودن) حذف شدن.
+   ============================================================ */
 .input-group-inline {
   display: flex;
-  gap: 15px;
+  gap: 10px;
   margin-bottom: 20px;
   align-items: center;
   justify-content: flex-start;
 }
 
-.input-group-inline input {
-  flex-grow: 1;
+.input-group-inline input[type="text"] {
+  flex: 1 1 auto;
+  height: 42px;
+  box-sizing: border-box;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: #252525;
+  color: var(--text-primary);
+  font-size: 1rem;
 }
 
 .input-group-inline button {
@@ -2446,20 +2468,6 @@ textarea {
 }
 
 /* ---------- Icon picker trigger / upload row ---------- */
-.input-group-inline {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.input-group-inline input[type="text"] {
-  flex: 1 1 auto;
-  height: 40px;
-  border-radius: 10px;
-  border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
-  background: rgba(0, 0, 0, 0.2);
-  color: var(--text, #fff);
-  padding: 0 12px;
-}
 .input-group-inline .btn .icon-preview {
   width: 28px;
   height: 28px;
@@ -2528,23 +2536,10 @@ textarea {
   color: #f59e0b;
 }
 
-/* ---------- Buttons (inherits your global .btn styles) ---------- */
-.btn {
-  height: 36px;
-  border-radius: 10px;
-  padding: 0 12px;
-  border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text, #fff);
-}
-.btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-.btn-primary {
-  border-color: transparent;
-  background: #f59e0b;
-  color: #101010;
-}
+/* ---------- Buttons (base .btn/.btn-primary now come from the single
+   canonical definition near the top of this file — see the block above
+   #categories-view. Only the icon/danger variants specific to this
+   section remain here.) ---------- */
 .btn-icon {
   width: 36px;
   min-width: 36px;

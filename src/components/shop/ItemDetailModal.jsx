@@ -232,8 +232,13 @@ function ItemDetailModal({ item, onClose, onSelectComboFood }) {
 
   /* ---------- open/close animation ---------- */
 
+  const sheetBodyRef = useRef(null);
+
+  
   useEffect(() => {
     if (!item) return;
+    sheetBodyRef.current?.scrollTo(0, 0);
+    window.scrollTo(0, 0);
     const t = setTimeout(() => setIsActive(true), 10);
     document.body.classList.add("modal-open");
     return () => {
@@ -278,7 +283,7 @@ function ItemDetailModal({ item, onClose, onSelectComboFood }) {
       />
 
       <div className={`bottom-modal ${isActive ? "active" : ""}`} dir="rtl">
-        <div className="sheet-body modal-content">
+        <div className="sheet-body modal-content" ref={sheetBodyRef}>
           <div className="modal-hero">
             <div className="modal-img-wrap">
               <nav className="img-topbar">

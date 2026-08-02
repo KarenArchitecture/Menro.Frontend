@@ -1,120 +1,105 @@
-/* src/assets/css/state-message.css */
 .state-message {
     width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: 2rem 2.5rem;
-    margin-bottom: 2.8rem;
-    border-radius: 1rem;
-    background-color: #1a1d25;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-}
-
-.restaurants .state-message {
-    border-radius: 0;
-}
-
-.state-message-subject {
-    color: #ff683c;
+    padding: 4rem 2.5rem;
+    margin: 1.6rem 0;
+    border-radius: 2rem;
+    background: linear-gradient(180deg, #1e232b 0%, #14171d 100%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
 }
 
 .state-message.compact {
-    padding: 1rem;
+    padding: 2.2rem 1.6rem;
+    margin: 0.8rem 0;
 }
 
-.state-message__icon-wrapper {
-    margin-bottom: 1rem;
+/* icon orb — same glass/glow treatment as .protected-action-icon,
+   reused here so empty/error states feel like the same design system
+   instead of a separate visual language. */
+.state-message__icon-orb {
+    position: relative;
+    width: 8.4rem;
+    height: 8.4rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+    background:
+        radial-gradient(
+            circle at 30% 25%,
+            rgba(255, 255, 255, 0.18),
+            rgba(255, 255, 255, 0.04) 45%,
+            rgba(255, 255, 255, 0.02) 70%
+        ),
+        linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.06),
+            rgba(255, 255, 255, 0.03)
+        );
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+        inset 0 1px 1px rgba(255, 255, 255, 0.15),
+        inset 0 -10px 20px rgba(0, 0, 0, 0.25),
+        0 0 45px var(--state-glow, rgba(255, 104, 60, 0.18));
 }
 
-.state-icon {
-    width: 48px;
-    height: 48px;
+.state-message__icon {
+    width: 3.6rem;
+    height: 3.6rem;
+    color: var(--state-color, #ff683c);
 }
 
-.state-icon.error {
-    color: #f87171; /* red-400 for dark mode */
+.state-message--empty {
+    --state-color: #ff683c;
+    --state-glow: rgba(255, 104, 60, 0.25);
 }
-
-.state-icon.empty {
-    color: #ff683c; /* yellow-400 */
+.state-message--error {
+    --state-color: #f87171;
+    --state-glow: rgba(248, 113, 113, 0.22);
 }
-
-.state-icon.info {
-    color: #60a5fa; /* blue-400 */
+.state-message--search {
+    --state-color: #ff9a3c;
+    --state-glow: rgba(255, 154, 60, 0.22);
+}
+.state-message--info {
+    --state-color: #60a5fa;
+    --state-glow: rgba(96, 165, 250, 0.2);
 }
 
 .state-message__title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: #f9fafb; /* near-white text */
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 0.8rem;
 }
 
 .state-message__text {
     font-size: 1.2rem;
-    color: #d1d5db; /* light gray for readability */
-    margin-bottom: 2.4rem;
-    line-height: 1.5;
+    color: #9aa3af;
+    line-height: 1.7;
+    max-width: 32rem;
 }
 
 .state-message__action {
-    margin-top: 2.4rem;
+    margin-top: 2rem;
 }
 
 .state-message__action button {
-    background-color: #2563eb; /* slightly darker blue button */
-    color: #f9fafb;
-    font-weight: 500;
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
+    background: linear-gradient(135deg, #ff7a50, #ff683c);
+    color: #fff;
+    font-weight: 700;
+    padding: 1rem 2rem;
+    border-radius: 1rem;
     border: none;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: filter 0.2s ease;
 }
 
 .state-message__action button:hover {
-    background-color: #1d4ed8;
+    filter: brightness(1.05);
 }
-
-/* shimmer effect */
-/* .shimmer-row {
-    position: relative;
-    overflow: hidden;
-    background-color: #1a1d26;
-    height: 120px;
-    border-radius: 12px;
-    margin: 1rem auto;
-}
-
-.shimmer-row::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 150%;
-    height: 100%;
-    background: linear-gradient(
-        90deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.1) 50%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    animation: shimmer 1.2s infinite;
-}
-
-@media (hover: hover) and (pointer: fine) {
-    .state-message:hover {
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
-    }
-}
-
-@keyframes shimmer {
-    0% {
-        left: -150%;
-    }
-    100% {
-        left: 100%;
-    }
-} */

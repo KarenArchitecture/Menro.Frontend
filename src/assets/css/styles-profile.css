@@ -7,7 +7,7 @@
 /* Top bar */
 .profile-header__topbar {
     position: absolute;
-    top: 2.7rem;
+    top: 2.5rem;
     right: 0; /* RTL friendly */
 }
 /* Page wrapper needs to be the positioning context for the logout button */
@@ -26,7 +26,7 @@
    is top-right) */
 .profile-logout-btn {
     position: absolute;
-    top: 3rem;
+    top: 2.5rem;
     left: 2.5rem;
     z-index: 5;
 
@@ -35,7 +35,7 @@
     border-radius: 1rem;
     border: none;
 
-    background: #0C0F14;
+    background: #0c0f14;
     color: #fff;
 
     display: flex;

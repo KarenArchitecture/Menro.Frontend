@@ -29,6 +29,7 @@ import UnauthorizedPage from "./pages/Authentication/UnauthorizedPage";
 import UserProfileForm from "./components/common/UserProfileForm";
 import FoodCommentsPage from "./pages/FoodCommentsPage";
 import MyCommentsPage from "./pages/MyCommentsPage";
+import ScrollToTop from "./components/common/ScrollToTop";
 
 import MobileNav from "./components/common/MobileNav";
 import ProtectedRoute from "./components/common/ProtectedRoute";
@@ -100,6 +101,7 @@ export default function App() {
 
       <DrawerStateProvider>
         <CartProvider>
+          <ScrollToTop />
           <PageWrapper
             hideMobileNav={hideMobileNav}
             removePadding={removePadding}

@@ -1,4 +1,3 @@
-
 /* public/shop.css */
 :root {
     --app-header-height: 88px;
@@ -39,6 +38,9 @@ body {
     display: none;
 }
 
+.sheet-body.modal-content {
+    width: 100% !important;
+}
 /* ========== Banner ========== */
 .banner {
     position: relative;
@@ -261,6 +263,7 @@ button.icon-btn {
 /* search (right) – generic styles for your <SearchBar /> wrapper */
 .search-bar--hero {
     background: #0c0f14;
+    width: 100% !important;
 }
 .search-bar--hero input {
     color: #a5adc0;
@@ -325,7 +328,7 @@ button.icon-btn {
     gap: 0.4rem;
     cursor: pointer;
     white-space: nowrap;
-    padding: 0.45rem 1rem;
+    padding: 0.45rem 1.2rem;
     border-radius: 1.6rem;
     transition: all 0.25s ease;
 }
@@ -1054,15 +1057,20 @@ button.icon-btn {
 /* Bottom sheet UNDER checkout (no drag) */
 .bottom-modal {
     position: fixed;
-    inset-inline: 0;
+    left: 0;
+    right: 0;
     bottom: 0;
-    z-index: 1300; /* < checkout */
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+    z-index: 1300;
     display: flex;
     flex-direction: column;
-    max-height: calc(100dvh - 12px);
+    max-height: 100dvh;
     transform: translateY(110%);
     transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
+
 .bottom-modal.active {
     transform: translateY(0%);
 }
@@ -2166,6 +2174,7 @@ button.modal-top-action {
     .bottom-modal .modal-content {
         max-height: 80vh;
         overflow-y: auto;
+        width: 100%;
     }
 
     /* shrink hero */

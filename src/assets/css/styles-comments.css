@@ -1,5 +1,5 @@
 .comments-page {
-    padding: 20px;
+    padding: 2.5rem 0 0 0;
 }
 
 /* HEADER */
@@ -9,12 +9,13 @@
     justify-content: space-between;
     margin-bottom: 24px;
     border-bottom: 1px solid #1b2026;
+    padding: 0 2.5rem;
     padding-bottom: 2rem;
 }
 
 .comments-header__back {
-    width: 40px;
-    height: 40px;
+    width: 3.4rem;
+    height: 3.4rem;
     border: none;
     background: #1e232a;
     border-radius: 12px;
@@ -322,13 +323,14 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 10px;
     text-align: center;
-    padding: 28px 20px;
+    height: 24rem;
     border-radius: 16px;
     background: #13171e;
     border: 1px dashed rgba(255, 255, 255, 0.08);
-    margin: 12px 0;
+    margin: 2.5rem;
 }
 
 .comment-hint-box__icon {

@@ -2,10 +2,11 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
-import AdminMusicPage from "./pages/AdminMusicPage";
-import AdminPage from "./pages/AdminPage";
+import AdminMusicPage from "./pages/Admin/AdminMusicPage";
+import AdminPage from "./pages/Admin/AdminPage";
 import BillsPage from "./pages/BillsPage";
 import BlogPage from "./pages/BlogPage";
+import BlogPostEditorPage from "./pages/Admin/BlogPostEditorPage";
 import BlogResultPage from "./pages/BlogResultPage";
 import ChangePasswordPage from "./pages/Authentication/ChangePasswordPage";
 import ChangePhone from "./pages/Authentication/ChangePhone";
@@ -119,6 +120,14 @@ export default function App() {
                 element={
                   <ProtectedRoute roles={["admin", "owner"]}>
                     <AdminMusicPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/blog/post-editor/:id"
+                element={
+                  <ProtectedRoute roles={["admin", "owner", "author"]}>
+                    <BlogPostEditorPage />
                   </ProtectedRoute>
                 }
               />

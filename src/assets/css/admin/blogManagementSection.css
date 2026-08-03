@@ -879,3 +879,15 @@ ul {
     justify-content: space-between;
   }
 }
+
+/* ---------- "New post" modal (uses the shared .admin-modal chrome from
+   admin-modal.css) - it's a single-field form, so it doesn't need the
+   1200px / 92vh sizing that bigger admin modals use. ---------- */
+#blog-management-view .admin-modal--compact {
+  max-width: 480px;
+  height: auto;
+  max-height: none;
+}
+#blog-management-view .admin-modal--compact .admin-modal__body {
+  overflow: visible;
+}

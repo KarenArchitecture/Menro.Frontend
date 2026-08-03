@@ -26,12 +26,12 @@ export const getBlogPosts = ({
 export const getBlogPost = (id) =>
   adminBlogsAxios.get(`/posts/${id}`).then((r) => r.data);
 
-export const createBlogPost = (formData) =>
-  adminBlogsAxios
-    .post("/posts", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    })
-    .then((r) => r.data);
+// Create is now a bare "auto-draft": only a title, sent as JSON (no file,
+// no multipart). The rest of the metadata (cover, category, reading time,
+// publish status) is filled in afterwards on the post's own editor page via
+// updateBlogPost.
+export const createBlogPost = (title) =>
+  adminBlogsAxios.post("/posts", { title }).then((r) => r.data);
 
 export const updateBlogPost = (id, formData) =>
   adminBlogsAxios
@@ -45,6 +45,18 @@ export const toggleBlogPostPublish = (id) =>
 
 export const deleteBlogPost = (id) =>
   adminBlogsAxios.delete(`/posts/${id}`).then((r) => r.data);
+
+/* ------------------------- Blog Post Content ------------------------ */
+// Raw HTML body (Tiptap editor output), stored separately from the post's
+// metadata - see BlogPostContent on the backend. Used by the upcoming
+// dedicated content editor, kept independent from updateBlogPost so
+// autosave never has to resubmit the metadata form (or its file upload).
+
+export const getBlogPostContent = (id) =>
+  adminBlogsAxios.get(`/posts/${id}/content`).then((r) => r.data);
+
+export const updateBlogPostContent = (id, content) =>
+  adminBlogsAxios.put(`/posts/${id}/content`, { content }).then((r) => r.data);
 
 /* ------------------------ Display Categories ------------------------ */
 

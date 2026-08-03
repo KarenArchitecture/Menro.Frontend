@@ -1,49 +1,49 @@
 // src/pages/AdminPage.jsx
 import { useState, useCallback, useEffect } from "react";
-import useDocumentTitle from "../hooks/useDocumentTitle";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 /* ===================== Layout ===================== */
-import usePageStyles from "../hooks/usePageStyles";
-import AdminHeader from "../components/admin/AdminHeader";
-import AdminSidebar from "../components/admin/AdminSidebar";
+import usePageStyles from "../../hooks/usePageStyles";
+import AdminHeader from "../../components/admin/AdminHeader";
+import AdminSidebar from "../../components/admin/AdminSidebar";
 
 /* ===================== Sections: restaurant-mgmt ===================== */
-import RestaurantProfileSection from "../components/admin/RestaurantProfileSection";
-import RestaurantTablesSection from "../components/admin/RestaurantTablesSection";
-import MenuManagementSection from "../components/admin/MenuManagementSection";
-import CategoriesSection from "../components/admin/CategoriesSection";
-import CommentsSection from "../components/admin/CommentsSection";
-import CombosSection from "../components/admin/CombosSection";
+import RestaurantProfileSection from "../../components/admin/RestaurantProfileSection";
+import RestaurantTablesSection from "../../components/admin/RestaurantTablesSection";
+import MenuManagementSection from "../../components/admin/MenuManagementSection";
+import CategoriesSection from "../../components/admin/CategoriesSection";
+import CommentsSection from "../../components/admin/CommentsSection";
+import CombosSection from "../../components/admin/CombosSection";
 
 /* ===================== Sections: business ===================== */
-import OrdersSection from "../components/admin/OrdersSection";
-import RestaurantAdsSection from "../components/admin/RestaurantAdsSection";
-import FinancialSection from "../components/admin/FinancialSection";
+import OrdersSection from "../../components/admin/OrdersSection";
+import RestaurantAdsSection from "../../components/admin/RestaurantAdsSection";
+import FinancialSection from "../../components/admin/FinancialSection";
 
 /* ===================== Sections: platform-admin ===================== */
-import UserManagementSection from "../components/admin/UserManagementSection";
-import RestaurantsManagementSection from "../components/admin/RestaurantsManagementSection";
-import CategorySettingsSection from "../components/admin/CategorySettingsSection";
-import RestaurantCategorySettingsSection from "../components/admin/RestaurantCategorySettingsSection";
+import UserManagementSection from "../../components/admin/UserManagementSection";
+import RestaurantsManagementSection from "../../components/admin/RestaurantsManagementSection";
+import CategorySettingsSection from "../../components/admin/CategorySettingsSection";
+import RestaurantCategorySettingsSection from "../../components/admin/RestaurantCategorySettingsSection";
 
 /* ===================== Sections: content-ads-admin ===================== */
-import AdsManagementSection from "../components/admin/AdsManagementSection";
-import BlogManagementSection from "../components/admin/BlogManagementSection";
-import LandingManagementSection from "../components/admin/LandingManagementSection";
+import AdsManagementSection from "../../components/admin/AdsManagementSection";
+import BlogManagementSection from "../../components/admin/BlogManagementSection";
+import LandingManagementSection from "../../components/admin/LandingManagementSection";
 
 /* ===================== Sections: account ===================== */
-import ProfileSection from "../components/admin/ProfileSection";
+import ProfileSection from "../../components/admin/ProfileSection";
 
 /* ===================== Sections: misc / unused in current sidebar ===================== */
-import DashboardSection from "../components/admin/DashboardSection";
-import ThemeSection from "../components/admin/ThemeSection";
-import MusicSection from "../components/admin/MusicSection";
+import DashboardSection from "../../components/admin/DashboardSection";
+import ThemeSection from "../../components/admin/ThemeSection";
+import MusicSection from "../../components/admin/MusicSection";
 
 /* ===================== Data / context / hooks ===================== */
-import ownerRestaurantAxios from "../api/ownerRestaurantAxios";
-import { useAuth } from "../context/AuthContext";
-import { useMusicSignalR } from "../hooks/useMusicSignalR";
-import { useGlobalUI } from "../components/common/GlobalUI";
+import ownerRestaurantAxios from "../../api/ownerRestaurantAxios";
+import { useAuth } from "../../context/AuthContext";
+import { useMusicSignalR } from "../../hooks/useMusicSignalR";
+import { useGlobalUI } from "../../components/common/GlobalUI";
 
 export default function AdminPage() {
   useDocumentTitle("پنل مدیریت");

@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   getBlogPosts,
   createBlogPost,
-  updateBlogPost,
   toggleBlogPostPublish,
   deleteBlogPost,
   getBlogCategories,
@@ -21,6 +21,7 @@ import {
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 import "../../assets/css/admin/admin.css";
+import "../../assets/css/admin/admin-modal.css";
 import "../../assets/css/admin/blogManagementSection.css";
 
 // "فیلترهای فید" tab intentionally removed - feed categories are now a fixed,
@@ -117,34 +118,10 @@ function mapPostFromApi(p, categories = []) {
   };
 }
 
-function emptyPost(defaultCategoryId = "") {
-  return {
-    id: null,
-    title: "",
-    coverFile: null,
-    coverFileName: "",
-    coverSrc: "",
-    removeImage: false,
-    readingMins: 5,
-    categoryId: defaultCategoryId,
-    published: true,
-  };
-}
-
-function mapPostToFormData(draft) {
-  const fd = new FormData();
-  fd.append("Title", draft.title);
-  fd.append("ReadingMinutes", String(Number(draft.readingMins)));
-  fd.append("CategoryId", draft.categoryId);
-  fd.append("IsPublished", String(!!draft.published));
-  if (draft.coverFile) fd.append("CoverImage", draft.coverFile);
-  if (draft.removeImage) fd.append("RemoveImage", "true");
-  return fd;
-}
-
 const PAGE_SIZE = 20;
 
 function PostsPane() {
+  const navigate = useNavigate();
   const { notify, confirmModal } = useGlobalUI();
   const [posts, setPosts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -158,26 +135,26 @@ function PostsPane() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const [modalPost, setModalPost] = useState(null);
-  const [errors, setErrors] = useState({});
-  const [saving, setSaving] = useState(false);
-  const fileInputRef = useRef(null);
+  // Small modal used only to collect the title for a brand-new post. Full
+  // metadata (cover, category, reading time, publish) is edited on the
+  // dedicated /admin/blog/post-editor/:id page, not here.
+  const [creating, setCreating] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [savingNew, setSavingNew] = useState(false);
+  const [newTitleError, setNewTitleError] = useState("");
 
-  const reloadPosts = useCallback(
-    async (categoriesForMapping = categories) => {
-      const data = await getBlogPosts({
-        search: searchTerm.trim() || undefined,
-        categoryId: categoryFilter === "all" ? undefined : categoryFilter,
-        page,
-        pageSize: PAGE_SIZE,
-      });
-      setPosts(data.items.map((p) => mapPostFromApi(p, categoriesForMapping)));
-      setTotalPages(data.totalPages);
-      setTotalCount(data.totalCount);
-      return data;
-    },
-    [categories, searchTerm, categoryFilter, page],
-  );
+  const reloadPosts = useCallback(async () => {
+    const data = await getBlogPosts({
+      search: searchTerm.trim() || undefined,
+      categoryId: categoryFilter === "all" ? undefined : categoryFilter,
+      page,
+      pageSize: PAGE_SIZE,
+    });
+    setPosts(data.items.map((p) => mapPostFromApi(p, categories)));
+    setTotalPages(data.totalPages);
+    setTotalCount(data.totalCount);
+    return data;
+  }, [searchTerm, categoryFilter, page, categories]);
 
   useEffect(() => {
     let cancelled = false;
@@ -226,75 +203,33 @@ function PostsPane() {
     setSearchTerm(searchDraft);
   };
 
-  const handleCoverImageChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      setModalPost((prev) => ({
-        ...prev,
-        coverFile: file,
-        coverSrc: reader.result,
-        removeImage: false,
-      }));
-    };
-    reader.readAsDataURL(file);
-  };
-  const handleRemoveCoverImage = () => {
-    setModalPost((prev) => ({
-      ...prev,
-      coverFile: null,
-      coverSrc: "",
-      removeImage: true,
-    }));
-    if (fileInputRef.current) fileInputRef.current.value = "";
+  const openNewModal = () => {
+    setNewTitleError("");
+    setNewTitle("");
+    setCreating(true);
   };
 
-  const openNew = () => {
-    setErrors({});
-    setModalPost(emptyPost(categories[0]?.id ?? ""));
-  };
-
-  const openEdit = (post) => {
-    setErrors({});
-    setModalPost({ ...post });
-  };
-
-  const validate = (draft) => {
-    const errs = {};
-    if (!draft.title.trim()) errs.title = "عنوان پست الزامی است.";
-    if (!draft.categoryId) errs.category = "انتخاب دسته‌بندی الزامی است.";
-    if (!draft.readingMins || draft.readingMins <= 0)
-      errs.readingMins = "زمان مطالعه باید بزرگ‌تر از صفر باشد.";
-    return errs;
-  };
-
-  const savePost = async () => {
-    const errs = validate(modalPost);
-    if (Object.keys(errs).length) {
-      setErrors(errs);
+  // Creates a bare draft post (title only - see CreateBlogPostRequest) and
+  // sends the admin straight to the dedicated editor page, where category,
+  // cover image, reading time, publish status, and (eventually) the Tiptap
+  // body are all filled in.
+  const submitNewPost = async () => {
+    if (!newTitle.trim()) {
+      setNewTitleError("عنوان پست الزامی است.");
       return;
     }
-
-    setSaving(true);
+    setSavingNew(true);
     try {
-      if (modalPost.id) {
-        await updateBlogPost(modalPost.id, mapPostToFormData(modalPost));
-        notify({ type: "success", message: "پست ویرایش شد" });
-      } else {
-        await createBlogPost(mapPostToFormData(modalPost));
-        notify({ type: "success", message: "پست جدید اضافه شد" });
-      }
-      await reloadPosts();
-      setModalPost(null);
+      const created = await createBlogPost(newTitle.trim());
+      setCreating(false);
+      navigate(`/admin/blog/post-editor/${created.id}`);
     } catch (err) {
       notify({
         type: "error",
-        message: apiErrorMessage(err, "ذخیره پست با خطا مواجه شد."),
+        message: apiErrorMessage(err, "ساخت پست با خطا مواجه شد."),
       });
     } finally {
-      setSaving(false);
+      setSavingNew(false);
     }
   };
 
@@ -403,7 +338,11 @@ function PostsPane() {
               </option>
             ))}
           </select>
-          <button type="button" className="btn btn-primary" onClick={openNew}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={openNewModal}
+          >
             <i className="fas fa-plus" /> پست جدید
           </button>
         </div>
@@ -467,7 +406,9 @@ function PostsPane() {
                     <button
                       className="btn-icon"
                       title="ویرایش"
-                      onClick={() => openEdit(post)}
+                      onClick={() =>
+                        navigate(`/admin/blog/post-editor/${post.id}`)
+                      }
                     >
                       <i className="fas fa-pen" />
                     </button>
@@ -485,155 +426,62 @@ function PostsPane() {
         </table>
       </div>
 
-      {modalPost && (
+      {creating && (
         <div
-          className="modal-backdrop"
-          onClick={() => !saving && setModalPost(null)}
+          className="admin-modal-overlay"
+          onClick={() => !savingNew && setCreating(false)}
         >
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h4>{modalPost.id ? "ویرایش پست" : "پست جدید"}</h4>
-              <button className="btn-icon" onClick={() => setModalPost(null)}>
+          <div
+            className="admin-modal admin-modal--compact"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="admin-modal__header">
+              <h3>
+                <i className="fas fa-plus" />
+                پست جدید
+              </h3>
+              <button className="btn-icon" onClick={() => setCreating(false)}>
                 <i className="fas fa-times" />
               </button>
             </div>
 
-            <div className="form-vertical">
-              <div className="input-group">
-                <label>عنوان پست</label>
-                <input
-                  type="text"
-                  value={modalPost.title}
-                  onChange={(e) =>
-                    setModalPost({ ...modalPost, title: e.target.value })
-                  }
-                />
-                {errors.title && (
-                  <span className="form-error">{errors.title}</span>
-                )}
-              </div>
-
-              <div className="input-group">
-                <label>تصویر کاور</label>
-
-                <div className="blog-mgmt__cover-frame">
-                  {modalPost.coverSrc ? (
-                    <img
-                      src={modalPost.coverSrc}
-                      alt={modalPost.title}
-                      className="blog-mgmt__cover-frame-img"
-                    />
-                  ) : (
-                    <span className="blog-mgmt__cover-placeholder">
-                      <i className="fas fa-image" />
-                      {modalPost.id ? "این پست عکسی ندارد" : "عکسی انتخاب نشده"}
-                    </span>
-                  )}
-                </div>
-
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="landing-mgmt__hero-image-input"
-                  onChange={handleCoverImageChange}
-                />
-
-                <button
-                  type="button"
-                  className="landing-mgmt__hero-image-upload-btn"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <i className="fas fa-cloud-arrow-up" />
-                  <span>
-                    {modalPost.coverSrc ? "تغییر عکس کاور" : "آپلود عکس کاور"}
-                  </span>
-                </button>
-
-                {modalPost.coverSrc && (
-                  <button
-                    type="button"
-                    className="landing-mgmt__hero-image-remove"
-                    onClick={handleRemoveCoverImage}
-                  >
-                    <i className="fas fa-trash" />
-                    <span>حذف عکس</span>
-                  </button>
-                )}
-              </div>
-
-              <div className="two-column-form">
+            <div className="admin-modal__body">
+              <div className="form-vertical">
                 <div className="input-group">
-                  <label>دسته‌بندی</label>
-                  <select
-                    value={modalPost.categoryId}
-                    onChange={(e) =>
-                      setModalPost({
-                        ...modalPost,
-                        categoryId: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="" disabled>
-                      انتخاب کنید
-                    </option>
-                    {categories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.title}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.category && (
-                    <span className="form-error">{errors.category}</span>
-                  )}
-                </div>
-
-                <div className="input-group">
-                  <label>زمان مطالعه (دقیقه)</label>
+                  <label>عنوان پست</label>
                   <input
-                    type="number"
-                    min={1}
-                    value={modalPost.readingMins}
-                    onChange={(e) =>
-                      setModalPost({
-                        ...modalPost,
-                        readingMins: Number(e.target.value),
-                      })
-                    }
+                    type="text"
+                    value={newTitle}
+                    autoFocus
+                    onChange={(e) => setNewTitle(e.target.value)}
                   />
-                  {errors.readingMins && (
-                    <span className="form-error">{errors.readingMins}</span>
+                  {newTitleError && (
+                    <span className="form-error">{newTitleError}</span>
                   )}
                 </div>
+                <p className="empty-hint">
+                  بعد از ساخت، به صفحه‌ی ویرایش کامل پست هدایت می‌شوید تا
+                  دسته‌بندی، عکس کاور، زمان مطالعه، وضعیت انتشار و محتوای پست را
+                  تکمیل کنید.
+                </p>
               </div>
 
-              <label className="radio-label">
-                <input
-                  type="checkbox"
-                  checked={modalPost.published}
-                  onChange={(e) =>
-                    setModalPost({ ...modalPost, published: e.target.checked })
-                  }
-                />
-                منتشر شود
-              </label>
-            </div>
-
-            <div className="modal-footer">
-              <button
-                className="btn btn-secondary"
-                disabled={saving}
-                onClick={() => setModalPost(null)}
-              >
-                انصراف
-              </button>
-              <button
-                className="btn btn-primary"
-                disabled={saving}
-                onClick={savePost}
-              >
-                {saving ? "در حال ذخیره..." : "ذخیره"}
-              </button>
+              <div className="panel-actions">
+                <button
+                  className="btn btn-secondary"
+                  disabled={savingNew}
+                  onClick={() => setCreating(false)}
+                >
+                  انصراف
+                </button>
+                <button
+                  className="btn btn-primary"
+                  disabled={savingNew}
+                  onClick={submitNewPost}
+                >
+                  {savingNew ? "در حال ساخت..." : "ساخت و ادامه"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -854,97 +702,105 @@ function DisplayCategoriesPane() {
 
       {modalCat && (
         <div
-          className="modal-backdrop"
+          className="admin-modal-overlay"
           onClick={() => !saving && setModalCat(null)}
         >
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h4>
+          <div
+            className="admin-modal admin-modal--compact"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="admin-modal__header">
+              <h3>
+                <i className="fas fa-th-large" />
                 {modalCat.id
                   ? "ویرایش دسته‌بندی نمایشی"
                   : "دسته‌بندی نمایشی جدید"}
-              </h4>
+              </h3>
               <button className="btn-icon" onClick={() => setModalCat(null)}>
                 <i className="fas fa-times" />
               </button>
             </div>
-            <div className="form-vertical">
-              <div className="input-group">
-                <div className="blog-mgmt__label-row">
-                  <label>عنوان</label>
-                  <span className="blog-mgmt__char-count">
-                    {toPersianDigits(modalCat.title.length)}/
-                    {toPersianDigits(CATEGORY_TITLE_MAX)}
-                  </span>
-                </div>
-                <input
-                  type="text"
-                  value={modalCat.title}
-                  maxLength={CATEGORY_TITLE_MAX}
-                  onChange={(e) =>
-                    setModalCat({ ...modalCat, title: e.target.value })
-                  }
-                />
-                {errors.title && (
-                  <span className="form-error">{errors.title}</span>
-                )}
-              </div>
-              <div className="input-group">
-                <div className="blog-mgmt__label-row">
-                  <label>زیرعنوان</label>
-                  <span className="blog-mgmt__char-count">
-                    {toPersianDigits(modalCat.subtitle.length)}/
-                    {toPersianDigits(CATEGORY_SUBTITLE_MAX)}
-                  </span>
-                </div>
-                <input
-                  type="text"
-                  value={modalCat.subtitle}
-                  maxLength={CATEGORY_SUBTITLE_MAX}
-                  onChange={(e) =>
-                    setModalCat({ ...modalCat, subtitle: e.target.value })
-                  }
-                />
-                {errors.subtitle && (
-                  <span className="form-error">{errors.subtitle}</span>
-                )}
-              </div>
-              <div className="input-group">
-                <label>رنگ کارت</label>
-                <div className="blog-mgmt__color-row">
-                  <input
-                    type="color"
-                    value={modalCat.color}
-                    onChange={(e) =>
-                      setModalCat({ ...modalCat, color: e.target.value })
-                    }
-                    className="blog-mgmt__color-swatch"
-                  />
+
+            <div className="admin-modal__body">
+              <div className="form-vertical">
+                <div className="input-group">
+                  <div className="blog-mgmt__label-row">
+                    <label>عنوان</label>
+                    <span className="blog-mgmt__char-count">
+                      {toPersianDigits(modalCat.title.length)}/
+                      {toPersianDigits(CATEGORY_TITLE_MAX)}
+                    </span>
+                  </div>
                   <input
                     type="text"
-                    value={modalCat.color}
+                    value={modalCat.title}
+                    maxLength={CATEGORY_TITLE_MAX}
                     onChange={(e) =>
-                      setModalCat({ ...modalCat, color: e.target.value })
+                      setModalCat({ ...modalCat, title: e.target.value })
                     }
                   />
+                  {errors.title && (
+                    <span className="form-error">{errors.title}</span>
+                  )}
+                </div>
+                <div className="input-group">
+                  <div className="blog-mgmt__label-row">
+                    <label>زیرعنوان</label>
+                    <span className="blog-mgmt__char-count">
+                      {toPersianDigits(modalCat.subtitle.length)}/
+                      {toPersianDigits(CATEGORY_SUBTITLE_MAX)}
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    value={modalCat.subtitle}
+                    maxLength={CATEGORY_SUBTITLE_MAX}
+                    onChange={(e) =>
+                      setModalCat({ ...modalCat, subtitle: e.target.value })
+                    }
+                  />
+                  {errors.subtitle && (
+                    <span className="form-error">{errors.subtitle}</span>
+                  )}
+                </div>
+                <div className="input-group">
+                  <label>رنگ کارت</label>
+                  <div className="blog-mgmt__color-row">
+                    <input
+                      type="color"
+                      value={modalCat.color}
+                      onChange={(e) =>
+                        setModalCat({ ...modalCat, color: e.target.value })
+                      }
+                      className="blog-mgmt__color-swatch"
+                    />
+                    <input
+                      type="text"
+                      value={modalCat.color}
+                      onChange={(e) =>
+                        setModalCat({ ...modalCat, color: e.target.value })
+                      }
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="modal-footer">
-              <button
-                className="btn btn-secondary"
-                disabled={saving}
-                onClick={() => setModalCat(null)}
-              >
-                انصراف
-              </button>
-              <button
-                className="btn btn-primary"
-                disabled={saving}
-                onClick={save}
-              >
-                {saving ? "در حال ذخیره..." : "ذخیره"}
-              </button>
+
+              <div className="panel-actions">
+                <button
+                  className="btn btn-secondary"
+                  disabled={saving}
+                  onClick={() => setModalCat(null)}
+                >
+                  انصراف
+                </button>
+                <button
+                  className="btn btn-primary"
+                  disabled={saving}
+                  onClick={save}
+                >
+                  {saving ? "در حال ذخیره..." : "ذخیره"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1132,9 +988,9 @@ function SidebarTagsPane() {
 
   return (
     <div className="panel">
-      <div className="blog-mgmt__posts-toolbar">
-        <div className="blog-mgmt__posts-toolbar-group">
-          <div className="blog-mgmt__search-box">
+      <div className="admin-toolbar">
+        <div className="admin-toolbar-group">
+          <div className="admin-search-box">
             <input
               type="text"
               className="mh-input"
@@ -1153,7 +1009,7 @@ function SidebarTagsPane() {
           </label>
         </div>
 
-        <div className="blog-mgmt__posts-toolbar-group blog-mgmt__tags-actions-group">
+        <div className="admin-toolbar-group">
           {limitError && (
             <span className="blog-mgmt__tag-limit-error">{limitError}</span>
           )}
@@ -1219,58 +1075,68 @@ function SidebarTagsPane() {
 
       {modalTag && (
         <div
-          className="modal-backdrop"
+          className="admin-modal-overlay"
           onClick={() => !saving && setModalTag(null)}
         >
           <div
-            className="modal blog-mgmt__modal--tag"
+            className="admin-modal admin-modal--compact"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="modal-header">
-              <h4>{modalTag.id ? "ویرایش برچسب" : "برچسب جدید"}</h4>
+            <div className="admin-modal__header">
+              <h3>
+                <i className="fas fa-hashtag" />
+                {modalTag.id ? "ویرایش برچسب" : "برچسب جدید"}
+              </h3>
               <button className="btn-icon" onClick={() => setModalTag(null)}>
                 <i className="fas fa-times" />
               </button>
             </div>
-            <div className="form-vertical">
-              <div className="input-group">
-                <label>نام برچسب</label>
-                <input
-                  type="text"
-                  value={modalTag.name}
-                  onChange={(e) =>
-                    setModalTag({ ...modalTag, name: e.target.value })
-                  }
-                />
-                {error && <span className="form-error">{error}</span>}
+
+            <div className="admin-modal__body">
+              <div className="form-vertical">
+                <div className="input-group">
+                  <label>نام برچسب</label>
+                  <input
+                    type="text"
+                    value={modalTag.name}
+                    onChange={(e) =>
+                      setModalTag({ ...modalTag, name: e.target.value })
+                    }
+                  />
+                  {error && <span className="form-error">{error}</span>}
+                </div>
+
+                <label className="radio-label">
+                  <input
+                    type="checkbox"
+                    checked={modalTag.suggested}
+                    onChange={(e) =>
+                      setModalTag({
+                        ...modalTag,
+                        suggested: e.target.checked,
+                      })
+                    }
+                  />
+                  تگ پیشنهادی
+                </label>
               </div>
 
-              <label className="radio-label">
-                <input
-                  type="checkbox"
-                  checked={modalTag.suggested}
-                  onChange={(e) =>
-                    setModalTag({ ...modalTag, suggested: e.target.checked })
-                  }
-                />
-                تگ پیشنهادی
-              </label>
-            </div>
-            <div className="modal-footer">
-              <button
-                className="btn btn-secondary"
-                disabled={saving}
-                onClick={() => setModalTag(null)}
-              >
-                انصراف
-              </button>
-              <button
-                className="btn btn-primary"
-                disabled={saving}
-                onClick={save}
-              >
-                {saving ? "در حال ذخیره..." : "ذخیره"}
-              </button>
+              <div className="panel-actions">
+                <button
+                  className="btn btn-secondary"
+                  disabled={saving}
+                  onClick={() => setModalTag(null)}
+                >
+                  انصراف
+                </button>
+                <button
+                  className="btn btn-primary"
+                  disabled={saving}
+                  onClick={save}
+                >
+                  {saving ? "در حال ذخیره..." : "ذخیره"}
+                </button>
+              </div>
             </div>
           </div>
         </div>

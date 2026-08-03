@@ -7,6 +7,10 @@ import {
   getBlogTags,
   createBlogTag,
 } from "../../api/adminBlogs";
+import {
+  normalizeTagNameLive,
+  normalizeTagNameFinal,
+} from "../../utils/tagName";
 import { useGlobalUI } from "../../components/common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 import "../../assets/css/admin/admin.css";
@@ -134,7 +138,7 @@ export default function BlogPostEditorPage() {
   };
 
   const handleCreateTag = async () => {
-    const name = newTagName.trim();
+    const name = normalizeTagNameFinal(newTagName);
     if (!name || creatingTag) return;
     setCreatingTag(true);
     try {
@@ -399,7 +403,9 @@ export default function BlogPostEditorPage() {
                 className="bpe__input"
                 placeholder="ساخت برچسب جدید..."
                 value={newTagName}
-                onChange={(e) => setNewTagName(e.target.value)}
+                onChange={(e) =>
+                  setNewTagName(normalizeTagNameLive(e.target.value))
+                }
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
@@ -410,7 +416,7 @@ export default function BlogPostEditorPage() {
               <button
                 type="button"
                 className="btn btn-secondary bpe__tag-add-btn"
-                disabled={!newTagName.trim() || creatingTag}
+                disabled={!normalizeTagNameFinal(newTagName) || creatingTag}
                 onClick={handleCreateTag}
               >
                 <i className="fas fa-plus" />

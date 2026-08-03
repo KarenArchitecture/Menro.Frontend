@@ -9,6 +9,7 @@ import {
   createBlogCategory,
   updateBlogCategory,
   moveBlogCategory,
+  getBlogCategoryAffectedPostsCount,
   deleteBlogCategory,
   getBlogTags,
   createBlogTag,
@@ -18,6 +19,10 @@ import {
   getBlogHero,
   updateBlogHero,
 } from "../../api/adminBlogs";
+import {
+  normalizeTagNameLive,
+  normalizeTagNameFinal,
+} from "../../utils/tagName";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 import "../../assets/css/admin/admin.css";
@@ -407,7 +412,15 @@ function PostsPane() {
                       {post.title}
                     </span>
                   </td>
-                  <td>{post.categoryTitle}</td>
+                  <td>
+                    {post.categoryTitle ? (
+                      post.categoryTitle
+                    ) : (
+                      <span className="blog-mgmt__category-empty">
+                        بدون دسته‌بندی
+                      </span>
+                    )}
+                  </td>
                   <td>{post.readingMins} دقیقه</td>
                   <td>
                     <span
@@ -632,9 +645,28 @@ function DisplayCategoriesPane() {
   };
 
   const handleDeleteClick = async (id) => {
+    let affectedCount = 0;
+    try {
+      affectedCount = await getBlogCategoryAffectedPostsCount(id);
+    } catch (err) {
+      notify({
+        type: "error",
+        message: apiErrorMessage(
+          err,
+          "دریافت اطلاعات دسته‌بندی با خطا مواجه شد.",
+        ),
+      });
+      return;
+    }
+
+    const message =
+      affectedCount > 0
+        ? `این دسته‌بندی به ${toPersianDigits(affectedCount)} پست بلاگ متصل است. با حذف آن، دسته‌بندی این پست‌ها خالی می‌شود.`
+        : "این دسته‌بندی از صفحه‌ی وبلاگ حذف می‌شود.";
+
     const ok = await confirmModal({
       title: "حذف دسته‌بندی",
-      message: "این دسته‌بندی از صفحه‌ی وبلاگ حذف می‌شود.",
+      message,
       confirmText: "حذف شود",
       cancelText: "انصراف",
       danger: true,
@@ -918,7 +950,8 @@ function SidebarTagsPane() {
   };
 
   const save = async () => {
-    if (!modalTag.name.trim()) {
+    const name = normalizeTagNameFinal(modalTag.name);
+    if (!name) {
       setError("نام برچسب الزامی است.");
       return;
     }
@@ -927,13 +960,9 @@ function SidebarTagsPane() {
     setSaving(true);
     try {
       if (modalTag.id) {
-        await updateBlogTag(
-          modalTag.id,
-          modalTag.name.trim(),
-          modalTag.suggested,
-        );
+        await updateBlogTag(modalTag.id, name, modalTag.suggested);
       } else {
-        await createBlogTag(modalTag.name.trim(), modalTag.suggested);
+        await createBlogTag(name, modalTag.suggested);
       }
       await reloadTags();
       setModalTag(null);
@@ -1117,7 +1146,10 @@ function SidebarTagsPane() {
                     type="text"
                     value={modalTag.name}
                     onChange={(e) =>
-                      setModalTag({ ...modalTag, name: e.target.value })
+                      setModalTag({
+                        ...modalTag,
+                        name: normalizeTagNameLive(e.target.value),
+                      })
                     }
                   />
                   {error && <span className="form-error">{error}</span>}

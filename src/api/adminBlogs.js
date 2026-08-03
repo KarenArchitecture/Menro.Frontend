@@ -77,6 +77,11 @@ export const moveBlogCategory = (id, direction) =>
     })
     .then((r) => r.data);
 
+export const getBlogCategoryAffectedPostsCount = (id) =>
+  adminBlogsAxios
+    .get(`/display-categories/${id}/affected-posts-count`)
+    .then((r) => r.data);
+
 export const deleteBlogCategory = (id) =>
   adminBlogsAxios.delete(`/display-categories/${id}`).then((r) => r.data);
 

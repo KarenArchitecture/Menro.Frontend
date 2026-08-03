@@ -579,6 +579,12 @@ ul {
   color: #4b5563;
 }
 
+.blog-mgmt__category-empty {
+  color: #9ca3af; /* خاکستری کم‌رنگ، هم‌خانواده با رنگ‌های خنثی/muted رایج */
+  font-style: italic;
+  font-size: 0.85em;
+}
+
 /* ---------- Post title cell (truncate long titles) ---------- */
 #blog-management-view .blog-mgmt__title-cell {
   display: -webkit-box;

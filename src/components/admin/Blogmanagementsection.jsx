@@ -141,6 +141,7 @@ function PostsPane() {
   const [creating, setCreating] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [savingNew, setSavingNew] = useState(false);
+  const [brokenThumbs, setBrokenThumbs] = useState(() => new Set());
   const [newTitleError, setNewTitleError] = useState("");
 
   const reloadPosts = useCallback(async () => {
@@ -236,10 +237,14 @@ function PostsPane() {
   const togglePublished = async (post) => {
     try {
       const updated = await toggleBlogPostPublish(post.id);
-      await reloadPosts();
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === post.id ? { ...p, published: updated.isPublished } : p,
+        ),
+      );
       notify({
         type: "success",
-        message: updated?.isPublished ? "پست منتشر شد" : "پست پیش‌نویس شد",
+        message: updated.isPublished ? "پست منتشر شد" : "پست پیش‌نویس شد",
       });
     } catch (err) {
       notify({
@@ -382,14 +387,26 @@ function PostsPane() {
                 <tr key={post.id}>
                   <td>
                     <div className="blog-mgmt__thumb">
-                      {post.coverSrc ? (
-                        <img src={post.coverSrc} alt={post.title} />
+                      {post.coverSrc && !brokenThumbs.has(post.id) ? (
+                        <img
+                          src={post.coverSrc}
+                          alt={post.title}
+                          onError={() =>
+                            setBrokenThumbs((prev) =>
+                              new Set(prev).add(post.id),
+                            )
+                          }
+                        />
                       ) : (
                         <i className="fas fa-image" />
                       )}
                     </div>
                   </td>
-                  <td>{post.title}</td>
+                  <td>
+                    <span className="blog-mgmt__title-cell" title={post.title}>
+                      {post.title}
+                    </span>
+                  </td>
                   <td>{post.categoryTitle}</td>
                   <td>{post.readingMins} دقیقه</td>
                   <td>
@@ -1013,13 +1030,13 @@ function SidebarTagsPane() {
           {limitError && (
             <span className="blog-mgmt__tag-limit-error">{limitError}</span>
           )}
-          <button className="btn btn-primary" onClick={openNew}>
-            <i className="fas fa-plus" /> برچسب جدید
-          </button>
           <span className="blog-mgmt__tag-counter">
             تگ‌های پیشنهادی سایدبار: {toPersianDigits(suggestedCount)}/
             {toPersianDigits(MAX_SUGGESTED_TAGS)}
           </span>
+          <button className="btn btn-primary" onClick={openNew}>
+            <i className="fas fa-plus" /> برچسب جدید
+          </button>
         </div>
       </div>
 

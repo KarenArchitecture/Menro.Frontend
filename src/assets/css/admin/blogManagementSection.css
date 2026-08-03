@@ -564,12 +564,30 @@ ul {
   overflow: hidden;
   background: #1a1f27;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 #blog-management-view .blog-mgmt__thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+}
+#blog-management-view .blog-mgmt__thumb i {
+  font-size: 28px;
+  color: #4b5563;
+}
+
+/* ---------- Post title cell (truncate long titles) ---------- */
+#blog-management-view .blog-mgmt__title-cell {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 320px;
+  white-space: nowrap;
 }
 #blog-management-view .blog-mgmt__cat-list {
   display: flex;

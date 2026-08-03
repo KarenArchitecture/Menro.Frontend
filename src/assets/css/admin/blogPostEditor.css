@@ -9,7 +9,7 @@
    ============================================================================ */
 
 .bpe {
-  max-width: 1100px;
+  max-width: 1500px;
   margin: 0 auto;
 }
 
@@ -36,6 +36,15 @@
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+/* Groups the publish-status chip together with the back button, away from
+   the title, so the title text never looks glued to the status pill. */
+.bpe__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .bpe__eyebrow {
@@ -105,9 +114,9 @@
 /* ---------- Two-column layout ---------- */
 .bpe__layout {
   display: grid;
-  grid-template-columns: 1fr 340px;
+  grid-template-columns: 1fr 380px;
   align-items: start;
-  gap: 24px;
+  gap: 28px;
 }
 
 @media (max-width: 900px) {
@@ -145,6 +154,25 @@
   top: 20px;
 }
 
+/* Sidebar text runs noticeably smaller than the main column at the same
+   viewport - bump labels/inputs/select up a notch so it doesn't read as an
+   afterthought next to the title/cover card. */
+.bpe__sidebar .bpe__card-title {
+  font-size: 1.05rem;
+}
+.bpe__sidebar .bpe__label {
+  font-size: 0.95rem;
+}
+.bpe__sidebar .bpe__input,
+.bpe__sidebar .bpe__select {
+  font-size: 1rem;
+  padding: 13px 15px;
+}
+.bpe__sidebar .bpe__switch-row .bpe__label {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
 /* ---------- Fields ---------- */
 .bpe__field {
   display: flex;
@@ -158,6 +186,21 @@
 .bpe__label {
   font-size: 0.85rem;
   color: var(--text-secondary, #bbb);
+}
+
+/* Label + trailing helper (e.g. character counter) on the same row. */
+.bpe__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.bpe__char-count {
+  font-size: 0.78rem;
+  color: var(--text-muted, #888);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .bpe__input,
@@ -353,9 +396,81 @@
   outline-offset: 2px;
 }
 
+/* ---------- Tags picker ---------- */
+.bpe__tag-search {
+  margin-bottom: 14px;
+}
+
+.bpe__tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.bpe__tag-list::-webkit-scrollbar {
+  width: 6px;
+}
+.bpe__tag-list::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 999px;
+}
+
+.bpe__tag-empty {
+  font-size: 0.85rem;
+  color: var(--text-muted, #888);
+}
+
+.bpe__tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid #333;
+  background: #252525;
+  color: var(--text-secondary, #bbb);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.bpe__tag-chip:hover {
+  border-color: rgba(245, 158, 11, 0.5);
+  color: var(--text-primary, #eaeaea);
+}
+.bpe__tag-chip--active {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: var(--primary-color, #f59e0b);
+  color: var(--primary-color, #f59e0b);
+  font-weight: 600;
+}
+.bpe__tag-chip i {
+  font-size: 0.75rem;
+}
+
+.bpe__tag-add-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+.bpe__tag-add-row .bpe__input {
+  flex: 1;
+}
+.bpe__tag-add-btn {
+  flex-shrink: 0;
+  width: 44px;
+  padding: 0;
+  justify-content: center;
+}
+
 /* ---------- Save button ---------- */
 .bpe__save {
   width: 100%;
-  margin-top: 20px;
+  margin-top: 4px;
   justify-content: center;
 }

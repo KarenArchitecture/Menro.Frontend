@@ -4,6 +4,8 @@ import {
   getBlogPost,
   updateBlogPost,
   getBlogCategories,
+  getBlogTags,
+  createBlogTag,
 } from "../../api/adminBlogs";
 import { useGlobalUI } from "../../components/common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
@@ -14,6 +16,9 @@ function apiErrorMessage(err, fallback = "خطایی رخ داد. دوباره �
   return err?.response?.data?.message || err?.response?.data?.title || fallback;
 }
 
+// Mirrors [MaxLength(300)] on CreateBlogPostRequest/UpdateBlogPostRequest.Title
+const TITLE_MAX = 300;
+
 function draftFromApi(p) {
   return {
     title: p.title,
@@ -23,6 +28,7 @@ function draftFromApi(p) {
     readingMins: p.readingMinutes,
     categoryId: p.categoryId || "", // "" یعنی بدون دسته‌بندی
     published: p.isPublished,
+    tagIds: (p.tags || []).map((t) => t.id),
   };
 }
 
@@ -34,6 +40,7 @@ function draftToFormData(draft) {
   fd.append("IsPublished", String(!!draft.published));
   if (draft.coverFile) fd.append("CoverImage", draft.coverFile);
   if (draft.removeImage) fd.append("RemoveImage", "true");
+  draft.tagIds.forEach((tagId) => fd.append("TagIds", tagId));
   return fd;
 }
 
@@ -50,18 +57,25 @@ export default function BlogPostEditorPage() {
   const [errors, setErrors] = useState({});
   const fileInputRef = useRef(null);
 
+  const [tags, setTags] = useState([]);
+  const [tagSearch, setTagSearch] = useState("");
+  const [newTagName, setNewTagName] = useState("");
+  const [creatingTag, setCreatingTag] = useState(false);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         setLoading(true);
-        const [post, cats] = await Promise.all([
+        const [post, cats, allTags] = await Promise.all([
           getBlogPost(id),
           getBlogCategories(),
+          getBlogTags(),
         ]);
         if (!cancelled) {
           setDraft(draftFromApi(post));
           setCategories(cats);
+          setTags(allTags);
         }
       } catch (err) {
         if (!cancelled) {
@@ -107,9 +121,47 @@ export default function BlogPostEditorPage() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const toggleTag = (tagId) => {
+    setDraft((prev) => {
+      const has = prev.tagIds.includes(tagId);
+      return {
+        ...prev,
+        tagIds: has
+          ? prev.tagIds.filter((t) => t !== tagId)
+          : [...prev.tagIds, tagId],
+      };
+    });
+  };
+
+  const handleCreateTag = async () => {
+    const name = newTagName.trim();
+    if (!name || creatingTag) return;
+    setCreatingTag(true);
+    try {
+      const created = await createBlogTag(name);
+      setTags((prev) => [...prev, created]);
+      setDraft((prev) => ({ ...prev, tagIds: [...prev.tagIds, created.id] }));
+      setNewTagName("");
+    } catch (err) {
+      notify({
+        type: "error",
+        message: apiErrorMessage(err, "ساخت برچسب با خطا مواجه شد."),
+      });
+    } finally {
+      setCreatingTag(false);
+    }
+  };
+
+  const filteredTags = tagSearch.trim()
+    ? tags.filter((t) => t.name.includes(tagSearch.trim()))
+    : tags;
+
   const validate = () => {
     const errs = {};
-    if (!draft.title.trim()) errs.title = "عنوان پست الزامی است.";
+    const title = draft.title.trim();
+    if (!title) errs.title = "عنوان پست الزامی است.";
+    else if (title.length > TITLE_MAX)
+      errs.title = `عنوان نباید بیشتر از ${TITLE_MAX} کاراکتر باشد.`;
     if (!draft.readingMins || draft.readingMins <= 0)
       errs.readingMins = "زمان مطالعه باید بزرگ‌تر از صفر باشد.";
     return errs;
@@ -153,15 +205,17 @@ export default function BlogPostEditorPage() {
             <span className="bpe__eyebrow">ویرایش پست وبلاگ</span>
             <h2 className="bpe__title">{draft.title || "بدون عنوان"}</h2>
           </div>
+        </div>
+        <div className="bpe__header-actions">
           <span
             className={`bpe__status ${draft.published ? "bpe__status--published" : "bpe__status--draft"}`}
           >
             {draft.published ? "منتشر شده" : "پیش‌نویس"}
           </span>
+          <button className="bpe__back" onClick={() => navigate(-1)}>
+            <i className="fas fa-arrow-right" /> بازگشت
+          </button>
         </div>
-        <button className="bpe__back" onClick={() => navigate(-1)}>
-          <i className="fas fa-arrow-right" /> بازگشت
-        </button>
       </div>
 
       <div className="bpe__layout">
@@ -173,11 +227,17 @@ export default function BlogPostEditorPage() {
             </h3>
 
             <div className="bpe__field">
-              <label className="bpe__label">عنوان پست</label>
+              <div className="bpe__label-row">
+                <label className="bpe__label">عنوان پست</label>
+                <span className="bpe__char-count">
+                  {draft.title.length}/{TITLE_MAX}
+                </span>
+              </div>
               <input
                 type="text"
                 className="bpe__input bpe__title-input"
                 value={draft.title}
+                maxLength={TITLE_MAX}
                 onChange={(e) => setDraft({ ...draft, title: e.target.value })}
               />
               {errors.title && (
@@ -298,15 +358,73 @@ export default function BlogPostEditorPage() {
                 </span>
               </label>
             </div>
-
-            <button
-              className="btn btn-primary bpe__save"
-              disabled={saving}
-              onClick={save}
-            >
-              {saving ? "در حال ذخیره..." : "ذخیره تغییرات"}
-            </button>
           </div>
+
+          <div className="bpe__card">
+            <h3 className="bpe__card-title">
+              <i className="fas fa-tags" /> برچسب‌ها
+            </h3>
+
+            <input
+              type="text"
+              className="bpe__input bpe__tag-search"
+              placeholder="جستجوی برچسب..."
+              value={tagSearch}
+              onChange={(e) => setTagSearch(e.target.value)}
+            />
+
+            <div className="bpe__tag-list">
+              {filteredTags.length === 0 && (
+                <span className="bpe__tag-empty">برچسبی پیدا نشد.</span>
+              )}
+              {filteredTags.map((tag) => {
+                const active = draft.tagIds.includes(tag.id);
+                return (
+                  <button
+                    type="button"
+                    key={tag.id}
+                    className={`bpe__tag-chip ${active ? "bpe__tag-chip--active" : ""}`}
+                    onClick={() => toggleTag(tag.id)}
+                  >
+                    {active && <i className="fas fa-check" />}
+                    {tag.name}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="bpe__tag-add-row">
+              <input
+                type="text"
+                className="bpe__input"
+                placeholder="ساخت برچسب جدید..."
+                value={newTagName}
+                onChange={(e) => setNewTagName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleCreateTag();
+                  }
+                }}
+              />
+              <button
+                type="button"
+                className="btn btn-secondary bpe__tag-add-btn"
+                disabled={!newTagName.trim() || creatingTag}
+                onClick={handleCreateTag}
+              >
+                <i className="fas fa-plus" />
+              </button>
+            </div>
+          </div>
+
+          <button
+            className="btn btn-primary bpe__save"
+            disabled={saving}
+            onClick={save}
+          >
+            {saving ? "در حال ذخیره..." : "ذخیره تغییرات"}
+          </button>
         </div>
       </div>
     </div>

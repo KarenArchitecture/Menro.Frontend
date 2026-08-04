@@ -33,6 +33,12 @@ function Carousel() {
     queryKey: ["featuredRestaurants"],
     queryFn: () => getFeaturedRestaurants(10),
     refetchOnWindowFocus: false,
+    // 🔧 Carousel ads change through the admin approval flow more often
+    // than the "random 8 restaurants" set does, so we keep this shorter
+    // (1 min) rather than matching the 5-min restaurant cache — still cuts
+    // out re-fetching on every remount within that minute, without risking
+    // showing a stale ad for too long after an admin approves a new one.
+    staleTime: 60_000,
   });
 
   // infinite loop slides

@@ -69,6 +69,14 @@ export default function BlogPostEditorPage() {
   const [creatingTag, setCreatingTag] = useState(false);
 
   useEffect(() => {
+    const prev = document.body.style.overflowX;
+    document.body.style.overflowX = "visible"; // یا "clip" اگه نگران اسکرول افقی هستی
+    return () => {
+      document.body.style.overflowX = prev;
+    };
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
     (async () => {
       try {

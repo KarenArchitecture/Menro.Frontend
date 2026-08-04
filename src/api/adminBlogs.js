@@ -58,6 +58,14 @@ export const getBlogPostContent = (id) =>
 export const updateBlogPostContent = (id, content) =>
   adminBlogsAxios.put(`/posts/${id}/content`, { content }).then((r) => r.data);
 
+export const searchBlogRestaurants = (term, take = 10) =>
+  adminBlogsAxios
+    .get("/posts/restaurant-search", { params: { term, take } })
+    .then((r) => r.data);
+
+export const getBlogRestaurantById = (id) =>
+  adminBlogsAxios.get(`/posts/restaurant-search/${id}`).then((r) => r.data);
+
 /* ------------------------ Display Categories ------------------------ */
 
 export const getBlogCategories = () =>

@@ -6,6 +6,7 @@ import {
   getBlogCategories,
   getBlogTags,
   createBlogTag,
+  searchBlogRestaurants,
 } from "../../api/adminBlogs";
 import {
   normalizeTagNameLive,
@@ -13,6 +14,7 @@ import {
 } from "../../utils/tagName";
 import { useGlobalUI } from "../../components/common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+import BlogContentEditor from "../../components/blog/BlogContentEditor";
 import "../../assets/css/admin/admin.css";
 import "../../assets/css/admin/blogPostEditor.css";
 
@@ -299,10 +301,7 @@ export default function BlogPostEditorPage() {
             <h3 className="bpe__card-title">
               <i className="fas fa-file-lines" /> محتوای پست
             </h3>
-            <div className="bpe__content-placeholder">
-              <i className="fas fa-pen-to-square" />
-              ادیتور محتوا (Tiptap) در قدم بعدی همین‌جا اضافه می‌شود
-            </div>
+            <BlogContentEditor postId={id} />
           </div>
         </div>
 

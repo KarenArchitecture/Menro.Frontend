@@ -245,7 +245,7 @@ function ItemDetailModal({ item, onClose, onSelectComboFood }) {
       clearTimeout(t);
       document.body.classList.remove("modal-open");
     };
-  }, [item]);
+  }, [item?.id]);
 
   const handleClose = () => {
     setIsActive(false);

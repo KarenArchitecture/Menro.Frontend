@@ -18,7 +18,7 @@ export default function usePageStyles(stylesheetUrl) {
     const link = document.createElement("link");
 
     link.rel = "stylesheet";
-    link.href = stylesheetUrl;
+    link.href = `${stylesheetUrl}?v=${Date.now()}`;
     link.dataset.pageStyle = "true";
 
     const markReady = () => {

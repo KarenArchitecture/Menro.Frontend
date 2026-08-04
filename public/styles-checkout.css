@@ -80,21 +80,16 @@ h2 {
 }
 
 .back-btn {
-    /* width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: #1a1d24;
-    border: 2px solid white; */
-    cursor: pointer;
-    transition: background 0.3s;
+    width: 3.4rem;
+    height: 3.4rem;
+    min-width: 3.4rem;
+    background: #13171e !important;
+    border: none;
+    border-radius: 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.back-btn i {
-    color: white;
-    font-size: 1rem;
+    cursor: pointer;
 }
 
 .checkout-cards {

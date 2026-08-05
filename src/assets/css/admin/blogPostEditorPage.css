@@ -130,10 +130,11 @@
   border: 1px solid var(--border-color, #2f2f2f);
   border-radius: 14px;
   padding: 24px;
+  margin-bottom: 10px;
 }
-.bpe__card + .bpe__card {
+/* .bpe__card + .bpe__card {
   margin-top: 20px;
-}
+} */
 
 .bpe__card-title {
   display: flex;
@@ -472,143 +473,5 @@
 /* ---------- Save button ---------- */
 .bpe__save {
   width: 100%;
-  margin-top: 4px;
   justify-content: center;
-}
-
-/* ---------- Tiptap content editor ---------- */
-.bpe__editor {
-  border: 1px solid var(--border-color, #2f2f2f);
-  border-radius: 12px;
-  overflow: hidden;
-  background: #191919;
-}
-
-.bpe__editor-toolbar {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 4px;
-  padding: 10px;
-  border-bottom: 1px solid var(--border-color, #2f2f2f);
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.bpe__editor-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: #a3a3a3;
-  cursor: pointer;
-  font-size: 1rem;
-  transition:
-    background 0.15s ease,
-    color 0.15s ease;
-}
-.bpe__editor-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-primary, #eaeaea);
-}
-.bpe__editor-btn--active {
-  background: rgba(245, 158, 11, 0.15);
-  color: var(--primary-color, #f59e0b);
-}
-.bpe__editor-btn:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-
-.bpe__editor-sep {
-  width: 1px;
-  height: 22px;
-  background: var(--border-color, #2f2f2f);
-  margin: 0 4px;
-}
-
-.bpe__editor-btn--save {
-  margin-inline-start: auto;
-}
-
-.bpe__editor-status {
-  font-size: 0.85rem;
-  color: #888;
-  padding: 0 6px;
-  white-space: nowrap;
-}
-
-.bpe__editor-loading {
-  padding: 40px 20px;
-  text-align: center;
-  color: #777;
-  font-size: 1rem;
-}
-
-/* The actual contentEditable area + typography for everything Tiptap/
-   StarterKit can produce (headings, lists, blockquote, hr, ...). Sized to
-   read comfortably while writing, same spirit as the enlarged sidebar
-   fields above - this is the main writing surface, it shouldn't be the
-   smallest text on the page. */
-.bpe__editor-body {
-  padding: 22px 24px;
-  min-height: 360px;
-}
-
-.bpe__editor-body .ProseMirror {
-  outline: none;
-  min-height: 340px;
-  font-size: 1.1rem;
-  line-height: 2;
-  color: var(--text-primary, #eaeaea);
-}
-
-.bpe__editor-body .ProseMirror p.is-editor-empty:first-child::before {
-  content: attr(data-placeholder);
-  float: right;
-  color: #666;
-  pointer-events: none;
-  height: 0;
-}
-
-.bpe__editor-body .ProseMirror h2 {
-  font-size: 1.55rem;
-  font-weight: 700;
-  margin: 26px 0 12px;
-}
-.bpe__editor-body .ProseMirror h3 {
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin: 22px 0 10px;
-}
-.bpe__editor-body .ProseMirror p {
-  margin: 0 0 16px;
-}
-.bpe__editor-body .ProseMirror ul,
-.bpe__editor-body .ProseMirror ol {
-  padding-inline-start: 26px;
-  margin: 0 0 16px;
-}
-.bpe__editor-body .ProseMirror li {
-  margin-bottom: 6px;
-}
-.bpe__editor-body .ProseMirror blockquote {
-  margin: 18px 0;
-  padding: 12px 18px;
-  border-inline-start: 3px solid var(--primary-color, #f59e0b);
-  background: rgba(245, 158, 11, 0.06);
-  border-radius: 0 8px 8px 0;
-  color: #d8d8d8;
-  font-size: 1.08rem;
-}
-.bpe__editor-body .ProseMirror hr {
-  border: none;
-  border-top: 1px dashed #3a3a3a;
-  margin: 30px 0;
-}
-.bpe__editor-body .ProseMirror strong {
-  font-weight: 700;
 }

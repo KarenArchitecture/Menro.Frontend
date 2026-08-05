@@ -16,7 +16,7 @@ import { useGlobalUI } from "../../components/common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 import BlogContentEditor from "../../components/blog/BlogContentEditor";
 import "../../assets/css/admin/admin.css";
-import "../../assets/css/admin/blogPostEditor.css";
+import "../../assets/css/admin/blogPostEditorPage.css";
 
 function apiErrorMessage(err, fallback = "خطایی رخ داد. دوباره تلاش کنید.") {
   return err?.response?.data?.message || err?.response?.data?.title || fallback;

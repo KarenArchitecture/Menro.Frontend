@@ -3,7 +3,7 @@ import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer, NodeViewWrapper } from "@tiptap/react";
 import { useState } from "react";
 import { getBlogRestaurantById } from "../../api/adminBlogs";
-import "../../assets/css/admin/blogPostEditor_restaurantCardNode.css";
+import "../../assets/css/admin/blogContentEditor_restaurantCardNode.css";
 
 function apiErrorMessage(err, fallback = "خطایی رخ داد. دوباره تلاش کنید.") {
   return err?.response?.data?.message || err?.response?.data?.title || fallback;

@@ -1,8 +1,8 @@
 /* ---------- Restaurant Card Node ---------- */
 .bpe__restaurant-card {
   position: relative;
-  max-width: 480px;
-  margin: 18px auto;
+  max-width: 75%;
+  margin: auto;
   border-radius: 16px;
   overflow: hidden;
   border: none;

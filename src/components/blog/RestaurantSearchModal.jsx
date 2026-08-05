@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { searchBlogRestaurants } from "../../api/adminBlogs";
-import "../../assets/css/admin/blogPostEditor_restaurantSearchModal.css";
+import "../../assets/css/admin/blogContentEditor_restaurantSearchModal.css";
 
 function apiErrorMessage(err, fallback = "خطایی رخ داد. دوباره تلاش کنید.") {
   return err?.response?.data?.message || err?.response?.data?.title || fallback;

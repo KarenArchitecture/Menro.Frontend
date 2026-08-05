@@ -238,3 +238,16 @@
 .bpe__editor-body .ProseMirror details > div p:last-child {
   margin-bottom: 0;
 }
+
+/* ---------- img input block ---------- */
+.bpe__editor-body .ProseMirror .bpe__editor-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  margin: 20px auto;
+}
+.bpe__editor-body .ProseMirror .bpe__editor-img.ProseMirror-selectednode {
+  outline: 2px solid var(--primary-color, #f59e0b);
+  outline-offset: 3px;
+}

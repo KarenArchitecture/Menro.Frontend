@@ -58,6 +58,20 @@ export const getBlogPostContent = (id) =>
 export const updateBlogPostContent = (id, content) =>
   adminBlogsAxios.put(`/posts/${id}/content`, { content }).then((r) => r.data);
 
+// NEW - uploads an image dropped into the Tiptap editor and returns its
+// final URL, to be set as the <img> src. Kept separate from
+// updateBlogPostContent - the editor calls this the moment a file is
+// picked, independent of the autosave cycle.
+export const uploadBlogContentImage = (postId, file) => {
+  const fd = new FormData();
+  fd.append("Image", file);
+  return adminBlogsAxios
+    .post(`/posts/${postId}/content/images`, fd, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+    .then((r) => r.data); // { url }
+};
+
 export const searchBlogRestaurants = (term, take = 10) =>
   adminBlogsAxios
     .get("/posts/restaurant-search", { params: { term, take } })

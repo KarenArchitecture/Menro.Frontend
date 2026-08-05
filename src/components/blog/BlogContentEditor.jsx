@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+
+// tiptap editor imports
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -7,13 +9,19 @@ import {
   DetailsSummary,
   DetailsContent,
 } from "@tiptap/extension-details";
+import Image from "@tiptap/extension-image";
+
+// components
 import RestaurantCardNode from "./RestaurantCardNode";
 import RestaurantSearchModal from "./RestaurantSearchModal";
+import { useGlobalUI } from "../common/GlobalUI";
+
+// api and styles
 import {
   getBlogPostContent,
   updateBlogPostContent,
+  uploadBlogContentImage,
 } from "../../api/adminBlogs";
-import { useGlobalUI } from "../common/GlobalUI";
 import "../../assets/css/admin/blogContentEditor.css";
 
 // How long to wait after the last keystroke before autosaving.
@@ -64,6 +72,10 @@ export default function BlogContentEditor({ postId }) {
   const isSavingRef = useRef(false);
   const pendingHtmlRef = useRef(null);
 
+  // image upload in editor
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const imageInputRef = useRef(null);
+
   const [restaurantModalOpen, setRestaurantModalOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -72,6 +84,9 @@ export default function BlogContentEditor({ postId }) {
       StarterKit,
       Placeholder.configure({
         placeholder: "نوشتن محتوای پست را از اینجا شروع کنید...",
+      }),
+      Image.configure({
+        HTMLAttributes: { class: "bpe__editor-img" },
       }),
       RestaurantCardNode,
       Details.configure({
@@ -197,6 +212,54 @@ export default function BlogContentEditor({ postId }) {
     };
   }, [isFullscreen]);
 
+  // Opens the native file picker (hidden <input type="file"> below).
+  const handleImageButtonClick = () => {
+    imageInputRef.current?.click();
+  };
+
+  // Inserts a local preview immediately (so the admin gets instant visual
+  // feedback), uploads the file in the background, then swaps the preview's
+  // src for the real, permanent URL once the upload finishes. If the upload
+  // fails, the local-preview node is removed instead of leaving a
+  // dead/blob-url image stuck in the content.
+  const handleImageFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow selecting the same file again later
+    if (!file || !editor) return;
+
+    const localPreviewUrl = URL.createObjectURL(file);
+    editor.chain().focus().setImage({ src: localPreviewUrl }).run();
+
+    setUploadingImage(true);
+    try {
+      const { url } = await uploadBlogContentImage(postId, file);
+      editor.state.doc.descendants((node, pos) => {
+        if (node.type.name === "image" && node.attrs.src === localPreviewUrl) {
+          editor
+            .chain()
+            .setNodeSelection(pos)
+            .updateAttributes("image", { src: url })
+            .run();
+          return false;
+        }
+      });
+    } catch (err) {
+      notify({
+        type: "error",
+        message: apiErrorMessage(err, "آپلود تصویر با خطا مواجه شد."),
+      });
+      editor.state.doc.descendants((node, pos) => {
+        if (node.type.name === "image" && node.attrs.src === localPreviewUrl) {
+          editor.chain().setNodeSelection(pos).deleteSelection().run();
+          return false;
+        }
+      });
+    } finally {
+      URL.revokeObjectURL(localPreviewUrl);
+      setUploadingImage(false);
+    }
+  };
+
   if (!editor) return null;
 
   return (
@@ -287,6 +350,19 @@ export default function BlogContentEditor({ postId }) {
             icon="fas fa-utensils"
             title="افزودن رستوران"
             onClick={() => setRestaurantModalOpen(true)}
+          />
+          <ToolbarButton
+            icon={`fas ${uploadingImage ? "fa-spinner fa-spin" : "fa-image"}`}
+            title="افزودن تصویر"
+            disabled={uploadingImage}
+            onClick={handleImageButtonClick}
+          />
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={handleImageFileChange}
           />
           <ToolbarButton
             icon="fas fa-square-caret-down"

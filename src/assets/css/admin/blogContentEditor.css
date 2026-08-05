@@ -2,17 +2,26 @@
 .bpe__editor {
   border: 1px solid var(--border-color, #2f2f2f);
   border-radius: 12px;
-  overflow: hidden;
   background: #191919;
+  /* overflow:hidden was removed on purpose. Any overflow value other than
+     "visible" on an ancestor changes which box position:sticky resolves
+     against - having it here silently broke the toolbar's sticky behavior
+     in normal (non-fullscreen) mode. Corners are rounded/clipped on the
+     toolbar and body directly instead (see further down). */
 }
 
 /* Dims the rest of the page behind the fullscreen editor, and doubles as a
-   click-outside-to-exit target. */
+   click-outside-to-exit target. Fades in/out together with the panel. */
 .bpe__editor-fullscreen-backdrop {
   position: fixed;
   inset: 0;
   z-index: 999;
   background: rgba(0, 0, 0, 0.7);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.bpe__editor-fullscreen-backdrop--visible {
+  opacity: 1;
 }
 
 /* Fullscreen (focus) mode: same editor instance, just resized to cover most
@@ -29,11 +38,27 @@
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
   display: flex;
   flex-direction: column;
+  /* Starting (closed) state of the enter/exit transition - see
+     .bpe__editor--fullscreen-visible, toggled a frame after mount by the
+     component so this actually has something to transition from. */
+  opacity: 0;
+  transform: scale(0.97);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+.bpe__editor--fullscreen-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+.bpe__editor--fullscreen .bpe__editor-toolbar {
+  border-radius: 16px 16px 0 0;
 }
 .bpe__editor--fullscreen .bpe__editor-body {
   flex: 1;
   min-height: 0; /* let the flex child actually scroll instead of overflowing the page */
   overflow-y: auto;
+  border-radius: 0 0 16px 16px;
 }
 /* A touch larger in fullscreen - there's room, and it fits the "zoomed in
    focus mode" feel better than the compact toolbar sizing. */
@@ -62,6 +87,22 @@
      to sit just below it instead of overlapping it. */
   top: 0;
   z-index: 5;
+  border-radius: 12px 12px 0 0;
+}
+
+/* Right-side (bpe__editor-toolbar-group--start) vs. left-side
+   (bpe__editor-toolbar-group--end) clusters of toolbar buttons. The end
+   group is pushed away from the start group via margin-inline-start:auto,
+   so it lands on the opposite side regardless of how many buttons are in
+   either group. */
+.bpe__editor-toolbar-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.bpe__editor-toolbar-group--end {
+  margin-inline-start: auto;
 }
 
 .bpe__editor-btn {
@@ -100,15 +141,19 @@
   margin: 0 4px;
 }
 
-.bpe__editor-btn--save {
-  margin-inline-start: auto;
-}
-
 .bpe__editor-status {
   font-size: 0.85rem;
   color: #888;
   padding: 0 6px;
   white-space: nowrap;
+}
+.bpe__editor-status--saved {
+  color: var(--status-active, #10b981);
+  font-weight: 600;
+}
+.bpe__editor-status--error {
+  color: #f87171;
+  font-weight: 600;
 }
 
 .bpe__editor-loading {
@@ -126,6 +171,8 @@
 .bpe__editor-body {
   padding: 22px 24px;
   min-height: 360px;
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
 }
 
 .bpe__editor-body .ProseMirror {

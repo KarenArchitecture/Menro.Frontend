@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 // tiptap editor imports
 import { useEditor, EditorContent } from "@tiptap/react";
@@ -76,8 +76,17 @@ export default function BlogContentEditor({ postId }) {
   const [uploadingImage, setUploadingImage] = useState(false);
   const imageInputRef = useRef(null);
 
+  const scrollYBeforeFullscreenRef = useRef(0);
   const [restaurantModalOpen, setRestaurantModalOpen] = useState(false);
+  // isFullscreen: the admin's actual intent (toggled instantly by the button).
+  // fsRender: whether the fullscreen DOM (panel + backdrop) is mounted -
+  // stays true a bit longer than isFullscreen on close, so the exit
+  // animation has something to animate.
+  // fsEntered: flips true one frame after mounting, and false immediately
+  // on close - this is what the CSS transition actually keys off of.
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fsRender, setFsRender] = useState(false);
+  const [fsEntered, setFsEntered] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -195,22 +204,59 @@ export default function BlogContentEditor({ postId }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Drives the fullscreen enter/exit animation. On open: mount immediately
+  // (fsRender) but wait two animation frames before flipping fsEntered, so
+  // the browser has a chance to paint the "hidden" starting state first -
+  // otherwise the transition has nothing to animate from and it just pops
+  // in. On close: flip fsEntered off right away (plays the exit transition)
+  // and only unmount (fsRender) after the transition's duration has
+  // elapsed. The 220ms timeout should stay in sync with the CSS transition
+  // duration on .bpe__editor--fullscreen / .bpe__editor-fullscreen-backdrop.
+  useEffect(() => {
+    const frameIds = [];
+    if (isFullscreen) {
+      setFsRender(true);
+      frameIds.push(
+        requestAnimationFrame(() => {
+          frameIds.push(requestAnimationFrame(() => setFsEntered(true)));
+        }),
+      );
+      return () => frameIds.forEach(cancelAnimationFrame);
+    }
+    setFsEntered(false);
+    const timeoutId = setTimeout(() => setFsRender(false), 220);
+    return () => clearTimeout(timeoutId);
+  }, [isFullscreen]);
+
   // Fullscreen mode: no second editor instance is mounted - we just resize
   // the same editor's container to fill the viewport via CSS. Lock the
-  // page's own scroll while it's open, and let Escape close it.
-  useEffect(() => {
-    if (!isFullscreen) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+  // page's own scroll for as long as the fullscreen DOM is mounted
+  // (including the closing animation, so the page can't jump/scroll behind
+  // it mid-transition), and let Escape close it.
+  useLayoutEffect(() => {
+    if (!fsRender) return;
+    const scrollY = scrollYBeforeFullscreenRef.current;
+    const body = document.body;
+    const previousPosition = body.style.position;
+    const previousTop = body.style.top;
+    const previousWidth = body.style.width;
+
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.width = "100%";
+
     const onKeyDown = (e) => {
       if (e.key === "Escape") setIsFullscreen(false);
     };
     window.addEventListener("keydown", onKeyDown);
     return () => {
-      document.body.style.overflow = previousOverflow;
+      body.style.position = previousPosition;
+      body.style.top = previousTop;
+      body.style.width = previousWidth;
+      window.scrollTo(0, scrollY);
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [isFullscreen]);
+  }, [fsRender]);
 
   // Opens the native file picker (hidden <input type="file"> below).
   const handleImageButtonClick = () => {
@@ -264,156 +310,163 @@ export default function BlogContentEditor({ postId }) {
 
   return (
     <>
-      {isFullscreen && (
+      {fsRender && (
         <div
-          className="bpe__editor-fullscreen-backdrop"
+          className={`bpe__editor-fullscreen-backdrop ${
+            fsEntered ? "bpe__editor-fullscreen-backdrop--visible" : ""
+          }`}
           onClick={() => setIsFullscreen(false)}
         />
       )}
       <div
-        className={`bpe__editor ${isFullscreen ? "bpe__editor--fullscreen" : ""}`}
+        className={`bpe__editor ${fsRender ? "bpe__editor--fullscreen" : ""} ${
+          fsRender && fsEntered ? "bpe__editor--fullscreen-visible" : ""
+        }`}
       >
         <div className="bpe__editor-toolbar">
-          <ToolbarButton
-            icon="fas fa-bold"
-            title="ضخیم"
-            active={editor.isActive("bold")}
-            onClick={() => editor.chain().focus().toggleBold().run()}
-          />
-          <ToolbarButton
-            icon="fas fa-italic"
-            title="مورب"
-            active={editor.isActive("italic")}
-            onClick={() => editor.chain().focus().toggleItalic().run()}
-          />
-          <ToolbarButton
-            icon="fas fa-strikethrough"
-            title="خط‌خورده"
-            active={editor.isActive("strike")}
-            onClick={() => editor.chain().focus().toggleStrike().run()}
-          />
-          <span className="bpe__editor-sep" />
-          <ToolbarButton
-            icon="fas fa-heading"
-            title="تیتر بزرگ"
-            active={editor.isActive("heading", { level: 2 })}
-            onClick={() =>
-              editor.chain().focus().toggleHeading({ level: 2 }).run()
-            }
-          />
-          <ToolbarButton
-            icon="fas fa-heading fa-sm"
-            title="تیتر کوچک"
-            active={editor.isActive("heading", { level: 3 })}
-            onClick={() =>
-              editor.chain().focus().toggleHeading({ level: 3 }).run()
-            }
-          />
-          <span className="bpe__editor-sep" />
-          <ToolbarButton
-            icon="fas fa-list-ul"
-            title="لیست نشانه‌دار"
-            active={editor.isActive("bulletList")}
-            onClick={() => editor.chain().focus().toggleBulletList().run()}
-          />
-          <ToolbarButton
-            icon="fas fa-list-ol"
-            title="لیست شماره‌دار"
-            active={editor.isActive("orderedList")}
-            onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          />
-          <ToolbarButton
-            icon="fas fa-quote-right"
-            title="نقل قول"
-            active={editor.isActive("blockquote")}
-            onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          />
-          <ToolbarButton
-            icon="fas fa-minus"
-            title="جداکننده"
-            onClick={() => editor.chain().focus().setHorizontalRule().run()}
-          />
-          <span className="bpe__editor-sep" />
-          <ToolbarButton
-            icon="fas fa-rotate-left"
-            title="واگرد"
-            disabled={!editor.can().undo()}
-            onClick={() => editor.chain().focus().undo().run()}
-          />
-          <ToolbarButton
-            icon="fas fa-rotate-right"
-            title="ازنو"
-            disabled={!editor.can().redo()}
-            onClick={() => editor.chain().focus().redo().run()}
-          />
-          <ToolbarButton
-            icon="fas fa-utensils"
-            title="افزودن رستوران"
-            onClick={() => setRestaurantModalOpen(true)}
-          />
-          <ToolbarButton
-            icon={`fas ${uploadingImage ? "fa-spinner fa-spin" : "fa-image"}`}
-            title="افزودن تصویر"
-            disabled={uploadingImage}
-            onClick={handleImageButtonClick}
-          />
-          <input
-            ref={imageInputRef}
-            type="file"
-            accept="image/*"
-            style={{ display: "none" }}
-            onChange={handleImageFileChange}
-          />
-          <ToolbarButton
-            icon="fas fa-square-caret-down"
-            title="افزودن بخش بازشو (سؤال/جواب)"
-            onClick={() =>
-              editor
-                .chain()
-                .focus()
-                .insertContent({
-                  type: "details",
-                  attrs: { open: true },
-                  content: [
-                    {
-                      type: "detailsSummary",
-                      content: [
-                        { type: "text", text: "سؤال را اینجا بنویسید" },
-                      ],
-                    },
-                    {
-                      type: "detailsContent",
-                      content: [
-                        {
-                          type: "paragraph",
-                          content: [
-                            { type: "text", text: "پاسخ را اینجا بنویسید" },
-                          ],
-                        },
-                      ],
-                    },
-                  ],
-                })
-                .run()
-            }
-          />
-          <ToolbarButton
-            icon={isFullscreen ? "fas fa-compress" : "fas fa-expand"}
-            title={isFullscreen ? "خروج از حالت تمام‌صفحه" : "حالت تمام‌صفحه"}
-            onClick={() => setIsFullscreen((v) => !v)}
-          />
-          <ToolbarButton
-            icon="fas fa-floppy-disk"
-            title="ذخیره‌ی دستی"
-            disabled={saveStatus === "saving"}
-            onClick={handleManualSave}
-            className="bpe__editor-btn--save"
-          />{" "}
-          <span className="bpe__editor-status">
-            {saveStatus === "saving" && "در حال ذخیره..."}
-            {saveStatus === "saved" && "ذخیره شد"}
-            {saveStatus === "error" && "خطا در ذخیره"}
-          </span>
+          <div className="bpe__editor-toolbar-group bpe__editor-toolbar-group--start">
+            <ToolbarButton
+              icon="fas fa-bold"
+              title="ضخیم"
+              active={editor.isActive("bold")}
+              onClick={() => editor.chain().focus().toggleBold().run()}
+            />
+            <ToolbarButton
+              icon="fas fa-italic"
+              title="مورب"
+              active={editor.isActive("italic")}
+              onClick={() => editor.chain().focus().toggleItalic().run()}
+            />
+            <ToolbarButton
+              icon="fas fa-strikethrough"
+              title="خط‌خورده"
+              active={editor.isActive("strike")}
+              onClick={() => editor.chain().focus().toggleStrike().run()}
+            />
+            <span className="bpe__editor-sep" />
+            <ToolbarButton
+              icon="fas fa-heading"
+              title="تیتر بزرگ"
+              active={editor.isActive("heading", { level: 2 })}
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level: 2 }).run()
+              }
+            />
+            <ToolbarButton
+              icon="fas fa-heading fa-sm"
+              title="تیتر کوچک"
+              active={editor.isActive("heading", { level: 3 })}
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level: 3 }).run()
+              }
+            />
+            <span className="bpe__editor-sep" />
+            <ToolbarButton
+              icon="fas fa-list-ul"
+              title="لیست نشانه‌دار"
+              active={editor.isActive("bulletList")}
+              onClick={() => editor.chain().focus().toggleBulletList().run()}
+            />
+            <ToolbarButton
+              icon="fas fa-list-ol"
+              title="لیست شماره‌دار"
+              active={editor.isActive("orderedList")}
+              onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            />
+            <ToolbarButton
+              icon="fas fa-quote-right"
+              title="نقل قول"
+              active={editor.isActive("blockquote")}
+              onClick={() => editor.chain().focus().toggleBlockquote().run()}
+            />
+            <ToolbarButton
+              icon="fas fa-minus"
+              title="جداکننده"
+              onClick={() => editor.chain().focus().setHorizontalRule().run()}
+            />
+            <span className="bpe__editor-sep" />
+            <ToolbarButton
+              icon="fas fa-square-caret-down"
+              title="افزودن بخش بازشو (سؤال/جواب)"
+              onClick={() =>
+                editor
+                  .chain()
+                  .focus()
+                  .insertContent({
+                    type: "details",
+                    attrs: { open: true },
+                    content: [
+                      {
+                        type: "detailsSummary",
+                        content: [
+                          { type: "text", text: "سؤال را اینجا بنویسید" },
+                        ],
+                      },
+                      {
+                        type: "detailsContent",
+                        content: [
+                          {
+                            type: "paragraph",
+                            content: [
+                              { type: "text", text: "پاسخ را اینجا بنویسید" },
+                            ],
+                          },
+                        ],
+                      },
+                    ],
+                  })
+                  .run()
+              }
+            />
+            <ToolbarButton
+              icon="fas fa-utensils"
+              title="افزودن رستوران"
+              onClick={() => setRestaurantModalOpen(true)}
+            />
+            <ToolbarButton
+              icon={`fas ${uploadingImage ? "fa-spinner fa-spin" : "fa-image"}`}
+              title="افزودن تصویر"
+              disabled={uploadingImage}
+              onClick={handleImageButtonClick}
+            />
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handleImageFileChange}
+            />
+          </div>
+          <div className="bpe__editor-toolbar-group bpe__editor-toolbar-group--end">
+            <ToolbarButton
+              icon={isFullscreen ? "fas fa-compress" : "fas fa-expand"}
+              title={isFullscreen ? "خروج از حالت تمام‌صفحه" : "حالت تمام‌صفحه"}
+              onClick={() => {
+                if (!isFullscreen) {
+                  scrollYBeforeFullscreenRef.current = window.scrollY;
+                }
+                setIsFullscreen((v) => !v);
+              }}
+            />
+            <ToolbarButton
+              icon="fas fa-rotate-left"
+              title="واگرد"
+              disabled={!editor.can().undo()}
+              onClick={() => editor.chain().focus().undo().run()}
+            />
+            <ToolbarButton
+              icon="fas fa-rotate-right"
+              title="ازنو"
+              disabled={!editor.can().redo()}
+              onClick={() => editor.chain().focus().redo().run()}
+            />
+            <ToolbarButton
+              icon="fas fa-floppy-disk"
+              title="ذخیره‌ی دستی"
+              disabled={saveStatus === "saving"}
+              onClick={handleManualSave}
+            />
+          </div>
         </div>
 
         {loading ? (

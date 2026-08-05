@@ -70,7 +70,7 @@ export default function BlogPostEditorPage() {
 
   useEffect(() => {
     const prev = document.body.style.overflowX;
-    document.body.style.overflowX = "visible"; // یا "clip" اگه نگران اسکرول افقی هستی
+    document.body.style.overflowX = "visible";
     return () => {
       document.body.style.overflowX = prev;
     };

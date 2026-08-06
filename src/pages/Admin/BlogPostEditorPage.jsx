@@ -14,7 +14,7 @@ import {
 } from "../../utils/tagName";
 import { useGlobalUI } from "../../components/common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
-import BlogContentEditor from "../../components/blog/BlogContentEditor";
+import BlogContentEditor from "../../components/blogPostEditor/BlogContentEditor";
 import "../../assets/css/admin/admin.css";
 import "../../assets/css/admin/blogPostEditorPage.css";
 
@@ -25,9 +25,22 @@ function apiErrorMessage(err, fallback = "خطایی رخ داد. دوباره �
 // Mirrors [MaxLength(300)] on CreateBlogPostRequest/UpdateBlogPostRequest.Title
 const TITLE_MAX = 300;
 
+// Light client-side mirror of the backend's SlugHelper.NormalizeAscii - just
+// for instant visual feedback while typing. The backend still re-normalizes
+// and de-duplicates (appends "-2", "-3", ...) authoritatively on save, so
+// this doesn't need to be perfect, just not obviously wrong.
+function sanitizeSlugInput(value) {
+  return value
+    .toLowerCase()
+    .replace(/[\s_]+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-{2,}/g, "-");
+}
+
 function draftFromApi(p) {
   return {
     title: p.title,
+    slug: p.slug || "",
     coverFile: null,
     coverSrc: p.coverImageUrl || "",
     removeImage: false,
@@ -41,6 +54,7 @@ function draftFromApi(p) {
 function draftToFormData(draft) {
   const fd = new FormData();
   fd.append("Title", draft.title);
+  fd.append("Slug", draft.slug);
   fd.append("ReadingMinutes", String(Number(draft.readingMins)));
   if (draft.categoryId) fd.append("CategoryId", draft.categoryId);
   fd.append("IsPublished", String(!!draft.published));
@@ -176,6 +190,7 @@ export default function BlogPostEditorPage() {
     if (!title) errs.title = "عنوان پست الزامی است.";
     else if (title.length > TITLE_MAX)
       errs.title = `عنوان نباید بیشتر از ${TITLE_MAX} کاراکتر باشد.`;
+    if (!draft.slug.trim()) errs.slug = "اسلاگ الزامی است.";
     if (!draft.readingMins || draft.readingMins <= 0)
       errs.readingMins = "زمان مطالعه باید بزرگ‌تر از صفر باشد.";
     return errs;
@@ -257,6 +272,26 @@ export default function BlogPostEditorPage() {
               {errors.title && (
                 <span className="bpe__error">{errors.title}</span>
               )}
+            </div>
+
+            <div className="bpe__field">
+              <label className="bpe__label">اسلاگ (آدرس صفحه)</label>
+              <div className="bpe__slug-row">
+                <span className="bpe__slug-prefix">/blog/</span>
+                <input
+                  type="text"
+                  className="bpe__input bpe__slug-input"
+                  value={draft.slug}
+                  dir="ltr"
+                  onChange={(e) =>
+                    setDraft({
+                      ...draft,
+                      slug: sanitizeSlugInput(e.target.value),
+                    })
+                  }
+                />
+              </div>
+              {errors.slug && <span className="bpe__error">{errors.slug}</span>}
             </div>
 
             <div className="bpe__field">

@@ -247,6 +247,30 @@
   }
 }
 
+.bpe__slug-row {
+  display: flex;
+  align-items: center;
+  border: 1px solid #333;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #252525;
+}
+.bpe__slug-prefix {
+  padding: 12px 12px 12px 0;
+  color: var(--text-muted, #888);
+  font-size: 0.95rem;
+  white-space: nowrap;
+  direction: ltr;
+}
+.bpe__slug-input {
+  border: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+}
+.bpe__slug-input:focus {
+  box-shadow: none !important;
+}
+
 /* ---------- Cover image uploader ---------- */
 .bpe__cover {
   position: relative;

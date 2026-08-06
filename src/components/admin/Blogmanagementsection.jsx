@@ -110,8 +110,8 @@ function mapPostFromApi(p, categories = []) {
   return {
     id: p.id,
     title: p.title,
-    coverSrc: p.coverImageUrl || "",
-    coverFileName: p.coverImageUrl ? p.coverImageUrl.split("/").pop() : "",
+    coverSrc: p.thumbnailUrl || "",
+    coverFileName: p.thumbnailUrl ? p.thumbnailUrl.split("/").pop() : "",
     removeImage: false,
     readingMins: p.readingMinutes,
     categoryId: p.categoryId,
@@ -119,6 +119,7 @@ function mapPostFromApi(p, categories = []) {
       p.categoryTitle ||
       categories.find((c) => c.id === p.categoryId)?.title ||
       "",
+    authorName: p.authorName || "",
     published: p.isPublished,
   };
 }
@@ -365,6 +366,7 @@ function PostsPane() {
               <th>پوستر</th>
               <th>عنوان</th>
               <th>دسته‌بندی</th>
+              <th>نویسنده</th>
               <th>زمان مطالعه</th>
               <th>وضعیت</th>
               <th>عملیات</th>
@@ -373,14 +375,14 @@ function PostsPane() {
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={6}>
+                <td colSpan={7}>
                   <div className="empty-hint">در حال بارگذاری...</div>
                 </td>
               </tr>
             )}
             {!loading && posts.length === 0 && (
               <tr>
-                <td colSpan={6}>
+                <td colSpan={7}>
                   <div className="empty-hint">
                     هیچ پستی با این فیلتر پیدا نشد.
                   </div>
@@ -421,6 +423,7 @@ function PostsPane() {
                       </span>
                     )}
                   </td>
+                  <td>{post.authorName || "-"}</td>
                   <td>{post.readingMins} دقیقه</td>
                   <td>
                     <span

@@ -24,7 +24,7 @@ const NAV_GROUPS = [
   {
     key: "restaurant-mgmt",
     label: "مدیریت رستوران",
-    roles: ["admin", "owner"],
+    roles: ["owner"],
     items: [
       {
         key: "restaurant-profile",
@@ -53,7 +53,7 @@ const NAV_GROUPS = [
   {
     key: "business",
     label: "کسب و کار",
-    roles: ["admin", "owner"],
+    roles: ["owner"],
     items: [
       { key: "orders", label: "مدیریت سفارش‌ها", icon: "fas fa-receipt" },
       // { key: "financial", label: "مالی", icon: "fas fa-file-invoice-dollar" },

@@ -11,24 +11,46 @@
 }
 
 /* Dims the rest of the page behind the fullscreen editor, and doubles as a
-   click-outside-to-exit target. Fades in/out together with the panel. */
+   click-outside-to-exit target. Fades in/out together with the panel via
+   the keyframes below (an "animation" that auto-plays whenever the class
+   is (re)applied, unlike "transition" which needs the browser to have
+   already painted a prior value to animate from - keyframes don't have
+   that timing dependency, so both directions are reliable). */
 .bpe__editor-fullscreen-backdrop {
   position: fixed;
   inset: 0;
   z-index: 999;
   background: rgba(0, 0, 0, 0.7);
   opacity: 0;
-  transition: opacity 0.2s ease;
+  animation: bpe-editor-fs-backdrop-in 0.2s ease forwards;
 }
-.bpe__editor-fullscreen-backdrop--visible {
-  opacity: 1;
+.bpe__editor-fullscreen-backdrop--exiting {
+  animation: bpe-editor-fs-backdrop-out 0.2s ease forwards;
+}
+@keyframes bpe-editor-fs-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes bpe-editor-fs-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 /* Fullscreen (focus) mode: same editor instance, just resized to cover most
    of the viewport - no second editor is ever mounted, so autosave/history/
    cursor position all carry over untouched. Deliberately keeps a visible
    inset margin + rounded border instead of going truly edge-to-edge, so the
-   editor still reads as a distinct panel rather than "the whole browser". */
+   editor still reads as a distinct panel rather than "the whole browser".
+   Fades/scales in via a plain CSS animation - see the note above the
+   backdrop rule for why animation was chosen over transition here. */
 .bpe__editor--fullscreen {
   position: fixed;
   inset: 28px;
@@ -38,18 +60,30 @@
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
   display: flex;
   flex-direction: column;
-  /* Starting (closed) state of the enter/exit transition - see
-     .bpe__editor--fullscreen-visible, toggled a frame after mount by the
-     component so this actually has something to transition from. */
-  opacity: 0;
-  transform: scale(0.97);
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
+  animation: bpe-editor-fs-in 0.2s ease forwards;
 }
-.bpe__editor--fullscreen-visible {
-  opacity: 1;
-  transform: scale(1);
+.bpe__editor--fullscreen-exiting {
+  animation: bpe-editor-fs-out 0.2s ease forwards;
+}
+@keyframes bpe-editor-fs-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes bpe-editor-fs-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
 }
 .bpe__editor--fullscreen .bpe__editor-toolbar {
   border-radius: 16px 16px 0 0;

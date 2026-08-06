@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // tiptap editor imports
 import { useEditor, EditorContent } from "@tiptap/react";
@@ -26,6 +26,18 @@ import "../../assets/css/admin/blogContentEditor.css";
 
 // How long to wait after the last keystroke before autosaving.
 const AUTOSAVE_DELAY_MS = 5000;
+
+// Keys that would otherwise scroll the page while the background is
+// supposed to be locked behind the fullscreen editor.
+const SCROLL_KEYS = new Set([
+  "ArrowUp",
+  "ArrowDown",
+  "PageUp",
+  "PageDown",
+  "Home",
+  "End",
+  " ",
+]);
 
 function apiErrorMessage(err, fallback = "خطایی رخ داد. دوباره تلاش کنید.") {
   return err?.response?.data?.message || err?.response?.data?.title || fallback;
@@ -76,17 +88,31 @@ export default function BlogContentEditor({ postId }) {
   const [uploadingImage, setUploadingImage] = useState(false);
   const imageInputRef = useRef(null);
 
-  const scrollYBeforeFullscreenRef = useRef(0);
+  // The panel's own DOM node (the .bpe__editor div). Used to (a) measure its
+  // height right before it goes fullscreen, so the placeholder left behind
+  // can reserve exactly that much space, and (b) tell, in the scroll-lock
+  // effect below, whether a given event happened inside the panel (allowed)
+  // or on the dimmed background behind it (blocked).
+  const editorRef = useRef(null);
+  const capturedHeightRef = useRef(null);
+
   const [restaurantModalOpen, setRestaurantModalOpen] = useState(false);
   // isFullscreen: the admin's actual intent (toggled instantly by the button).
-  // fsRender: whether the fullscreen DOM (panel + backdrop) is mounted -
-  // stays true a bit longer than isFullscreen on close, so the exit
-  // animation has something to animate.
-  // fsEntered: flips true one frame after mounting, and false immediately
-  // on close - this is what the CSS transition actually keys off of.
+  // fsRender: whether the fullscreen DOM (panel + backdrop + placeholder) is
+  // mounted - stays true a bit longer than isFullscreen on close, so the
+  // exit animation has something to play against before unmounting.
+  // exiting: true only during that closing window - swaps in the
+  // "...-exiting" keyframe class (see blogContentEditor.css). Entering
+  // doesn't need an equivalent flag: applying .bpe__editor--fullscreen
+  // itself carries a plain CSS `animation`, which auto-plays from its own
+  // "from" keyframe every time the class is (re)applied - no JS timing
+  // dance required, unlike a `transition` (which only animates a change
+  // from something already painted, hence needing the entering flag +
+  // double-rAF this used to have).
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [fsRender, setFsRender] = useState(false);
-  const [fsEntered, setFsEntered] = useState(false);
+  const [exiting, setExiting] = useState(false);
+  const hasOpenedRef = useRef(false);
 
   const editor = useEditor({
     extensions: [
@@ -204,57 +230,68 @@ export default function BlogContentEditor({ postId }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Drives the fullscreen enter/exit animation. On open: mount immediately
-  // (fsRender) but wait two animation frames before flipping fsEntered, so
-  // the browser has a chance to paint the "hidden" starting state first -
-  // otherwise the transition has nothing to animate from and it just pops
-  // in. On close: flip fsEntered off right away (plays the exit transition)
-  // and only unmount (fsRender) after the transition's duration has
-  // elapsed. The 220ms timeout should stay in sync with the CSS transition
-  // duration on .bpe__editor--fullscreen / .bpe__editor-fullscreen-backdrop.
+  // Drives the fullscreen mount/unmount lifecycle. Entering needs no special
+  // handling here - mounting with .bpe__editor--fullscreen present is enough
+  // for its own CSS animation to play (see the class comment above). Exiting
+  // needs to stay mounted for the exit animation's duration before actually
+  // unmounting, so fsRender is only flipped off after that delay. The 220ms
+  // timeout should stay in sync with the CSS animation duration on
+  // .bpe__editor--fullscreen-exiting / .bpe__editor-fullscreen-backdrop--exiting.
   useEffect(() => {
-    const frameIds = [];
     if (isFullscreen) {
+      hasOpenedRef.current = true;
+      setExiting(false);
       setFsRender(true);
-      frameIds.push(
-        requestAnimationFrame(() => {
-          frameIds.push(requestAnimationFrame(() => setFsEntered(true)));
-        }),
-      );
-      return () => frameIds.forEach(cancelAnimationFrame);
+      return;
     }
-    setFsEntered(false);
-    const timeoutId = setTimeout(() => setFsRender(false), 220);
+    if (!hasOpenedRef.current) return; // never opened - nothing to close
+    setExiting(true);
+    const timeoutId = setTimeout(() => {
+      setFsRender(false);
+      setExiting(false);
+    }, 220);
     return () => clearTimeout(timeoutId);
   }, [isFullscreen]);
 
-  // Fullscreen mode: no second editor instance is mounted - we just resize
-  // the same editor's container to fill the viewport via CSS. Lock the
-  // page's own scroll for as long as the fullscreen DOM is mounted
-  // (including the closing animation, so the page can't jump/scroll behind
-  // it mid-transition), and let Escape close it.
-  useLayoutEffect(() => {
+  // Blocks the page behind the fullscreen editor from scrolling, while the
+  // fullscreen DOM is mounted (including the closing animation). This is
+  // deliberately NOT done via the usual `body.style.position = "fixed"`
+  // trick: that trick makes the real document scroll offset become 0 (it
+  // fakes the scroll visually with a negative `top` instead), and
+  // position:sticky is computed from that real offset. With it at 0, any
+  // sticky element on the page (the sidebar next to this editor) gets
+  // treated as "unstuck" and snaps to its plain in-flow position - which,
+  // combined with the page being visually shifted up by the old scroll
+  // amount, is exactly the jump this component used to cause. Blocking the
+  // underlying wheel/touch/key events instead leaves the real scroll
+  // position - and therefore the sidebar's sticky offset - completely
+  // untouched, so there's nothing for it to jump for.
+  useEffect(() => {
     if (!fsRender) return;
-    const scrollY = scrollYBeforeFullscreenRef.current;
-    const body = document.body;
-    const previousPosition = body.style.position;
-    const previousTop = body.style.top;
-    const previousWidth = body.style.width;
 
-    body.style.position = "fixed";
-    body.style.top = `-${scrollY}px`;
-    body.style.width = "100%";
+    const isInsidePanel = (node) =>
+      !!editorRef.current && !!node && editorRef.current.contains(node);
 
-    const onKeyDown = (e) => {
-      if (e.key === "Escape") setIsFullscreen(false);
+    const blockScroll = (e) => {
+      if (!isInsidePanel(e.target)) e.preventDefault();
     };
-    window.addEventListener("keydown", onKeyDown);
+    const blockKeyScroll = (e) => {
+      if (e.key === "Escape") {
+        setIsFullscreen(false);
+        return;
+      }
+      if (SCROLL_KEYS.has(e.key) && !isInsidePanel(document.activeElement)) {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener("wheel", blockScroll, { passive: false });
+    window.addEventListener("touchmove", blockScroll, { passive: false });
+    window.addEventListener("keydown", blockKeyScroll);
     return () => {
-      body.style.position = previousPosition;
-      body.style.top = previousTop;
-      body.style.width = previousWidth;
-      window.scrollTo(0, scrollY);
-      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("wheel", blockScroll);
+      window.removeEventListener("touchmove", blockScroll);
+      window.removeEventListener("keydown", blockKeyScroll);
     };
   }, [fsRender]);
 
@@ -311,16 +348,35 @@ export default function BlogContentEditor({ postId }) {
   return (
     <>
       {fsRender && (
+        // Reserves the space the panel would normally occupy in the main
+        // column, sized to whatever it measured right before switching to
+        // fullscreen (see the toggle button below). Without this, the panel
+        // going position:fixed removes its height from the flow, the main
+        // column (and the sticky sidebar's container next to it) suddenly
+        // shrinks, and the sidebar's sticky offset gets recalculated against
+        // a different container height on top of the issue described above.
+        <div
+          className="bpe__editor-slot-placeholder"
+          style={
+            capturedHeightRef.current
+              ? { height: `${capturedHeightRef.current}px` }
+              : undefined
+          }
+          aria-hidden="true"
+        />
+      )}
+      {fsRender && (
         <div
           className={`bpe__editor-fullscreen-backdrop ${
-            fsEntered ? "bpe__editor-fullscreen-backdrop--visible" : ""
+            exiting ? "bpe__editor-fullscreen-backdrop--exiting" : ""
           }`}
           onClick={() => setIsFullscreen(false)}
         />
       )}
       <div
+        ref={editorRef}
         className={`bpe__editor ${fsRender ? "bpe__editor--fullscreen" : ""} ${
-          fsRender && fsEntered ? "bpe__editor--fullscreen-visible" : ""
+          exiting ? "bpe__editor--fullscreen-exiting" : ""
         }`}
       >
         <div className="bpe__editor-toolbar">
@@ -386,6 +442,18 @@ export default function BlogContentEditor({ postId }) {
             />
             <span className="bpe__editor-sep" />
             <ToolbarButton
+              icon="fas fa-rotate-left"
+              title="واگرد"
+              disabled={!editor.can().undo()}
+              onClick={() => editor.chain().focus().undo().run()}
+            />
+            <ToolbarButton
+              icon="fas fa-rotate-right"
+              title="ازنو"
+              disabled={!editor.can().redo()}
+              onClick={() => editor.chain().focus().redo().run()}
+            />
+            <ToolbarButton
               icon="fas fa-square-caret-down"
               title="افزودن بخش بازشو (سؤال/جواب)"
               onClick={() =>
@@ -442,24 +510,21 @@ export default function BlogContentEditor({ postId }) {
               icon={isFullscreen ? "fas fa-compress" : "fas fa-expand"}
               title={isFullscreen ? "خروج از حالت تمام‌صفحه" : "حالت تمام‌صفحه"}
               onClick={() => {
-                if (!isFullscreen) {
-                  scrollYBeforeFullscreenRef.current = window.scrollY;
+                if (!isFullscreen && editorRef.current) {
+                  capturedHeightRef.current = editorRef.current.offsetHeight;
                 }
                 setIsFullscreen((v) => !v);
               }}
             />
-            <ToolbarButton
-              icon="fas fa-rotate-left"
-              title="واگرد"
-              disabled={!editor.can().undo()}
-              onClick={() => editor.chain().focus().undo().run()}
-            />
-            <ToolbarButton
-              icon="fas fa-rotate-right"
-              title="ازنو"
-              disabled={!editor.can().redo()}
-              onClick={() => editor.chain().focus().redo().run()}
-            />
+            <span
+              className={`bpe__editor-status ${
+                saveStatus === "saved" ? "bpe__editor-status--saved" : ""
+              } ${saveStatus === "error" ? "bpe__editor-status--error" : ""}`}
+            >
+              {saveStatus === "saving" && "در حال ذخیره..."}
+              {saveStatus === "saved" && "ذخیره شد"}
+              {saveStatus === "error" && "خطا در ذخیره"}
+            </span>
             <ToolbarButton
               icon="fas fa-floppy-disk"
               title="ذخیره‌ی دستی"

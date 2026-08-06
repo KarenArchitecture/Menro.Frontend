@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../../Context/AuthContext";
 import {
   getBlogPost,
   updateBlogPost,
@@ -65,6 +66,13 @@ function draftToFormData(draft) {
 }
 
 export default function BlogPostEditorPage() {
+  const { user } = useAuth();
+  const canPublish = (user?.roles || []).some((r) =>
+    ["admin", "editor", "author"].includes(r.toLowerCase()),
+  );
+  const isEditorUp = (user?.roles || []).some((r) =>
+    ["admin", "editor"].includes(r.toLowerCase()),
+  );
   const { id } = useParams();
   const navigate = useNavigate();
   const { notify } = useGlobalUI();
@@ -389,21 +397,23 @@ export default function BlogPostEditorPage() {
               )}
             </div>
 
-            <div className="bpe__field bpe__switch-row">
-              <label className="bpe__label">منتشر شود</label>
-              <label className="bpe__switch">
-                <input
-                  type="checkbox"
-                  checked={draft.published}
-                  onChange={(e) =>
-                    setDraft({ ...draft, published: e.target.checked })
-                  }
-                />
-                <span className="bpe__switch-track">
-                  <span className="bpe__switch-thumb" />
-                </span>
-              </label>
-            </div>
+            {canPublish && (
+              <div className="bpe__field bpe__switch-row">
+                <label className="bpe__label">منتشر شود</label>
+                <label className="bpe__switch">
+                  <input
+                    type="checkbox"
+                    checked={draft.published}
+                    onChange={(e) =>
+                      setDraft({ ...draft, published: e.target.checked })
+                    }
+                  />
+                  <span className="bpe__switch-track">
+                    <span className="bpe__switch-thumb" />
+                  </span>
+                </label>
+              </div>
+            )}
           </div>
 
           <div className="bpe__card">
@@ -439,31 +449,33 @@ export default function BlogPostEditorPage() {
               })}
             </div>
 
-            <div className="bpe__tag-add-row">
-              <input
-                type="text"
-                className="bpe__input"
-                placeholder="ساخت برچسب جدید..."
-                value={newTagName}
-                onChange={(e) =>
-                  setNewTagName(normalizeTagNameLive(e.target.value))
-                }
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleCreateTag();
+            {isEditorUp && (
+              <div className="bpe__tag-add-row">
+                <input
+                  type="text"
+                  className="bpe__input"
+                  placeholder="ساخت برچسب جدید..."
+                  value={newTagName}
+                  onChange={(e) =>
+                    setNewTagName(normalizeTagNameLive(e.target.value))
                   }
-                }}
-              />
-              <button
-                type="button"
-                className="btn btn-secondary bpe__tag-add-btn"
-                disabled={!normalizeTagNameFinal(newTagName) || creatingTag}
-                onClick={handleCreateTag}
-              >
-                <i className="fas fa-plus" />
-              </button>
-            </div>
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleCreateTag();
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-secondary bpe__tag-add-btn"
+                  disabled={!normalizeTagNameFinal(newTagName) || creatingTag}
+                  onClick={handleCreateTag}
+                >
+                  <i className="fas fa-plus" />
+                </button>
+              </div>
+            )}
           </div>
 
           <button

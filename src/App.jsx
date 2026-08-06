@@ -110,7 +110,15 @@ export default function App() {
               <Route
                 path="/admin"
                 element={
-                  <ProtectedRoute roles={["admin", "owner"]}>
+                  <ProtectedRoute
+                    roles={[
+                      "admin",
+                      "owner",
+                      "author",
+                      "editor",
+                      "contributor",
+                    ]}
+                  >
                     <AdminPage />
                   </ProtectedRoute>
                 }
@@ -126,7 +134,15 @@ export default function App() {
               <Route
                 path="/admin/blog/post-editor/:id"
                 element={
-                  <ProtectedRoute roles={["admin", "owner", "author"]}>
+                  <ProtectedRoute
+                    roles={[
+                      "admin",
+                      "owner",
+                      "author",
+                      "editor",
+                      "contributor",
+                    ]}
+                  >
                     <BlogPostEditorPage />
                   </ProtectedRoute>
                 }

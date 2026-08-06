@@ -7,20 +7,24 @@ import { useGlobalUI } from "../common/GlobalUI";
 import { getAdminComments } from "../../api/adminComments";
 import { toPersianDigits } from "../../utils/persianFormat";
 
-// Always-visible, non-collapsible top item.
+// Always-visible (for admin/owner), non-collapsible top item.
 const DASHBOARD_ITEM = {
   key: "dashboard",
   label: "داشبورد",
   icon: "fas fa-tachometer-alt",
+  roles: ["admin", "owner"],
 };
 
 // Everything else is grouped by topic; each group renders as a collapsible
-// (accordion) section. `roles`, when present, gates the WHOLE group —
-// header and every item in it.
+// (accordion) section. `roles` (on a group or an item) restricts visibility
+// to users who have at least one of the listed roles. An item's own `roles`
+// takes precedence over its group's `roles`; if neither is set, it's visible
+// to everyone. A group with zero visible items after filtering renders nothing.
 const NAV_GROUPS = [
   {
     key: "restaurant-mgmt",
     label: "مدیریت رستوران",
+    roles: ["admin", "owner"],
     items: [
       {
         key: "restaurant-profile",
@@ -49,6 +53,7 @@ const NAV_GROUPS = [
   {
     key: "business",
     label: "کسب و کار",
+    roles: ["admin", "owner"],
     items: [
       { key: "orders", label: "مدیریت سفارش‌ها", icon: "fas fa-receipt" },
       // { key: "financial", label: "مالی", icon: "fas fa-file-invoice-dollar" },
@@ -62,7 +67,7 @@ const NAV_GROUPS = [
   {
     key: "platform-admin",
     label: "مدیریت پلتفرم",
-    roles: ["Admin"], // ✅ فقط برای Admin (منرو)
+    roles: ["admin"], // فقط برای Admin (منرو)
     items: [
       {
         key: "user-roles",
@@ -89,15 +94,25 @@ const NAV_GROUPS = [
   {
     key: "content-ads-admin",
     label: "تبلیغات و محتوا",
-    roles: ["Admin"], // ✅ فقط برای Admin (منرو)
     items: [
       {
         key: "ads-management",
         label: "تبلیغات منرو",
         icon: "fas fa-clipboard-check",
+        roles: ["admin"],
       },
-      { key: "blog", label: "مدیریت بلاگ", icon: "fas fa-blog" },
-      { key: "landing", label: "مدیریت صفحه اصلی", icon: "fas fa-home" },
+      {
+        key: "blog",
+        label: "مدیریت بلاگ",
+        icon: "fas fa-blog",
+        roles: ["admin", "editor", "author", "contributor"],
+      },
+      {
+        key: "landing",
+        label: "مدیریت صفحه اصلی",
+        icon: "fas fa-home",
+        roles: ["admin"],
+      },
     ],
   },
   {
@@ -125,10 +140,13 @@ export default function AdminSidebar({
 }) {
   const navigate = useNavigate();
   const { confirmModal } = useGlobalUI();
-  // admin role check
+  // role check - roles from auth context are compared case-insensitively
   const { user, logout } = useAuth();
-  const roles = user?.roles || [];
-  const isAdmin = roles.includes("admin");
+  const userRoles = (user?.roles || []).map((r) => r.toLowerCase());
+  const hasAnyRole = (requiredRoles) =>
+    !requiredRoles ||
+    requiredRoles.length === 0 ||
+    requiredRoles.some((r) => userRoles.includes(r.toLowerCase()));
   const [openGroups, setOpenGroups] = useState(
     () => new Set(NAV_GROUPS.map((g) => g.key)),
   );
@@ -259,11 +277,14 @@ export default function AdminSidebar({
 
       <nav className="sidebar-nav">
         <ul className="admin-sidebar__top-level">
-          {renderItem(DASHBOARD_ITEM)}
+          {hasAnyRole(DASHBOARD_ITEM.roles) && renderItem(DASHBOARD_ITEM)}
         </ul>
 
         {NAV_GROUPS.map((group) => {
-          if (group.roles && !isAdmin) return null;
+          const visibleItems = group.items.filter((item) =>
+            hasAnyRole(item.roles || group.roles),
+          );
+          if (visibleItems.length === 0) return null;
 
           const isGroupOpen = openGroups.has(group.key);
 
@@ -285,7 +306,7 @@ export default function AdminSidebar({
                 className={`admin-sidebar__group-collapse ${isGroupOpen ? "open" : ""}`}
               >
                 <div className="admin-sidebar__group-collapse-inner">
-                  <ul>{group.items.map(renderItem)}</ul>
+                  <ul>{visibleItems.map(renderItem)}</ul>
                 </div>
               </div>
             </div>

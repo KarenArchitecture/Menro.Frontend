@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../Context/AuthContext";
 import {
   getBlogPosts,
   createBlogPost,
@@ -48,11 +49,21 @@ function toPersianDigits(value) {
 }
 
 function apiErrorMessage(err, fallback = "خطایی رخ داد. دوباره تلاش کنید.") {
+  if (err?.response?.status === 403) {
+    return "شما اجازه‌ی انجام این عملیات را ندارید.";
+  }
   return err?.response?.data?.message || err?.response?.data?.title || fallback;
 }
 
 export default function BlogManagementSection() {
   useDocumentTitle("مدیریت بلاگ");
+  const { user } = useAuth();
+  const isEditorUp = (user?.roles || []).some((r) =>
+    ["admin", "editor"].includes(r.toLowerCase()),
+  );
+  const visibleTabs = isEditorUp
+    ? SUB_TABS
+    : SUB_TABS.filter((t) => t.key !== "hero");
   const [activeSubTab, setActiveSubTab] = useState("posts");
 
   return (
@@ -62,7 +73,7 @@ export default function BlogManagementSection() {
       </div>
 
       <nav className="content-tab-nav">
-        {SUB_TABS.map((tab) => (
+        {visibleTabs.map((tab) => (
           <button
             key={tab.key}
             type="button"
@@ -553,6 +564,10 @@ const CATEGORY_TITLE_MAX = 30;
 const CATEGORY_SUBTITLE_MAX = 50;
 
 function DisplayCategoriesPane() {
+  const { user } = useAuth();
+  const isEditorUp = (user?.roles || []).some((r) =>
+    ["admin", "editor"].includes(r.toLowerCase()),
+  );
   const { notify, confirmModal } = useGlobalUI();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -694,11 +709,13 @@ function DisplayCategoriesPane() {
 
   return (
     <div className="panel">
-      <div className="panel-actions blog-mgmt__panel-actions--start">
-        <button className="btn btn-primary" onClick={openNew}>
-          <i className="fas fa-plus" /> دسته‌بندی نمایشی جدید
-        </button>
-      </div>
+      {isEditorUp && (
+        <div className="panel-actions blog-mgmt__panel-actions--start">
+          <button className="btn btn-primary" onClick={openNew}>
+            <i className="fas fa-plus" /> دسته‌بندی نمایشی جدید
+          </button>
+        </div>
+      )}
 
       {loading && <div className="empty-hint">در حال بارگذاری...</div>}
 
@@ -716,38 +733,40 @@ function DisplayCategoriesPane() {
                   {cat.subtitle}
                 </small>
               </div>
-              <div className="actions">
-                <button
-                  className="mh-reorder-btn btn-icon"
-                  disabled={index === 0}
-                  onClick={() => move(index, -1)}
-                  title="بالا"
-                >
-                  <i className="fas fa-chevron-up" />
-                </button>
-                <button
-                  className="btn-icon"
-                  disabled={index === categories.length - 1}
-                  onClick={() => move(index, 1)}
-                  title="پایین"
-                >
-                  <i className="fas fa-chevron-down" />
-                </button>
-                <button
-                  className="btn-icon"
-                  onClick={() => openEdit(cat)}
-                  title="ویرایش"
-                >
-                  <i className="fas fa-pen" />
-                </button>
-                <button
-                  className="btn-icon btn-danger"
-                  onClick={() => handleDeleteClick(cat.id)}
-                  title="حذف"
-                >
-                  <i className="fas fa-trash" />
-                </button>
-              </div>
+              {isEditorUp && (
+                <div className="actions">
+                  <button
+                    className="mh-reorder-btn btn-icon"
+                    disabled={index === 0}
+                    onClick={() => move(index, -1)}
+                    title="بالا"
+                  >
+                    <i className="fas fa-chevron-up" />
+                  </button>
+                  <button
+                    className="btn-icon"
+                    disabled={index === categories.length - 1}
+                    onClick={() => move(index, 1)}
+                    title="پایین"
+                  >
+                    <i className="fas fa-chevron-down" />
+                  </button>
+                  <button
+                    className="btn-icon"
+                    onClick={() => openEdit(cat)}
+                    title="ویرایش"
+                  >
+                    <i className="fas fa-pen" />
+                  </button>
+                  <button
+                    className="btn-icon btn-danger"
+                    onClick={() => handleDeleteClick(cat.id)}
+                    title="حذف"
+                  >
+                    <i className="fas fa-trash" />
+                  </button>
+                </div>
+              )}
             </div>
           ))}
       </div>
@@ -883,6 +902,10 @@ function emptySidebarTag() {
 const MAX_SUGGESTED_TAGS = 10;
 
 function SidebarTagsPane() {
+  const { user } = useAuth();
+  const isEditorUp = (user?.roles || []).some((r) =>
+    ["admin", "editor"].includes(r.toLowerCase()),
+  );
   const { notify, confirmModal } = useGlobalUI();
   const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1066,9 +1089,11 @@ function SidebarTagsPane() {
             تگ‌های پیشنهادی سایدبار: {toPersianDigits(suggestedCount)}/
             {toPersianDigits(MAX_SUGGESTED_TAGS)}
           </span>
-          <button className="btn btn-primary" onClick={openNew}>
-            <i className="fas fa-plus" /> برچسب جدید
-          </button>
+          {isEditorUp && (
+            <button className="btn btn-primary" onClick={openNew}>
+              <i className="fas fa-plus" /> برچسب جدید
+            </button>
+          )}
         </div>
       </div>
 
@@ -1095,23 +1120,27 @@ function SidebarTagsPane() {
                 />
                 تگ پیشنهادی
               </label>
-              <div className="blog-mgmt__tag-actions">
-                <span className="blog-mgmt__admin-tag-count">{tag.count}</span>
-                <button
-                  className="btn-icon"
-                  onClick={() => openEdit(tag)}
-                  title="ویرایش"
-                >
-                  <i className="fas fa-pen" />
-                </button>
-                <button
-                  className="btn-icon btn-danger"
-                  onClick={() => handleDeleteClick(tag.id)}
-                  title="حذف"
-                >
-                  <i className="fas fa-trash" />
-                </button>
-              </div>
+              {isEditorUp && (
+                <div className="blog-mgmt__tag-actions">
+                  <span className="blog-mgmt__admin-tag-count">
+                    {tag.count}
+                  </span>
+                  <button
+                    className="btn-icon"
+                    onClick={() => openEdit(tag)}
+                    title="ویرایش"
+                  >
+                    <i className="fas fa-pen" />
+                  </button>
+                  <button
+                    className="btn-icon btn-danger"
+                    onClick={() => handleDeleteClick(tag.id)}
+                    title="حذف"
+                  >
+                    <i className="fas fa-trash" />
+                  </button>
+                </div>
+              )}
             </li>
           ))}
         {!loading && tags.length === 0 && (
@@ -1160,6 +1189,7 @@ function SidebarTagsPane() {
 
                 <label className="radio-label">
                   <input
+                    disabled={!isEditorUp}
                     type="checkbox"
                     checked={modalTag.suggested}
                     onChange={(e) =>

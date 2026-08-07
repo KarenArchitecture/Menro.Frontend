@@ -76,6 +76,7 @@ export default function BlogContentEditor({ postId }) {
   // initial load calls setContent()).
   const lastSavedHtml = useRef(null);
   const saveTimeoutRef = useRef(null);
+  const savedIndicatorTimeoutRef = useRef(null);
   // Concurrency guard: if a save is already in flight when the debounce
   // timer fires again, we don't start a second overlapping request (which
   // could resolve out of order and let an older save overwrite a newer
@@ -193,11 +194,17 @@ export default function BlogContentEditor({ postId }) {
     }
 
     isSavingRef.current = true;
+    if (savedIndicatorTimeoutRef.current)
+      clearTimeout(savedIndicatorTimeoutRef.current);
     setSaveStatus("saving");
     try {
       await updateBlogPostContent(postId, html);
       lastSavedHtml.current = html;
       setSaveStatus("saved");
+      savedIndicatorTimeoutRef.current = setTimeout(
+        () => setSaveStatus("idle"),
+        2000,
+      );
     } catch (err) {
       setSaveStatus("error");
       notify({
@@ -224,6 +231,8 @@ export default function BlogContentEditor({ postId }) {
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
+        if (savedIndicatorTimeoutRef.current)
+          clearTimeout(savedIndicatorTimeoutRef.current);
         if (editor) save(editor.getHTML());
       }
     };
@@ -516,17 +525,20 @@ export default function BlogContentEditor({ postId }) {
                 setIsFullscreen((v) => !v);
               }}
             />
-            <span
-              className={`bpe__editor-status ${
-                saveStatus === "saved" ? "bpe__editor-status--saved" : ""
-              } ${saveStatus === "error" ? "bpe__editor-status--error" : ""}`}
-            >
-              {saveStatus === "saving" && "در حال ذخیره..."}
-              {saveStatus === "saved" && "ذخیره شد"}
-              {saveStatus === "error" && "خطا در ذخیره"}
-            </span>
+            {saveStatus === "error" && (
+              <span className="bpe__editor-status bpe__editor-status--error">
+                خطا در ذخیره
+              </span>
+            )}
             <ToolbarButton
-              icon="fas fa-floppy-disk"
+              icon={
+                saveStatus === "saving"
+                  ? "fas fa-spinner fa-spin"
+                  : saveStatus === "saved"
+                    ? "fas fa-check"
+                    : "fas fa-floppy-disk"
+              }
+              className={saveStatus === "saved" ? "bpe__editor-btn--saved" : ""}
               title="ذخیره‌ی دستی"
               disabled={saveStatus === "saving"}
               onClick={handleManualSave}

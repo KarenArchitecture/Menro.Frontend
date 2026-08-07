@@ -67,7 +67,7 @@ export default function BlogManagementSection() {
 
       {activeSubTab === "sidebar-tags" && (
         <div className="content-tab-pane active">
-          <SidebarTagsPane />
+          <TagsPane />
         </div>
       )}
 

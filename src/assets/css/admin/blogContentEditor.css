@@ -185,6 +185,21 @@
   color: var(--status-active, #10b981);
   font-weight: 600;
 }
+.bpe__editor-btn--saved {
+  color: var(--status-active, #10b981);
+  animation: bpe-save-pop 0.3s ease;
+}
+@keyframes bpe-save-pop {
+  0% {
+    transform: scale(0.7);
+  }
+  60% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
 .bpe__editor-status--error {
   color: #f87171;
   font-weight: 600;

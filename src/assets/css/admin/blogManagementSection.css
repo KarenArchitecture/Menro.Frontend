@@ -915,3 +915,8 @@ ul {
 #blog-management-view .admin-modal--compact .admin-modal__body {
   overflow: visible;
 }
+
+.blog-mgmt__author-me {
+  color: var(--accent-color, #f0a833); /* رنگ accent سایتت رو جایگزین کن */
+  font-weight: 600;
+}

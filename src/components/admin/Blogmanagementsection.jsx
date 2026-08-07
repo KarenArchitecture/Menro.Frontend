@@ -3,7 +3,7 @@ import { useAuth } from "../../Context/AuthContext";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 import PostsPane from "./BlogManagementSection/PostsPane";
 import DisplayCategoriesPane from "./BlogManagementSection/DisplayCategoriesPane";
-import SidebarTagsPane from "./BlogManagementSection/SidebarTagsPane";
+import TagsPane from "./BlogManagementSection/TagsPane";
 import HeroPane from "./BlogManagementSection/HeroPane";
 import "../../assets/css/admin/admin.css";
 import "../../assets/css/admin/admin-modal.css";

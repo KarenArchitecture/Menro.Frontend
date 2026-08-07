@@ -16,12 +16,16 @@ const MOVE_DIRECTION = { up: -1, down: 1 };
 export const getBlogPosts = ({
   search,
   categoryId,
+  tagId,
+  onlyMine,
   page = 1,
   pageSize = 20,
 } = {}) =>
   adminBlogsAxios
-    .get("/posts", { params: { search, categoryId, page, pageSize } })
-    .then((r) => r.data); // { items, page, pageSize, totalCount, totalPages }
+    .get("/posts", {
+      params: { search, categoryId, tagId, onlyMine, page, pageSize },
+    })
+    .then((r) => r.data);
 
 export const getBlogPost = (id) =>
   adminBlogsAxios.get(`/posts/${id}`).then((r) => r.data);

@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useAuth } from "../../../Context/AuthContext";
+import { useAuth } from "../../../Context/AuthContext.jsx";
 import {
   getBlogTags,
   createBlogTag,
   updateBlogTag,
   toggleBlogTagSuggested,
   deleteBlogTag,
-} from "../../../api/adminBlogs";
+} from "../../../api/adminBlogs.js";
 import {
   normalizeTagNameLive,
   normalizeTagNameFinal,
-} from "../../../utils/tagName";
-import { useGlobalUI } from "../../common/GlobalUI";
+} from "../../../utils/tagName.js";
+import { useGlobalUI } from "../../common/GlobalUI/index.js";
 import { toPersianDigits, apiErrorMessage } from "./blogManagementShared.js";
 
 /* ================================================================== */
@@ -35,7 +35,7 @@ function emptySidebarTag() {
 // admin can mark "suggested" capped so the block never grows unbounded.
 const MAX_SUGGESTED_TAGS = 10;
 
-export default function SidebarTagsPane() {
+export default function TagsPane() {
   const { user } = useAuth();
   const isEditorUp = (user?.roles || []).some((r) =>
     ["admin", "editor"].includes(r.toLowerCase()),

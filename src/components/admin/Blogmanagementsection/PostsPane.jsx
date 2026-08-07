@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../Context/AuthContext";
 import {
   getBlogPosts,
   createBlogPost,
@@ -27,6 +28,7 @@ function mapPostFromApi(p, categories = []) {
       p.categoryTitle ||
       categories.find((c) => c.id === p.categoryId)?.title ||
       "",
+    authorId: p.authorId,
     authorName: p.authorName || "",
     published: p.isPublished,
   };
@@ -35,6 +37,17 @@ function mapPostFromApi(p, categories = []) {
 const PAGE_SIZE = 20;
 
 export default function PostsPane() {
+  const { user } = useAuth();
+  const roles = (user?.roles || []).map((r) => r.toLowerCase());
+  const isAuthorUp = roles.some((r) =>
+    ["admin", "editor", "author", "owner"].includes(r),
+  );
+  // Only editor/admin/owner tiers get the "only mine" toggle - everyone
+  // below that is already forced server-side to only their own posts.
+  const isEditorUp = roles.some((r) =>
+    ["admin", "editor", "owner"].includes(r),
+  );
+
   const navigate = useNavigate();
   const { notify, confirmModal } = useGlobalUI();
   const [posts, setPosts] = useState([]);
@@ -46,6 +59,7 @@ export default function PostsPane() {
   const [searchDraft, setSearchDraft] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [onlyMine, setOnlyMine] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -62,6 +76,7 @@ export default function PostsPane() {
     const data = await getBlogPosts({
       search: searchTerm.trim() || undefined,
       categoryId: categoryFilter === "all" ? undefined : categoryFilter,
+      onlyMine: isEditorUp && onlyMine ? true : undefined,
       page,
       pageSize: PAGE_SIZE,
     });
@@ -69,7 +84,7 @@ export default function PostsPane() {
     setTotalPages(data.totalPages);
     setTotalCount(data.totalCount);
     return data;
-  }, [searchTerm, categoryFilter, page, categories]);
+  }, [searchTerm, categoryFilter, onlyMine, isEditorUp, page, categories]);
 
   useEffect(() => {
     let cancelled = false;
@@ -80,6 +95,7 @@ export default function PostsPane() {
           getBlogPosts({
             search: searchTerm.trim() || undefined,
             categoryId: categoryFilter === "all" ? undefined : categoryFilter,
+            onlyMine: isEditorUp && onlyMine ? true : undefined,
             page,
             pageSize: PAGE_SIZE,
           }),
@@ -106,12 +122,12 @@ export default function PostsPane() {
     return () => {
       cancelled = true;
     };
-  }, [searchTerm, categoryFilter, page]);
+  }, [searchTerm, categoryFilter, onlyMine, isEditorUp, page]);
 
-  // Reset to page 1 whenever search/category filter changes.
+  // Reset to page 1 whenever search/category/onlyMine filter changes.
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, categoryFilter]);
+  }, [searchTerm, categoryFilter, onlyMine]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -245,6 +261,16 @@ export default function PostsPane() {
         </div>
 
         <div className="admin-toolbar-group">
+          {isEditorUp && (
+            <button
+              type="button"
+              className={`btn ${onlyMine ? "btn-primary" : "btn-secondary"}`}
+              onClick={() => setOnlyMine((v) => !v)}
+              title="فقط پست‌های خودم"
+            >
+              <i className="fas fa-user" /> فقط پست‌های من
+            </button>
+          )}
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
@@ -298,71 +324,85 @@ export default function PostsPane() {
               </tr>
             )}
             {!loading &&
-              posts.map((post) => (
-                <tr key={post.id}>
-                  <td>
-                    <div className="blog-mgmt__thumb">
-                      {post.coverSrc && !brokenThumbs.has(post.id) ? (
-                        <img
-                          src={post.coverSrc}
-                          alt={post.title}
-                          onError={() =>
-                            setBrokenThumbs((prev) =>
-                              new Set(prev).add(post.id),
-                            )
-                          }
-                        />
-                      ) : (
-                        <i className="fas fa-image" />
-                      )}
-                    </div>
-                  </td>
-                  <td>
-                    <span className="blog-mgmt__title-cell" title={post.title}>
-                      {post.title}
-                    </span>
-                  </td>
-                  <td>
-                    {post.categoryTitle ? (
-                      post.categoryTitle
-                    ) : (
-                      <span className="blog-mgmt__category-empty">
-                        بدون دسته‌بندی
+              posts.map((post) => {
+                const isMine = post.authorId === user?.id;
+                return (
+                  <tr key={post.id}>
+                    <td>
+                      <div className="blog-mgmt__thumb">
+                        {post.coverSrc && !brokenThumbs.has(post.id) ? (
+                          <img
+                            src={post.coverSrc}
+                            alt={post.title}
+                            onError={() =>
+                              setBrokenThumbs((prev) =>
+                                new Set(prev).add(post.id),
+                              )
+                            }
+                          />
+                        ) : (
+                          <i className="fas fa-image" />
+                        )}
+                      </div>
+                    </td>
+                    <td>
+                      <span
+                        className="blog-mgmt__title-cell"
+                        title={post.title}
+                      >
+                        {post.title}
                       </span>
-                    )}
-                  </td>
-                  <td>{post.authorName || "-"}</td>
-                  <td>{post.readingMins} دقیقه</td>
-                  <td>
-                    <span
-                      className={`status-chip ${post.published ? "active" : "danger"}`}
-                      style={{ cursor: "pointer" }}
-                      onClick={() => togglePublished(post)}
-                      title="برای تغییر وضعیت کلیک کنید"
-                    >
-                      {post.published ? "منتشر شده" : "پیش‌نویس"}
-                    </span>
-                  </td>
-                  <td>
-                    <button
-                      className="btn-icon"
-                      title="ویرایش"
-                      onClick={() =>
-                        navigate(`/admin/blog/post-editor/${post.id}`)
-                      }
-                    >
-                      <i className="fas fa-pen" />
-                    </button>
-                    <button
-                      className="btn-icon btn-danger"
-                      title="حذف"
-                      onClick={() => handleDeleteClick(post.id)}
-                    >
-                      <i className="fas fa-trash" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td>
+                      {post.categoryTitle ? (
+                        post.categoryTitle
+                      ) : (
+                        <span className="blog-mgmt__category-empty">
+                          بدون دسته‌بندی
+                        </span>
+                      )}
+                    </td>
+                    <td>
+                      {isMine ? (
+                        <span className="blog-mgmt__author-me">شما</span>
+                      ) : (
+                        post.authorName || "-"
+                      )}
+                    </td>
+                    <td>{post.readingMins} دقیقه</td>
+                    <td>
+                      <span
+                        className={`status-chip ${post.published ? "active" : "danger"}`}
+                        style={{ cursor: "pointer" }}
+                        onClick={() => togglePublished(post)}
+                        title="برای تغییر وضعیت کلیک کنید"
+                      >
+                        {post.published ? "منتشر شده" : "پیش‌نویس"}
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        className="btn-icon"
+                        title="ویرایش"
+                        onClick={() =>
+                          navigate(`/admin/blog/post-editor/${post.id}`)
+                        }
+                      >
+                        <i className="fas fa-pen" />
+                      </button>
+                      {isAuthorUp && (
+                        <button
+                          className="btn-icon btn-danger"
+                          title="حذف"
+                          onClick={() => handleDeleteClick(post.id)}
+                        >
+                          <i className="fas fa-trash" />
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
           </tbody>
         </table>
       </div>

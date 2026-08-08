@@ -1,8 +1,11 @@
+// src/pages/CheckoutPage.jsx
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import usePageStyles from "../hooks/usePageStyles";
 import CheckoutHeader from "../components/checkout/CheckoutHeader";
 import CartCard from "../components/checkout/CartCard";
 import CheckoutFooter from "../components/checkout/CheckoutFooter";
+import StateMessage from "../components/common/StateMessage";
 import { useCart } from "../components/shop/CartContext";
 import { checkoutCart } from "../api/cart";
 import resolveFileUrl from "../utils/resolveFileUrl";
@@ -11,6 +14,7 @@ import useDocumentTitle from "../hooks/useDocumentTitle";
 export default function CheckoutPage() {
   useDocumentTitle("تسویه حساب");
   usePageStyles("/styles-checkout.css");
+  const navigate = useNavigate();
   const cart = useCart();
   const [localCart, setLocalCart] = useState([]);
 
@@ -20,7 +24,7 @@ export default function CheckoutPage() {
         id: ci.id,
         title: `${ci.foodName} - ${ci.variantName}`,
         img: resolveFileUrl(ci.imageUrl, "/images/checkout-pic.png"),
-        rating: { score: 4.5, count: 0 },
+        rating: { score: ci.rating ?? 4.5, count: ci.voters ?? 0 },
         hasAddons: ci.addons.length > 0,
         options: [
           {
@@ -55,9 +59,8 @@ export default function CheckoutPage() {
   }));
 
   const handleConfirmOrder = async (tableNumber) => {
-    const result = await checkoutCart(
-      tableNumber === undefined ? null : tableNumber,
-    );
+    await cart.flushPending();
+    const result = await checkoutCart(tableNumber === undefined ? null : tableNumber);
     await cart.refresh();
     return result;
   };
@@ -65,18 +68,33 @@ export default function CheckoutPage() {
   return (
     <div className="checkout-container" dir="rtl">
       <CheckoutHeader />
-      <div className="checkout-cards">
-        {localCart.map((item) => (
-          <CartCard key={item.id} item={item} onChangeQty={changeQty} />
-        ))}
-      </div>
-      <div className="footer-spacer" aria-hidden="true" />
+
+      {cart.items.length === 0 ? (
+        <StateMessage kind="empty" title="سبد خرید شما خالی است">
+          هنوز چیزی به سبد خرید اضافه نکرده‌اید.
+          <div className="state-message__action">
+            <button onClick={() => navigate("/restaurants")}>مشاهده رستوران‌ها</button>
+          </div>
+        </StateMessage>
+      ) : (
+        <>
+          <div className="checkout-cards">
+            {localCart.map((item) => (
+              <CartCard key={item.id} item={item} onChangeQty={changeQty} />
+            ))}
+          </div>
+          <div className="footer-spacer" aria-hidden="true" />
+        </>
+      )}
+
       <CheckoutFooter
         total={cart.total}
         items={successItems}
         discount={0}
         onConfirm={handleConfirmOrder}
         tableCount={cart.tableCount}
+        paymentMethod={cart.paymentMethod}
+        hasItems={cart.items.length > 0}
       />
     </div>
   );

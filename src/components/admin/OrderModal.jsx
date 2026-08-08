@@ -1,18 +1,48 @@
-// src/components/admin/orders/OrderModal.jsx
+// src/components/admin/OrderModal.jsx
 import React, { useEffect, useState } from "react";
 import adminOrderAxios from "../../api/adminOrderAxios";
 import { useGlobalUI } from "../common/GlobalUI";
+import { toPersianDigits } from "../../utils/persianNumbers";
+
+function getSequence(paymentMethod) {
+  return paymentMethod === "PayAtCounterBeforeServing"
+    ? ["Pending", "Confirmed", "Paid", "Delivered", "Completed"]
+    : ["Pending", "Confirmed", "Delivered", "Paid", "Completed"];
+}
+
+function getStatusLabel(status, paymentMethod) {
+  const isPayAtCounter = paymentMethod === "PayAtCounterBeforeServing";
+  switch (status) {
+    case "Pending": return "در انتظار تأیید";
+    case "Confirmed": return isPayAtCounter ? "در انتظار پرداخت" : "در انتظار تحویل";
+    case "Delivered": return isPayAtCounter ? "تحویل شده" : "در انتظار پرداخت";
+    case "Paid": return isPayAtCounter ? "در انتظار تحویل" : "پرداخت شده";
+    case "Completed": return "تکمیل شده";
+    case "Cancelled": return "لغو شده";
+    default: return "—";
+  }
+}
+
+function getPrimaryActionLabel(status, paymentMethod) {
+  const seq = getSequence(paymentMethod);
+  const idx = seq.indexOf(status);
+  if (idx === -1 || idx >= seq.length - 1) return null;
+
+  switch (seq[idx + 1]) {
+    case "Confirmed": return "تأیید";
+    case "Paid": return "پرداخت شد";
+    case "Delivered": return "تحویل شد";
+    case "Completed": return "پایان سفارش";
+    default: return null;
+  }
+}
 
 export default function OrderModal({ open, order, onClose, onApprove }) {
   const { notify, confirmModal } = useGlobalUI();
-  const [details, setDetails] = useState(null); // AdminOrderDetailsDto
+  const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showInvoiceView, setShowInvoiceView] = useState(false);
-
-  // ✅ برای تست فرانت (تا وقتی بک‌اند آماده نیست):
-  // وضعیت "نمایشی" داخل مودال
-  const [uiStatus, setUiStatus] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -24,7 +54,6 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
         setLoading(true);
         setError("");
         setDetails(null);
-        setUiStatus(null); // هر بار باز میشه، از وضعیت واقعی شروع کن
 
         const res = await adminOrderAxios.get(`/${order.id}`);
         if (!cancelled) setDetails(res.data);
@@ -40,93 +69,40 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
     }
 
     loadDetails();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [open, order?.id]);
 
   if (!open || !order) return null;
 
   const dto = details || order;
-
-  // ✅ status واقعی (از dto) + override تستی (uiStatus)
-  const status = uiStatus ?? dto.status;
+  const status = dto.status;
+  const paymentMethod = dto.paymentMethod;
 
   const isHistory = status === "Cancelled" || status === "Completed";
+  const statusLabel = getStatusLabel(status, paymentMethod);
+  const primaryActionLabel = !isHistory ? getPrimaryActionLabel(status, paymentMethod) : null;
 
-  // ✅ Label وضعیت (طبق enum واقعی)
-  const statusLabel =
-    status === "Pending"
-      ? "در انتظار تأیید"
-      : status === "Confirmed"
-        ? "در انتظار تحویل"
-        : status === "Delivered"
-          ? "تحویل شده"
-          : status === "Paid"
-            ? "پرداخت شده"
-            : "در تاریخچه";
+  const tableLabel = dto.tableNumber === null ? "بیرون‌بر" : `میز ${dto.tableNumber}`;
+  const customerLabel = dto.tableNumber === null ? "حضوری" : `میز شماره ${dto.tableNumber}`;
 
-  // ✅ متن دکمه اصلی طبق خواسته شما
-  const primaryActionLabel =
-    status === "Pending"
-      ? "تأیید"
-      : status === "Confirmed"
-        ? "تحویل شد"
-        : status === "Delivered"
-          ? "پرداخت شد"
-          : status === "Paid"
-            ? "پایان سفارش"
-            : null;
-
-  // ✅ میز/بیرون‌بر
-  const tableLabel =
-    dto.tableNumber === null ? "بیرون‌بر" : `میز ${dto.tableNumber}`;
-
-  const customerLabel =
-    dto.tableNumber === null ? "حضوری" : `میز شماره ${dto.tableNumber}`;
-
-  // ✅ زمان
   const created = dto.createdAt ? new Date(dto.createdAt) : null;
   const timeLabel = created
-    ? `${created.toLocaleDateString("fa-IR", {
-        month: "short",
-        day: "numeric",
-      })} ${created.toLocaleTimeString("fa-IR", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })}`
+    ? `${created.toLocaleDateString("fa-IR", { month: "short", day: "numeric" })} ${created.toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" })}`
     : "—";
 
   const items = details?.items || [];
   const totalPrice = dto.totalPrice ?? 0;
 
-  // ✅ منطق مرحله بعد (فعلاً فقط فرانت برای تست)
-  function getNextStatus(current) {
-    if (current === "Pending") return "Confirmed";
-    if (current === "Confirmed") return "Delivered";
-    if (current === "Delivered") return "Paid";
-    if (current === "Paid") return "Completed";
-    return current;
-  }
-
-  // advance order status
   const handleAdvanceClick = async () => {
     if (loading || error || !details) return;
 
     try {
       setLoading(true);
-
       const res = await adminOrderAxios.put(`/${dto.id}/advance`);
-
       const newStatus = res.data.status;
 
       notify({ type: "success", message: "وضعیت سفارش با موفقیت تغییر کرد" });
-
-      // لیست والد آپدیت بشه
       onApprove?.(dto.id, newStatus);
-
-      // مودال بسته شه
       onClose?.();
     } catch (e) {
       setError("خطا در تغییر وضعیت سفارش");
@@ -136,13 +112,12 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
     }
   };
 
-  // cancel order status
   const handleCancelClick = async () => {
     if (loading || error || !details) return;
 
     const confirmed = await confirmModal({
       title: "لغو سفارش",
-      message: `سفارش #${dto.restaurantOrderNumber} لغو خواهد شد. این عملیات قابل بازگشت نیست. ادامه می‌دهید؟`,
+      message: `سفارش فاکتور ${toPersianDigits(dto.invoiceNumber || "—")} لغو خواهد شد. این عملیات قابل بازگشت نیست. ادامه می‌دهید؟`,
       confirmText: "بله، لغو شود",
       cancelText: "انصراف",
       danger: true,
@@ -151,13 +126,10 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
 
     try {
       setLoading(true);
-
       const res = await adminOrderAxios.put(`/${dto.id}/cancel`);
-
       const newStatus = res.data.status;
 
       notify({ type: "success", message: "سفارش با موفقیت لغو شد" });
-
       onApprove?.(dto.id, newStatus);
       onClose?.();
     } catch (e) {
@@ -176,23 +148,43 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
       onClick={(e) => e.target.id === "order-modal" && onClose?.()}
     >
       <div className="modal-content" style={{ maxWidth: 800 }}>
-        <div className="modal-header">
-          <h3>
-            سفارش #{dto.restaurantOrderNumber} — {tableLabel}
-          </h3>
-          <button className="btn btn-icon" onClick={() => setShowInvoiceView((v) => !v)} title="نمای فاکتور">
-            <i className="fas fa-receipt" />
-          </button>
-          <button className="btn btn-icon" onClick={onClose}>
-            <i className="fas fa-times" />
-          </button>
+        <div className="modal-header order-modal-header">
+          <div className="order-modal-header__title">
+            <h3>{tableLabel}</h3>
+            <span className="order-modal-header__invoice">
+              فاکتور {toPersianDigits(dto.invoiceNumber || "—")}
+            </span>
+          </div>
+
+          <div className="order-modal-header__actions">
+            <div className="order-modal-view-toggle">
+              <button
+                type="button"
+                className={`order-modal-view-toggle__btn ${!showInvoiceView ? "is-active" : ""}`}
+                onClick={() => setShowInvoiceView(false)}
+              >
+                جزئیات
+              </button>
+              <button
+                type="button"
+                className={`order-modal-view-toggle__btn ${showInvoiceView ? "is-active" : ""}`}
+                onClick={() => setShowInvoiceView(true)}
+              >
+                نمای فاکتور
+              </button>
+            </div>
+
+            <button className="btn btn-icon" onClick={onClose} aria-label="بستن">
+              <i className="fas fa-times" />
+            </button>
+          </div>
         </div>
 
         <div className="modal-body">
           {showInvoiceView ? (
             <div className="order-items">
               {items.map((it) => (
-                <div key={it.id} style={{ marginBottom: 10 }}>
+                <div key={it.id} style={{ marginBottom: 20 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700 }}>
                     <span>{it.name}</span>
                     <span>×{it.qty} — {Number(it.price * it.qty).toLocaleString("fa-IR")} تومان</span>
@@ -207,10 +199,7 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
             </div>
           ) : (
             <>
-              <div
-                className="order-meta"
-                style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12, marginBottom: 12 }}
-              >
+              <div className="order-meta" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12, marginBottom: 12 }}>
                 <div><strong>وضعیت:</strong> {statusLabel}</div>
                 <div><strong>زمان:</strong> {timeLabel}</div>
                 <div><strong>مشتری:</strong> {customerLabel}</div>
@@ -246,7 +235,7 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
                     <div>
                       <div style={{ fontWeight: 700 }}>{it.name}</div>
                       <div style={{ opacity: 0.75, fontSize: 13 }}>
-                        {it.addons?.length ? `مخلفات: ${it.addons.map((a) => a.name).join("، ")}` : "—"}
+                        {it.addons?.length ? `مخلفات: ${it.addons.map((a) => a.name).join("، ")}` : "بدون مخلفات"}
                       </div>
                     </div>
                     <div style={{ textAlign: "end" }}>
@@ -266,36 +255,24 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
         </div>
 
         <div className="modal-footer" style={{ display: "flex", gap: 8 }}>
-          {/* ✅ دکمه اصلی مرحله‌ای */}
           {!isHistory && primaryActionLabel && (
-            <button
-              className="btn btn-primary"
-              onClick={handleAdvanceClick}
-              disabled={loading || !!error || !details}
-            >
+            <button className="btn btn-primary" onClick={handleAdvanceClick} disabled={loading || !!error || !details}>
               {primaryActionLabel}
             </button>
           )}
 
-          {/* ✅ دکمه لغو سفارش (قرمز) */}
           {!isHistory && (
             <button
               className="btn"
               onClick={handleCancelClick}
               disabled={loading || !!error || !details}
-              style={{
-                background: "#d32f2f",
-                borderColor: "#d32f2f",
-                color: "white",
-              }}
+              style={{ background: "#d32f2f", borderColor: "#d32f2f", color: "white" }}
             >
               لغو سفارش
             </button>
           )}
 
-          <button className="btn btn-secondary" onClick={onClose}>
-            بستن
-          </button>
+          <button className="btn btn-secondary" onClick={onClose}>بستن</button>
         </div>
       </div>
     </div>

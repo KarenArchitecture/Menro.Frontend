@@ -30,6 +30,7 @@ import UserProfileForm from "./components/common/UserProfileForm";
 import FoodCommentsPage from "./pages/FoodCommentsPage";
 import MyCommentsPage from "./pages/MyCommentsPage";
 import ScrollToTop from "./components/common/ScrollToTop";
+import PendingPaymentBanner, { markPendingCounterOrder } from "./components/common/PendingPaymentBanner";
 
 import MobileNav from "./components/common/MobileNav";
 import ProtectedRoute from "./components/common/ProtectedRoute";
@@ -82,9 +83,9 @@ export default function App() {
   // "/orders/bill" so the app shell doesn't add blank padding at the bottom
   const NO_PADDING_PREFIXES = ["/landing", "/blog", "/orders/bill"];
 
-  const hideMobileNav = NAV_HIDE_PREFIXES.some((prefix) =>
-    pathname.startsWith(prefix),
-  );
+  const hideMobileNav =
+    pathname === "/" ||
+    NAV_HIDE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
   const removePadding = NO_PADDING_PREFIXES.some((prefix) =>
     pathname.startsWith(prefix),
@@ -102,6 +103,7 @@ export default function App() {
       <DrawerStateProvider>
         <CartProvider>
           <ScrollToTop />
+          <PendingPaymentBanner />
           <PageWrapper
             hideMobileNav={hideMobileNav}
             removePadding={removePadding}

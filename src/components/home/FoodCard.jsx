@@ -3,6 +3,7 @@ import StarIcon from "../icons/StarIcon";
 import resolveFileUrl from "../../utils/resolveFileUrl";
 import { Link } from "react-router-dom";
 import SmartImage from "../common/SmartImage";
+import { toPersianDigits } from "../../utils/persianNumbers";
 
 export default function FoodCard({ item, LinkComponent, onRestaurantClick }) {
   const {
@@ -83,7 +84,7 @@ export default function FoodCard({ item, LinkComponent, onRestaurantClick }) {
 
         <div className="rating-chip">
           <StarIcon />
-          <span className="score">{safeRating.toFixed(1)}</span>
+          <span className="score">{toPersianDigits(safeRating.toFixed(1))}</span>
           <span className="voters">
             ({(voters ?? 0).toLocaleString("fa-IR")})
           </span>

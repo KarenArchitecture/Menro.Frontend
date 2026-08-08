@@ -1,81 +1,40 @@
-// src/components/admin/orders/OrdersSection.jsx
-import { useMemo, useState, useEffect } from "react";
+// src/components/admin/OrdersSection.jsx
+import { useMemo, useState, useEffect, useRef } from "react";
 import OrderModal from "./OrderModal";
 import adminOrderAxios from "../../api/adminOrderAxios";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+import { toPersianDigits } from "../../utils/persianNumbers";
 
-/* ---------- helpers ---------- */
-// time filter
 const now = Date.now();
 const DAY = 24 * 60 * 60 * 1000;
 const ranges = [
-  {
-    key: "today",
-    label: "امروز",
-    test: (createdAt) => {
+  { key: "today", label: "امروز", test: (createdAt) => {
       const d = new Date(createdAt);
       const t = new Date();
-
-      return (
-        d.getFullYear() === t.getFullYear() &&
-        d.getMonth() === t.getMonth() &&
-        d.getDate() === t.getDate()
-      );
-    },
-  },
-  {
-    key: "week",
-    label: "هفته اخیر",
-    test: (createdAt) => new Date(createdAt).getTime() >= now - 7 * DAY,
-  },
-  {
-    key: "month",
-    label: "ماه اخیر",
-    test: (createdAt) => new Date(createdAt).getTime() >= now - 30 * DAY,
-  },
-  {
-    key: "year",
-    label: "سال اخیر",
-    test: (createdAt) => new Date(createdAt).getTime() >= now - 365 * DAY,
-  },
-  {
-    key: "all",
-    label: "همه",
-    test: () => true,
-  },
+      return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
+    } },
+  { key: "week", label: "هفته اخیر", test: (createdAt) => new Date(createdAt).getTime() >= now - 7 * DAY },
+  { key: "month", label: "ماه اخیر", test: (createdAt) => new Date(createdAt).getTime() >= now - 30 * DAY },
+  { key: "year", label: "سال اخیر", test: (createdAt) => new Date(createdAt).getTime() >= now - 365 * DAY },
+  { key: "all", label: "همه", test: () => true },
 ];
 
-/* ---------- helpers for UI ---------- */
-
-// order status
-function getStatusMeta(status) {
-  switch (status) {
-    // Active - مرحله فعلی/بعدی برای UI لیست
-    case "Pending":
-      return { pill: "در انتظار تأیید", cls: "status-pending" };
-
-    case "Confirmed":
-      return { pill: "در انتظار تحویل", cls: "status-delivery" };
-
-    // ✅ اگر تحویل شده، مرحله بعدی رو نشون بده: در انتظار پرداخت
-    case "Delivered":
-      return { pill: "در انتظار پرداخت", cls: "status-payment" };
-
-    // ✅ اگر پرداخت شده، مرحله بعدی رو نشون بده: پایان سفارش
-    case "Paid":
-      return { pill: "پایان سفارش", cls: "status-payment" };
-
-    // History
-    case "Completed":
-      return { pill: "تکمیل شده", cls: "status-archived" };
-
-    case "Cancelled":
-      return { pill: "لغو شده", cls: "status-archived" };
-
-    default:
-      return { pill: "—", cls: "status-archived" };
+function getStatusMeta(status, paymentMethod) {
+  const isPayAtCounter = paymentMethod === "PayAtCounterBeforeServing";
+  if (status === "Pending") return { pill: "در انتظار تأیید", cls: "status-pending" };
+  if (status === "Cancelled") return { pill: "لغو شده", cls: "status-archived" };
+  if (status === "Completed") return { pill: "تکمیل شده", cls: "status-archived" };
+  if (isPayAtCounter) {
+    if (status === "Confirmed") return { pill: "در انتظار پرداخت", cls: "status-payment" };
+    if (status === "Paid") return { pill: "در انتظار تحویل", cls: "status-delivery" };
+    if (status === "Delivered") return { pill: "آماده اتمام سفارش", cls: "status-archived" };
+  } else {
+    if (status === "Confirmed") return { pill: "در انتظار تحویل", cls: "status-delivery" };
+    if (status === "Delivered") return { pill: "در انتظار پرداخت", cls: "status-payment" };
+    if (status === "Paid") return { pill: "پایان سفارش", cls: "status-archived" };
   }
+  return { pill: "—", cls: "status-archived" };
 }
 
 function isHistoryStatus(status) {
@@ -84,78 +43,107 @@ function isHistoryStatus(status) {
 
 export default function OrdersSection() {
   useDocumentTitle("مدیریت سفارش‌ها");
-  const { notify, confirmModal } = useGlobalUI();
+  const { notify } = useGlobalUI();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showHistory, setShowHistory] = useState(false);
   const [selected, setSelected] = useState(null);
-  const [rangeKey, setRangeKey] = useState("today"); // today|week|month|year|all
-  const [search, setSearch] = useState("");
+  const [rangeKey, setRangeKey] = useState("today");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortDesc, setSortDesc] = useState(true);
 
-  const activeRange = useMemo(
-    () => ranges.find((r) => r.key === rangeKey) || ranges[0],
-    [rangeKey],
-  );
+  const [searchInput, setSearchInput] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const debounceRef = useRef(null);
 
-  // Apply time filter ONLY to history
+  const restaurantPaymentMethod = orders.find(Boolean)?.paymentMethod;
+
+  const activeRange = useMemo(() => ranges.find((r) => r.key === rangeKey) || ranges[0], [rangeKey]);
+
+  const activeStatusOptions = useMemo(() => {
+    const seq =
+      restaurantPaymentMethod === "PayAtCounterBeforeServing"
+        ? ["Pending", "Confirmed", "Paid", "Delivered"]
+        : ["Pending", "Confirmed", "Delivered", "Paid"];
+    return seq.map((s) => ({ key: s, label: getStatusMeta(s, restaurantPaymentMethod).pill }));
+  }, [restaurantPaymentMethod]);
+
   const { list, counts } = useMemo(() => {
     const pendingAll = orders.filter((o) => !isHistoryStatus(o.status));
+    const statusScoped = statusFilter === "all" ? pendingAll : pendingAll.filter((o) => o.status === statusFilter);
+    const historyFiltered = orders.filter((o) => isHistoryStatus(o.status) && activeRange.test(o.createdAt));
 
-    const historyFiltered = orders.filter(
-      (o) => isHistoryStatus(o.status) && activeRange.test(o.createdAt),
-    );
-
-    const searchFiltered = (arr) => {
-      const q = search.trim();
-      if (!q) return arr;
-      return arr.filter(
-        (o) =>
-          String(o.restaurantOrderNumber).includes(q) ||
-          (o.tableNumber !== null && String(o.tableNumber).includes(q))
-      );
-    };
+    const scoped = showHistory ? historyFiltered : statusScoped;
+    const sorted = [...scoped].sort((a, b) => {
+      const av = a.invoiceNumber || "";
+      const bv = b.invoiceNumber || "";
+      return sortDesc ? bv.localeCompare(av) : av.localeCompare(bv);
+    });
 
     return {
-      list: searchFiltered(showHistory ? historyFiltered : pendingAll),
+      list: sorted,
       counts: { pending: pendingAll.length, history: historyFiltered.length },
     };
-  }, [orders, activeRange, showHistory]);
+  }, [orders, activeRange, showHistory, statusFilter, sortDesc]);
 
-  // ✅ Advance order stage (confirm -> delivery -> payment -> history)
+  // Order-count stats (not a money total — that lives in the Financial tab)
+  const orderCounts = useMemo(() => {
+    const today = orders.filter((o) => ranges[0].test(o.createdAt)).length;
+    const month = orders.filter((o) => ranges[2].test(o.createdAt)).length;
+    const year = orders.filter((o) => ranges[3].test(o.createdAt)).length;
+    return { today, month, year };
+  }, [orders]);
+
+  // Debounced server-side invoice search — never filters the full local
+  // orders array, so this stays fast and light regardless of how many
+  // orders the restaurant has accumulated.
+  useEffect(() => {
+    clearTimeout(debounceRef.current);
+    const q = searchInput.trim();
+
+    if (q.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    debounceRef.current = setTimeout(async () => {
+      try {
+        setSearchLoading(true);
+        const res = await adminOrderAxios.get("/search", { params: { query: q } });
+        setSearchResults(res.data || []);
+      } catch (e) {
+        console.error("خطا در جستجوی سفارش:", e);
+        setSearchResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(debounceRef.current);
+  }, [searchInput]);
+
+  const showDropdown = searchFocused && searchInput.trim().length >= 2;
+
   const handleAdvance = (orderId, nextStatus) => {
-    // 1) لیست را آپدیت کن
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status: nextStatus } : o)),
-    );
-
-    // 2) اگر همون سفارش داخل selected بازه، اون رو هم آپدیت کن
-    setSelected((prev) =>
-      prev && prev.id === orderId ? { ...prev, status: nextStatus } : prev,
-    );
-
-    // 3) مودال بسته شود
+    setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status: nextStatus } : o)));
+    setSelected((prev) => (prev && prev.id === orderId ? { ...prev, status: nextStatus } : prev));
     setSelected(null);
   };
 
-  // load orders from backend (both pending and history)
   useEffect(() => {
     let cancelled = false;
-
     async function loadOrders() {
       try {
         setLoading(true);
         setError("");
-
         const [activeRes, historyRes] = await Promise.all([
           adminOrderAxios.get("/active"),
           adminOrderAxios.get("/history"),
         ]);
-
-        if (!cancelled) {
-          // 👇 دقیقاً DTO بک‌اند، بدون تغییر
-          setOrders([...activeRes.data, ...historyRes.data]);
-        }
+        if (!cancelled) setOrders([...activeRes.data, ...historyRes.data]);
       } catch (e) {
         if (!cancelled) {
           console.error("خطا در دریافت سفارش‌ها:", e);
@@ -166,111 +154,128 @@ export default function OrdersSection() {
         if (!cancelled) setLoading(false);
       }
     }
-
     loadOrders();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   return (
     <div className="panel orders-panel">
-      <div className="view-header orders-header">
+      <div className="orders-header">
         <h3>سفارش‌ها</h3>
-        {/* controls wrapper keeps layout stable */}
-        <div className="orders-controls">
-          <input
-            type="text"
-            className="mh-input"
-            placeholder="جستجوی شماره سفارش یا میز..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{ maxWidth: 220 }}
-          />
-          {/* filters: keep space with visibility toggle */}
-          <div className="orders-filters" style={{ visibility: showHistory ? "visible" : "hidden" }}>
-            {ranges.map((r) => (
-              <button
-                key={r.key}
-                className={`chip ${rangeKey === r.key ? "chip--active" : ""}`}
-                onClick={() => setRangeKey(r.key)}
-                title={r.label}
-              >
-                {r.label}
-              </button>
-            ))}
-          </div>
 
-          {/* tabs: always aligned to the right */}
-          <div className="orders-tabs">
-            <button
-              className={`btn ${
-                !showHistory ? "btn-primary" : "btn-secondary"
-              }`}
-              onClick={() => setShowHistory(false)}
-            >
-              سفارش‌های فعال ({counts.pending})
-            </button>
-            <button
-              className={`btn ${showHistory ? "btn-primary" : "btn-secondary"}`}
-              onClick={() => setShowHistory(true)}
-            >
-              تاریخچه ({counts.history})
-            </button>
-          </div>
+        <div className="orders-stats-strip">
+          <span><strong>{toPersianDigits(orderCounts.today)}</strong> امروز</span>
+          <span><strong>{toPersianDigits(orderCounts.month)}</strong> این ماه</span>
+          <span><strong>{toPersianDigits(orderCounts.year)}</strong> امسال</span>
         </div>
       </div>
 
-      {/* List (vertical bars) */}
+      <div className="orders-controls">
+        <div className="admin-search-wrap">
+          <i className="fas fa-search admin-search-icon-inline" />
+          <input
+            type="text"
+            className="admin-search-input"
+            placeholder="جستجوی شماره فاکتور..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setTimeout(() => setSearchFocused(false), 150)}
+          />
+          {showDropdown && (
+            <div className="admin-search-dropdown">
+              {searchLoading ? (
+                <div className="admin-search-dropdown__empty">در حال جستجو...</div>
+              ) : searchResults.length === 0 ? (
+                <div className="admin-search-dropdown__empty">نتیجه‌ای یافت نشد</div>
+              ) : (
+                searchResults.map((o) => {
+                  const meta = getStatusMeta(o.status, o.paymentMethod);
+                  return (
+                    <button
+                      key={o.id}
+                      type="button"
+                      className="admin-search-dropdown__item"
+                      onMouseDown={() => { setSelected(o); setSearchInput(""); }}
+                    >
+                      <span className="admin-search-dropdown__invoice">
+                        فاکتور {toPersianDigits(o.invoiceNumber || "—")}
+                      </span>
+                      <span className={`status-pill ${meta.cls}`}>{meta.pill}</span>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="orders-chip-row">
+          <button type="button" className="chip chip--icon" onClick={() => setSortDesc((v) => !v)} title="مرتب‌سازی بر حسب تاریخ">
+            <i className={`fas fa-sort-amount-${sortDesc ? "down" : "up"}`} />
+          </button>
+
+          {showHistory
+            ? ranges.map((r) => (
+                <button key={r.key} type="button" className={`chip ${rangeKey === r.key ? "chip--active" : ""}`} onClick={() => setRangeKey(r.key)}>
+                  {r.label}
+                </button>
+              ))
+            : (
+              <>
+                <button type="button" className={`chip ${statusFilter === "all" ? "chip--active" : ""}`} onClick={() => setStatusFilter("all")}>
+                  همه
+                </button>
+                {activeStatusOptions.map((opt) => (
+                  <button key={opt.key} type="button" className={`chip ${statusFilter === opt.key ? "chip--active" : ""}`} onClick={() => setStatusFilter(opt.key)}>
+                    {opt.label}
+                  </button>
+                ))}
+              </>
+            )}
+        </div>
+
+        <div className="orders-tabs">
+          <button className={`btn ${!showHistory ? "btn-primary" : "btn-secondary"}`} onClick={() => { setShowHistory(false); setStatusFilter("all"); }}>
+            فعال ({toPersianDigits(counts.pending)})
+          </button>
+          <button className={`btn ${showHistory ? "btn-primary" : "btn-secondary"}`} onClick={() => setShowHistory(true)}>
+            تاریخچه ({toPersianDigits(counts.history)})
+          </button>
+        </div>
+      </div>
+
       <div className="orders-list orders-list--vertical">
         {loading && <div className="empty-hint">در حال دریافت...</div>}
         {!loading && error && <div className="empty-hint">{error}</div>}
-        {!loading && !error && list.length === 0 && (
-          <div className="empty-hint">موردی یافت نشد.</div>
-        )}
+        {!loading && !error && list.length === 0 && <div className="empty-hint">موردی یافت نشد.</div>}
 
         {list.map((o) => {
-          const meta = getStatusMeta(o.status);
+          const meta = getStatusMeta(o.status, o.paymentMethod);
           const created = new Date(o.createdAt);
-          const tableLabel =
-            o.tableNumber === null ? "بیرون‌بر" : `میز شماره ${o.tableNumber}`;
+          const tableLabel = o.tableNumber === null ? "بیرون‌بر" : `میز شماره ${toPersianDigits(o.tableNumber)}`;
 
           return (
-            <button
-              key={o.id}
-              className={`order-bar ${meta.cls}`}
-              onClick={() => setSelected(o)}
-            >
+            <button key={o.id} className={`order-bar ${meta.cls}`} onClick={() => setSelected(o)}>
               <div className="order-bar__info">
                 <div className="order-bar__title">
-                  <span className="order-code">
-                    سفارش #{o.restaurantOrderNumber}
-                  </span>
+                  <span className="order-code">فاکتور {toPersianDigits(o.invoiceNumber || "—")}</span>
                   <span className="order-customer"> — {tableLabel}</span>
                 </div>
-
                 <div className="order-bar__meta">
                   <span>{tableLabel}</span>
                   <span className="dot-sep">·</span>
                   <span>
-                    {created.toLocaleDateString("fa-IR", {
-                      month: "short",
-                      day: "numeric",
-                    })}{" "}
-                    {created.toLocaleTimeString("fa-IR", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {created.toLocaleDateString("fa-IR", { month: "short", day: "numeric" })}{" "}
+                    {created.toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </div>
               </div>
 
               <div className="order-bar__side">
                 <div className="order-price">
-                  {Number(o.totalPrice).toLocaleString("fa-IR")}{" "}
-                  <span className="currency">تومان</span>
+                  {Number(o.totalPrice).toLocaleString("fa-IR")} <span className="currency">تومان</span>
                 </div>
-
                 <span className={`status-pill ${meta.cls}`}>{meta.pill}</span>
               </div>
             </button>
@@ -278,21 +283,11 @@ export default function OrdersSection() {
         })}
       </div>
 
-      {/* Modal */}
       <OrderModal
         open={Boolean(selected)}
         order={selected}
         onClose={() => setSelected(null)}
-        onApprove={
-          selected && !isHistoryStatus(selected.status)
-            ? handleAdvance
-            : undefined
-        }
-
-        /* Old: only pending could approve */
-        /*
-        onApprove={selected?.status === "pending" ? handleApprove : undefined}
-        */
+        onApprove={selected && !isHistoryStatus(selected.status) ? handleAdvance : undefined}
       />
     </div>
   );

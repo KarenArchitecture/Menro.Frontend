@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import OptionRow from "./OptionRow";
 import AddonsEditModal from "./AddonsEditModal";
+import { toPersianDigits } from "../../utils/persianNumbers";
 
 const formatIR = (n) => Number(n || 0).toLocaleString("fa-IR");
 
@@ -17,8 +18,8 @@ export default function CartCard({ item, onChangeQty }) {
               <h3 className="product-title">{item.title}</h3>
               <div className="rating-score">
                 <img src="/images/checkout-star.svg" alt="star rating" />
-                <strong>{item.rating.score}</strong>
-                <span>({formatIR(item.rating.count)})</span>
+                <strong>{toPersianDigits(Number(item.rating.score || 0).toFixed(1))}</strong>
+                <span>({toPersianDigits(formatIR(item.rating.count))})</span>
               </div>
             </div>
           </div>

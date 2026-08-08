@@ -184,11 +184,19 @@ function ItemDetailModal({ item, onClose, onSelectComboFood }) {
     );
 
   const setVariantQty = (variantId, newQty) => {
+    const v = variations.find((vv) => vv.id === variantId);
     cart.setItem({
       foodId: item.id,
       variantId,
       quantity: Math.max(0, newQty),
       addons: addonsToPayload(variantId),
+      meta: {
+        foodName: item.name,
+        imageUrl: item.imageUrl,
+        variantName: v?.name || "",
+        unitPrice: Number(v?.price || 0) + addonsTotalFor(variantId),
+        isDefaultVariant: v?.isDefault === true,
+      },
     });
   };
 

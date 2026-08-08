@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../shop/CartContext";
 import resolveFileUrl from "../../utils/resolveFileUrl";
+import { toPersianDigits } from "../../utils/persianNumbers";
 
 export default function ContinueShopping() {
   const cart = useCart();
@@ -40,7 +41,7 @@ export default function ContinueShopping() {
               alt="Order Item"
               className="cs-item-image"
             />
-            <span className="cs-badge">{item.quantity}</span>
+            <span className="cs-badge">{toPersianDigits(item.quantity)}</span>
           </div>
         ))}
         {remainingCount > 0 && (

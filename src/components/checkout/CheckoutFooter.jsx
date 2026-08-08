@@ -1,5 +1,7 @@
+// src/components/checkout/CheckoutFooter.jsx
 import React, { useMemo, useState } from "react";
 import OrderSuccessModal from "../common/OrderSuccessModal";
+import { markPendingCounterOrder } from "../common/PendingPaymentBanner";
 
 const formatIR = (n) => Number(n || 0).toLocaleString("fa-IR");
 
@@ -9,32 +11,23 @@ export default function CheckoutFooter({
   discount = 0,
   onConfirm,
   tableCount = 0,
+  paymentMethod = "", // "PayAtCounterBeforeServing" | "PayAfterServing" | ""
+  hasItems = true,
 }) {
   const [isPickingTable, setIsPickingTable] = useState(false);
   const [selectedTable, setSelectedTable] = useState(undefined);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const [successVariant, setSuccessVariant] = useState("checkout");
-  const [invoiceNumber, setInvoiceNumber] = useState(null);
+  const [orderSnapshot, setOrderSnapshot] = useState(null);
 
   const numericTableCount = Number(tableCount) || 0;
 
   const tableOptions = useMemo(() => {
     const opts = [];
-
     for (let i = 1; i <= numericTableCount; i += 1) {
-      opts.push({
-        id: i,
-        label: `میز ${i}`,
-      });
+      opts.push({ id: i, label: `میز ${i}` });
     }
-
-    opts.push({
-      id: null,
-      label: "بیرون‌بر",
-    });
-
+    opts.push({ id: null, label: "بیرون‌بر" });
     return opts;
   }, [numericTableCount]);
 
@@ -42,8 +35,7 @@ export default function CheckoutFooter({
     setShowSuccess(false);
     setSelectedTable(null);
     setIsPickingTable(false);
-    setSuccessVariant("checkout");
-    setInvoiceNumber(null);
+    setOrderSnapshot(null);
   };
 
   const handlePayClick = async () => {
@@ -59,13 +51,30 @@ export default function CheckoutFooter({
       setIsSubmitting(true);
 
       const result = onConfirm ? await onConfirm(selectedTable) : null;
+      if (!result) return;
 
-      const backendType = result?.successType || result?.type || "checkout";
-      const nextInvoiceNumber =
-        result?.invoiceNumber ?? result?.invoice ?? null;
+      const isPayAtCounter = result.paymentMethod === "PayAtCounterBeforeServing";
 
-      setSuccessVariant(backendType === "invoice" ? "invoice" : "checkout");
-      setInvoiceNumber(nextInvoiceNumber);
+      setOrderSnapshot({
+        orderId: result.orderId,
+        invoiceNumber: result.invoiceNumber,
+        // "checkout" -> pay-at-counter (invoice chip, no CTA)
+        // "invoice"  -> pay-after-serving (CTA button, no chip)
+        variant: isPayAtCounter ? "checkout" : "invoice",
+        items: (result.items || []).map((it, idx) => ({
+          id: idx,
+          name: it.variantName ? `${it.foodName} ${it.variantName}` : it.foodName,
+          hasAddons: it.hasAddons,
+          quantity: it.quantity,
+          unitPrice: it.unitPrice,
+        })),
+        total: result.totalPrice,
+      });
+
+      if (isPayAtCounter) {
+        markPendingCounterOrder(result.orderId, result.restaurantName || "");
+      }
+
       setShowSuccess(true);
     } catch (err) {
       console.error("Error while confirming order:", err);
@@ -75,13 +84,8 @@ export default function CheckoutFooter({
     }
   };
 
-  const handleCloseTableSelector = () => {
-    setIsPickingTable(false);
-  };
-
-  const handleTableClick = (id) => {
-    setSelectedTable(id);
-  };
+  const handleCloseTableSelector = () => setIsPickingTable(false);
+  const handleTableClick = (id) => setSelectedTable(id);
 
   const isChoosingTable = isPickingTable && selectedTable === undefined;
   const payDisabled = isChoosingTable || isSubmitting;
@@ -94,101 +98,87 @@ export default function CheckoutFooter({
 
   return (
     <>
-      {isPickingTable && (
+      {hasItems && isPickingTable && (
         <div className="table-overlay" onClick={handleCloseTableSelector} />
       )}
 
-      <div
-        className={`checkout-footer ${isPickingTable ? "is-picking-table" : ""}`}
-      >
-        <div className="discount-wrapper">
-          <input
-            type="text"
-            className="discount-input"
-            placeholder="کد تخفیف دارم..."
-          />
+      {hasItems && paymentMethod === "PayAfterServing" && (
+        <div className="checkout-payment-notice">
+          پرداخت‌های این رستوران پس از صرف غذا، پای صندوق صورت می‌گیرد
         </div>
+      )}
 
-        <div className="footer-main">
-          <div className="footer-total">
-            <div className="footer-total-label">قیمت کل</div>
-            <div className="footer-total-amount">
-              <span className="amount">{formatIR(total)}</span>
-              <span className="currency">تومان</span>
+      {hasItems && (
+        <div className={`checkout-footer ${isPickingTable ? "is-picking-table" : ""}`}>
+          <div className="discount-wrapper">
+            <input type="text" className="discount-input" placeholder="کد تخفیف دارم..." />
+          </div>
+
+          <div className="footer-main">
+            <div className="footer-total">
+              <div className="footer-total-label">قیمت کل</div>
+              <div className="footer-total-amount">
+                <span className="amount">{formatIR(total)}</span>
+                <span className="currency">تومان</span>
+              </div>
+            </div>
+
+            <div className="footer-action">
+              <button
+                className={"pay-btn" + (payDisabled ? " pay-btn--inactive" : "")}
+                onClick={handlePayClick}
+                disabled={payDisabled}
+              >
+                {payLabel}
+              </button>
             </div>
           </div>
 
-          <div className="footer-action">
-            <button
-              className={"pay-btn" + (payDisabled ? " pay-btn--inactive" : "")}
-              onClick={handlePayClick}
-              disabled={payDisabled}
-            >
-              {payLabel}
-            </button>
+          <div className={"table-selector-inline" + (isPickingTable ? " is-open" : "")}>
+            <div className="table-grid">
+              {tableOptions.map((opt) => (
+                <button
+                  key={opt.id ?? "takeout"}
+                  type="button"
+                  className={
+                    "table-chip" +
+                    (selectedTable === opt.id ? " is-active" : "") +
+                    (opt.id === null ? " is-wide" : "")
+                  }
+                  onClick={() => handleTableClick(opt.id)}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-
-        <div
-          className={
-            "table-selector-inline" + (isPickingTable ? " is-open" : "")
-          }
-        >
-          <div className="table-grid">
-            {tableOptions.map((opt) => (
-              <button
-                key={opt.id ?? "takeout"}
-                type="button"
-                className={
-                  "table-chip" +
-                  (selectedTable === opt.id ? " is-active" : "") +
-                  (opt.id === null ? " is-wide" : "")
-                }
-                onClick={() => handleTableClick(opt.id)}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      )}
 
       <OrderSuccessModal
         open={showSuccess}
-        variant={successVariant}
+        variant={orderSnapshot?.variant ?? "checkout"}
         iconSrc={
-          successVariant === "invoice"
+          orderSnapshot?.variant === "invoice"
             ? "/images/checkout-success-check.png"
             : "/images/checkout-success.png"
         }
         title={
-          successVariant === "invoice" ? (
-            <>
-              سفارش شما <span>ثبت شد</span>
-            </>
+          orderSnapshot?.variant === "invoice" ? (
+            <>سفارش شما <span>ثبت شد</span></>
           ) : (
-            <>
-              سفارش در انتظار <span>پرداخت حضوری شماست</span>
-            </>
+            <>سفارش در انتظار <span>پرداخت حضوری شماست</span></>
           )
         }
         subtitle=""
-        items={items}
-        discount={discount}
-        total={total}
-        invoiceNumber={invoiceNumber}
-        primaryActionTo={successVariant === "invoice" ? "/bills" : "/orders"}
-        primaryActionLabel={
-          successVariant === "invoice" ? (
-            <>
-              شماره فاکتور{" "}
-              <span className="order-success-modal__invoice-number">
-                {invoiceNumber ?? "—"}
-              </span>
-            </>
-          ) : (
-            "تایید و ادامه"
-          )
+        items={orderSnapshot?.items ?? []}
+        discount={0}
+        total={orderSnapshot?.total ?? 0}
+        invoiceNumber={orderSnapshot?.invoiceNumber}
+        primaryActionTo={
+          orderSnapshot?.variant === "invoice"
+            ? "/orders"
+            : `/orders/bill/${orderSnapshot?.orderId}`
         }
         formatPrice={formatIR}
         onClose={handleSuccessContinue}

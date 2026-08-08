@@ -1,4 +1,4 @@
-import apiClient from "./apiClient";
+import { apiClient, publicMusicAxios } from "./apiClient";
 
 /* ARCHIVE */
 export const getTracks = () => apiClient.get("/admin/music/archive");
@@ -48,9 +48,7 @@ export const removeTrackFromPlaylist = (playlistId, playlistTrackId) =>
 export const reorderPlaylistTrack = (playlistId, playlistTrackId, direction) =>
   apiClient.put(
     `/admin/music/playlist/${playlistId}/tracks/${playlistTrackId}/move`,
-    {
-      direction,
-    },
+    { direction },
   );
 
 /* MUSIC PLAYER */
@@ -75,7 +73,7 @@ export const approveTrackRequest = (requestId) =>
 /* PUBLIC MUSIC */
 
 export const getPublicMusic = (restaurantId) =>
-  apiClient.get(`/public/music/${restaurantId}`);
+  publicMusicAxios.get(`/public/music/${restaurantId}`);
 
 export const requestTrack = (restaurantId, dto) =>
-  apiClient.post(`/public/music/${restaurantId}/request`, dto);
+  publicMusicAxios.post(`/public/music/${restaurantId}/request`, dto);

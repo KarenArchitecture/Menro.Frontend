@@ -1,15 +1,12 @@
-import axios from "axios";
+import { createAuthenticatedAxios } from "./createAuthenticatedAxios";
 import { getOrCreateGuestCartId } from "../utils/guestCart";
 
-const cartAxios = axios.create({
-    baseURL: `${import.meta.env.VITE_API_URL}/public`,
-});
-
-cartAxios.interceptors.request.use((config) => {
-    const token = localStorage.getItem("accessToken");
-    if (token) config.headers.Authorization = `Bearer ${token}`;
+const cartAxios = createAuthenticatedAxios({
+  baseURL: `${import.meta.env.VITE_API_URL}/public`,
+  requireAuth: false,
+  decorateConfig: (config) => {
     config.headers["X-Guest-Cart-Id"] = getOrCreateGuestCartId();
-    return config;
+  },
 });
 
 export default cartAxios;

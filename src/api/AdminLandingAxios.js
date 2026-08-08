@@ -1,14 +1,8 @@
-import axios from "axios";
+import { createAuthenticatedAxios } from "./createAuthenticatedAxios";
 
-const adminLandingAxios = axios.create({
+const adminLandingAxios = createAuthenticatedAxios({
   baseURL: `${import.meta.env.VITE_API_URL}/admin/landing`,
-  withCredentials: true,
-});
-
-adminLandingAxios.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
+  requireAuth: true,
 });
 
 export default adminLandingAxios;

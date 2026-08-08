@@ -1,18 +1,8 @@
-import axios from "axios";
+import { createAuthenticatedAxios } from "./createAuthenticatedAxios";
 
-const adminRestaurantCategoryAxios = axios.create({
+const adminRestaurantCategoryAxios = createAuthenticatedAxios({
   baseURL: `${import.meta.env.VITE_API_URL}/admin/restaurant-categories`,
-  withCredentials: true,
-});
-
-adminRestaurantCategoryAxios.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return config;
+  requireAuth: true,
 });
 
 export default adminRestaurantCategoryAxios;

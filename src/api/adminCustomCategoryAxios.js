@@ -1,17 +1,8 @@
-import axios from "axios";
+import { createAuthenticatedAxios } from "./createAuthenticatedAxios";
 
-const adminCustomCategoryAxios = axios.create({
+const adminCustomCategoryAxios = createAuthenticatedAxios({
   baseURL: `${import.meta.env.VITE_API_URL}/adminpanel/customFoodCategory`,
-  withCredentials: true, // اگه از Identity Cookie هم استفاده بشه، این لازمه
-});
-
-// افزودن توکن JWT به تمام درخواست‌ها
-adminCustomCategoryAxios.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken"); // یا از هر جایی که ذخیره‌اش کردی
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
+  requireAuth: true,
 });
 
 export default adminCustomCategoryAxios;

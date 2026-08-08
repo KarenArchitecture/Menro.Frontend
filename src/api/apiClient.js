@@ -1,18 +1,16 @@
-import axios from "axios";
+import { createAuthenticatedAxios } from "./createAuthenticatedAxios";
 
-const apiClient = axios.create({
+// admin/* endpoints — auth required
+const apiClient = createAuthenticatedAxios({
   baseURL: import.meta.env.VITE_API_URL,
+  requireAuth: true,
 });
 
-// Inject JWT automatically into every request
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken"); // یا sessionStorage / redux
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return config;
+// public/* endpoints — guest-accessible, no forced logout on 401
+const publicMusicAxios = createAuthenticatedAxios({
+  baseURL: import.meta.env.VITE_API_URL,
+  requireAuth: false,
 });
 
+export { apiClient, publicMusicAxios };
 export default apiClient;

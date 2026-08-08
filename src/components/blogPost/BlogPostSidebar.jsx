@@ -1,13 +1,15 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import AdBanner from "../../components/common/AdBanner";
 
 export default function BlogPostSidebar({ tags = [], popularPosts = [] }) {
+  const [brokenThumbs, setBrokenThumbs] = useState(() => new Set());
+
   return (
     <aside className="bp-sidebar">
       <div className="bp-sidebar__sticky">
         <div className="blog-sidebar-ad-box bp-sidebar__ad">
-          {/* Ad slot - same class as the blog list page's sidebar ad box,
-              so whatever ad-injection logic already targets
-              .blog-sidebar-ad-box picks this one up too. */}
+          <AdBanner slotKey="blog-post-sidebar" height="100%" maxWidth="100%" />
         </div>
 
         {tags.length > 0 && (
@@ -17,7 +19,10 @@ export default function BlogPostSidebar({ tags = [], popularPosts = [] }) {
               {tags.map((tag) => (
                 <li key={tag.id} className="sidebar-tag-item">
                   <Link
-                    to={`/blog?tag=${tag.id}`}
+                    to={`/blogresult?${new URLSearchParams({
+                      tag: tag.slug || tag.id,
+                      tagName: tag.name,
+                    }).toString()}`}
                     className="sidebar-tag-item-right"
                   >
                     <i className="fas fa-hashtag sidebar-tag-hashtag-icon" />
@@ -45,8 +50,16 @@ export default function BlogPostSidebar({ tags = [], popularPosts = [] }) {
                     className="bp-sidebar__popular-item"
                   >
                     <div className="bp-sidebar__popular-thumb">
-                      {post.coverImageUrl ? (
-                        <img src={post.coverImageUrl} alt={post.title} />
+                      {post.coverImageUrl && !brokenThumbs.has(post.id) ? (
+                        <img
+                          src={post.coverImageUrl}
+                          alt={post.title}
+                          onError={() =>
+                            setBrokenThumbs((prev) =>
+                              new Set(prev).add(post.id),
+                            )
+                          }
+                        />
                       ) : (
                         <i className="fas fa-image" />
                       )}

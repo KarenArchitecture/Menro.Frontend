@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function RelatedPosts({ posts }) {
+  const [brokenThumbs, setBrokenThumbs] = useState(() => new Set());
+
   if (!posts || posts.length === 0) return null;
 
   return (
@@ -14,8 +17,14 @@ export default function RelatedPosts({ posts }) {
             className="bp-related__card"
           >
             <div className="bp-related__thumb">
-              {post.coverImageUrl ? (
-                <img src={post.coverImageUrl} alt={post.title} />
+              {post.coverImageUrl && !brokenThumbs.has(post.id) ? (
+                <img
+                  src={post.coverImageUrl}
+                  alt={post.title}
+                  onError={() =>
+                    setBrokenThumbs((prev) => new Set(prev).add(post.id))
+                  }
+                />
               ) : (
                 <i className="fas fa-image" />
               )}

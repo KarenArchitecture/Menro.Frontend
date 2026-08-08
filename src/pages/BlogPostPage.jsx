@@ -45,11 +45,13 @@ export default function BlogPostPage() {
               message: "پستی با این آدرس پیدا نشد",
             });
             setNotFound(true);
-          } else console.error("Failed to load blog post", err);
-          notify({
-            type: "error",
-            message: "خطا در بارگذاری پست بلاگ",
-          });
+          } else {
+            console.error("Failed to load blog post", err);
+            notify({
+              type: "error",
+              message: "خطا در بارگذاری پست بلاگ",
+            });
+          }
         }
       } finally {
         if (!cancelled) setLoading(false);

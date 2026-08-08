@@ -249,6 +249,23 @@ export default function BlogPostEditorPage() {
           >
             {draft.published ? "منتشر شده" : "پیش‌نویس"}
           </span>
+          <button
+            type="button"
+            className="bpe__preview"
+            disabled={!draft.published}
+            title={
+              draft.published ? "مشاهده‌ی پست منتشرشده" : "پست هنوز منتشر نشده"
+            }
+            onClick={() =>
+              window.open(
+                `/blog/${draft.slug}`,
+                "_blank",
+                "noopener,noreferrer",
+              )
+            }
+          >
+            <i className="fas fa-eye" />
+          </button>
           <button className="bpe__back" onClick={() => navigate(-1)}>
             <i className="fas fa-arrow-right" /> بازگشت
           </button>

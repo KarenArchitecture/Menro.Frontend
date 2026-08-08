@@ -1,0 +1,66 @@
+import { Link } from "react-router-dom";
+
+export default function BlogPostSidebar({ tags = [], popularPosts = [] }) {
+  return (
+    <aside className="bp-sidebar">
+      <div className="bp-sidebar__sticky">
+        <div className="blog-sidebar-ad-box bp-sidebar__ad">
+          {/* Ad slot - same class as the blog list page's sidebar ad box,
+              so whatever ad-injection logic already targets
+              .blog-sidebar-ad-box picks this one up too. */}
+        </div>
+
+        {tags.length > 0 && (
+          <div className="blog-sidebar-tags-box bp-sidebar__box">
+            <h3 className="sidebar-tags-title">برچسب‌های پیشنهادی</h3>
+            <ul className="sidebar-tags-list">
+              {tags.map((tag) => (
+                <li key={tag.id} className="sidebar-tag-item">
+                  <Link
+                    to={`/blog?tag=${tag.id}`}
+                    className="sidebar-tag-item-right"
+                  >
+                    <i className="fas fa-hashtag sidebar-tag-hashtag-icon" />
+                    <span className="sidebar-tag-item-name">{tag.name}</span>
+                  </Link>
+                  {tag.articleCount != null && (
+                    <span className="sidebar-tag-item-count">
+                      {tag.articleCount} مقاله
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {popularPosts.length > 0 && (
+          <div className="blog-sidebar-tags-box bp-sidebar__box">
+            <h3 className="sidebar-tags-title">پست‌های محبوب</h3>
+            <ul className="bp-sidebar__popular-list">
+              {popularPosts.map((post) => (
+                <li key={post.id}>
+                  <Link
+                    to={`/blog/${post.slug}`}
+                    className="bp-sidebar__popular-item"
+                  >
+                    <div className="bp-sidebar__popular-thumb">
+                      {post.coverImageUrl ? (
+                        <img src={post.coverImageUrl} alt={post.title} />
+                      ) : (
+                        <i className="fas fa-image" />
+                      )}
+                    </div>
+                    <span className="bp-sidebar__popular-title">
+                      {post.title}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </aside>
+  );
+}

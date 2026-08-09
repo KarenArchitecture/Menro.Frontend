@@ -1,17 +1,8 @@
-// src/api/ownerRestaurantTables.js
-import axios from "axios";
+import { createAuthenticatedAxios } from "./createAuthenticatedAxios";
 
-const ownerRestaurantTables = axios.create({
+const ownerRestaurantTables = createAuthenticatedAxios({
   baseURL: `${import.meta.env.VITE_API_URL}/owner/restaurant/tables`,
-  withCredentials: true,
-});
-
-ownerRestaurantTables.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
+  requireAuth: true,
 });
 
 export default ownerRestaurantTables;

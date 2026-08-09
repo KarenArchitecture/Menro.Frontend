@@ -16,12 +16,16 @@ const MOVE_DIRECTION = { up: -1, down: 1 };
 export const getBlogPosts = ({
   search,
   categoryId,
+  tagId,
+  onlyMine,
   page = 1,
   pageSize = 20,
 } = {}) =>
   adminBlogsAxios
-    .get("/posts", { params: { search, categoryId, page, pageSize } })
-    .then((r) => r.data); // { items, page, pageSize, totalCount, totalPages }
+    .get("/posts", {
+      params: { search, categoryId, tagId, onlyMine, page, pageSize },
+    })
+    .then((r) => r.data);
 
 export const getBlogPost = (id) =>
   adminBlogsAxios.get(`/posts/${id}`).then((r) => r.data);
@@ -58,6 +62,28 @@ export const getBlogPostContent = (id) =>
 export const updateBlogPostContent = (id, content) =>
   adminBlogsAxios.put(`/posts/${id}/content`, { content }).then((r) => r.data);
 
+// NEW - uploads an image dropped into the Tiptap editor and returns its
+// final URL, to be set as the <img> src. Kept separate from
+// updateBlogPostContent - the editor calls this the moment a file is
+// picked, independent of the autosave cycle.
+export const uploadBlogContentImage = (postId, file) => {
+  const fd = new FormData();
+  fd.append("Image", file);
+  return adminBlogsAxios
+    .post(`/posts/${postId}/content/images`, fd, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+    .then((r) => r.data); // { url }
+};
+
+export const searchBlogRestaurants = (term, take = 10) =>
+  adminBlogsAxios
+    .get("/posts/restaurant-search", { params: { term, take } })
+    .then((r) => r.data);
+
+export const getBlogRestaurantById = (id) =>
+  adminBlogsAxios.get(`/posts/restaurant-search/${id}`).then((r) => r.data);
+
 /* ------------------------ Display Categories ------------------------ */
 
 export const getBlogCategories = () =>
@@ -75,6 +101,11 @@ export const moveBlogCategory = (id, direction) =>
     .post(`/display-categories/${id}/move`, {
       direction: MOVE_DIRECTION[direction],
     })
+    .then((r) => r.data);
+
+export const getBlogCategoryAffectedPostsCount = (id) =>
+  adminBlogsAxios
+    .get(`/display-categories/${id}/affected-posts-count`)
     .then((r) => r.data);
 
 export const deleteBlogCategory = (id) =>

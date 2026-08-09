@@ -1,0 +1,101 @@
+/* ---------- Restaurant search modal ---------- */
+/* Overrides the generic .admin-modal default sizing (92vh / 1200px) - this
+   modal is a small "add block" picker, not a full-page workspace. */
+.admin-modal.bpe__restaurant-modal {
+  max-width: 460px;
+  height: auto;
+  max-height: 70vh;
+}
+
+.bpe__restaurant-results {
+  margin-top: 14px;
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bpe__restaurant-result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #333;
+  background: #252525;
+  color: var(--text-primary, #eaeaea);
+  font: inherit;
+  cursor: pointer;
+  text-align: right;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.bpe__restaurant-result:hover {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.bpe__restaurant-result-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a1a;
+  color: #777;
+  font-size: 1rem;
+}
+.bpe__restaurant-result-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Name + meta stacked vertically, not crammed on one line. */
+.bpe__restaurant-result-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0; /* allows text-overflow to work inside a flex child */
+}
+
+.bpe__restaurant-result-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary, #eaeaea);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bpe__restaurant-result-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+}
+
+.bpe__restaurant-result-category {
+  color: var(--text-muted, #888);
+}
+
+.bpe__restaurant-result-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--primary-color, #f59e0b);
+  font-weight: 600;
+}
+.bpe__restaurant-result-rating i {
+  font-size: 0.75rem;
+}
+
+.bpe__restaurant-result-voters {
+  color: var(--text-muted, #888);
+  font-weight: 400;
+}

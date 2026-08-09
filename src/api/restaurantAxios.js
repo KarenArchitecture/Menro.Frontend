@@ -1,16 +1,8 @@
-// src/api/restaurantAxios.js
-import axios from "axios";
+import { createAuthenticatedAxios } from "./createAuthenticatedAxios";
 
-const restaurantAxios = axios.create({
+const restaurantAxios = createAuthenticatedAxios({
   baseURL: `${import.meta.env.VITE_API_URL}/public/restaurant`,
-  withCredentials: true,
-});
-restaurantAxios.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
+  requireAuth: false,
 });
 
 export default restaurantAxios;

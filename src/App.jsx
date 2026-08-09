@@ -6,6 +6,7 @@ import AdminMusicPage from "./pages/Admin/AdminMusicPage";
 import AdminPage from "./pages/Admin/AdminPage";
 import BillsPage from "./pages/BillsPage";
 import BlogPage from "./pages/BlogPage";
+import BlogPostPage from "./pages/BlogPostPage";
 import BlogPostEditorPage from "./pages/Admin/BlogPostEditorPage";
 import BlogResultPage from "./pages/BlogResultPage";
 import ChangePasswordPage from "./pages/Authentication/ChangePasswordPage";
@@ -114,7 +115,15 @@ export default function App() {
               <Route
                 path="/admin"
                 element={
-                  <ProtectedRoute roles={["admin", "owner"]}>
+                  <ProtectedRoute
+                    roles={[
+                      "admin",
+                      "owner",
+                      "author",
+                      "editor",
+                      "contributor",
+                    ]}
+                  >
                     <AdminPage />
                   </ProtectedRoute>
                 }
@@ -130,13 +139,22 @@ export default function App() {
               <Route
                 path="/admin/blog/post-editor/:id"
                 element={
-                  <ProtectedRoute roles={["admin", "owner", "author"]}>
+                  <ProtectedRoute
+                    roles={[
+                      "admin",
+                      "owner",
+                      "author",
+                      "editor",
+                      "contributor",
+                    ]}
+                  >
                     <BlogPostEditorPage />
                   </ProtectedRoute>
                 }
               />
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/blogresult" element={<BlogResultPage />} />
+              <Route path="/blog/:slug" element={<BlogPostPage />} />
               <Route path="/change-password" element={<ChangePasswordPage />} />
               <Route path="/change-phone" element={<ChangePhone />} />
               <Route path="/checkout" element={<CheckoutPage />} />

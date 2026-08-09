@@ -18,6 +18,8 @@ export default function AdminHeader({
   const { user, avatarUrl } = useAuth();
   const displayName = user?.fullName || "کاربر ناشناس";
   const displayAvatar = avatarUrl || "/images/avatar-placeholder.png";
+  // موزیک‌پلیر و خرید اشتراک فقط مخصوص Owner (نه Admin، نه بقیه‌ی نقش‌ها)
+  const isOwner = (user?.roles || []).some((r) => r.toLowerCase() === "owner");
 
   // 🔕 Search disabled for now
   /*
@@ -56,30 +58,32 @@ export default function AdminHeader({
       */}
 
       {/* ✅ Buy subscription button (no action for now) */}
-      <div className="admin-header-actions">
-        <button
-          type="button"
-          className="admin-music-btn"
-          onClick={() => window.open("/admin/music", "_blank")}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
-        >
-          <FaMusic />
-          موزیک پلیر
-        </button>
+      {isOwner && (
+        <div className="admin-header-actions">
+          <button
+            type="button"
+            className="admin-music-btn"
+            onClick={() => window.open("/admin/music", "_blank")}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <FaMusic />
+            موزیک پلیر
+          </button>
 
-        <button
-          type="button"
-          className="admin-subscribe-btn"
-          aria-label="خرید اشتراک"
-          onClick={() => {}}
-        >
-          خرید اشتراک
-        </button>
-      </div>
+          <button
+            type="button"
+            className="admin-subscribe-btn"
+            aria-label="خرید اشتراک"
+            onClick={() => {}}
+          >
+            خرید اشتراک
+          </button>
+        </div>
+      )}
 
       {/* User info (greeting + avatar) */}
       <div className="user-info">

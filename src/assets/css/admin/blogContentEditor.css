@@ -1,0 +1,349 @@
+/* ---------- Tiptap content editor ---------- */
+.bpe__editor {
+  border: 1px solid var(--border-color, #2f2f2f);
+  border-radius: 12px;
+  background: #191919;
+  /* overflow:hidden was removed on purpose. Any overflow value other than
+     "visible" on an ancestor changes which box position:sticky resolves
+     against - having it here silently broke the toolbar's sticky behavior
+     in normal (non-fullscreen) mode. Corners are rounded/clipped on the
+     toolbar and body directly instead (see further down). */
+}
+
+/* Dims the rest of the page behind the fullscreen editor, and doubles as a
+   click-outside-to-exit target. Fades in/out together with the panel via
+   the keyframes below (an "animation" that auto-plays whenever the class
+   is (re)applied, unlike "transition" which needs the browser to have
+   already painted a prior value to animate from - keyframes don't have
+   that timing dependency, so both directions are reliable). */
+.bpe__editor-fullscreen-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(0, 0, 0, 0.7);
+  opacity: 0;
+  animation: bpe-editor-fs-backdrop-in 0.2s ease forwards;
+}
+.bpe__editor-fullscreen-backdrop--exiting {
+  animation: bpe-editor-fs-backdrop-out 0.2s ease forwards;
+}
+@keyframes bpe-editor-fs-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes bpe-editor-fs-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Fullscreen (focus) mode: same editor instance, just resized to cover most
+   of the viewport - no second editor is ever mounted, so autosave/history/
+   cursor position all carry over untouched. Deliberately keeps a visible
+   inset margin + rounded border instead of going truly edge-to-edge, so the
+   editor still reads as a distinct panel rather than "the whole browser".
+   Fades/scales in via a plain CSS animation - see the note above the
+   backdrop rule for why animation was chosen over transition here. */
+.bpe__editor--fullscreen {
+  position: fixed;
+  inset: 28px;
+  z-index: 1000;
+  border-radius: 16px;
+  border: 1px solid var(--border-color, #2f2f2f);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  animation: bpe-editor-fs-in 0.2s ease forwards;
+}
+.bpe__editor--fullscreen-exiting {
+  animation: bpe-editor-fs-out 0.2s ease forwards;
+}
+@keyframes bpe-editor-fs-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes bpe-editor-fs-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+.bpe__editor--fullscreen .bpe__editor-toolbar {
+  border-radius: 16px 16px 0 0;
+}
+.bpe__editor--fullscreen .bpe__editor-body {
+  flex: 1;
+  min-height: 0; /* let the flex child actually scroll instead of overflowing the page */
+  overflow-y: auto;
+  border-radius: 0 0 16px 16px;
+}
+/* A touch larger in fullscreen - there's room, and it fits the "zoomed in
+   focus mode" feel better than the compact toolbar sizing. */
+.bpe__editor--fullscreen .bpe__editor-btn {
+  width: 42px;
+  height: 42px;
+  font-size: 1.1rem;
+}
+/* Comfortable reading/writing line length even on a wide screen, instead of
+   text stretching edge-to-edge across the whole panel. */
+.bpe__editor--fullscreen .bpe__editor-body .ProseMirror {
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.bpe__editor-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color, #2f2f2f);
+  background: #191919;
+  position: sticky;
+  /* If the admin panel has its own fixed/sticky top bar, bump this value up
+     to sit just below it instead of overlapping it. */
+  top: 0;
+  z-index: 5;
+  border-radius: 12px 12px 0 0;
+}
+
+/* Right-side (bpe__editor-toolbar-group--start) vs. left-side
+   (bpe__editor-toolbar-group--end) clusters of toolbar buttons. The end
+   group is pushed away from the start group via margin-inline-start:auto,
+   so it lands on the opposite side regardless of how many buttons are in
+   either group. */
+.bpe__editor-toolbar-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.bpe__editor-toolbar-group--end {
+  margin-inline-start: auto;
+}
+
+.bpe__editor-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #a3a3a3;
+  cursor: pointer;
+  font-size: 1rem;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.bpe__editor-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary, #eaeaea);
+}
+.bpe__editor-btn--active {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--primary-color, #f59e0b);
+}
+.bpe__editor-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.bpe__editor-sep {
+  width: 1px;
+  height: 22px;
+  background: var(--border-color, #2f2f2f);
+  margin: 0 4px;
+}
+
+.bpe__editor-status {
+  font-size: 0.85rem;
+  color: #888;
+  padding: 0 6px;
+  white-space: nowrap;
+}
+.bpe__editor-status--saved {
+  color: var(--status-active, #10b981);
+  font-weight: 600;
+}
+.bpe__editor-btn--saved {
+  color: var(--status-active, #10b981);
+  animation: bpe-save-pop 0.3s ease;
+}
+@keyframes bpe-save-pop {
+  0% {
+    transform: scale(0.7);
+  }
+  60% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.bpe__editor-status--error {
+  color: #f87171;
+  font-weight: 600;
+}
+
+.bpe__editor-loading {
+  padding: 40px 20px;
+  text-align: center;
+  color: #777;
+  font-size: 1rem;
+}
+
+/* The actual contentEditable area + typography for everything Tiptap/
+   StarterKit can produce (headings, lists, blockquote, hr, ...). Sized to
+   read comfortably while writing, same spirit as the enlarged sidebar
+   fields above - this is the main writing surface, it shouldn't be the
+   smallest text on the page. */
+.bpe__editor-body {
+  padding: 22px 24px;
+  min-height: 360px;
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+}
+
+.bpe__editor-body .ProseMirror {
+  outline: none;
+  min-height: 340px;
+  font-size: 1.1rem;
+  line-height: 2;
+  color: var(--text-primary, #eaeaea);
+}
+
+.bpe__editor-body .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: right;
+  color: #666;
+  pointer-events: none;
+  height: 0;
+}
+
+.bpe__editor-body .ProseMirror h2 {
+  font-size: 1.55rem;
+  font-weight: 700;
+  margin: 26px 0 12px;
+}
+.bpe__editor-body .ProseMirror h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 22px 0 10px;
+}
+.bpe__editor-body .ProseMirror p {
+  margin: 0 0 16px;
+}
+.bpe__editor-body .ProseMirror ul,
+.bpe__editor-body .ProseMirror ol {
+  padding-inline-start: 26px;
+  margin: 0 0 16px;
+}
+.bpe__editor-body .ProseMirror li {
+  margin-bottom: 6px;
+}
+.bpe__editor-body .ProseMirror blockquote {
+  margin: 18px 0;
+  padding: 12px 18px;
+  border-inline-start: 3px solid var(--primary-color, #f59e0b);
+  background: rgba(245, 158, 11, 0.06);
+  border-radius: 0 8px 8px 0;
+  color: #d8d8d8;
+  font-size: 1.08rem;
+}
+.bpe__editor-body .ProseMirror hr {
+  border: none;
+  border-top: 1px dashed #3a3a3a;
+  margin: 30px 0;
+}
+.bpe__editor-body .ProseMirror strong {
+  font-weight: 700;
+}
+
+/* ---------- Expandable block (Details/Summary/Content) ---------- */
+.bpe__editor-body .ProseMirror details {
+  margin: 20px 0;
+  border: 1px solid var(--border-color, #2f2f2f);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+}
+
+.bpe__editor-body .ProseMirror summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 16px 18px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary, #eaeaea);
+  list-style: none; /* hide default marker in Firefox */
+}
+.bpe__editor-body .ProseMirror summary::marker,
+.bpe__editor-body .ProseMirror summary::-webkit-details-marker {
+  display: none;
+  content: "";
+}
+.bpe__editor-body .ProseMirror summary::before {
+  content: "\25B8"; /* ▸ - plain Unicode triangle, never depends on an icon font loading */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  font-size: 0.85em;
+  color: var(--primary-color, #f59e0b);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+.bpe__editor-body .ProseMirror details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.bpe__editor-body .ProseMirror details > div {
+  margin: 0;
+  padding: 0 18px 18px;
+  padding-top: 14px;
+  font-size: 1.02rem;
+  color: #cfcfcf;
+  border-top: 1px solid var(--border-color, #2f2f2f);
+}
+.bpe__editor-body .ProseMirror details > div p {
+  margin: 0 0 10px;
+}
+.bpe__editor-body .ProseMirror details > div p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---------- img input block ---------- */
+.bpe__editor-body .ProseMirror .bpe__editor-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  margin: 20px auto;
+}
+.bpe__editor-body .ProseMirror .bpe__editor-img.ProseMirror-selectednode {
+  outline: 2px solid var(--primary-color, #f59e0b);
+  outline-offset: 3px;
+}

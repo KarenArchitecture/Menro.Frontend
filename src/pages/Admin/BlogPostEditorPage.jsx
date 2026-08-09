@@ -1,16 +1,23 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../../Context/AuthContext";
 import {
   getBlogPost,
   updateBlogPost,
   getBlogCategories,
   getBlogTags,
   createBlogTag,
+  searchBlogRestaurants,
 } from "../../api/adminBlogs";
+import {
+  normalizeTagNameLive,
+  normalizeTagNameFinal,
+} from "../../utils/tagName";
 import { useGlobalUI } from "../../components/common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+import BlogContentEditor from "../../components/blogPostEditor/BlogContentEditor";
 import "../../assets/css/admin/admin.css";
-import "../../assets/css/admin/blogPostEditor.css";
+import "../../assets/css/admin/blogPostEditorPage.css";
 
 function apiErrorMessage(err, fallback = "خطایی رخ داد. دوباره تلاش کنید.") {
   return err?.response?.data?.message || err?.response?.data?.title || fallback;
@@ -19,9 +26,22 @@ function apiErrorMessage(err, fallback = "خطایی رخ داد. دوباره �
 // Mirrors [MaxLength(300)] on CreateBlogPostRequest/UpdateBlogPostRequest.Title
 const TITLE_MAX = 300;
 
+// Light client-side mirror of the backend's SlugHelper.NormalizeAscii - just
+// for instant visual feedback while typing. The backend still re-normalizes
+// and de-duplicates (appends "-2", "-3", ...) authoritatively on save, so
+// this doesn't need to be perfect, just not obviously wrong.
+function sanitizeSlugInput(value) {
+  return value
+    .toLowerCase()
+    .replace(/[\s_]+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-{2,}/g, "-");
+}
+
 function draftFromApi(p) {
   return {
     title: p.title,
+    slug: p.slug || "",
     coverFile: null,
     coverSrc: p.coverImageUrl || "",
     removeImage: false,
@@ -35,6 +55,7 @@ function draftFromApi(p) {
 function draftToFormData(draft) {
   const fd = new FormData();
   fd.append("Title", draft.title);
+  fd.append("Slug", draft.slug);
   fd.append("ReadingMinutes", String(Number(draft.readingMins)));
   if (draft.categoryId) fd.append("CategoryId", draft.categoryId);
   fd.append("IsPublished", String(!!draft.published));
@@ -45,6 +66,13 @@ function draftToFormData(draft) {
 }
 
 export default function BlogPostEditorPage() {
+  const { user } = useAuth();
+  const canPublish = (user?.roles || []).some((r) =>
+    ["admin", "editor", "author"].includes(r.toLowerCase()),
+  );
+  const isEditorUp = (user?.roles || []).some((r) =>
+    ["admin", "editor"].includes(r.toLowerCase()),
+  );
   const { id } = useParams();
   const navigate = useNavigate();
   const { notify } = useGlobalUI();
@@ -61,6 +89,14 @@ export default function BlogPostEditorPage() {
   const [tagSearch, setTagSearch] = useState("");
   const [newTagName, setNewTagName] = useState("");
   const [creatingTag, setCreatingTag] = useState(false);
+
+  useEffect(() => {
+    const prev = document.body.style.overflowX;
+    document.body.style.overflowX = "visible";
+    return () => {
+      document.body.style.overflowX = prev;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -134,7 +170,7 @@ export default function BlogPostEditorPage() {
   };
 
   const handleCreateTag = async () => {
-    const name = newTagName.trim();
+    const name = normalizeTagNameFinal(newTagName);
     if (!name || creatingTag) return;
     setCreatingTag(true);
     try {
@@ -162,6 +198,7 @@ export default function BlogPostEditorPage() {
     if (!title) errs.title = "عنوان پست الزامی است.";
     else if (title.length > TITLE_MAX)
       errs.title = `عنوان نباید بیشتر از ${TITLE_MAX} کاراکتر باشد.`;
+    if (!draft.slug.trim()) errs.slug = "اسلاگ الزامی است.";
     if (!draft.readingMins || draft.readingMins <= 0)
       errs.readingMins = "زمان مطالعه باید بزرگ‌تر از صفر باشد.";
     return errs;
@@ -212,6 +249,23 @@ export default function BlogPostEditorPage() {
           >
             {draft.published ? "منتشر شده" : "پیش‌نویس"}
           </span>
+          <button
+            type="button"
+            className="bpe__preview"
+            disabled={!draft.published}
+            title={
+              draft.published ? "مشاهده‌ی پست منتشرشده" : "پست هنوز منتشر نشده"
+            }
+            onClick={() =>
+              window.open(
+                `/blog/${draft.slug}`,
+                "_blank",
+                "noopener,noreferrer",
+              )
+            }
+          >
+            <i className="fas fa-eye" />
+          </button>
           <button className="bpe__back" onClick={() => navigate(-1)}>
             <i className="fas fa-arrow-right" /> بازگشت
           </button>
@@ -243,6 +297,26 @@ export default function BlogPostEditorPage() {
               {errors.title && (
                 <span className="bpe__error">{errors.title}</span>
               )}
+            </div>
+
+            <div className="bpe__field">
+              <label className="bpe__label">اسلاگ (آدرس صفحه)</label>
+              <div className="bpe__slug-row">
+                <span className="bpe__slug-prefix">/blog/</span>
+                <input
+                  type="text"
+                  className="bpe__input bpe__slug-input"
+                  value={draft.slug}
+                  dir="ltr"
+                  onChange={(e) =>
+                    setDraft({
+                      ...draft,
+                      slug: sanitizeSlugInput(e.target.value),
+                    })
+                  }
+                />
+              </div>
+              {errors.slug && <span className="bpe__error">{errors.slug}</span>}
             </div>
 
             <div className="bpe__field">
@@ -295,10 +369,7 @@ export default function BlogPostEditorPage() {
             <h3 className="bpe__card-title">
               <i className="fas fa-file-lines" /> محتوای پست
             </h3>
-            <div className="bpe__content-placeholder">
-              <i className="fas fa-pen-to-square" />
-              ادیتور محتوا (Tiptap) در قدم بعدی همین‌جا اضافه می‌شود
-            </div>
+            <BlogContentEditor postId={id} />
           </div>
         </div>
 
@@ -343,21 +414,23 @@ export default function BlogPostEditorPage() {
               )}
             </div>
 
-            <div className="bpe__field bpe__switch-row">
-              <label className="bpe__label">منتشر شود</label>
-              <label className="bpe__switch">
-                <input
-                  type="checkbox"
-                  checked={draft.published}
-                  onChange={(e) =>
-                    setDraft({ ...draft, published: e.target.checked })
-                  }
-                />
-                <span className="bpe__switch-track">
-                  <span className="bpe__switch-thumb" />
-                </span>
-              </label>
-            </div>
+            {canPublish && (
+              <div className="bpe__field bpe__switch-row">
+                <label className="bpe__label">منتشر شود</label>
+                <label className="bpe__switch">
+                  <input
+                    type="checkbox"
+                    checked={draft.published}
+                    onChange={(e) =>
+                      setDraft({ ...draft, published: e.target.checked })
+                    }
+                  />
+                  <span className="bpe__switch-track">
+                    <span className="bpe__switch-thumb" />
+                  </span>
+                </label>
+              </div>
+            )}
           </div>
 
           <div className="bpe__card">
@@ -393,29 +466,33 @@ export default function BlogPostEditorPage() {
               })}
             </div>
 
-            <div className="bpe__tag-add-row">
-              <input
-                type="text"
-                className="bpe__input"
-                placeholder="ساخت برچسب جدید..."
-                value={newTagName}
-                onChange={(e) => setNewTagName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleCreateTag();
+            {isEditorUp && (
+              <div className="bpe__tag-add-row">
+                <input
+                  type="text"
+                  className="bpe__input"
+                  placeholder="ساخت برچسب جدید..."
+                  value={newTagName}
+                  onChange={(e) =>
+                    setNewTagName(normalizeTagNameLive(e.target.value))
                   }
-                }}
-              />
-              <button
-                type="button"
-                className="btn btn-secondary bpe__tag-add-btn"
-                disabled={!newTagName.trim() || creatingTag}
-                onClick={handleCreateTag}
-              >
-                <i className="fas fa-plus" />
-              </button>
-            </div>
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleCreateTag();
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-secondary bpe__tag-add-btn"
+                  disabled={!normalizeTagNameFinal(newTagName) || creatingTag}
+                  onClick={handleCreateTag}
+                >
+                  <i className="fas fa-plus" />
+                </button>
+              </div>
+            )}
           </div>
 
           <button

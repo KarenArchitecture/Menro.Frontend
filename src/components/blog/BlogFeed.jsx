@@ -15,7 +15,7 @@ function mapPostForCard(p) {
   return {
     id: p.id,
     title: p.title,
-    href: `/blog/${p.id}`,
+    href: `/blog/${p.slug}`,
     coverSrc: p.coverImageUrl || "",
     readingMins: p.readingMinutes,
     viewCount: p.viewCount,

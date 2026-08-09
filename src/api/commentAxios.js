@@ -1,14 +1,8 @@
-import axios from "axios";
+import { createAuthenticatedAxios } from "./createAuthenticatedAxios";
 
-const commentAxios = axios.create({
-    baseURL: `${import.meta.env.VITE_API_URL}/user/comment`,
-    withCredentials: true,
-});
-
-commentAxios.interceptors.request.use((config) => {
-    const token = localStorage.getItem("accessToken");
-    if (token) config.headers.Authorization = `Bearer ${token}`;
-    return config;
+const commentAxios = createAuthenticatedAxios({
+  baseURL: `${import.meta.env.VITE_API_URL}/user/comment`,
+  requireAuth: true,
 });
 
 export default commentAxios;

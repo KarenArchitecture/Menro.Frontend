@@ -111,6 +111,33 @@
   border-color: rgba(255, 255, 255, 0.2);
 }
 
+/* ---------- Preview button (eye icon, next to the back button) ---------- */
+.bpe__preview {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color, #2f2f2f);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-secondary, #bbb);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.bpe__preview:hover:not(:disabled) {
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--primary-color, #f59e0b);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+.bpe__preview:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* ---------- Two-column layout ---------- */
 .bpe__layout {
   display: grid;
@@ -130,10 +157,11 @@
   border: 1px solid var(--border-color, #2f2f2f);
   border-radius: 14px;
   padding: 24px;
+  margin-bottom: 10px;
 }
-.bpe__card + .bpe__card {
+/* .bpe__card + .bpe__card {
   margin-top: 20px;
-}
+} */
 
 .bpe__card-title {
   display: flex;
@@ -246,6 +274,31 @@
   }
 }
 
+.bpe__slug-row {
+  display: flex;
+  align-items: center;
+  border: 1px solid #333;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #252525;
+}
+.bpe__slug-prefix {
+  padding: 12px 12px 12px 0;
+  color: var(--text-muted, #888);
+  font-size: 0.95rem;
+  white-space: nowrap;
+  direction: ltr;
+}
+.bpe__slug-input {
+  border: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  font-size: 1.2rem;
+}
+.bpe__slug-input:focus {
+  box-shadow: none !important;
+}
+
 /* ---------- Cover image uploader ---------- */
 .bpe__cover {
   position: relative;
@@ -329,7 +382,8 @@
   display: none;
 }
 
-/* ---------- Content placeholder (Tiptap lands here next) ---------- */
+/* ---------- Content placeholder (kept as a fallback, unused now that
+   BlogContentEditor renders real Tiptap content below) ---------- */
 .bpe__content-placeholder {
   border: 1.5px dashed #333;
   border-radius: 14px;
@@ -471,6 +525,5 @@
 /* ---------- Save button ---------- */
 .bpe__save {
   width: 100%;
-  margin-top: 4px;
   justify-content: center;
 }

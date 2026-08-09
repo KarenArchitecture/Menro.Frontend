@@ -1,13 +1,28 @@
 import blogAxios from "./blogAxios";
 
-// export async function getPublicBlogCategories() {
-//   const { data } = await blogAxios.get("/display-categories");
-//   return data;
-// }
-
 export async function getBlogPageBootstrap() {
   const { data } = await blogAxios.get("/page-bootstrap");
   return data;
+}
+
+// Backs BlogPostPage.jsx. Combines the post itself + suggested/sidebar tags
+// (reused from the main blog page bootstrap - not tied to any specific
+// post) + related posts (dedicated backend endpoint). popularPosts isn't
+// wired to a real backend endpoint yet - stays empty for now (next step).
+export async function getBlogPostBootstrap(slug) {
+  const [postRes, pageBootstrap, relatedRes, popularRes] = await Promise.all([
+    blogAxios.get(`/posts/${slug}`),
+    getBlogPageBootstrap(),
+    blogAxios.get(`/posts/${slug}/related`, { params: { count: 3 } }),
+    blogAxios.get(`/posts/${slug}/popular`, { params: { count: 5 } }),
+  ]);
+
+  return {
+    post: postRes.data,
+    relatedPosts: relatedRes.data,
+    popularPosts: popularRes.data,
+    sidebarTags: pageBootstrap?.sidebarTags ?? [],
+  };
 }
 
 // sort: "Newest" | "MostPopular" | "MostViewed" — must match BlogPostSortOrder member names

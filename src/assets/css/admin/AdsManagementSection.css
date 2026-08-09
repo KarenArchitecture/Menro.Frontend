@@ -1,0 +1,379 @@
+/* =========================================================
+   AdsManagementSection.css
+   Scoped styles for AdsManagementSection.jsx
+   (root element: .panel.ads-mgmt)
+
+   All selectors below are scoped under `.ads-mgmt` so this
+   file always wins over admin-dashboard.css regardless of Vite
+   import order, while admin-dashboard.css is still loaded
+   alongside it during the migration period.
+
+   NOTE: class names were renamed from the old "orders-*" /
+   "order-bar*" scheme (leftover from a copy-pasted Orders
+   panel) to an "ads-mgmt" BEM scheme that actually matches
+   this component's domain (Ads management), following the
+   convention used elsewhere in the codebase
+   (e.g. .food-mgmt__active-toggle).
+   ========================================================= */
+
+:root {
+  --primary-color: #f59e0b;
+  --primary-color-dark: #d97706;
+  --bg-light: #1e1e1e;
+  --border-color: #2f2f2f;
+  --text-primary: #eaeaea;
+  --text-secondary: #bbb;
+}
+
+/* --- header --- */
+.ads-mgmt .view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+/* --- panel --- */
+.ads-mgmt .panel {
+  background-color: var(--bg-light);
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+/* --- panel h3 --- */
+.ads-mgmt .panel h3 {
+  margin-top: 0;
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #3a3a3a;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* --- btn 1 --- */
+.ads-mgmt .btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 700;
+  transition: background-color 0.3s ease;
+}
+
+/* --- btn-primary 1 --- */
+.ads-mgmt .btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* --- btn-primary hover 1 --- */
+.ads-mgmt .btn-primary:hover {
+  background-color: var(--primary-color-dark);
+}
+
+/* --- btn-secondary --- */
+.ads-mgmt .btn-secondary {
+  background-color: #333;
+  color: var(--text-secondary);
+}
+
+/* --- btn-secondary hover --- */
+.ads-mgmt .btn-secondary:hover {
+  background-color: #444;
+}
+
+/* --- ads-mgmt__controls (was orders-controls) --- */
+.ads-mgmt .ads-mgmt__controls {
+  display: flex;
+  justify-content: flex-start;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 12px;
+}
+
+/* --- ads-mgmt__filters 1 (was orders-filters) --- */
+.ads-mgmt .ads-mgmt__filters {
+  display: flex;
+  gap: 8px;
+}
+
+/* --- ads-mgmt__header (was orders-header) --- */
+.ads-mgmt .ads-mgmt__header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 14px;
+}
+
+/* --- ads-mgmt__tabs (was orders-tabs) --- */
+.ads-mgmt .ads-mgmt__tabs {
+  display: flex;
+  gap: 10px;
+  margin-right: 10px;
+}
+
+/* --- ads-mgmt__list (was orders-list--vertical) --- */
+.ads-mgmt .ads-mgmt__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* --- ads-mgmt__item (was order-bar) --- */
+.ads-mgmt .ads-mgmt__item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* info left | price+pill right */
+  gap: 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e5e7eb; /* light text on dark */
+  text-align: inherit;
+  cursor: pointer;
+}
+
+/* --- ads-mgmt__item hover/focus --- */
+.ads-mgmt .ads-mgmt__item:hover,
+.ads-mgmt .ads-mgmt__item:focus-visible {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* --- ads-mgmt__item-info (was order-bar__info) --- */
+.ads-mgmt .ads-mgmt__item-info {
+  min-width: 0; /* allow ellipsis */
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* --- ads-mgmt__item-title (was order-bar__title) --- */
+.ads-mgmt .ads-mgmt__item-title {
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- ads-mgmt__item-meta (was order-bar__meta) --- */
+.ads-mgmt .ads-mgmt__item-meta {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --- ads-mgmt__dot (was dot-sep) --- */
+.ads-mgmt .ads-mgmt__dot {
+  opacity: 0.6;
+}
+
+/* --- ads-mgmt__item-side (was order-bar__side) --- */
+.ads-mgmt .ads-mgmt__item-side {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* --- ads-mgmt__price (was order-price) --- */
+.ads-mgmt .ads-mgmt__price {
+  font-weight: 700;
+  color: #f59e0b; /* amber for money */
+}
+
+/* --- ads-mgmt__currency (was order-price .currency) --- */
+.ads-mgmt .ads-mgmt__currency {
+  opacity: 0.9;
+}
+
+/* --- ads-mgmt__status (was status-pill) --- */
+.ads-mgmt .ads-mgmt__status {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+/* --- keyframes ads-mgmt-flash-attention (was flash-attention) --- */
+@keyframes ads-mgmt-flash-attention {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* --- ads-mgmt__status--pending (was status-pending, pill variant) --- */
+.ads-mgmt .ads-mgmt__status--pending {
+  color: #f97316; /* orange */
+  background: rgba(249, 115, 22, 0.18);
+  border-color: rgba(249, 115, 22, 0.35);
+}
+
+/* --- ads-mgmt__item--pending .ads-mgmt__status (was order-bar.status-pending .status-pill) --- */
+.ads-mgmt .ads-mgmt__item--pending .ads-mgmt__status {
+  animation: ads-mgmt-flash-attention 1s infinite;
+}
+
+/* --- ads-mgmt__status--archived (was status-archived, pill variant) --- */
+.ads-mgmt .ads-mgmt__status--archived {
+  color: #94a3b8; /* slate */
+  background: rgba(148, 163, 184, 0.15);
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+/* --- ads-mgmt__empty (was empty-hint) --- */
+.ads-mgmt .ads-mgmt__empty {
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px dashed rgba(148, 163, 184, 0.35);
+  border-radius: 12px;
+  padding: 12px 16px;
+  text-align: center;
+}
+
+/* --- ads-mgmt__filters 2 (was orders-filters, override) --- */
+.ads-mgmt .ads-mgmt__filters {
+  display: flex;
+  gap: 8px;
+  margin-left: auto; /* pushes tabs to the edge when space allows */
+  margin-right: 12px;
+}
+
+/* --- ads-mgmt__chip 1 (was chip) --- */
+.ads-mgmt .ads-mgmt__chip {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  color: #e5e7eb;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* --- ads-mgmt__chip hover 1 --- */
+.ads-mgmt .ads-mgmt__chip:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* --- ads-mgmt__chip--active 1 (was chip--active) --- */
+.ads-mgmt .ads-mgmt__chip--active {
+  color: #111827;
+  background: #f59e0b;
+  border-color: #f59e0b;
+}
+
+/* --- media 900px block --- */
+@media (max-width: 900px) {
+  .ads-mgmt .ads-mgmt__header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .ads-mgmt .ads-mgmt__filters {
+    order: 3;
+    width: 100%;
+    margin: 0;
+  }
+  .ads-mgmt .ads-mgmt__tabs {
+    order: 2;
+  }
+}
+
+/* --- ads-mgmt__filters 3 (was orders-filters, override) --- */
+.ads-mgmt .ads-mgmt__filters {
+  display: flex;
+  gap: 8px;
+}
+
+/* --- ads-mgmt__chip 2 (was chip, override) --- */
+.ads-mgmt .ads-mgmt__chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  color: #e5e7eb;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* --- ads-mgmt__chip hover 2 --- */
+.ads-mgmt .ads-mgmt__chip:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* --- ads-mgmt__chip--active 2 (was chip--active, override) --- */
+.ads-mgmt .ads-mgmt__chip--active {
+  background: #f59e0b; /* orange highlight */
+  border-color: #f59e0b;
+  color: #111827; /* dark text for contrast */
+  font-weight: 700;
+}
+
+/* --- btn 2 --- */
+.ads-mgmt .btn {
+  height: 36px;
+  border-radius: 10px;
+  padding: 0 12px;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text, #fff);
+}
+
+/* --- btn hover 2 --- */
+.ads-mgmt .btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* --- btn-primary 2 --- */
+.ads-mgmt .btn-primary {
+  border-color: transparent;
+  background: #f59e0b;
+  color: #101010;
+}
+
+/* --- ads-mgmt__settings-btn (was admin-toolbar-btn): settings button, pinned to the far edge, standalone --- */
+.ads-mgmt .ads-mgmt__settings-btn {
+  margin-inline-start: auto; /* eats all remaining space, snaps to the true far edge */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  font-weight: 700;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.ads-mgmt .ads-mgmt__settings-btn:hover {
+  background-color: var(--primary-color);
+  color: #111827;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.18);
+}
+
+@media (max-width: 900px) {
+  .ads-mgmt .ads-mgmt__settings-btn {
+    margin-inline-start: 0;
+    width: 100%;
+    justify-content: center;
+    order: 4;
+  }
+}

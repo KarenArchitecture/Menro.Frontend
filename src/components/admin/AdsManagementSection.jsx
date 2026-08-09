@@ -1,4 +1,4 @@
-// src/components/admin/AdsRequestsSection.jsx
+// src/components/admin/AdsManagementSection.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import AdRequestModal from "./AdRequestModal";
 import AdsSettingsModal from "./AdsSettingsModal";
@@ -231,20 +231,20 @@ export default function AdsManagementSection() {
 
   /* ---------- UI ---------- */
   return (
-    <div className="panel orders-panel">
-      <div className="view-header orders-header">
+    <div className="panel ads-mgmt">
+      <div className="view-header ads-mgmt__header">
         <h3>درخواست‌های تبلیغات</h3>
 
-        <div className="orders-controls">
+        <div className="ads-mgmt__controls">
           {/* time filters */}
           <div
-            className="orders-filters"
+            className="ads-mgmt__filters"
             style={{ visibility: showHistory ? "visible" : "hidden" }}
           >
             {ranges.map((r) => (
               <button
                 key={r.key}
-                className={`chip ${rangeKey === r.key ? "chip--active" : ""}`}
+                className={`ads-mgmt__chip ${rangeKey === r.key ? "ads-mgmt__chip--active" : ""}`}
                 onClick={() => setRangeKey(r.key)}
               >
                 {r.label}
@@ -253,7 +253,7 @@ export default function AdsManagementSection() {
           </div>
 
           {/* tabs */}
-          <div className="orders-tabs">
+          <div className="ads-mgmt__tabs">
             <button
               className={`btn ${!showHistory ? "btn-primary" : "btn-secondary"}`}
               onClick={() => setShowHistory(false)}
@@ -272,7 +272,7 @@ export default function AdsManagementSection() {
         {/* settings — separate top-level child, pushed to the far edge */}
         <button
           type="button"
-          className="btn btn-secondary admin-toolbar-btn"
+          className="btn btn-secondary ads-mgmt__settings-btn"
           onClick={() => setShowSettings(true)}
         >
           <i className="fas fa-cog" />
@@ -281,8 +281,10 @@ export default function AdsManagementSection() {
       </div>
 
       {/* list */}
-      <div className="orders-list orders-list--vertical">
-        {list.length === 0 && <div className="empty-hint">موردی یافت نشد.</div>}
+      <div className="ads-mgmt__list">
+        {list.length === 0 && (
+          <div className="ads-mgmt__empty">موردی یافت نشد.</div>
+        )}
 
         {list.map((req) => {
           const adTypeLabel =
@@ -295,39 +297,43 @@ export default function AdsManagementSection() {
           return (
             <button
               key={req.id}
-              className={`order-bar ${
-                req.status === "pending" ? "status-pending" : "status-archived"
+              className={`ads-mgmt__item ${
+                req.status === "pending"
+                  ? "ads-mgmt__item--pending"
+                  : "ads-mgmt__item--archived"
               }`}
               onClick={() => setSelected(req)}
             >
-              <div className="order-bar__info">
-                <div className="order-bar__title">
-                  <span className="order-code">درخواست #{req.code}</span>
-                  <span className="order-customer">
+              <div className="ads-mgmt__item-info">
+                <div className="ads-mgmt__item-title">
+                  <span className="ads-mgmt__item-code">
+                    درخواست #{req.code}
+                  </span>
+                  <span className="ads-mgmt__item-customer">
                     {" "}
                     — {req.restaurantName}
                   </span>
                 </div>
 
-                <div className="order-bar__meta">
+                <div className="ads-mgmt__item-meta">
                   <span>{adTypeLabel}</span>
-                  <span className="dot-sep">·</span>
+                  <span className="ads-mgmt__dot">·</span>
                   <span>{reservedLabel}</span>
-                  <span className="dot-sep">·</span>
+                  <span className="ads-mgmt__dot">·</span>
                   <span>{req.requestedAt}</span>
                 </div>
               </div>
 
-              <div className="order-bar__side">
-                <div className="order-price">
+              <div className="ads-mgmt__item-side">
+                <div className="ads-mgmt__price">
                   {req.paidAmount.toLocaleString("fa-IR")}{" "}
-                  <span className="currency">تومان</span>
+                  <span className="ads-mgmt__currency">تومان</span>
                 </div>
                 <span
-                  className={`status-pill ${
+                  className={`ads-mgmt__status ${
                     req.status === "pending"
-                      ? "status-pending"
-                      : "status-archived"
+                      ? "ads-mgmt__status--pending"
+                      : "ads-mgmt__status--archived"
                   }`}
                 >
                   {getStatusPillText(req)}

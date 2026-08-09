@@ -5,7 +5,6 @@ import ProfileHeader from "../../components/profile/ProfileHeader";
 import ProfileStats from "../../components/profile/ProfileStats";
 import ProfileActions from "../../components/profile/ProfileActions";
 import AdBanner from "../../components/common/AdBanner";
-import BackIcon from "../../components/icons/BackIcon";
 import "../../assets/css/styles-profile.css";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 
@@ -30,6 +29,7 @@ export default function ProfilePage() {
 
   const profileUser = {
     name: user?.fullName || "کاربر منرو",
+    avatarUrl: user?.avatarUrl || null,
     stats: [
       { value: 213, label: "خرید موفق" },
       { value: 32, label: "بازدید از رستوران‌ها" },
@@ -39,15 +39,6 @@ export default function ProfilePage() {
 
   return (
     <div className="profile-page">
-      <button
-        type="button"
-        className="profile-back-btn"
-        aria-label="بازگشت به خانه"
-        onClick={() => navigate("/home")}
-      >
-        <BackIcon />
-      </button>
-
       <button
         type="button"
         className="profile-logout-btn"

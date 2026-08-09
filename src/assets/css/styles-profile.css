@@ -70,7 +70,7 @@
 /* Root */
 .profile-avatar {
     position: relative;
-    width: 160px;
+    /* width: 160px; */
     margin: 60px auto 0;
     text-align: center;
 }
@@ -143,7 +143,7 @@
 /* Edit button */
 .profile-avatar__edit {
     position: absolute;
-    bottom: 60px; /* sits on the ring edge */
+    bottom: 65px; /* sits on the ring edge */
     left: 50%;
     transform: translateX(-50%);
     z-index: 3;

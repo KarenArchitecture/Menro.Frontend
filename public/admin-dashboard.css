@@ -3,8 +3,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap");
 
 :root {
-  --primary-color: #f59e0b;
-  --primary-color-dark: #d97706;
+  --primary-color: #ff683c;
+  --primary-color-dark: #e2582f;
   --bg-dark: #121212;
   --bg-light: #1e1e1e;
   --border-color: #2f2f2f;
@@ -552,17 +552,13 @@ table td {
   /* temporal fix */
   margin-bottom: 17px;
 }
-.btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
 .btn-primary {
   background-color: var(--primary-color);
   color: #fafafa;
   transition: background-color 0.3s ease;
 }
 .btn-primary:hover {
-  background-color: var(--primary-color-dark);
-  color: #fafafa;
+  background-color: var(--primary-color-dark) !important;
 }
 .btn-icon {
   background: none;
@@ -1284,7 +1280,7 @@ textarea {
   padding: 10px 14px;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  background: #f59e0b;
+  background: #ff683c;
   color: #000;
   font-weight: 700;
   cursor: pointer;
@@ -2238,7 +2234,7 @@ textarea {
 }
 .order-price {
   font-weight: 700;
-  color: #f59e0b; /* amber for money */
+  color: #ff683c; /* amber for money */
 }
 .order-price .currency {
   opacity: 0.9;
@@ -2337,10 +2333,9 @@ textarea {
   background: rgba(255, 255, 255, 0.1);
 }
 .chip--active {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
-  color: #101010;
-  font-weight: 700;
+  color: #111827;
+  background: #ff683c;
+  border-color: #ff683c;
 }
 
 @media (max-width: 900px) {
@@ -2406,8 +2401,8 @@ textarea {
 }
 
 .chip--active {
-  background: #f59e0b; /* orange highlight */
-  border-color: #f59e0b;
+  background: #ff683c; /* orange highlight */
+  border-color: #ff683c;
   color: #111827; /* dark text for contrast */
   font-weight: 700;
 }
@@ -2919,7 +2914,7 @@ textarea {
 }
 .badge-warning {
   background: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
+  color: #ff683c;
 }
 
 /* ---------- Buttons (inherits your global .btn styles) ---------- */

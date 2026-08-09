@@ -5,15 +5,15 @@
 
 .gui-toast-stack,
 .gui-modal-backdrop {
-  --gui-primary: var(--primary-color, #f59e0b);
-  --gui-primary-dark: var(--primary-color-dark, #d97706);
+  --gui-primary: var(--primary-color, #ff683c);
+  --gui-primary-dark: var(--primary-color-dark, #e2582f);
   --gui-bg: var(--bg-light, #1e1e1e);
   --gui-border: var(--border-color, #2f2f2f);
   --gui-text: var(--text-primary, #eaeaea);
   --gui-text-muted: var(--text-muted, #888);
   --gui-success: var(--status-active, #10b981);
   --gui-danger: var(--status-danger, #ef4444);
-  --gui-warning: #f59e0b;
+  --gui-warning: #ff683c;
   --gui-info: #38bdf8;
   font-family: "Vazirmatn", sans-serif;
 }

@@ -110,7 +110,7 @@
 .restaurant-mgmt__stars {
   display: flex;
   gap: 2px;
-  color: var(--primary-color, #f59e0b);
+  color: var(--primary-color, #ff683c);
   font-size: 15px;
 }
 

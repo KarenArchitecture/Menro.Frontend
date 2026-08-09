@@ -1,7 +1,8 @@
 /* General Body Styling */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
   background-color: #121212;
   color: #eaeaea;
   display: flex;
@@ -47,7 +48,7 @@ body {
 
 .tab.active {
   color: #ffffff;
-  border-bottom: 3px solid #f59e0b;
+  border-bottom: 3px solid #ff683c;
 }
 
 /* Form Content */
@@ -87,12 +88,14 @@ body {
   color: #eaeaea;
   font-size: 16px;
   box-sizing: border-box;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .input-group input:focus {
   outline: none;
-  border-color: #f59e0b;
+  border-color: #ff683c;
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
 }
 
@@ -113,13 +116,15 @@ body {
   color: #eaeaea;
   font-size: 16px;
   box-sizing: border-box;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
   resize: none;
 }
 .input-group textarea:focus,
 .input-group select:focus {
   outline: none;
-  border-color: #f59e0b;
+  border-color: #ff683c;
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
 }
 /* Button Styling */
@@ -127,18 +132,20 @@ button {
   width: 100%;
   padding: 15px;
   margin-top: 15px;
-  background-color: #f59e0b;
+  background-color: #ff683c;
   color: #ffffff;
   border: none;
   border-radius: 8px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.1s ease;
+  transition:
+    background-color 0.3s ease,
+    transform 0.1s ease;
 }
 
 button:hover {
-  background-color: #d97706;
+  background-color: #e2582f;
 }
 
 button:active {

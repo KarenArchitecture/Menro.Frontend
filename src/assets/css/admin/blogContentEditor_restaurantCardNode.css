@@ -43,7 +43,7 @@
   right: 10px;
   background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(2px);
-  color: var(--primary-color, #f59e0b);
+  color: var(--primary-color, #ff683c);
   font-size: 0.72rem;
   font-weight: 600;
   padding: 4px 10px;
@@ -106,7 +106,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--primary-color, #f59e0b);
+  color: var(--primary-color, #ff683c);
   font-weight: 700;
   font-size: 0.95rem;
   white-space: nowrap;

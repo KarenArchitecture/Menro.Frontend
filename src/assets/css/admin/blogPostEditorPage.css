@@ -130,7 +130,7 @@
 }
 .bpe__preview:hover:not(:disabled) {
   background: rgba(245, 158, 11, 0.12);
-  color: var(--primary-color, #f59e0b);
+  color: var(--primary-color, #ff683c);
   border-color: rgba(245, 158, 11, 0.4);
 }
 .bpe__preview:disabled {
@@ -173,7 +173,7 @@
   color: var(--text-primary, #eaeaea);
 }
 .bpe__card-title i {
-  color: var(--primary-color, #f59e0b);
+  color: var(--primary-color, #ff683c);
   font-size: 0.95rem;
 }
 
@@ -248,7 +248,7 @@
 .bpe__input:focus,
 .bpe__select:focus {
   outline: none;
-  border-color: var(--primary-color, #f59e0b);
+  border-color: var(--primary-color, #ff683c);
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
 }
 
@@ -314,7 +314,7 @@
     background 0.15s ease;
 }
 .bpe__cover:hover {
-  border-color: var(--primary-color, #f59e0b);
+  border-color: var(--primary-color, #ff683c);
   background: #201a10;
 }
 .bpe__cover img {
@@ -336,7 +336,7 @@
 }
 .bpe__cover-empty i {
   font-size: 30px;
-  color: var(--primary-color, #f59e0b);
+  color: var(--primary-color, #ff683c);
 }
 .bpe__cover-overlay {
   position: absolute;
@@ -365,11 +365,11 @@
   cursor: pointer;
 }
 .bpe__cover-btn--change {
-  background: var(--primary-color, #f59e0b);
+  background: var(--primary-color, #ff683c);
   color: #101010;
 }
 .bpe__cover-btn--change:hover {
-  background: var(--primary-color-dark, #d97706);
+  background: var(--primary-color-dark, #e2582f);
 }
 .bpe__cover-btn--remove {
   background: rgba(220, 38, 38, 0.85);
@@ -394,7 +394,7 @@
 .bpe__content-placeholder i {
   display: block;
   font-size: 26px;
-  color: var(--primary-color, #f59e0b);
+  color: var(--primary-color, #ff683c);
   margin-bottom: 12px;
 }
 
@@ -440,13 +440,13 @@
   transition: transform 0.15s ease;
 }
 .bpe__switch input:checked + .bpe__switch-track {
-  background: var(--primary-color, #f59e0b);
+  background: var(--primary-color, #ff683c);
 }
 .bpe__switch input:checked + .bpe__switch-track .bpe__switch-thumb {
   transform: translateX(-20px);
 }
 .bpe__switch input:focus-visible + .bpe__switch-track {
-  outline: 2px solid var(--primary-color, #f59e0b);
+  outline: 2px solid var(--primary-color, #ff683c);
   outline-offset: 2px;
 }
 
@@ -499,8 +499,8 @@
 }
 .bpe__tag-chip--active {
   background: rgba(245, 158, 11, 0.15);
-  border-color: var(--primary-color, #f59e0b);
-  color: var(--primary-color, #f59e0b);
+  border-color: var(--primary-color, #ff683c);
+  color: var(--primary-color, #ff683c);
   font-weight: 600;
 }
 .bpe__tag-chip i {

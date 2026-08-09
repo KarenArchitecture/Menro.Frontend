@@ -56,7 +56,7 @@ export default function DashboardSection() {
             >
               <i
                 className="fas fa-dollar-sign"
-                style={{ color: "#f59e0b", fontSize: 22 }}
+                style={{ color: "#ff683c", fontSize: 22 }}
               />
               <div>
                 <div style={{ opacity: 0.85, fontSize: 14 }}>جمع درآمد</div>
@@ -116,7 +116,7 @@ export default function DashboardSection() {
               >
                 <i
                   className="fas fa-coins"
-                  style={{ color: "#f59e0b", fontSize: 22 }}
+                  style={{ color: "#ff683c", fontSize: 22 }}
                 />
                 <div>
                   <div style={{ opacity: 0.8, fontSize: 14 }}>درآمد امروز</div>
@@ -140,7 +140,7 @@ export default function DashboardSection() {
               datasetLabel="فروش (تومان)"
               data={data}
               colorConfig={{
-                borderColor: "#F59E0B",
+                borderColor: "#ff683c",
                 gradientStart: "rgba(245,158,11,0.4)",
                 gradientEnd: "rgba(245,158,11,0)",
               }}

@@ -137,7 +137,7 @@ export default function CommentsSection() {
               <div className="order-bar__meta">
                 <span>{c.userName}</span>
                 <span className="dot-sep">·</span>
-                <span style={{ color: "#f59e0b" }}>
+                <span style={{ color: "#ff683c" }}>
                   {renderStars(c.rating)}
                 </span>
                 <span className="dot-sep">·</span>

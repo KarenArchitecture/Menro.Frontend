@@ -27,7 +27,7 @@
   padding: 6px 14px;
   border-radius: 999px;
   background: rgba(245, 158, 11, 0.12);
-  color: var(--primary-color, #f59e0b);
+  color: var(--primary-color, #ff683c);
   font-weight: 700;
   font-size: 0.85rem;
   white-space: nowrap;
@@ -75,11 +75,11 @@
 
 .rtab-card--add i {
   font-size: 1.3rem;
-  color: var(--primary-color, #f59e0b);
+  color: var(--primary-color, #ff683c);
 }
 
 .rtab-card--add:hover {
-  border-color: var(--primary-color, #f59e0b);
+  border-color: var(--primary-color, #ff683c);
   background: rgba(245, 158, 11, 0.06);
   color: var(--text-primary, #eaeaea);
   transform: translateY(-2px);
@@ -99,7 +99,7 @@
   align-items: center;
   justify-content: center;
   background: rgba(245, 158, 11, 0.14);
-  color: var(--primary-color, #f59e0b);
+  color: var(--primary-color, #ff683c);
   font-size: 1.05rem;
 }
 
@@ -164,7 +164,7 @@
 .rtab-card--adding,
 .rtab-card--editing {
   align-items: stretch;
-  border-color: var(--primary-color, #f59e0b);
+  border-color: var(--primary-color, #ff683c);
   background: rgba(245, 158, 11, 0.05);
 }
 
@@ -182,7 +182,7 @@
 
 .rtab-input:focus {
   outline: none;
-  border-color: var(--primary-color, #f59e0b);
+  border-color: var(--primary-color, #ff683c);
 }
 
 .rtab-card__actions {

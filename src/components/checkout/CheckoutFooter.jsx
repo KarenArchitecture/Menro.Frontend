@@ -1,7 +1,8 @@
 // src/components/checkout/CheckoutFooter.jsx
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import OrderSuccessModal from "../common/OrderSuccessModal";
 import { markPendingCounterOrder } from "../common/PendingPaymentBanner";
+import { fetchRestaurantTables } from "../../api/cart";
 
 const formatIR = (n) => Number(n || 0).toLocaleString("fa-IR");
 
@@ -10,8 +11,8 @@ export default function CheckoutFooter({
   items = [],
   discount = 0,
   onConfirm,
-  tableCount = 0,
-  paymentMethod = "", // "PayAtCounterBeforeServing" | "PayAfterServing" | ""
+  restaurantId, // ← جایگزین tableCount
+  paymentMethod = "",
   hasItems = true,
 }) {
   const [isPickingTable, setIsPickingTable] = useState(false);
@@ -19,17 +20,34 @@ export default function CheckoutFooter({
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSnapshot, setOrderSnapshot] = useState(null);
+  const [tables, setTables] = useState([]);
 
-  const numericTableCount = Number(tableCount) || 0;
+  useEffect(() => {
+    if (!restaurantId) return;
+    let cancelled = false;
+
+    fetchRestaurantTables(restaurantId)
+      .then((data) => {
+        if (!cancelled) setTables(data ?? []);
+      })
+      .catch((err) => {
+        console.error("Error fetching restaurant tables:", err);
+        if (!cancelled) setTables([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [restaurantId]);
 
   const tableOptions = useMemo(() => {
-    const opts = [];
-    for (let i = 1; i <= numericTableCount; i += 1) {
-      opts.push({ id: i, label: `میز ${i}` });
-    }
+    const opts = tables.map((t) => ({
+      id: t.tableLabel,
+      label: t.tableLabel,
+    }));
     opts.push({ id: null, label: "بیرون‌بر" });
     return opts;
-  }, [numericTableCount]);
+  }, [tables]);
 
   const handleSuccessContinue = () => {
     setShowSuccess(false);
@@ -53,7 +71,8 @@ export default function CheckoutFooter({
       const result = onConfirm ? await onConfirm(selectedTable) : null;
       if (!result) return;
 
-      const isPayAtCounter = result.paymentMethod === "PayAtCounterBeforeServing";
+      const isPayAtCounter =
+        result.paymentMethod === "PayAtCounterBeforeServing";
 
       setOrderSnapshot({
         orderId: result.orderId,
@@ -63,7 +82,9 @@ export default function CheckoutFooter({
         variant: isPayAtCounter ? "checkout" : "invoice",
         items: (result.items || []).map((it, idx) => ({
           id: idx,
-          name: it.variantName ? `${it.foodName} ${it.variantName}` : it.foodName,
+          name: it.variantName
+            ? `${it.foodName} ${it.variantName}`
+            : it.foodName,
           hasAddons: it.hasAddons,
           quantity: it.quantity,
           unitPrice: it.unitPrice,
@@ -109,9 +130,15 @@ export default function CheckoutFooter({
       )}
 
       {hasItems && (
-        <div className={`checkout-footer ${isPickingTable ? "is-picking-table" : ""}`}>
+        <div
+          className={`checkout-footer ${isPickingTable ? "is-picking-table" : ""}`}
+        >
           <div className="discount-wrapper">
-            <input type="text" className="discount-input" placeholder="کد تخفیف دارم..." />
+            <input
+              type="text"
+              className="discount-input"
+              placeholder="کد تخفیف دارم..."
+            />
           </div>
 
           <div className="footer-main">
@@ -125,7 +152,9 @@ export default function CheckoutFooter({
 
             <div className="footer-action">
               <button
-                className={"pay-btn" + (payDisabled ? " pay-btn--inactive" : "")}
+                className={
+                  "pay-btn" + (payDisabled ? " pay-btn--inactive" : "")
+                }
                 onClick={handlePayClick}
                 disabled={payDisabled}
               >
@@ -134,7 +163,11 @@ export default function CheckoutFooter({
             </div>
           </div>
 
-          <div className={"table-selector-inline" + (isPickingTable ? " is-open" : "")}>
+          <div
+            className={
+              "table-selector-inline" + (isPickingTable ? " is-open" : "")
+            }
+          >
             <div className="table-grid">
               {tableOptions.map((opt) => (
                 <button
@@ -165,9 +198,13 @@ export default function CheckoutFooter({
         }
         title={
           orderSnapshot?.variant === "invoice" ? (
-            <>سفارش شما <span>ثبت شد</span></>
+            <>
+              سفارش شما <span>ثبت شد</span>
+            </>
           ) : (
-            <>سفارش در انتظار <span>پرداخت حضوری شماست</span></>
+            <>
+              سفارش در انتظار <span>پرداخت حضوری شماست</span>
+            </>
           )
         }
         subtitle=""

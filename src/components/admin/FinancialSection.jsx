@@ -7,6 +7,7 @@ import {
   setRestaurantPaymentMethod,
 } from "../../api/restaurantPaymentAxios";
 import { showSuccess, showError } from "../../utils/toast";
+import { useGlobalUI } from "../common/GlobalUI";
 import "../../assets/css/admin/financialSection.css";
 
 const accountDetails = [
@@ -77,6 +78,7 @@ const PAYMENT_OPTIONS = [
 ];
 
 export default function FinancialSection() {
+  const { notify } = useGlobalUI();
   useDocumentTitle("مدیریت مالی");
 
   const [paymentMethod, setPaymentMethodState] = useState(null);
@@ -94,11 +96,16 @@ export default function FinancialSection() {
     try {
       await setRestaurantPaymentMethod(value);
       setPaymentMethodState(value);
-      showSuccess("شیوه پرداخت به‌روزرسانی شد.");
+      notify({
+        type: "success",
+        message: "شیوه پرداخت با موفقیت به‌روزرسانی شد.",
+      });
     } catch (err) {
-      showError(
-        err?.response?.data?.message || "خطا در به‌روزرسانی شیوه پرداخت.",
-      );
+      notify({
+        type: "error",
+        message:
+          err?.response?.data?.message || "خطا در به‌روزرسانی شیوه پرداخت.",
+      });
     } finally {
       setSavingMethod(false);
     }

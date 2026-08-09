@@ -13,13 +13,20 @@ function getSequence(paymentMethod) {
 function getStatusLabel(status, paymentMethod) {
   const isPayAtCounter = paymentMethod === "PayAtCounterBeforeServing";
   switch (status) {
-    case "Pending": return "در انتظار تأیید";
-    case "Confirmed": return isPayAtCounter ? "در انتظار پرداخت" : "در انتظار تحویل";
-    case "Delivered": return isPayAtCounter ? "تحویل شده" : "در انتظار پرداخت";
-    case "Paid": return isPayAtCounter ? "در انتظار تحویل" : "پرداخت شده";
-    case "Completed": return "تکمیل شده";
-    case "Cancelled": return "لغو شده";
-    default: return "—";
+    case "Pending":
+      return "در انتظار تأیید";
+    case "Confirmed":
+      return isPayAtCounter ? "در انتظار پرداخت" : "در انتظار تحویل";
+    case "Delivered":
+      return isPayAtCounter ? "تحویل شده" : "در انتظار پرداخت";
+    case "Paid":
+      return isPayAtCounter ? "در انتظار تحویل" : "پرداخت شده";
+    case "Completed":
+      return "تکمیل شده";
+    case "Cancelled":
+      return "لغو شده";
+    default:
+      return "—";
   }
 }
 
@@ -29,11 +36,16 @@ function getPrimaryActionLabel(status, paymentMethod) {
   if (idx === -1 || idx >= seq.length - 1) return null;
 
   switch (seq[idx + 1]) {
-    case "Confirmed": return "تأیید";
-    case "Paid": return "پرداخت شد";
-    case "Delivered": return "تحویل شد";
-    case "Completed": return "پایان سفارش";
-    default: return null;
+    case "Confirmed":
+      return "تأیید";
+    case "Paid":
+      return "پرداخت شد";
+    case "Delivered":
+      return "تحویل شد";
+    case "Completed":
+      return "پایان سفارش";
+    default:
+      return null;
   }
 }
 
@@ -69,7 +81,9 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
     }
 
     loadDetails();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [open, order?.id]);
 
   if (!open || !order) return null;
@@ -80,10 +94,12 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
 
   const isHistory = status === "Cancelled" || status === "Completed";
   const statusLabel = getStatusLabel(status, paymentMethod);
-  const primaryActionLabel = !isHistory ? getPrimaryActionLabel(status, paymentMethod) : null;
+  const primaryActionLabel = !isHistory
+    ? getPrimaryActionLabel(status, paymentMethod)
+    : null;
 
-  const tableLabel = dto.tableNumber === null ? "بیرون‌بر" : `میز ${dto.tableNumber}`;
-  const customerLabel = dto.tableNumber === null ? "حضوری" : `میز شماره ${dto.tableNumber}`;
+  const tableLabel = dto.tableLabel == null ? "بیرون‌بر" : dto.tableLabel;
+  const customerLabel = dto.tableLabel == null ? "حضوری" : dto.tableLabel;
 
   const created = dto.createdAt ? new Date(dto.createdAt) : null;
   const timeLabel = created
@@ -174,7 +190,11 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
               </button>
             </div>
 
-            <button className="btn btn-icon" onClick={onClose} aria-label="بستن">
+            <button
+              className="btn btn-icon"
+              onClick={onClose}
+              aria-label="بستن"
+            >
               <i className="fas fa-times" />
             </button>
           </div>
@@ -185,12 +205,30 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
             <div className="order-items">
               {items.map((it) => (
                 <div key={it.id} style={{ marginBottom: 20 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      fontWeight: 700,
+                    }}
+                  >
                     <span>{it.name}</span>
-                    <span>×{it.qty} — {Number(it.price * it.qty).toLocaleString("fa-IR")} تومان</span>
+                    <span>
+                      ×{it.qty} —{" "}
+                      {Number(it.price * it.qty).toLocaleString("fa-IR")} تومان
+                    </span>
                   </div>
                   {it.addons?.map((a, i) => (
-                    <div key={i} style={{ display: "flex", justifyContent: "space-between", opacity: 0.75, fontSize: 13, paddingRight: 16 }}>
+                    <div
+                      key={i}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        opacity: 0.75,
+                        fontSize: 13,
+                        paddingRight: 16,
+                      }}
+                    >
                       <span>{a.name}</span>
                     </div>
                   ))}
@@ -199,14 +237,36 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
             </div>
           ) : (
             <>
-              <div className="order-meta" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12, marginBottom: 12 }}>
-                <div><strong>وضعیت:</strong> {statusLabel}</div>
-                <div><strong>زمان:</strong> {timeLabel}</div>
-                <div><strong>مشتری:</strong> {customerLabel}</div>
+              <div
+                className="order-meta"
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3, minmax(0,1fr))",
+                  gap: 12,
+                  marginBottom: 12,
+                }}
+              >
+                <div>
+                  <strong>وضعیت:</strong> {statusLabel}
+                </div>
+                <div>
+                  <strong>زمان:</strong> {timeLabel}
+                </div>
+                <div>
+                  <strong>مشتری:</strong> {customerLabel}
+                </div>
               </div>
 
-              {loading && <div className="empty-hint" style={{ marginBottom: 10 }}>در حال دریافت جزئیات...</div>}
-              {!loading && error && <div className="empty-hint" style={{ marginBottom: 10 }}>{error}</div>}
+              {loading && (
+                <div className="empty-hint" style={{ marginBottom: 10 }}>
+                  در حال دریافت جزئیات...
+                </div>
+              )}
+              {!loading && error && (
+                <div className="empty-hint" style={{ marginBottom: 10 }}>
+                  {error}
+                </div>
+              )}
 
               <div className="order-items">
                 {!loading && !error && details && items.length === 0 && (
@@ -229,26 +289,48 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
                     <img
                       src={it.imageUrl || "https://via.placeholder.com/96"}
                       alt={it.name}
-                      onError={(e) => { e.currentTarget.src = "https://via.placeholder.com/96"; }}
-                      style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, background: "rgba(255,255,255,.06)" }}
+                      onError={(e) => {
+                        e.currentTarget.src = "https://via.placeholder.com/96";
+                      }}
+                      style={{
+                        width: 64,
+                        height: 64,
+                        objectFit: "cover",
+                        borderRadius: 8,
+                        background: "rgba(255,255,255,.06)",
+                      }}
                     />
                     <div>
                       <div style={{ fontWeight: 700 }}>{it.name}</div>
                       <div style={{ opacity: 0.75, fontSize: 13 }}>
-                        {it.addons?.length ? `مخلفات: ${it.addons.map((a) => a.name).join("، ")}` : "بدون مخلفات"}
+                        {it.addons?.length
+                          ? `مخلفات: ${it.addons.map((a) => a.name).join("، ")}`
+                          : "بدون مخلفات"}
                       </div>
                     </div>
                     <div style={{ textAlign: "end" }}>
                       <div>×{it.qty}</div>
-                      <div style={{ opacity: 0.8 }}>{Number(it.price).toLocaleString("fa-IR")} تومان</div>
+                      <div style={{ opacity: 0.8 }}>
+                        {Number(it.price).toLocaleString("fa-IR")} تومان
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="order-total" style={{ marginTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div
+                className="order-total"
+                style={{
+                  marginTop: 12,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <div style={{ opacity: 0.8 }}>مبلغ کل</div>
-                <div style={{ fontWeight: 900 }}>{Number(totalPrice).toLocaleString("fa-IR")} تومان</div>
+                <div style={{ fontWeight: 900 }}>
+                  {Number(totalPrice).toLocaleString("fa-IR")} تومان
+                </div>
               </div>
             </>
           )}
@@ -256,7 +338,11 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
 
         <div className="modal-footer" style={{ display: "flex", gap: 8 }}>
           {!isHistory && primaryActionLabel && (
-            <button className="btn btn-primary" onClick={handleAdvanceClick} disabled={loading || !!error || !details}>
+            <button
+              className="btn btn-primary"
+              onClick={handleAdvanceClick}
+              disabled={loading || !!error || !details}
+            >
               {primaryActionLabel}
             </button>
           )}
@@ -266,13 +352,19 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
               className="btn"
               onClick={handleCancelClick}
               disabled={loading || !!error || !details}
-              style={{ background: "#d32f2f", borderColor: "#d32f2f", color: "white" }}
+              style={{
+                background: "#d32f2f",
+                borderColor: "#d32f2f",
+                color: "white",
+              }}
             >
               لغو سفارش
             </button>
           )}
 
-          <button className="btn btn-secondary" onClick={onClose}>بستن</button>
+          <button className="btn btn-secondary" onClick={onClose}>
+            بستن
+          </button>
         </div>
       </div>
     </div>

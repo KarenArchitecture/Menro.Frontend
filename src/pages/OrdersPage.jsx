@@ -54,8 +54,11 @@ export default function Orders() {
         data.map((o) => ({
           id: o.id,
           restaurantName: o.restaurantName,
-          orderTypeTag:
-            o.tableNumber === null ? "بیرون‌بر" : `میز ${o.tableNumber}`,
+          // 🔧 backend changed table number (int) -> table label (string,
+          // e.g. "میز ۱", "میز کنار پنجره"). The label already comes fully
+          // formatted, so we no longer prepend "میز " ourselves — that would
+          // now double it up (e.g. "میز میز ۱").
+          orderTypeTag: o.tableLabel ? o.tableLabel : "بیرون‌بر",
           date: new Date(o.createdAt).toLocaleDateString("fa-IR"),
           logo: resolveFileUrl(
             o.restaurantLogoUrl,

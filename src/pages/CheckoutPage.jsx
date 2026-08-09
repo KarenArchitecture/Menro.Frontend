@@ -58,9 +58,11 @@ export default function CheckoutPage() {
     price: it.options.reduce((s, o) => s + o.unitPrice * o.qty, 0),
   }));
 
-  const handleConfirmOrder = async (tableNumber) => {
+  const handleConfirmOrder = async (tableLabel) => {
     await cart.flushPending();
-    const result = await checkoutCart(tableNumber === undefined ? null : tableNumber);
+    const result = await checkoutCart(
+      tableLabel === undefined ? null : tableLabel,
+    );
     await cart.refresh();
     return result;
   };
@@ -73,7 +75,9 @@ export default function CheckoutPage() {
         <StateMessage kind="empty" title="سبد خرید شما خالی است">
           هنوز چیزی به سبد خرید اضافه نکرده‌اید.
           <div className="state-message__action">
-            <button onClick={() => navigate("/restaurants")}>مشاهده رستوران‌ها</button>
+            <button onClick={() => navigate("/restaurants")}>
+              مشاهده رستوران‌ها
+            </button>
           </div>
         </StateMessage>
       ) : (
@@ -92,7 +96,7 @@ export default function CheckoutPage() {
         items={successItems}
         discount={0}
         onConfirm={handleConfirmOrder}
-        tableCount={cart.tableCount}
+        restaurantId={cart.restaurantId}
         paymentMethod={cart.paymentMethod}
         hasItems={cart.items.length > 0}
       />

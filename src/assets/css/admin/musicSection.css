@@ -10,7 +10,7 @@
   --mh-glass: rgba(255, 255, 255, 0.035);
   --mh-glass-strong: rgba(255, 255, 255, 0.06);
   --mh-border: rgba(255, 255, 255, 0.09);
-  --mh-accent: var(--primary-color, #f59e0b);
+  --mh-accent: var(--primary-color, #ff683c);
   --mh-accent-2: #fbbf24;
   --mh-requested: #34d399;
   --mh-danger: var(--status-danger, #ef4444);

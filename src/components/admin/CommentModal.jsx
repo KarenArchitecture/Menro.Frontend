@@ -30,7 +30,7 @@ export default function CommentModal({
     const r = Number(rating) || 0;
     return (
       <span style={{ letterSpacing: 2 }}>
-        <span style={{ color: "#f59e0b" }}>{"★".repeat(r)}</span>
+        <span style={{ color: "#ff683c" }}>{"★".repeat(r)}</span>
         <span style={{ color: "rgba(255,255,255,0.2)" }}>
           {"★".repeat(5 - r)}
         </span>

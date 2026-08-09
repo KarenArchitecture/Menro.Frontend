@@ -88,7 +88,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--primary-color, #f59e0b);
+  color: var(--primary-color, #ff683c);
   font-weight: 600;
 }
 .bpe__restaurant-result-rating i {

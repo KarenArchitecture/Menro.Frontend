@@ -55,7 +55,7 @@
 }
 
 .rad-section-header h4 i {
-  color: var(--primary-color, #f59e0b);
+  color: var(--primary-color, #ff683c);
 }
 
 /* ---------- Refresh button ---------- */
@@ -119,7 +119,7 @@
   padding: 4px 10px;
   border-radius: 999px;
   background: rgba(245, 158, 11, 0.15);
-  color: var(--primary-color, #f59e0b);
+  color: var(--primary-color, #ff683c);
 }
 
 .rad-type-badge--slider {
@@ -129,7 +129,7 @@
 
 .rad-type-badge--banner {
   background: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
+  color: #ff683c;
 }
 
 .rad-active-card__text {
@@ -173,7 +173,7 @@
 }
 
 .rad-capacity-fill--mid {
-  background: #f59e0b; /* getting used up */
+  background: #ff683c; /* getting used up */
 }
 
 .rad-capacity-fill--high {
@@ -258,7 +258,7 @@
 
 .rad-modal-link {
   font-size: 0.85rem;
-  color: var(--primary-color, #f59e0b);
+  color: var(--primary-color, #ff683c);
   word-break: break-all;
 }
 

@@ -26,7 +26,7 @@
 }
 
 .user-mgmt__info-banner i {
-  color: var(--primary-color, #f59e0b);
+  color: var(--primary-color, #ff683c);
   margin-top: 3px;
   flex-shrink: 0;
 }
@@ -90,7 +90,7 @@
   padding: 4px 10px;
   border-radius: 999px;
   background: rgba(245, 158, 11, 0.12);
-  color: var(--primary-color, #f59e0b);
+  color: var(--primary-color, #ff683c);
   border: 1px solid rgba(245, 158, 11, 0.25);
   white-space: nowrap;
 }
@@ -263,8 +263,8 @@
 }
 
 .user-mgmt__role-option input[type="checkbox"]:checked {
-  background: var(--primary-color, #f59e0b);
-  border-color: var(--primary-color, #f59e0b);
+  background: var(--primary-color, #ff683c);
+  border-color: var(--primary-color, #ff683c);
 }
 
 .user-mgmt__role-option input[type="checkbox"]:checked::after {

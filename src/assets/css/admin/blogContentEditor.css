@@ -161,7 +161,7 @@
 }
 .bpe__editor-btn--active {
   background: rgba(245, 158, 11, 0.15);
-  color: var(--primary-color, #f59e0b);
+  color: var(--primary-color, #ff683c);
 }
 .bpe__editor-btn:disabled {
   opacity: 0.35;
@@ -264,7 +264,7 @@
 .bpe__editor-body .ProseMirror blockquote {
   margin: 18px 0;
   padding: 12px 18px;
-  border-inline-start: 3px solid var(--primary-color, #f59e0b);
+  border-inline-start: 3px solid var(--primary-color, #ff683c);
   background: rgba(245, 158, 11, 0.06);
   border-radius: 0 8px 8px 0;
   color: #d8d8d8;
@@ -312,7 +312,7 @@
   justify-content: center;
   width: 1em;
   font-size: 0.85em;
-  color: var(--primary-color, #f59e0b);
+  color: var(--primary-color, #ff683c);
   transition: transform 0.15s ease;
   flex-shrink: 0;
 }
@@ -344,6 +344,6 @@
   margin: 20px auto;
 }
 .bpe__editor-body .ProseMirror .bpe__editor-img.ProseMirror-selectednode {
-  outline: 2px solid var(--primary-color, #f59e0b);
+  outline: 2px solid var(--primary-color, #ff683c);
   outline-offset: 3px;
 }

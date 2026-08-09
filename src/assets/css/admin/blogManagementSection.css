@@ -22,8 +22,8 @@
 
 /* --- Color tokens (shared design tokens used throughout the dashboard) --- */
 :root {
-  --primary-color: #f59e0b;
-  --primary-color-dark: #d97706;
+  --primary-color: #ff683c;
+  --primary-color-dark: #e2582f;
   --bg-dark: #121212;
   --bg-light: #1e1e1e;
   --border-color: #2f2f2f;
@@ -37,7 +37,7 @@
      .music-hub elsewhere in admin-dashboard.css); defined here at :root so
      the blog search box renders identically without that ancestor class. */
   --mh-border: rgba(255, 255, 255, 0.09);
-  --mh-accent: var(--primary-color, #f59e0b);
+  --mh-accent: var(--primary-color, #ff683c);
 }
 
 /* --- Base resets --- */
@@ -424,7 +424,7 @@ ul {
 }
 #blog-management-view .btn-primary {
   border-color: transparent;
-  background: #f59e0b;
+  background: #ff683c;
   color: #101010;
 }
 #blog-management-view .btn-icon {

@@ -25,12 +25,12 @@
 
 #food-modal .radio-label:hover,
 #food-modal .discount-toggle:hover {
-  border-color: #f5a623;
+  border-color: #ff683c;
 }
 
 #food-modal .radio-label:has(input:checked),
 #food-modal .discount-toggle:has(input:checked) {
-  border-color: #f5a623;
+  border-color: #ff683c;
   background: rgba(245, 166, 35, 0.08);
   color: #fff;
 }
@@ -56,22 +56,22 @@
   border-radius: 50%;
 }
 #food-modal .radio-label input[type="radio"]:checked {
-  border-color: #f5a623;
+  border-color: #ff683c;
 }
 #food-modal .radio-label input[type="radio"]:checked::after {
   content: "";
   position: absolute;
   inset: 3px;
   border-radius: 50%;
-  background: #f5a623;
+  background: #ff683c;
 }
 
 #food-modal .discount-toggle input[type="checkbox"] {
   border-radius: 5px;
 }
 #food-modal .discount-toggle input[type="checkbox"]:checked {
-  border-color: #f5a623;
-  background: #f5a623;
+  border-color: #ff683c;
+  background: #ff683c;
 }
 #food-modal .discount-toggle input[type="checkbox"]:checked::after {
   content: "\f00c";
@@ -94,10 +94,10 @@
   gap: 8px;
   width: 100%;
   padding: 12px;
-  border: 1.5px dashed #f5a623;
+  border: 1.5px dashed #ff683c;
   border-radius: 10px;
   background: rgba(245, 166, 35, 0.08);
-  color: #f5a623;
+  color: #ff683c;
   font-size: 14px;
   cursor: pointer;
   transition: background 0.2s;
@@ -197,7 +197,7 @@ input {
   border-radius: 4px;
 }
 #food-modal #food-types-container::-webkit-scrollbar-thumb:hover {
-  background: #f5a623;
+  background: #ff683c;
 }
 #food-modal #food-types-container::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.08);
@@ -235,7 +235,7 @@ input {
 }
 #food-modal .discount-row input[type="text"]:focus {
   outline: none;
-  border-color: #f5a623;
+  border-color: #ff683c;
 }
 #food-modal .discount-row input[type="text"]:disabled {
   opacity: 0.6;
@@ -260,7 +260,7 @@ input {
   border-radius: 8px;
   background: rgba(245, 166, 35, 0.1);
   border: 1px solid rgba(245, 166, 35, 0.3);
-  color: #f5a623;
+  color: #ff683c;
   font-size: 13px;
 }
 
@@ -281,7 +281,7 @@ input {
   font-size: 13px;
 }
 #food-modal .discount-preview strong {
-  color: #f5a623;
+  color: #ff683c;
   font-size: 15px;
 }
 #food-modal .discount-row input[type="text"] {

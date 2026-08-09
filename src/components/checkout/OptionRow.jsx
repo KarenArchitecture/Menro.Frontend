@@ -1,5 +1,7 @@
 // components/checkout/OptionRow.jsx
 import React from "react";
+import { toPersianDigits } from "../../utils/persianNumbers";
+
 const f = (n) => Number(n || 0).toLocaleString("fa-IR");
 
 export default function OptionRow({ itemId, option, onChangeQty }) {
@@ -22,7 +24,7 @@ export default function OptionRow({ itemId, option, onChangeQty }) {
           <button className="qty-btn plus" type="button" onClick={inc}>
             +
           </button>
-          <div className="qty-value">{option.qty || 0}</div>
+          <div className="qty-value">{toPersianDigits(option.qty || 0)}</div>
           <button className="qty-btn minus" type="button" onClick={dec}>
             −
           </button>

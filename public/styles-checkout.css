@@ -46,7 +46,7 @@ h2 {
 
 .checkout-container {
     margin: 0 auto;
-    padding: 2.8rem 1.4rem;
+    padding: 2.8rem 0;
     margin-bottom: 7rem;
 }
 
@@ -57,7 +57,9 @@ h2 {
     align-items: center;
     font-weight: bold;
     font-size: 1.2rem;
-    margin-bottom: 2.2rem;
+    padding: 0 2.5rem 2.2rem;
+    border-bottom: solid 1px #ffffff10;
+    margin-bottom: 2.5rem;
 }
 
 .checkout-header i {
@@ -71,6 +73,11 @@ h2 {
     gap: 8px;
 }
 
+.checkout-cart h2 {
+    font-size: 1.3rem;
+    font-weight: 500;
+}
+
 .checkout-icon {
     display: flex;
     flex-direction: row-reverse;
@@ -80,21 +87,16 @@ h2 {
 }
 
 .back-btn {
-    /* width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: #1a1d24;
-    border: 2px solid white; */
-    cursor: pointer;
-    transition: background 0.3s;
+    width: 3.4rem;
+    height: 3.4rem;
+    min-width: 3.4rem;
+    background: #13171e !important;
+    border: none;
+    border-radius: 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.back-btn i {
-    color: white;
-    font-size: 1rem;
+    cursor: pointer;
 }
 
 .checkout-cards {
@@ -125,11 +127,11 @@ h2 {
         #2b3038 100%
     );
     width: 100%;
-    padding: 1rem 1rem 1.8rem; /* normal bottom padding now */
+    padding: 1.4rem; /* normal bottom padding now */
     border-radius: 2.3rem;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.3rem;
     max-width: 300px;
     overflow: hidden; /* IMPORTANT: hides the top of the pill */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
@@ -173,9 +175,14 @@ h2 {
     min-width: 0;
 }
 /* title + rating row */
+.product-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
 .product-title.rating {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: flex-start;
     justify-content: space-between;
     gap: 0.8rem;
@@ -233,7 +240,7 @@ h2 {
 }
 
 .rating-score strong {
-    color: #fff;
+    color: #fafaf4;
     font-weight: 800;
 }
 .rating-score span {
@@ -254,8 +261,8 @@ h2 {
 }
 
 .product-img {
-    width: 8rem;
-    height: 8rem;
+    width: 10rem;
+    height: 10rem;
     border-radius: 1.6rem;
     object-fit: cover;
 }
@@ -298,7 +305,8 @@ h2 {
 }
 
 .option-title {
-    font-size: 1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
 }
 
 .option-row .qty-option {
@@ -389,11 +397,11 @@ h2 {
     gap: 0.4rem;
     font-size: 1rem;
     font-weight: 800;
-    color: #fff;
+    color: #fafaf4;
     padding-right: 2rem;
 }
 
-.price span {
+.checkout-container .price span {
     color: #ff683c; /* currency accent */
     font-weight: 800;
     font-size: 1rem;
@@ -852,14 +860,17 @@ h2 {
     overflow: hidden;
     opacity: 0;
     transition:
-        max-height 0.3s ease,
+        max-height 0.25s ease,
         opacity 0.25s ease,
         margin-top 0.25s ease;
 }
 
 .table-selector-inline.is-open {
     margin-top: 1.6rem; /* space between button row and chips */
-    max-height: 30rem; /* just needs to be > content height */
+    max-height: min(60vh, 420px); /* just needs to be > content height */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 1.6rem;
     opacity: 1;
 }
 
@@ -878,8 +889,9 @@ h2 {
 
 .table-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
+    padding: 1rem 1.6rem;
 }
 
 .table-chip {
@@ -921,13 +933,48 @@ h2 {
 }
 
 .order-success-modal {
-    width: min(34rem, 100% - 3.2rem);
+    display: flex;
+    flex-direction: column;
+    width: 100% - 3.2rem;
+    max-height: min(80vh, 640px);
+    overflow: hidden;
     background: #141921;
     border-radius: 2.4rem;
-    padding: 2.4rem 2.4rem 2rem;
+    padding: 2.4rem 0 2rem;
     color: #fff;
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
     direction: rtl;
+}
+
+.order-success-modal__hero {
+    flex: 0 0 auto; /* icon/hero never shrinks or scrolls */
+}
+
+.order-success-modal__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.order-success-modal__title,
+.order-success-modal__subtitle {
+    flex: 0 0 auto;
+}
+
+.order-success-modal__items {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    margin: 1rem 0;
+    padding: 0 1rem;
+}
+
+.order-success-modal__summary,
+.order-success-modal__invoice-chip,
+.order-success-modal__cta {
+    flex: 0 0 auto; /* pinned at the bottom, never pushed off-screen */
 }
 
 .order-success-icon {
@@ -1031,4 +1078,18 @@ h2 {
     font-size: 1.6rem;
     font-weight: 700;
     cursor: pointer;
+}
+
+.checkout-payment-notice {
+    position: fixed;
+    inset-inline: 0;
+    bottom: calc(var(--footer-h, 8.4rem));
+    background: #0c0f14;
+    color: #ff683c;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 0.8rem 1.6rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    z-index: 999;
 }

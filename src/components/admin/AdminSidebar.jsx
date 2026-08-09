@@ -7,16 +7,12 @@ import { useGlobalUI } from "../common/GlobalUI";
 import { getAdminComments } from "../../api/adminComments";
 import { toPersianDigits } from "../../utils/persianFormat";
 
-// Always-visible, non-collapsible top item.
 const DASHBOARD_ITEM = {
   key: "dashboard",
   label: "داشبورد",
   icon: "fas fa-tachometer-alt",
 };
 
-// Everything else is grouped by topic; each group renders as a collapsible
-// (accordion) section. `roles`, when present, gates the WHOLE group —
-// header and every item in it.
 const NAV_GROUPS = [
   {
     key: "restaurant-mgmt",
@@ -51,7 +47,8 @@ const NAV_GROUPS = [
     label: "کسب و کار",
     items: [
       { key: "orders", label: "مدیریت سفارش‌ها", icon: "fas fa-receipt" },
-      // { key: "financial", label: "مالی", icon: "fas fa-file-invoice-dollar" },
+      { key: "financial", label: "مالی", icon: "fas fa-file-invoice-dollar" },
+
       {
         key: "restaurantAds",
         label: "تبلیغات رستوران",
@@ -62,7 +59,7 @@ const NAV_GROUPS = [
   {
     key: "platform-admin",
     label: "مدیریت پلتفرم",
-    roles: ["Admin"], // ✅ فقط برای Admin (منرو)
+    roles: ["Admin"],
     items: [
       {
         key: "user-roles",
@@ -89,7 +86,7 @@ const NAV_GROUPS = [
   {
     key: "content-ads-admin",
     label: "تبلیغات و محتوا",
-    roles: ["Admin"], // ✅ فقط برای Admin (منرو)
+    roles: ["Admin"],
     items: [
       {
         key: "ads-management",
@@ -104,7 +101,6 @@ const NAV_GROUPS = [
     key: "account",
     label: "حساب کاربری",
     items: [
-      // { key: "theme", label: "مدیریت قالب", icon: "fas fa-palette" },
       { key: "profile", label: "پروفایل کاربری", icon: "fas fa-user-circle" },
       {
         key: "logout",
@@ -125,7 +121,6 @@ export default function AdminSidebar({
 }) {
   const navigate = useNavigate();
   const { confirmModal } = useGlobalUI();
-  // admin role check
   const { user, logout } = useAuth();
   const roles = user?.roles || [];
   const isAdmin = roles.includes("admin");
@@ -155,7 +150,6 @@ export default function AdminSidebar({
     });
   };
 
-  // Close on ESC (useful when off-canvas is open on mobile)
   useEffect(() => {
     if (!isOpen) return;
     const onKey = (e) => e.key === "Escape" && onClose();
@@ -189,7 +183,7 @@ export default function AdminSidebar({
           <Link
             to="/"
             onClick={(e) => {
-              e.preventDefault(); // مهم: تا تایید نگرفتیم، ناوبری خودکار Link انجام نشه
+              e.preventDefault();
               handleLogout();
             }}
           >

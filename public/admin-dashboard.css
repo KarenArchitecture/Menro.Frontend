@@ -534,35 +534,22 @@ table td {
    هر جای دیگه‌ی سایت که از .btn استفاده می‌کنه از همینجا استایل می‌گیره.
    ============================================================ */
 .btn {
-  height: 42px;
-  box-sizing: border-box;
-  padding: 0 20px;
-  border: 1px solid var(--border-color);
+  padding: 10px 20px;
+  border: none;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
   cursor: pointer;
   font-family: inherit;
   font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  white-space: nowrap;
-  transition:
-    background-color 0.3s ease,
-    border-color 0.3s ease;
-}
-.btn:hover {
-  background: rgba(255, 255, 255, 0.08);
+  transition: background-color 0.3s ease;
 }
 .btn-primary {
-  border-color: transparent;
   background-color: var(--primary-color);
-  color: #101010;
+  color: #fafafa;
+  transition: background-color 0.3s ease;
 }
 .btn-primary:hover {
   background-color: var(--primary-color-dark);
+  color: #fafafa;
 }
 .btn-icon {
   background: none;
@@ -751,6 +738,17 @@ textarea {
   color: var(--text-secondary);
 }
 
+#categories-view .input-group-inline input {
+  font-size: 1.0625rem;
+  height: 44px;
+  padding: 10px 14px;
+}
+#categories-view .input-group-inline .btn {
+  font-size: 1rem;
+  height: 44px;
+  padding: 0 16px;
+}
+
 #categories-view .predefined-tags .tag {
   font-size: 1rem;
   padding: 10px 18px;
@@ -775,22 +773,14 @@ textarea {
    ============================================================ */
 .input-group-inline {
   display: flex;
-  gap: 10px;
+  gap: 15px;
   margin-bottom: 20px;
   align-items: center;
   justify-content: flex-start;
 }
 
-.input-group-inline input[type="text"] {
-  flex: 1 1 auto;
-  height: 42px;
-  box-sizing: border-box;
-  padding: 0 14px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background-color: #252525;
-  color: var(--text-primary);
-  font-size: 1rem;
+.input-group-inline input {
+  flex-grow: 1;
 }
 
 .input-group-inline button {
@@ -2113,10 +2103,10 @@ textarea {
 /* ========== Orders: layout ========== */
 .orders-controls {
   display: flex;
-  justify-content: flex-start;
-  flex-direction: row-reverse;
   align-items: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
 .orders-filters {
@@ -2128,15 +2118,49 @@ textarea {
 .orders-header {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-bottom: 14px;
+}
+
+.orders-header h3 {
+  margin: 0;
+}
+
+.orders-stats-strip {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  cursor: default;
+}
+
+.orders-stats-strip span {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.orders-stats-strip strong {
+  color: var(--primary-color);
+  margin-left: 4px;
 }
 
 /* place the two buttons nicely */
 .orders-tabs {
   display: flex;
-  gap: 10px;
-  margin-right: 10px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.orders-tabs .btn {
+  white-space: nowrap;
+  padding: 8px 14px;
+  font-size: 0.85rem;
 }
 
 /* ========== Orders: list ========== */
@@ -2281,22 +2305,45 @@ textarea {
   margin-right: 12px;
 }
 .chip {
-  padding: 6px 10px;
+  padding: 7px 14px;
   border-radius: 999px;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: #e5e7eb;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+}
+
+.chip:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 .chip:hover {
   background: rgba(255, 255, 255, 0.1);
 }
 .chip--active {
-  color: #111827;
-  background: #f59e0b;
-  border-color: #f59e0b;
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #101010;
+  font-weight: 700;
 }
+
 @media (max-width: 900px) {
+  .orders-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .admin-search-wrap {
+    max-width: none;
+  }
+  .orders-tabs {
+    justify-content: stretch;
+  }
+  .orders-tabs .btn {
+    flex: 1;
+  }
   .orders-header {
     flex-wrap: wrap;
     gap: 10px;
@@ -2310,6 +2357,21 @@ textarea {
     order: 2;
   }
 }
+
+@media (max-width: 640px) {
+  .orders-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .orders-stats-strip {
+    width: 100%;
+  }
+  .orders-stats-strip span {
+    flex: 1;
+    text-align: center;
+  }
+}
+
 .orders-filters {
   display: flex;
   gap: 8px;
@@ -2335,6 +2397,260 @@ textarea {
   border-color: #f59e0b;
   color: #111827; /* dark text for contrast */
   font-weight: 700;
+}
+
+.order-success-modal {
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+}
+
+/* Live search dropdown */
+.admin-search-wrap {
+  position: relative;
+  flex: 1 1 220px;
+  min-width: 180px;
+  max-width: 280px;
+}
+
+.admin-search-icon-inline {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.admin-search-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 38px 0 12px;
+  margin-bottom: 0;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text-primary);
+  outline: none;
+  font: inherit;
+  font-size: 0.9rem;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.admin-search-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+}
+
+.admin-search-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: var(--bg-light);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  z-index: 50;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.admin-search-dropdown__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color);
+  text-align: right;
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.admin-search-dropdown__item:last-child {
+  border-bottom: none;
+}
+
+.admin-search-dropdown__item:hover {
+  background: #1f242c;
+}
+
+.orders-chip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 2 1 auto;
+}
+
+.admin-search-dropdown__invoice {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.admin-search-dropdown__empty {
+  padding: 14px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* Orders summary strip */
+.orders-summary-strip {
+  display: flex;
+  justify-content: flex-end;
+  gap: 18px;
+  padding: 8px 4px 14px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Order modal header redesign */
+.order-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.order-modal-header__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.order-modal-header__title h3 {
+  margin: 0;
+}
+
+.order-modal-header__invoice {
+  font-size: 0.85rem;
+  color: var(--primary-color);
+  background: rgba(245, 158, 11, 0.1);
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+.order-modal-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.order-modal-view-toggle {
+  display: inline-flex;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 3px;
+}
+
+.order-modal-view-toggle__btn {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 6px 14px;
+  border-radius: 7px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.order-modal-view-toggle__btn.is-active {
+  background: var(--primary-color);
+  color: #101010;
+}
+
+/* ================================
+   CATEGORY SETTINGS SECTION
+   ================================ */
+
+.category-settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 1rem;
+}
+
+.category-settings-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px 16px;
+  transition: background 0.2s ease;
+}
+
+.category-settings-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.category-settings-item .meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.category-settings-item .meta img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.category-settings-item .meta .name {
+  font-weight: 600;
+}
+
+.category-settings-item .badge {
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 3px 7px;
+  border-radius: 5px;
+  margin-inline-start: 6px;
+}
+
+.category-settings-item .badge-warning {
+  background: rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+}
+
+/* Upload input and preview */
+.upload-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.svg-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.svg-preview img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 /* Badges in cards (future expansion) */
@@ -2435,6 +2751,14 @@ textarea {
 }
 
 /* panel headings already exist; keep spacing tight in this section */
+#categories-settings,
+#category-settings-section .panel,
+.panels-grid-single-column .panel {
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+  background: var(--panel-bg, rgba(255, 255, 255, 0.03));
+  border-radius: 12px;
+  padding: 16px;
+}
 
 .panel-subtitle {
   margin-top: -4px;
@@ -2442,6 +2766,30 @@ textarea {
   font-size: 13px;
   color: var(--text-secondary, rgba(255, 255, 255, 0.6));
   text-align: center;
+}
+
+/* ---------- Predefined editor ---------- */
+.predef-table {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.predef-row {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 12px;
+  border: 1px dashed var(--border, rgba(255, 255, 255, 0.08));
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.predef-icon {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .icon-preview {
@@ -2461,6 +2809,16 @@ textarea {
   object-fit: contain;
 }
 
+.predef-name input {
+  width: 100%;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text, #fff);
+  padding: 0 12px;
+}
+
 .panel-actions {
   margin-top: 10px;
   display: flex;
@@ -2469,6 +2827,20 @@ textarea {
 }
 
 /* ---------- Icon picker trigger / upload row ---------- */
+.input-group-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.input-group-inline input[type="text"] {
+  flex: 1 1 auto;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text, #fff);
+  padding: 0 12px;
+}
 .input-group-inline .btn .icon-preview {
   width: 28px;
   height: 28px;
@@ -2537,10 +2909,23 @@ textarea {
   color: #f59e0b;
 }
 
-/* ---------- Buttons (base .btn/.btn-primary now come from the single
-   canonical definition near the top of this file — see the block above
-   #categories-view. Only the icon/danger variants specific to this
-   section remain here.) ---------- */
+/* ---------- Buttons (inherits your global .btn styles) ---------- */
+.btn {
+  height: 36px;
+  border-radius: 10px;
+  padding: 0 12px;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text, #fff);
+}
+.btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.btn-primary {
+  border-color: transparent;
+  background: #f59e0b;
+  color: #101010;
+}
 .btn-icon {
   width: 36px;
   min-width: 36px;
@@ -2565,6 +2950,9 @@ textarea {
 
 /* ---------- Responsive ---------- */
 @media (max-width: 720px) {
+  .predef-row {
+    grid-template-columns: 1fr;
+  }
   .panel-actions {
     justify-content: stretch;
   }

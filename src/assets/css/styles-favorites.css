@@ -1,65 +1,71 @@
 .favorites-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 2rem;
-  border-bottom: 1px solid #fff;
-  margin-bottom: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2.5rem 2.5rem;
+    border-bottom: 1.5px solid #ffffff30;
+    margin-bottom: 3rem;
 }
 
 .favorites-header__back {
-  width: 44px;
-  height: 44px;
-  border: none;
-  background: #1e232a;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
+    width: 3.4rem;
+    height: 3.4rem;
+    border: none;
+    background: #1e232a;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
 }
 
 .favorites-header__back img {
-  width: 20px;
-  height: 20px;
 }
 
 .favorites-header__title {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 1.3rem;
-  font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.3rem;
+    font-weight: 700;
 }
 
 .favorites-header__title img {
-  width: 20px;
-  height: 20px;
+    width: 20px;
+    height: 20px;
 }
 
 .favorites-header__spacer {
-  width: 44px;
+    width: 44px;
 }
 
 .favorites-page {
-  padding: 0 1.4rem;
-  margin-top: 2rem;
+    padding: 2.5rem 0;
+}
+
+.favorites-page .state-message {
+    margin-right: 2.5rem;
+    margin-left: 2.5rem;
+    width: auto;
 }
 
 /* GRID (2 columns like your screenshot) */
 .favorites-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.2rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem;
+    padding: 0 2.5rem;
 }
 
 /* Each item wrapper */
 .favorites-item {
-  width: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
 }
 
 /* Override FoodCard fixed width */
 .favorites-grid .food-card {
-  width: 100%;
-  flex: initial;
+    width: 100%;
+    flex: initial;
 }

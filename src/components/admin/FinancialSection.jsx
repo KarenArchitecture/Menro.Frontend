@@ -1,6 +1,12 @@
-import React from "react";
+// src/components/admin/FinancialSection.jsx
+import React, { useEffect, useState } from "react";
 import LineChart from "./LineChart";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+import {
+  getRestaurantPaymentMethod,
+  setRestaurantPaymentMethod,
+} from "../../api/restaurantPaymentAxios";
+import { showSuccess, showError } from "../../utils/toast";
 import "../../assets/css/admin/financialSection.css";
 
 const accountDetails = [
@@ -60,10 +66,70 @@ function last7DaysFA() {
   return labels;
 }
 
+const PAYMENT_OPTIONS = [
+  {
+    value: "PayAtCounterBeforeServing",
+    label: "پرداخت پای صندوق پیش از سرو غذا",
+    disabled: false,
+  },
+  { value: "PayAfterServing", label: "پرداخت پس از سرو غذا", disabled: false },
+  { value: "BankGateway", label: "درگاه بانکی (به‌زودی)", disabled: true },
+];
+
 export default function FinancialSection() {
   useDocumentTitle("مدیریت مالی");
+
+  const [paymentMethod, setPaymentMethodState] = useState(null);
+  const [savingMethod, setSavingMethod] = useState(false);
+
+  useEffect(() => {
+    getRestaurantPaymentMethod()
+      .then(setPaymentMethodState)
+      .catch(() => {});
+  }, []);
+
+  const handleSelectMethod = async (value) => {
+    if (savingMethod || value === paymentMethod) return;
+    setSavingMethod(true);
+    try {
+      await setRestaurantPaymentMethod(value);
+      setPaymentMethodState(value);
+      showSuccess("شیوه پرداخت به‌روزرسانی شد.");
+    } catch (err) {
+      showError(
+        err?.response?.data?.message || "خطا در به‌روزرسانی شیوه پرداخت.",
+      );
+    } finally {
+      setSavingMethod(false);
+    }
+  };
+
   return (
     <div className="financial-grid">
+      {/* Payment method */}
+      <div className="panel">
+        <h3>شیوه پرداخت رستوران</h3>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {PAYMENT_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              disabled={opt.disabled || savingMethod}
+              onClick={() => handleSelectMethod(opt.value)}
+              className={`chip ${paymentMethod === opt.value ? "chip--active" : ""}`}
+              style={{
+                justifyContent: "flex-start",
+                padding: "14px 18px",
+                opacity: opt.disabled ? 0.5 : 1,
+                cursor: opt.disabled ? "not-allowed" : "pointer",
+              }}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Account details */}
       <div className="panel">
         <h3>مشخصات حساب</h3>
@@ -81,7 +147,6 @@ export default function FinancialSection() {
       <div className="panel">
         <h3>خریدهای اخیر</h3>
 
-        {/* Table for ≥768px */}
         <div className="table-container">
           <table>
             <thead>
@@ -100,9 +165,7 @@ export default function FinancialSection() {
                   <td>{p.amount}</td>
                   <td>
                     <span
-                      className={`status-chip ${
-                        p.status === "danger" ? "danger" : "active"
-                      }`}
+                      className={`status-chip ${p.status === "danger" ? "danger" : "active"}`}
                     >
                       {p.status === "danger" ? "پرداخت ناموفق" : "پرداخت موفق"}
                     </span>
@@ -113,7 +176,6 @@ export default function FinancialSection() {
           </table>
         </div>
 
-        {/* Cards for <768px */}
         <div className="cards-list purchases-cards">
           {purchases.map((p, idx) => (
             <article
@@ -136,9 +198,7 @@ export default function FinancialSection() {
               <div className="row">
                 <span className="label">وضعیت</span>
                 <span
-                  className={`status-chip ${
-                    p.status === "danger" ? "danger" : "active"
-                  }`}
+                  className={`status-chip ${p.status === "danger" ? "danger" : "active"}`}
                 >
                   {p.status === "danger" ? "پرداخت ناموفق" : "پرداخت موفق"}
                 </span>

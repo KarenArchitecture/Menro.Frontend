@@ -1,13 +1,21 @@
 import React from "react";
-import { AlertCircle, Info, Inbox } from "lucide-react";
+import { AlertCircle, Inbox, SearchX, Info } from "lucide-react";
 import "../../assets/css/state-message.css";
 
 /**
- * Usage:
- * <StateMessage kind="error" title="خطا">متن خطا</StateMessage>
- * <StateMessage kind="empty" title="خالی">موردی یافت نشد</StateMessage>
- * <StateMessage kind="info" title="در حال بارگذاری">صبر کنید...</StateMessage>
+ * Generic state/empty/error message block. Reusable anywhere a list or
+ * page can be empty: favorites, comments, search results, restaurant
+ * lists, etc. Always keep the page's own header/nav rendered above this —
+ * StateMessage only replaces the *content* area, never the whole page.
+ *
+ * kind: "empty" | "error" | "search" | "info"
  */
+const ICONS = {
+    error: AlertCircle,
+    empty: Inbox,
+    search: SearchX,
+    info: Info,
+};
 
 export default function StateMessage({
     kind = "info",
@@ -17,25 +25,21 @@ export default function StateMessage({
     compact = false,
     className = "",
     ...rest
-    }) {
-    const icons = {
-        error: <AlertCircle className="state-icon error" />,
-        empty: <Inbox className="state-icon empty" />,
-        info: <Info className="state-icon info" />,
-    };
+}) {
+    const Icon = ICONS[kind] || ICONS.info;
 
     return (
         <div
-        className={`state-message ${kind} ${compact ? "compact" : ""} ${className}`}
+        className={`state-message state-message--${kind} ${compact ? "compact" : ""} ${className}`}
         role={kind === "error" ? "alert" : "status"}
         {...rest}
         >
-        <div className="state-message__icon-wrapper">{icons[kind]}</div>
+        <div className="state-message__icon-orb">
+            <Icon className="state-message__icon" />
+        </div>
 
         {title && <h3 className="state-message__title">{title}</h3>}
-
         {children && <div className="state-message__text">{children}</div>}
-
         {action && <div className="state-message__action">{action}</div>}
         </div>
     );

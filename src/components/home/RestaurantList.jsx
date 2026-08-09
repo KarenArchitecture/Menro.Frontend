@@ -54,7 +54,14 @@ function RestaurantList({ searchQuery = "", onSearchCount }) {
           slug: x.restaurantSlug,
         }));
     },
-    staleTime: 60_000,
+    // 🔧 The "random 8" endpoint is backend-cached for 5 minutes
+    // (IMemoryCache in RestaurantRepository) — the same 8 restaurants come
+    // back regardless of how often we ask within that window. Matching
+    // staleTime here means react-query won't even bother re-requesting on
+    // remount/refocus during that window, saving a full round-trip for
+    // data that hasn't changed anyway. Search mode gets a much shorter
+    // staleTime since it reflects live typed queries, not a cached set.
+    staleTime: isSearchMode ? 30_000 : 5 * 60_000,
     retry: 1,
   });
 

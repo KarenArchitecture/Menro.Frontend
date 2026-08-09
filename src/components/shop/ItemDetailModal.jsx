@@ -184,11 +184,19 @@ function ItemDetailModal({ item, onClose, onSelectComboFood }) {
     );
 
   const setVariantQty = (variantId, newQty) => {
+    const v = variations.find((vv) => vv.id === variantId);
     cart.setItem({
       foodId: item.id,
       variantId,
       quantity: Math.max(0, newQty),
       addons: addonsToPayload(variantId),
+      meta: {
+        foodName: item.name,
+        imageUrl: item.imageUrl,
+        variantName: v?.name || "",
+        unitPrice: Number(v?.price || 0) + addonsTotalFor(variantId),
+        isDefaultVariant: v?.isDefault === true,
+      },
     });
   };
 
@@ -232,15 +240,20 @@ function ItemDetailModal({ item, onClose, onSelectComboFood }) {
 
   /* ---------- open/close animation ---------- */
 
+  const sheetBodyRef = useRef(null);
+
+  
   useEffect(() => {
     if (!item) return;
+    sheetBodyRef.current?.scrollTo(0, 0);
+    window.scrollTo(0, 0);
     const t = setTimeout(() => setIsActive(true), 10);
     document.body.classList.add("modal-open");
     return () => {
       clearTimeout(t);
       document.body.classList.remove("modal-open");
     };
-  }, [item]);
+  }, [item?.id]);
 
   const handleClose = () => {
     setIsActive(false);
@@ -278,7 +291,7 @@ function ItemDetailModal({ item, onClose, onSelectComboFood }) {
       />
 
       <div className={`bottom-modal ${isActive ? "active" : ""}`} dir="rtl">
-        <div className="sheet-body modal-content">
+        <div className="sheet-body modal-content" ref={sheetBodyRef}>
           <div className="modal-hero">
             <div className="modal-img-wrap">
               <nav className="img-topbar">

@@ -54,7 +54,9 @@ function PreviousOrders() {
             برای مشاهده این بخش به حساب کاربری خود وارد شوید
           </p>
           <a className="unauth-cta__button" href="/login">
-            ورود / عضویت
+            <span>
+                ورود / عضویت
+            </span>
           </a>
         </div>
       </section>

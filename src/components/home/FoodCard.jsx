@@ -118,7 +118,8 @@ export default function FoodCard({ item, LinkComponent, onRestaurantClick }) {
           }}
           title={`مشاهده ${displayRestaurantName}`}
         >
-          {displayRestaurantName}
+          <span className="add-btn__text">{displayRestaurantName}</span>
+          
           <span aria-hidden>
             <svg width="5" height="8" viewBox="0 0 5 8" fill="none">
               <path

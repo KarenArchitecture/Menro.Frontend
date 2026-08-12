@@ -11,7 +11,9 @@ import StateMessage from "./StateMessage";
 import { Link } from "react-router-dom";
 import SmartImage from "./SmartImage";
 import { BannerSkeleton } from "../home/HomeSkeletons";
+import BackIcon from "../icons/BackIcon";
 import "../../assets/css/styles-adbanner.css";
+
 // Exclude list for banners (page-scope memory) -> AdIds
 if (!window.__menroBannerExcludeAdIds) window.__menroBannerExcludeAdIds = [];
 
@@ -259,7 +261,13 @@ export default function AdBanner({
       {(finalTitle || finalSubtitle) && (
         <div className="banner-text banner-text--right">
           {finalTitle && <h2 className="banner-title">{finalTitle}</h2>}
-          {finalSubtitle && <p className="banner-sub">{finalSubtitle}</p>}
+
+          {finalSubtitle && (
+            <p className="banner-sub">
+              <span>{finalSubtitle}</span>
+              <BackIcon />
+            </p>
+          )}
         </div>
       )}
     </div>

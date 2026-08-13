@@ -56,7 +56,7 @@
 .state-message--empty {
     --state-color: #ff683c;
     --state-glow: rgba(255, 104, 60, 0.25);
-    margin: auto 2.5rem;
+    margin: 0 2.5rem 2.8rem;
 }
 .state-message--error {
     --state-color: #f87171;
@@ -74,7 +74,6 @@
 .state-message__title {
     font-size: 1.6rem;
     font-weight: 800;
-    color: #fff;
     margin: 0 0 0.8rem;
 }
 
@@ -90,8 +89,8 @@
 }
 
 .state-message__action button {
-    background: linear-gradient(135deg, #ff7a50, #ff683c);
-    color: #fff;
+    background: #ff683c;
+    color: #fafafa;
     font-weight: 700;
     padding: 1rem 2rem;
     border-radius: 1rem;

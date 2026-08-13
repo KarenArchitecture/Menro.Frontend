@@ -3,6 +3,7 @@ import React from "react";
 import SectionHeader from "../common/SectionHeader";
 import FoodCard from "./FoodCard";
 import StateMessage from "../common/StateMessage";
+import resolveFileUrl from "../../utils/resolveFileUrl";
 import { FoodCardsSkeleton } from "./HomeSkeletons";
 
 
@@ -55,11 +56,13 @@ function PopularFoodRow({
   }
 
   // ───────────── Header (optional) ─────────────
-  const SvgIcon = () =>
+  const CategoryIcon = () =>
     data.svgIcon ? (
-      <span
-        className="inline-svg"
-        dangerouslySetInnerHTML={{ __html: data.svgIcon }}
+      <img
+        src={resolveFileUrl(data.svgIcon)}
+        alt=""
+        className="popular-food-row__category-icon"
+        aria-hidden="true"
       />
     ) : null;
 
@@ -77,11 +80,10 @@ function PopularFoodRow({
     <section className="popular-food-row">
       {!hideTitle && (
         <SectionHeader
-          icon={<SvgIcon />}
+          icon={<CategoryIcon />}
           title={computedTitle}
           linkText={linkText ?? "مشاهده همه"}
           to={viewAllTo}
-          // optional: pass title for better UX in the browse page (no dependency)
           state={{ categoryTitle: data?.categoryTitle, categoryId: data?.categoryId }}
         />
       )}

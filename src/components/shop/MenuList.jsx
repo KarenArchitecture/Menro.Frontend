@@ -1,7 +1,8 @@
+// export default MenuList;
 import React from "react";
 import MenuItem from "./MenuItem";
 import resolveFileUrl from "../../utils/resolveFileUrl";
-
+import StateMessage from "../common/StateMessage";
 
 function MenuList({
   menuData = [],
@@ -30,7 +31,7 @@ function MenuList({
     const decoded = decodeHtml(svgString);
     return decoded.replace(
       /fill=['"]?#?[a-zA-Z0-9]+['"]?/gi,
-      `fill="${fillColor}"`
+      `fill="${fillColor}"`,
     );
   };
 
@@ -72,7 +73,6 @@ function MenuList({
         } catch {
           cache[c.id] = "";
         }
-
       }
 
       setSvgCache(cache);
@@ -88,7 +88,7 @@ function MenuList({
 
     if (activeCategory !== "all") {
       sections = sections.filter(
-        (section) => String(section.categoryId) === String(activeCategory)
+        (section) => String(section.categoryId) === String(activeCategory),
       );
     }
 
@@ -115,7 +115,7 @@ function MenuList({
   }, [menuData, activeCategory, normalizedQuery]);
 
   const activeIndex = catList.findIndex(
-    (c) => String(c.id) === String(activeCategory)
+    (c) => String(c.id) === String(activeCategory),
   );
 
   const prevCat = activeIndex > 0 ? catList[activeIndex - 1] : null;
@@ -154,11 +154,38 @@ function MenuList({
     </svg>
   );
 
+  if (isError)
+    return (
+      <StateMessage kind="error" title="خطا در دریافت اطلاعات">
+        مشکلی در دریافت اطلاعات منو پیش آمد. لطفاً دوباره تلاش کنید.
+      </StateMessage>
+    );
 
-  
-  if (isError) return <p>خطا در بارگیری منو</p>;
-  if (!menuData?.length) return <p>موردی یافت نشد</p>;
-  if (!filteredMenuData?.length) return <p>غذایی با این جستجو پیدا نشد</p>;
+  if (!menuData?.length)
+    return (
+      <StateMessage kind="empty" title="منویی ثبت نشده است">
+        این رستوران هنوز منویی برای نمایش ثبت نکرده است.
+      </StateMessage>
+    );
+
+  if (!filteredMenuData?.length)
+    return isSearching ? (
+      <StateMessage kind="search" title="نتیجه‌ای پیدا نشد">
+        غذایی با این جستجو پیدا نشد.
+      </StateMessage>
+    ) : (
+      <StateMessage
+        kind="empty"
+        title="این دسته‌بندی خالی است"
+        action={
+          <button type="button" onClick={() => setActiveCategory?.("all")}>
+            نمایش همه‌ی غذاها
+          </button>
+        }
+      >
+        فعلاً غذایی در این دسته‌بندی ثبت نشده است.
+      </StateMessage>
+    );
 
   return (
     <div className="res-menu">
@@ -265,8 +292,8 @@ function MenuList({
                   showPrev && showNext
                     ? "vertical-actions--between"
                     : showNext
-                    ? "vertical-actions--next-only"
-                    : "vertical-actions--prev-only"
+                      ? "vertical-actions--next-only"
+                      : "vertical-actions--prev-only"
                 }`}
                 dir="rtl"
               >
@@ -284,10 +311,15 @@ function MenuList({
                       <span
                         className="category-icon"
                         dangerouslySetInnerHTML={{
-                          __html: getColoredIcon(svgCache[prevCat.id], "#FAFAF4"),
+                          __html: getColoredIcon(
+                            svgCache[prevCat.id],
+                            "#FAFAF4",
+                          ),
                         }}
                       />
-                      <span className="vaction-pill__label">{prevCat.name}</span>
+                      <span className="vaction-pill__label">
+                        {prevCat.name}
+                      </span>
                     </span>
                   </button>
                 )}
@@ -302,10 +334,15 @@ function MenuList({
                       <span
                         className="category-icon"
                         dangerouslySetInnerHTML={{
-                          __html: getColoredIcon(svgCache[nextCat.id], "#FAFAF4"),
+                          __html: getColoredIcon(
+                            svgCache[nextCat.id],
+                            "#FAFAF4",
+                          ),
                         }}
                       />
-                      <span className="vaction-pill__label">{nextCat.name}</span>
+                      <span className="vaction-pill__label">
+                        {nextCat.name}
+                      </span>
                     </span>
 
                     <span className="vaction-pill__arrow">
@@ -315,7 +352,6 @@ function MenuList({
                 )}
               </div>
             )}
-
           </section>
         );
       })}

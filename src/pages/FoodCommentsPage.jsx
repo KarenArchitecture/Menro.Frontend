@@ -7,11 +7,13 @@ import FoodCommentsHeader from "../components/comments/FoodCommentsHeader";
 import ProtectedActionModal from "../components/common/ProtectedActionModal";
 import useRequireLogin from "../hooks/useRequireLogin";
 import { getFoodComments, createComment } from "../api/comments";
+import { useGlobalUI } from "../components/common/GlobalUI";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import "../assets/css/styles-comments.css";
 
 export default function FoodCommentsPage() {
   useDocumentTitle("نظرات");
+  const { notify } = useGlobalUI();
   const { foodId } = useParams();
   const queryClient = useQueryClient();
   const { requireLogin, open, closeModal, goToLogin, modalProps } =
@@ -29,7 +31,7 @@ export default function FoodCommentsPage() {
     onError: (err) => {
       const message =
         err.response?.data || "ثبت نظر با خطا مواجه شد. دوباره تلاش کنید.";
-      //showToast({ type: "error", message });
+      notify({ type: "error", message });
     },
   });
 
@@ -44,10 +46,7 @@ export default function FoodCommentsPage() {
               queryClient.invalidateQueries({
                 queryKey: ["food-comments", foodId],
               });
-              //   showToast({
-              //     type: "success",
-              //     message: "نظر شما با موفقیت ثبت شد.",
-              //   });
+              notify({ type: "success", message: "نظر شما با موفقیت ثبت شد." });
               resetForm();
             },
           },
@@ -56,19 +55,9 @@ export default function FoodCommentsPage() {
     });
   };
 
-  const comments = Array.isArray(data) ? data : data?.comments || [];
-  const firstComment = comments[0];
-
-  const food = Array.isArray(data)
-    ? {
-        foodTitle: firstComment?.foodTitle,
-        foodImageUrl: firstComment?.foodImageUrl,
-        approvedCommentsCount: comments.length,
-        hasUserCommented: false, // فعلاً بک‌اند این فیلد رو برنمی‌گردونه
-        restaurantName: firstComment?.restaurantName,
-        restaurantSlug: firstComment?.restaurantSlug,
-      }
-    : data;
+  const food = data;
+  const comments = food?.comments || [];
+  const userStatus = food?.userCommentStatus; // "Pending" | "Approved" | "Rejected" | undefined/null
 
   return (
     <div className="comments-page">
@@ -106,14 +95,28 @@ export default function FoodCommentsPage() {
         ))}
       </div>
 
-      {foodId && !food?.hasUserCommented && (
+      {/* هنوز کامنتی نداده -> فرم ثبت نظر رو نشون بده */}
+      {foodId && !userStatus && (
         <CommentComposer
           onSubmit={handleComposerSubmit}
           isSubmitting={submitComment.isPending}
         />
       )}
 
-      {foodId && food?.hasUserCommented && (
+      {/* در انتظار تایید */}
+      {foodId && userStatus === "Pending" && (
+        <div className="comment-hint-box">
+          <img
+            src="/images/comments/star-active-icon.svg"
+            alt=""
+            className="comment-hint-box__icon"
+          />
+          <p>نظر شما ثبت شد و در انتظار تایید رستوران است.</p>
+        </div>
+      )}
+
+      {/* تایید شده */}
+      {foodId && userStatus === "Approved" && (
         <div className="comment-hint-box">
           <img
             src="/images/comments/star-active-icon.svg"
@@ -121,6 +124,18 @@ export default function FoodCommentsPage() {
             className="comment-hint-box__icon"
           />
           <p>شما قبلاً برای این غذا نظر و امتیاز خود را ثبت کرده‌اید.</p>
+        </div>
+      )}
+
+      {/* رد شده */}
+      {foodId && userStatus === "Rejected" && (
+        <div className="comment-hint-box">
+          <img
+            src="/images/comments/comment-icon.svg"
+            alt=""
+            className="comment-hint-box__icon"
+          />
+          <p>نظر قبلی شما برای این غذا تایید نشد.</p>
         </div>
       )}
 

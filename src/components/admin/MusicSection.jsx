@@ -186,7 +186,7 @@ export default function MusicSection() {
   }, [user]);
 
   //--SignalR
-  useMusicSignalR(restaurantId, {
+  useMusicSignalR(restaurantId, "admin", {
     onCreated: async () => {
       await alertModal({
         title: "درخواست جدید موسیقی",
@@ -195,8 +195,6 @@ export default function MusicSection() {
       });
 
       await fetchTrackRequests();
-
-      console.log("🔄 music requests refreshed");
     },
     onPlaybackChanged: async (playerDto) => {
       await handlePlaybackChanged(playerDto);

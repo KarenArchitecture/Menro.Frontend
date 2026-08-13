@@ -1,24 +1,16 @@
 // src/hooks/useMusicSignalR.js
-import { useEffect } from "react";
-import { getMusicConnection } from "../utils/signalr";
-
-// اطمینان از اینکه فقط یک‌بار start() صدا زده میشه و همه منتظر همون
-// promise واحد می‌مونن، حتی اگه چند کامپوننت همزمان از این connection استفاده کنن
-const ensureStarted = async (connection) => {
-  if (connection.state === "Connected") return;
-
-  if (!connection._musicStartPromise) {
-    connection._musicStartPromise = connection.start().catch((err) => {
-      connection._musicStartPromise = null; // اجازه‌ی تلاش مجدد بعدی
-      throw err;
-    });
-  }
-
-  await connection._musicStartPromise;
-};
+import { useEffect, useRef } from "react";
+import {
+  getMusicConnection,
+  ensureMusicConnectionStarted,
+  registerActiveRoom,
+  unregisterActiveRoom,
+} from "../utils/signalr";
+import { MusicHubMethods, MusicHubEvents } from "../utils/musicHubContract";
 
 export function useMusicSignalR(
   restaurantId,
+  role, // "customer" | "admin"
   {
     onCreated,
     onApproved,
@@ -27,32 +19,52 @@ export function useMusicSignalR(
     onPlaylistChanged,
   } = {},
 ) {
+  const handlersRef = useRef({});
+  handlersRef.current = {
+    onCreated,
+    onApproved,
+    onRejected,
+    onPlaybackChanged,
+    onPlaylistChanged,
+  };
+
   useEffect(() => {
-    if (!restaurantId) return;
+    if (!restaurantId || !role) return;
 
     const connection = getMusicConnection();
 
-    const handleCreated = (data) => onCreated?.(data);
-    const handleApproved = (data) => onApproved?.(data);
-    const handleRejected = (data) => onRejected?.(data);
-    const handlePlaybackChanged = (data) => onPlaybackChanged?.(data);
-    const handlePlaylistChanged = () => onPlaylistChanged?.();
+    const joinMethod =
+      role === "admin"
+        ? MusicHubMethods.JoinAsAdmin
+        : MusicHubMethods.JoinAsCustomer;
+    const leaveMethod =
+      role === "admin"
+        ? MusicHubMethods.LeaveAsAdmin
+        : MusicHubMethods.LeaveAsCustomer;
+
+    const handleCreated = (data) => handlersRef.current.onCreated?.(data);
+    const handleApproved = (data) => handlersRef.current.onApproved?.(data);
+    const handleRejected = (data) => handlersRef.current.onRejected?.(data);
+    const handlePlaybackChanged = (data) =>
+      handlersRef.current.onPlaybackChanged?.(data);
+    const handlePlaylistChanged = () =>
+      handlersRef.current.onPlaylistChanged?.();
 
     let isCancelled = false;
 
     const start = async () => {
       try {
-        await ensureStarted(connection);
+        await ensureMusicConnectionStarted();
+        if (isCancelled) return;
 
-        if (isCancelled) return; // کامپوننت قبل از اتمام اتصال unmount شده
+        connection.on(MusicHubEvents.TrackRequested, handleCreated);
+        connection.on(MusicHubEvents.TrackApproved, handleApproved);
+        connection.on(MusicHubEvents.TrackRejected, handleRejected);
+        connection.on(MusicHubEvents.PlaybackChanged, handlePlaybackChanged);
+        connection.on(MusicHubEvents.PlaylistChanged, handlePlaylistChanged);
 
-        connection.on("RequestCreated", handleCreated);
-        connection.on("RequestApproved", handleApproved);
-        connection.on("RequestRejected", handleRejected);
-        connection.on("PlaybackChanged", handlePlaybackChanged);
-        connection.on("PlaylistChanged", handlePlaylistChanged);
-
-        await connection.invoke("JoinRestaurant", restaurantId);
+        await connection.invoke(joinMethod, restaurantId);
+        registerActiveRoom(role, restaurantId, joinMethod);
       } catch (err) {
         console.error("SignalR music connection failed:", err);
       }
@@ -62,23 +74,17 @@ export function useMusicSignalR(
 
     return () => {
       isCancelled = true;
+      unregisterActiveRoom(role, restaurantId);
 
-      connection.off("RequestCreated", handleCreated);
-      connection.off("RequestApproved", handleApproved);
-      connection.off("RequestRejected", handleRejected);
-      connection.off("PlaybackChanged", handlePlaybackChanged);
-      connection.off("PlaylistChanged", handlePlaylistChanged);
+      connection.off(MusicHubEvents.TrackRequested, handleCreated);
+      connection.off(MusicHubEvents.TrackApproved, handleApproved);
+      connection.off(MusicHubEvents.TrackRejected, handleRejected);
+      connection.off(MusicHubEvents.PlaybackChanged, handlePlaybackChanged);
+      connection.off(MusicHubEvents.PlaylistChanged, handlePlaylistChanged);
 
       if (connection.state === "Connected") {
-        connection.invoke("LeaveRestaurant", restaurantId).catch(() => {});
+        connection.invoke(leaveMethod, restaurantId).catch(() => {});
       }
     };
-  }, [
-    restaurantId,
-    onCreated,
-    onApproved,
-    onRejected,
-    onPlaybackChanged,
-    onPlaylistChanged,
-  ]);
+  }, [restaurantId, role]);
 }

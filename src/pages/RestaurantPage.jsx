@@ -3,8 +3,6 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import usePageStyles from "../hooks/usePageStyles";
 import useDocumentTitle from "../hooks/useDocumentTitle";
-// import "../../public/shop.css";
-// import AppHeader from "../components/common/AppHeader";
 
 import ShopBanner from "../components/shop/ShopBanner";
 import MenuList from "../components/shop/MenuList";
@@ -186,7 +184,7 @@ function RestaurantContent() {
       <div id="shop-menu-top" className="res-menu-wrapper">
         {menuLoading ? (
           <CategoryBarSkeleton count={5} />
-        ) : !menuError ? (
+        ) : !menuError && categories.length > 0 ? (
           <FoodCategoryList
             categories={categoriesWithAll}
             activeCategory={activeCategory}

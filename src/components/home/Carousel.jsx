@@ -11,27 +11,14 @@ import resolveFileUrl from "../../utils/resolveFileUrl";
 import StateMessage from "../common/StateMessage";
 import { CarouselSkeleton } from "./HomeSkeletons";
 
-// 🔧 Below this many pixels of movement, a pointer gesture is still treated
-// as a potential plain click/tap, not a drag — see onPointerMove for why
-// this matters.
-const DRAG_THRESHOLD_PX = 6;
-
 function Carousel() {
   // start from FIRST REAL slide
   const [currentIndex, setCurrentIndex] = useState(1);
 
   const [isDragging, setIsDragging] = useState(false);
   const [dragX, setDragX] = useState(0);
-
-  // 🔧 Refs, not state, for bookkeeping that onPointerMove/onPointerUp need
-  // to read synchronously on every event — avoids stale-closure timing
-  // issues where a handler still sees the pre-update value because React
-  // hadn't re-rendered between two pointer events fired in the same tick
-  // (pointerdown → pointermove can happen before React ever flushes the
-  // pointerdown's setState).
-  const pointerActiveRef = useRef(false);
-  const dragStartXRef = useRef(0);
-  const dragStartTimeRef = useRef(0);
+  const [dragStartX, setDragStartX] = useState(0);
+  const [dragStartTime, setDragStartTime] = useState(0);
 
   const containerRef = useRef(null);
   const sliderRef = useRef(null);
@@ -46,6 +33,11 @@ function Carousel() {
     queryKey: ["featuredRestaurants"],
     queryFn: () => getFeaturedRestaurants(10),
     refetchOnWindowFocus: false,
+    // 🔧 Carousel ads change through the admin approval flow more often
+    // than the "random 8 restaurants" set does, so we keep this shorter
+    // (1 min) rather than matching the 5-min restaurant cache — still cuts
+    // out re-fetching on every remount within that minute, without risking
+    // showing a stale ad for too long after an admin approves a new one.
     staleTime: 60_000,
   });
 
@@ -140,58 +132,32 @@ function Carousel() {
 
     e.currentTarget.setPointerCapture?.(e.pointerId);
 
-    // 🔧 Do NOT set isDragging true here. We only know the user's intent
-    // once real movement happens (see onPointerMove) — jumping straight to
-    // "dragging" on pointerdown alone is what caused onPointerMove's
-    // preventDefault() to fire on the tiniest sub-pixel jitter that even a
-    // stationary click naturally produces, which silently suppresses the
-    // browser's own click event on pointerup.
-    pointerActiveRef.current = true;
-    dragStartXRef.current = e.clientX;
-    dragStartTimeRef.current = performance.now();
+    setIsDragging(true);
+    setDragStartX(e.clientX);
     setDragX(0);
+    setDragStartTime(performance.now());
   };
 
   const onPointerMove = (e) => {
-    if (!pointerActiveRef.current) return;
-
-    const delta = e.clientX - dragStartXRef.current;
-
-    if (!isDragging) {
-      // Still under the threshold — this might just be a click's natural
-      // micro-jitter. Don't preventDefault, don't touch dragX, and let the
-      // browser's click event fire normally if the pointer lifts here.
-      if (Math.abs(delta) < DRAG_THRESHOLD_PX) return;
-
-      // Threshold crossed — NOW this is really a drag.
-      setIsDragging(true);
-    }
+    if (!isDragging) return;
 
     e.preventDefault();
-    setDragX(delta);
+
+    setDragX(e.clientX - dragStartX);
   };
 
   const finishDrag = () => {
-    const wasDragging = isDragging;
-    const delta = dragX;
-
-    pointerActiveRef.current = false;
-
-    if (!wasDragging) {
-      // Never crossed the drag threshold — this was a click/tap. Nothing
-      // to do here; the browser's own click event on the slide image
-      // handles navigation (see handleSlideClick).
-      return;
-    }
-
-    if (!containerRef.current) {
-      setIsDragging(false);
-      setDragX(0);
-      return;
-    }
+    if (!isDragging || !containerRef.current) return;
 
     const width = containerRef.current.clientWidth || 1;
-    const elapsed = Math.max(1, performance.now() - dragStartTimeRef.current);
+
+    const delta = dragX;
+
+    const elapsed = Math.max(
+      1,
+      performance.now() - dragStartTime
+    );
+
     const velocity = Math.abs(delta / elapsed);
 
     const thresholdPx = width * 0.18;
@@ -199,12 +165,19 @@ function Carousel() {
 
     let next = currentIndex;
 
-    if (Math.abs(delta) > thresholdPx || velocity > velocityThresh) {
+    if (
+      Math.abs(delta) > thresholdPx ||
+      velocity > velocityThresh
+    ) {
       const goingRight = delta > 0;
-      next = goingRight ? currentIndex + 1 : currentIndex - 1;
+
+      next = goingRight
+        ? currentIndex + 1
+        : currentIndex - 1;
     }
 
     setCurrentIndex(next);
+
     setIsDragging(false);
     setDragX(0);
   };
@@ -276,11 +249,7 @@ function Carousel() {
 
   // click
   const handleSlideClick = (slide) => {
-    // 🔧 dragX is now only ever non-zero while a real drag (past the
-    // threshold) is in progress, so this guard is mostly a belt-and-braces
-    // check now — the real fix is that a plain click no longer gets its
-    // click event eaten in the first place.
-    if (isDragging || Math.abs(dragX) >= DRAG_THRESHOLD_PX) return;
+    if (Math.abs(dragX) >= 5) return;
 
     if (slide?.adId) {
       sendCarouselClick(slide.adId);

@@ -13,9 +13,8 @@
 
 .page-header__title-group {
     display: flex;
-    flex-direction: row-reverse;
     align-items: center;
-    gap: 8px;
+    gap: 0.5rem;
 }
 
 .page-header__title {

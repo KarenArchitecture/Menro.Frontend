@@ -336,7 +336,6 @@
 }
 
 .user-mgmt .table-container td:nth-child(5) {
-  display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -386,4 +385,22 @@
   #user-management-view .user-mgmt__table-scroll {
     max-height: calc(100vh - 460px);
   }
+}
+
+/* ---------- محو نرم پایین جدول به‌جای بریدگی سخت ردیف آخر ---------- */
+#user-management-view .user-mgmt__table-scroll {
+  position: relative;
+}
+
+#user-management-view .user-mgmt__table-scroll::after {
+  content: "";
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 28px;
+  margin-top: -28px;
+  background: linear-gradient(to bottom, transparent, var(--bg-light));
+  pointer-events: none;
+  display: block;
 }

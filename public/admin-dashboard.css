@@ -14,6 +14,16 @@
   --status-active: #10b981;
   --status-danger: #ef4444;
 }
+@media (min-width: 768px) {
+  :root {
+    font-size: 1rem;
+  }
+}
+@media (min-width: 1024px) {
+  /* :root {
+    font-size: 1.125rem;
+  } */
+}
 
 .dashboard-container {
   font-size: 16px;
@@ -548,9 +558,6 @@ table td {
   transition:
     background-color 0.3s ease,
     border-color 0.3s ease;
-
-  /* temporal fix */
-  margin-bottom: 17px;
 }
 .btn-primary {
   background-color: var(--primary-color);
@@ -1005,6 +1012,7 @@ textarea {
   color: #fff;
   background: #1e1e1e;
   border: 1px solid #fff;
+  margin-bottom: 0;
 }
 
 #edit-name {

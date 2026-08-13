@@ -115,6 +115,11 @@
 
 .foods-table td {
   text-align: center;
+  vertical-align: middle;
+}
+
+.foods-table .btn-icon {
+  margin: 0 0.5rem !important;
 }
 
 .foods-table td .food-mgmt__thumb {

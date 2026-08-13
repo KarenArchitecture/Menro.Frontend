@@ -272,7 +272,7 @@ ul {
   color: var(--text-primary);
   box-sizing: border-box;
 }
-
+/* 
 #blog-management-view select {
   width: 100%;
   padding: 12px;
@@ -283,7 +283,7 @@ ul {
   box-sizing: border-box;
   font-family: inherit;
   font-size: 1rem;
-}
+} */
 
 #blog-management-view textarea {
   width: 100%;

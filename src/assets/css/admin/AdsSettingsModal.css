@@ -132,9 +132,9 @@
   scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }
 
-.panel .btn {
+/* .panel .btn {
   margin-top: 1.2rem;
-}
+} */
 
 /* ---------- Two-column field rows (scoped to this modal) ---------- */
 .adsettings-modal .input-row {

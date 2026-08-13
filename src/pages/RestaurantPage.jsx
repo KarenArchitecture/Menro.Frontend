@@ -177,8 +177,9 @@ function RestaurantContent() {
       ) : (
         <ShopBanner
           banner={banner}
-          searchQuery={searchQuery}
-          onSearch={handleRestaurantSearch}
+          searchValue={searchQuery}
+          onSearchChange={handleRestaurantSearch}
+          onSearchSubmit={handleRestaurantSearch}
         />
       )}
 

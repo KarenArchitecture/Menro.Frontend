@@ -31,10 +31,13 @@ function SearchBar({
   return (
     <form className={`search-bar ${className}`} onSubmit={handleSearch}>
       <input
+        id="restaurant-search"
+        name="search"
         type="text"
         placeholder={placeholder}
         value={searchTerm}
         onChange={handleChange}
+        autoComplete="off"
       />
       <button className="icon-button" type="submit" aria-label="search">
         <img src="/images/rounded_magnifer.svg" alt="" />

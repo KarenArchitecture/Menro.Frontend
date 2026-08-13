@@ -79,21 +79,22 @@ export default function AdminPage() {
   /* ---------------------------
    * SIGNALR (single source of truth)
    * -------------------------- */
-  useMusicSignalR(restaurantId, {
-    onCreated: () => {
-      setHasNewRequest(true);
+  // const handleTrackRequested = useCallback(() => {
+  //   setHasNewRequest(true);
 
-      alertModal({
-        title: "درخواست جدید موسیقی",
-        message: "یک درخواست جدید موسیقی از طرف مشتری ثبت شده است.",
-        buttonText: "مشاهده",
-      }).then(() => {
-        setActiveTab("music");
-        localStorage.setItem("admin-active-tab", "music");
-        setHasNewRequest(false);
-      });
-    },
-  });
+  //   alertModal({
+  //     title: "درخواست جدید موسیقی",
+  //     message: "یک درخواست جدید موسیقی از طرف مشتری ثبت شده است.",
+  //     buttonText: "مشاهده",
+  //   }).then(() => {
+  //     setActiveTab("music");
+  //     localStorage.setItem("admin-active-tab", "music");
+  //     setHasNewRequest(false);
+  //   });
+  // }, [alertModal]);
+  // useMusicSignalR(restaurantId, "admin", {
+  //   onCreated: handleTrackRequested,
+  // });
 
   /* ---------------------------
    * UI HANDLERS

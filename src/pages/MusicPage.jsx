@@ -6,7 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import MusicTrack from "../components/music/MusicTrack";
 import MusicRequestModal from "../components/music/MusicRequestModal";
 import OrderSuccessModal from "../components/common/OrderSuccessModal";
-import { useModal } from "../components/common/GlobalModal";
+import { useGlobalUI } from "../components/common/GlobalUI";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 
 import "../assets/css/styles-music.css";
@@ -30,7 +30,7 @@ export default function MusicPage() {
   const [selectedTrackId, setSelectedTrackId] = useState(null);
   const [showMusicSuccess, setShowMusicSuccess] = useState(false);
 
-  const { showModal } = useModal();
+  const { alertModal } = useGlobalUI();
 
   // fetch playlist
   const fetchMusic = async () => {
@@ -101,7 +101,7 @@ export default function MusicPage() {
   };
 
   // SignalR
-  useMusicSignalR(restaurantId, {
+  useMusicSignalR(restaurantId, "customer", {
     onPlaybackChanged: (data) => {
       console.log("PLAYBACK EVENT:", data);
 
@@ -113,18 +113,20 @@ export default function MusicPage() {
     },
 
     onApproved: async () => {
-      showModal({
+      await alertModal({
         title: "درخواست تأیید شد",
         message: "موسیقی شما به صف اضافه شد",
+        buttonText: "متوجه شدم",
       });
 
       await fetchMusic();
     },
 
     onRejected: async () => {
-      showModal({
+      await alertModal({
         title: "رد شد",
         message: "درخواست شما تأیید نشد",
+        buttonText: "متوجه شدم",
       });
     },
   });

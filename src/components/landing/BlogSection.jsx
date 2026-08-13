@@ -202,7 +202,7 @@ function mapPostToCard(post, hrefBase = "/blog") {
   return {
     id: post.id,
     title: post.title,
-    href: `${hrefBase}/${post.id}`,
+    href: `${hrefBase}/${post.slug}`,
     coverSrc: post.coverImageUrl || BLOG_COVER_FALLBACK,
     readingMins: post.readingMinutes,
   };

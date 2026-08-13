@@ -15,6 +15,9 @@ import useDocumentTitle from "../../hooks/useDocumentTitle";
 import "../../assets/css/admin/CombosSection.css";
 
 export default function CombosSection() {
+  useDocumentTitle("ترکیب‌های پیشنهادی");
+  const { notify, confirmModal } = useGlobalUI();
+
   const [foods, setFoods] = useState([]);
   const [loadingFoods, setLoadingFoods] = useState(true);
   const [comboCounts, setComboCounts] = useState({}); // { foodId: count }
@@ -35,7 +38,7 @@ export default function CombosSection() {
       const { data } = await adminFoodAxios.get("/read-all");
       setFoods(data || []);
     } catch (err) {
-      console.error("خطا در دریافت لیست غذاها:", err);
+      notify({ type: "error", message: "خطا در دریافت لیست غذاها" });
     } finally {
       setLoadingFoods(false);
     }
@@ -46,7 +49,7 @@ export default function CombosSection() {
       const counts = await getComboCounts();
       setComboCounts(counts || {});
     } catch (err) {
-      console.error("خطا در دریافت تعداد ترکیب‌ها:", err);
+      notify({ type: "error", message: "خطا در دریافت تعداد ترکیب‌ها" });
     }
   };
 
@@ -81,7 +84,6 @@ export default function CombosSection() {
       const ids = await getCombosForFood(foodId);
       setComboIds(Array.isArray(ids) ? ids : []);
     } catch (err) {
-      console.error("خطا در دریافت ترکیب‌های این غذا:", err);
       notify({ type: "error", message: "خطا در دریافت ترکیب‌های این غذا" });
       setComboIds([]);
     } finally {
@@ -120,9 +122,11 @@ export default function CombosSection() {
       // keep the rail badge for THIS food in sync immediately, no full refetch needed
       setComboCounts((prev) => ({ ...prev, [selectedFoodId]: nextIds.length }));
     } catch (err) {
-      console.error("خطا در ذخیره ترکیب‌ها:", err);
       setComboIds(prevIds);
-      alert("ذخیره ترکیب‌ها ناموفق بود. دوباره تلاش کنید.");
+      notify({
+        type: "error",
+        message: "ذخیره ترکیب‌ها ناموفق بود. دوباره تلاش کنید.",
+      });
     } finally {
       setSavingCombos(false);
     }
@@ -134,8 +138,20 @@ export default function CombosSection() {
     persistCombos(merged);
   };
 
-  const handleRemoveCombo = (foodId) => {
-    persistCombos(comboIds.filter((id) => id !== foodId));
+  const handleRemoveCombo = async (foodId) => {
+    const ok = await confirmModal({
+      title: "حذف ترکیب",
+      message: "این ترکیب از لیست ترکیب‌های پیشنهادی این غذا حذف شود؟",
+      danger: true,
+    });
+    if (!ok) return;
+
+    try {
+      await persistCombos(comboIds.filter((id) => id !== foodId));
+      notify({ type: "success", message: "ترکیب حذف شد" });
+    } catch (err) {
+      notify({ type: "error", message: "حذف ترکیب با خطا مواجه شد" });
+    }
   };
 
   const fmt = (n) => (Number(n) || 0).toLocaleString("fa-IR");

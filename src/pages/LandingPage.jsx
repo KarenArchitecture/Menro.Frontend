@@ -24,6 +24,12 @@ import {
 } from "../api/landing";
 import { getBlogPosts } from "../api/blogs";
 
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import gsap from "gsap";
+
+gsap.registerPlugin(ScrollTrigger);
+ScrollTrigger.normalizeScroll(true);
+
 // Fallback used until getLandingGeneral() resolves, or if it fails —
 // matches the previously hardcoded BurgerPanelSection title.
 const DEFAULT_BURGER_TITLE = "با منرو تو چشم باش";

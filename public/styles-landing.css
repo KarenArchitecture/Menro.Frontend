@@ -1,6 +1,7 @@
 /***************************************
  * 1) Tokens & Reset
  **************************************/
+
 :root {
   --bg: #0f0f10;
   --bg-hero: #0b0f13;
@@ -3392,4 +3393,9 @@ body {
     width: 32px;
     height: 32px;
   }
+}
+
+/* FINAL FIXES */
+.footer-bg {
+  margin-bottom: 10rem;
 }

@@ -2,6 +2,8 @@
 import React, { useRef, useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Marquee from "react-fast-marquee";
+import resolveFileUrl from "../../utils/resolveFileUrl";
+import useImageWithFallback from "../../hooks/useImageWithFallback";
 
 import ClockIcon from "../icons/ClockIcon";
 import ArrowUpIcon from "../icons/ArrowUpIcon";
@@ -187,9 +189,6 @@ function BlogCursorFollower({ targetEl, offsetY = -5 }) {
   );
 }
 
-// Used when a post has no cover image yet.
-const BLOG_COVER_FALLBACK = "/images/blog-placeholder.png";
-
 /**
  * Maps a raw BlogPostResponse (see BlogPostDtos.cs) coming from
  * getBlogPosts() to the flat shape BlogCard expects.
@@ -203,7 +202,7 @@ function mapPostToCard(post, hrefBase = "/blog") {
     id: post.id,
     title: post.title,
     href: `${hrefBase}/${post.slug}`,
-    coverSrc: post.coverImageUrl || BLOG_COVER_FALLBACK,
+    coverSrc: resolveFileUrl(post.coverImageUrl),
     readingMins: post.readingMinutes,
   };
 }
@@ -211,6 +210,7 @@ function mapPostToCard(post, hrefBase = "/blog") {
 /** Card */
 function BlogCard({ post }) {
   const { title, href, coverSrc, readingMins } = post;
+  const imgSrc = useImageWithFallback(coverSrc, "blog");
   return (
     <li className="blogs__card" role="listitem">
       <a
@@ -221,7 +221,7 @@ function BlogCard({ post }) {
       >
         <img
           className="blogs__card-img"
-          src={coverSrc}
+          src={imgSrc}
           alt=""
           loading="lazy"
           width="360"

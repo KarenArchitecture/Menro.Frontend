@@ -374,6 +374,11 @@
   color: #555;
   font-size: 26px;
 }
+/* .single-banner style override for removing margin-bottom */
+.single-banner {
+  margin-bottom: 0 !important;
+}
+
 .bp-restaurant-card__label {
   position: absolute;
   top: 12px;
@@ -599,6 +604,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 16px;
 }
 .bp-sidebar__box {
   background-color: #1a1c20;
@@ -656,4 +662,17 @@
   .bp-sidebar__sticky {
     position: static;
   }
+}
+
+/* ---------- Fallback icon sizing (proportional to its own frame) ---------- */
+.bp-related__thumb,
+.bp-sidebar__popular-thumb {
+  container-type: size;
+}
+
+.bp-related__thumb i,
+.bp-sidebar__popular-thumb i {
+  font-size: 28px; /* fallback برای مرورگرهایی که از container query units پشتیبانی نمی‌کنن */
+  font-size: 40cqmin;
+  opacity: 0.55;
 }

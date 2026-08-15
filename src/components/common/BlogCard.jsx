@@ -1,4 +1,5 @@
 import React from "react";
+import useImageWithFallback from "../../hooks/useImageWithFallback";
 import ClockIcon from "../icons/ClockIcon"; // Adjust path if needed
 import "../../assets/css/blog-card.css";
 
@@ -68,6 +69,8 @@ export default function BlogCard({ post }) {
     publishedDate,
   } = post;
 
+  const imgSrc = useImageWithFallback(coverSrc, "blog");
+
   return (
     <div className="blogs__card">
       <a
@@ -77,7 +80,7 @@ export default function BlogCard({ post }) {
       >
         <img
           className="blogs__card-img"
-          src={coverSrc}
+          src={imgSrc}
           alt=""
           loading="lazy"
           width="360"

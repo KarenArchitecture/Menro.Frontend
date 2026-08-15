@@ -27,11 +27,11 @@
 :root {
   font-size: 0.625rem;
 }
-@media (max-width: 768px) {
+/* @media (max-width: 768px) {
   :root {
     font-size: 1.125rem;
   }
-}
+} */
 
 *,
 *::before,

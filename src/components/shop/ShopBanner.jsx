@@ -10,9 +10,15 @@ import { toPersianDigits } from "../../utils/persianNumbers";
 import resolveFileUrl from "../../utils/resolveFileUrl";
 import useRequireLogin from "../../hooks/useRequireLogin";
 import ProtectedActionModal from "../common/ProtectedActionModal";
+import useImageWithFallback from "../../hooks/useImageWithFallback";
 import { useCart } from "./CartContext";
 
-function ShopBanner({ banner, onSearchSubmit, onSearchChange, searchValue = "" }) {
+function ShopBanner({
+  banner,
+  onSearchSubmit,
+  onSearchChange,
+  searchValue = "",
+}) {
   const navigate = useNavigate();
   const cart = useCart();
 
@@ -24,6 +30,12 @@ function ShopBanner({ banner, onSearchSubmit, onSearchChange, searchValue = "" }
     modalProps: authModalProps,
   } = useRequireLogin();
 
+  // هوک باید همیشه قبل از هر return زودهنگام صدا زده بشه (قانون Hooks)
+  const bannerUrl = useImageWithFallback(
+    resolveFileUrl(banner?.bannerImageUrl),
+    "shop-banner",
+  );
+
   if (!banner) {
     return (
       <div className="text-center py-6 text-red-500">
@@ -31,10 +43,6 @@ function ShopBanner({ banner, onSearchSubmit, onSearchChange, searchValue = "" }
       </div>
     );
   }
-
-  const bannerUrl =
-    resolveFileUrl(banner.bannerImageUrl) ||
-    "/images/Restaurant/top-banner.png";
 
   const handleMusicClick = () => {
     requireLogin({
@@ -101,7 +109,9 @@ function ShopBanner({ banner, onSearchSubmit, onSearchChange, searchValue = "" }
           >
             <ShoppingBagIcon />
             {cart.count > 0 && (
-              <span className="shop-cart-badge">{toPersianDigits(cart.count)}</span>
+              <span className="shop-cart-badge">
+                {toPersianDigits(cart.count)}
+              </span>
             )}
           </button>
         </div>

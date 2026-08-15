@@ -1,0 +1,98 @@
+/* src/assets/css/subscriptions-contact-section.css */
+
+.sub-contact {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 2rem;
+  align-items: center;
+}
+
+.sub-contact__city {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  background: var(--sub-surface);
+  border: 1px solid var(--sub-border);
+  border-radius: var(--sub-radius-md);
+  padding: 1.25rem 1.4rem;
+}
+
+.sub-contact__city label {
+  font-size: 0.85rem;
+  color: var(--sub-muted);
+}
+
+.sub-contact__city select {
+  height: 46px;
+  padding: 0 0.9rem;
+  border-radius: var(--sub-radius-sm);
+  border: 1px solid var(--sub-border);
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  font: inherit;
+  font-size: 0.92rem;
+}
+
+.sub-contact__info {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 157, 16, 0.1),
+    rgba(255, 255, 255, 0.02)
+  );
+  border: 1px solid var(--sub-border);
+  border-radius: var(--sub-radius-lg);
+  padding: 2rem 2.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.sub-contact__title {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.sub-contact__subtitle {
+  margin: 0 0 0.6rem;
+  color: var(--sub-muted);
+  font-size: 0.9rem;
+  line-height: 1.8;
+  max-width: 480px;
+}
+
+.sub-contact__phone {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  height: 50px;
+  padding: 0 1.4rem;
+  border-radius: 999px;
+  background: var(--sub-accent);
+  color: #2a1400;
+  font-weight: 800;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
+}
+
+.sub-contact__phone:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+@media (max-width: 860px) {
+  .sub-contact {
+    grid-template-columns: 1fr;
+  }
+  .sub-contact__phone {
+    align-self: stretch;
+    justify-content: center;
+  }
+}

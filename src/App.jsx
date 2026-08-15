@@ -24,6 +24,7 @@ import RegisterPage from "./pages/Authentication/RegisterPage";
 import RegisterRestaurantPage from "./pages/RegisterRestaurantPage";
 import RestaurantPage from "./pages/RestaurantPage";
 import RestaurantsBrowsePage from "./pages/RestaurantsBrowsePage";
+import SubscriptionsPage from "./pages/SubscriptionsPage";
 import UnauthorizedPage from "./pages/Authentication/UnauthorizedPage";
 import UserProfileForm from "./components/common/UserProfileForm";
 
@@ -69,10 +70,16 @@ export default function App() {
     "/music",
     "/favorites",
     "/blog",
+    "/subscriptions",
   ];
 
   // 3. Added "/orders/bill" so the app shell doesn't add blank padding at the bottom
-  const NO_PADDING_PREFIXES = ["/landing", "/blog", "/orders/bill"];
+  const NO_PADDING_PREFIXES = [
+    "/landing",
+    "/blog",
+    "/orders/bill",
+    "/subscriptions",
+  ];
 
   const hideMobileNav = NAV_HIDE_PREFIXES.some((prefix) =>
     pathname.startsWith(prefix),
@@ -148,6 +155,7 @@ export default function App() {
           {/* <Route path="/music" element={<MusicPage />} /> */}
           <Route path="/restaurant/:slug/music" element={<MusicPage />} />
           <Route path="/restaurants" element={<RestaurantsBrowsePage />} />
+          <Route path="/subscriptions" element={<SubscriptionsPage />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
           {/* 404 Catch-All Route */}
           <Route path="*" element={<NotFoundPage />} />

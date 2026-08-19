@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AppHeader from "../components/common/AppHeader";
 import MobileHeader from "../components/common/MobileHeader";
@@ -9,7 +9,7 @@ import BlogPostBody from "../components/blogPost/BlogPostBody";
 import BlogPostAuthorTags from "../components/blogPost/BlogPostAuthorTags";
 import RelatedPosts from "../components/blogPost/RelatedPosts";
 import BlogPostSidebar from "../components/blogPost/BlogPostSidebar";
-import { getBlogPostBootstrap } from "../api/blogs";
+import { getBlogPostBootstrap, trackBlogPostView } from "../api/blogs";
 import { useGlobalUI } from "../components/common/GlobalUI/GlobalUIProvider";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 
@@ -28,6 +28,11 @@ export default function BlogPostPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+
+  // Guards against double-firing the view-tracking call - StrictMode double
+  // effects in dev, or the slug param resolving to the same post twice in
+  // some edge navigation case, shouldn't send two PATCH requests.
+  const viewTrackedForSlugRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -64,6 +69,15 @@ export default function BlogPostPage() {
 
   useEffect(() => {
     if (data?.post?.title) document.title = data.post.title;
+  }, [data]);
+
+  // Fire once per successfully-loaded post. Errors are swallowed - view
+  // tracking is a nice-to-have, never worth surfacing to the reader.
+  useEffect(() => {
+    if (!data?.post?.slug) return;
+    if (viewTrackedForSlugRef.current === data.post.slug) return;
+    viewTrackedForSlugRef.current = data.post.slug;
+    trackBlogPostView(data.post.slug).catch(() => {});
   }, [data]);
 
   if (notFound) {

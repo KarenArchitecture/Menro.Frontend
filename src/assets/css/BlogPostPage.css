@@ -676,3 +676,61 @@
   font-size: 40cqmin;
   opacity: 0.55;
 }
+
+.bp-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ---------- Like button (standalone pill, matches .bp-share-btn's weight) ---------- */
+.bp-like-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid #444;
+  background: #0c0f14;
+  color: #dcdcdc;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.bp-like-btn:disabled {
+  cursor: default;
+}
+.bp-like-btn:hover:not(:disabled) {
+  border-color: #ff3b5c;
+  color: #ff3b5c;
+}
+.bp-like-btn__icon {
+  font-size: 0.95rem;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.bp-like-btn:active .bp-like-btn__icon {
+  transform: scale(0.8);
+}
+.bp-like-btn--liked {
+  border-color: #ff3b5c;
+  background: rgba(255, 59, 92, 0.1);
+  color: #ff3b5c;
+}
+.bp-like-btn--liked .bp-like-btn__icon {
+  color: #ff3b5c;
+  animation: bp-like-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes bp-like-pop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.35);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

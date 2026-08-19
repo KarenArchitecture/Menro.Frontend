@@ -25,6 +25,18 @@ export async function getBlogPostBootstrap(slug) {
   };
 }
 
+// Fire-and-forget view tracking. Backend dedupes per visitor (IP+UA hash,
+// 24h cache window) - safe to call once per page load, no response body
+// to handle either way.
+export async function trackBlogPostView(slug) {
+  await blogAxios.patch(`/posts/${slug}/view`);
+}
+
+export async function toggleBlogPostLike(slug) {
+  const { data } = await blogAxios.post(`/posts/${slug}/like`);
+  return data; // { isLiked, likeCount } - shape depends on BlogPostLikeResponse
+}
+
 // sort: "Newest" | "MostPopular" | "MostViewed" — must match BlogPostSortOrder member names
 export async function getBlogPosts({
   search,

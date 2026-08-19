@@ -8,6 +8,7 @@ import {
   getBlogTags,
   createBlogTag,
   searchBlogRestaurants,
+  toggleBlogPostPublish,
 } from "../../api/adminBlogs";
 import {
   normalizeTagNameLive,
@@ -81,6 +82,7 @@ export default function BlogPostEditorPage() {
   const [draft, setDraft] = useState(null);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [togglingPublish, setTogglingPublish] = useState(false);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
   const fileInputRef = useRef(null);
@@ -167,6 +169,25 @@ export default function BlogPostEditorPage() {
           : [...prev.tagIds, tagId],
       };
     });
+  };
+  const handleTogglePublish = async () => {
+    if (togglingPublish) return;
+    setTogglingPublish(true);
+    try {
+      const result = await toggleBlogPostPublish(id);
+      setDraft((prev) => ({ ...prev, published: result.isPublished }));
+      notify({
+        type: "success",
+        message: result.isPublished ? "پست منتشر شد" : "پست پیش‌نویس شد",
+      });
+    } catch (err) {
+      notify({
+        type: "error",
+        message: apiErrorMessage(err, "تغییر وضعیت انتشار با خطا مواجه شد."),
+      });
+    } finally {
+      setTogglingPublish(false);
+    }
   };
 
   const handleCreateTag = async () => {
@@ -421,9 +442,8 @@ export default function BlogPostEditorPage() {
                   <input
                     type="checkbox"
                     checked={draft.published}
-                    onChange={(e) =>
-                      setDraft({ ...draft, published: e.target.checked })
-                    }
+                    disabled={togglingPublish}
+                    onChange={handleTogglePublish}
                   />
                   <span className="bpe__switch-track">
                     <span className="bpe__switch-thumb" />

@@ -13,12 +13,6 @@ import useDocumentTitle from "../hooks/useDocumentTitle";
 
 import "../assets/css/styles-blog.css";
 
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import gsap from "gsap";
-
-gsap.registerPlugin(ScrollTrigger);
-ScrollTrigger.normalizeScroll(true);
-
 const leftIcons = [
   /* unchanged */
 ];

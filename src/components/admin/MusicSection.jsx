@@ -6,6 +6,14 @@ import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 import "../../assets/css/admin/musicSection.css";
 
+import TrackRequestsCard from "../musicPlayer/TrackRequestsCard";
+import {
+  MAX_TRACKS,
+  MAX_PLAYLISTS,
+  formatTime,
+  formatDuration,
+} from "../../utils/musicFormatters";
+
 // for api
 import {
   getTracks,
@@ -30,31 +38,6 @@ import {
   previousTrack,
   getPlayerState,
 } from "../../api/music";
-
-const MAX_TRACKS = 50;
-const MAX_PLAYLISTS = 10; // ظرفیت پلی لیست ها
-
-// تابع کمکی برای فرمت زمان (ثانیه به دقیقه:ثانیه)
-const formatTime = (seconds) => {
-  if (!seconds || isNaN(seconds)) return "00:00";
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${s < 10 ? "0" : ""}${s}`;
-};
-
-// for tracks duration
-const formatDuration = (duration) => {
-  if (!duration) return "--:--";
-
-  const parts = duration.split(":");
-
-  if (parts.length !== 3) return duration;
-
-  const minutes = parts[1];
-  const seconds = parts[2].split(".")[0];
-
-  return `${minutes}:${seconds}`;
-};
 
 export default function MusicSection() {
   useDocumentTitle("پخش‌کننده موسیقی");
@@ -1597,72 +1580,13 @@ export default function MusicSection() {
       {/* ---------------------------------
           آهنگ‌های درخواستی
       --------------------------------- */}
-      <div className="music-card requests-card">
-        <div className="music-card__header">
-          <h3 className="music-card__title">
-            <span className="icon-badge">
-              <i className="fas fa-headphones-alt" />
-            </span>
-            آهنگ‌های درخواستی
-          </h3>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span className="pill-count">{requestedTracks.length} درخواست</span>
-
-            <button
-              type="button"
-              className="mh-btn mh-btn--ghost"
-              onClick={fetchTrackRequests}
-              disabled={loadingRequests}
-              title="بروزرسانی"
-            >
-              <i
-                className={`fas fa-sync-alt ${
-                  loadingRequests ? "spin-icon" : ""
-                }`}
-              />
-            </button>
-          </div>
-        </div>
-
-        {requestedTracks.length === 0 ? (
-          <div className="mh-empty">هیچ آهنگ درخواستی جدیدی وجود ندارد</div>
-        ) : (
-          <div className="requests-grid">
-            {requestedTracks.map((track) => (
-              <div key={track.id} className="request-card">
-                <div className="request-card__art">
-                  <i className="fas fa-music" />
-                </div>
-                <div className="request-card__info">
-                  <span className="request-card__title">
-                    {track.title || "نامشخص"}
-                  </span>
-                  <span className="request-card__artist">
-                    {track.artist || "هنرمند نامشخص"}
-                  </span>
-                </div>
-                <div className="request-card__actions">
-                  <button
-                    type="button"
-                    className="mh-btn mh-btn--approve"
-                    onClick={() => handleApproveRequest(track)}
-                  >
-                    <i className="fas fa-check" /> تایید
-                  </button>
-                  <button
-                    type="button"
-                    className="mh-btn mh-btn--reject"
-                    onClick={() => handleRejectRequest(track.id)}
-                  >
-                    <i className="fas fa-times" /> رد
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <TrackRequestsCard
+        requestedTracks={requestedTracks}
+        loadingRequests={loadingRequests}
+        onApprove={handleApproveRequest}
+        onReject={handleRejectRequest}
+        onRefresh={fetchTrackRequests}
+      />
 
       {/* ------------------------------------------------------------------
       -------------------------------MODALS---------------------------------

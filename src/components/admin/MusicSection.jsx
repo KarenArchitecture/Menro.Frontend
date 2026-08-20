@@ -7,6 +7,7 @@ import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 import NowPlayingBar from "../musicPlayer/NowPlayingBar";
 import MusicArchiveCard from "../musicPlayer/MusicArchiveCard";
+import PlaylistCard from "../musicPlayer/PlaylistCard";
 import TrackRequestsCard from "../musicPlayer/TrackRequestsCard";
 
 import "../../assets/css/admin/musicSection.css";
@@ -107,8 +108,6 @@ export default function MusicSection() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  const [playlistQuery, setPlaylistQuery] = useState("");
-
   const [loadingArchive, setLoadingArchive] = useState(false);
   const [loadingPlaylist, setLoadingPlaylist] = useState(false);
 
@@ -122,16 +121,6 @@ export default function MusicSection() {
   useEffect(() => {
     playingPlaylistTrackIdRef.current = playingPlaylistTrackId;
   }, [playingPlaylistTrackId]);
-
-  const filteredPlaylistTracks = useMemo(() => {
-    const q = playlistQuery.trim().toLowerCase();
-    if (!q) return playlistTracks;
-    return playlistTracks.filter(
-      (s) =>
-        (s.title || "").toLowerCase().includes(q) ||
-        (s.artist || "").toLowerCase().includes(q),
-    );
-  }, [playlistQuery, playlistTracks]);
 
   /* --- REAL-TIME PROPS --- */
   const { user } = useAuth();
@@ -540,6 +529,19 @@ export default function MusicSection() {
     setPlaylistModalMode("add");
     setPlaylistFormName("");
     setShowPlaylistModal(true);
+  };
+  const handleSelectPlaylist = async (playlistId) => {
+    try {
+      await activatePlaylist(playlistId);
+      setSelectedPlaylistId(playlistId);
+      setPlaylists((prev) =>
+        prev.map((x) => ({ ...x, isActive: x.id === playlistId })),
+      );
+      await refreshPlaylist(playlistId);
+    } catch (err) {
+      console.error(err);
+      notify({ type: "error", message: "فعال‌سازی پلی‌لیست ناموفق بود" });
+    }
   };
   const openEditPlaylistModal = (pl) => {
     setPlaylistModalMode("edit");
@@ -1035,12 +1037,9 @@ export default function MusicSection() {
   };
 
   // re-order tracks in playlist
-  const movePlaylistTrack = async (index, direction) => {
+  const movePlaylistTrack = async (trackId, direction) => {
     try {
-      const track = filteredPlaylistTracks[index];
-
-      await reorderPlaylistTrack(selectedPlaylistId, track.id, direction);
-
+      await reorderPlaylistTrack(selectedPlaylistId, trackId, direction);
       await refreshPlaylist(selectedPlaylistId);
     } catch (err) {
       console.error(err);
@@ -1144,203 +1143,21 @@ export default function MusicSection() {
         {/* ---------------------------------
             پلی‌لیست ادمین
         --------------------------------- */}
-        <div className="music-card playlist-card" style={{ flex: 1.5 }}>
-          <div className="music-card__header">
-            <h3 className="music-card__title">
-              <span className="icon-badge">
-                <i className="fas fa-list-music" />
-              </span>
-              مدیریت پلی‌لیست‌ها
-              <span className="pill-count">
-                {playlists.length} / {MAX_PLAYLISTS}
-              </span>
-            </h3>
-            <button
-              className="mh-btn mh-btn--primary"
-              onClick={openAddPlaylistModal}
-              disabled={playlists.length >= MAX_PLAYLISTS}
-            >
-              <i className="fas fa-plus" /> پلی‌لیست جدید
-            </button>
-          </div>
-
-          <div className="playlist-card__body">
-            {/* Sidebar برای لیست پلی‌لیست‌ها */}
-            <div className="playlist-rail">
-              {playlists.map((pl) => (
-                <div
-                  key={pl.id}
-                  className={`playlist-rail__item ${
-                    selectedPlaylistId === pl.id ? "is-active" : ""
-                  }`}
-                  onClick={async () => {
-                    try {
-                      await activatePlaylist(pl.id);
-
-                      setSelectedPlaylistId(pl.id);
-
-                      setPlaylists((prev) =>
-                        prev.map((x) => ({
-                          ...x,
-                          isActive: x.id === pl.id,
-                        })),
-                      );
-
-                      await refreshPlaylist(pl.id);
-                    } catch (err) {
-                      console.error(err);
-                      notify({
-                        type: "error",
-                        message: "فعال‌سازی پلی‌لیست ناموفق بود",
-                      });
-                    }
-                  }}
-                >
-                  <span
-                    className="playlist-rail__name"
-                    title={pl.name || "پلی‌لیست"}
-                  >
-                    {pl.title || pl.name || "پلی‌لیست"}
-                  </span>
-                  <span className="pill-count">{pl.tracks}</span>
-                  <div className="playlist-rail__actions">
-                    <button
-                      className="mh-icon-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openEditPlaylistModal(pl);
-                      }}
-                    >
-                      <i className="fas fa-pencil-alt" />
-                    </button>
-                    <button
-                      className="mh-icon-btn is-danger"
-                      style={{
-                        opacity: pl.isActive ? 0.4 : 1,
-                        cursor: pl.isActive ? "not-allowed" : "pointer",
-                      }}
-                      disabled={pl.isActive}
-                      title={
-                        pl.isActive
-                          ? "پلی‌لیست فعال قابل حذف نیست"
-                          : "حذف پلی‌لیست"
-                      }
-                      onClick={(e) => {
-                        e.stopPropagation();
-
-                        if (pl.isActive) return;
-
-                        handleDeletePlaylist(pl.id);
-                      }}
-                    >
-                      <i className="fas fa-trash" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-              {playlists.length === 0 && (
-                <div className="mh-empty">هیچ پلی‌لیستی ندارید</div>
-              )}
-            </div>
-
-            {/* بخش آهنگ‌های داخل پلی‌لیست */}
-            <div className="playlist-card__tracks">
-              <input
-                type="text"
-                className="mh-input"
-                placeholder="جستجو در این پلی‌لیست..."
-                value={playlistQuery}
-                onChange={(e) => setPlaylistQuery(e.target.value)}
-              />
-
-              <div className="mh-list">
-                {!loadingPlaylist && filteredPlaylistTracks.length === 0 && (
-                  <div className="mh-empty">آهنگی یافت نشد</div>
-                )}
-
-                {filteredPlaylistTracks.map((s, index) => {
-                  const isTrackPlaying = playingPlaylistTrackId === s.id;
-                  return (
-                    <div
-                      key={s.id}
-                      className={`mh-row ${isTrackPlaying ? "is-playing" : ""}`}
-                    >
-                      <div className="mh-row__info">
-                        <div className="mh-reorder">
-                          <button
-                            disabled={index === 0}
-                            onClick={() => movePlaylistTrack(index, "up")}
-                          >
-                            <i className="fas fa-chevron-up" />
-                          </button>
-                          <button
-                            disabled={
-                              index === filteredPlaylistTracks.length - 1
-                            }
-                            onClick={() => movePlaylistTrack(index, "down")}
-                          >
-                            <i className="fas fa-chevron-down" />
-                          </button>
-                        </div>
-
-                        <div
-                          className="mh-art"
-                          onClick={() =>
-                            playPlaylistTrack(s.id, s.musicTrackId)
-                          }
-                        >
-                          {s.artworkUrl ? (
-                            <img src={s.artworkUrl} alt="" />
-                          ) : (
-                            <div style={{ width: "100%", height: "100%" }} />
-                          )}
-                          <div
-                            className={`mh-art__overlay ${
-                              isTrackPlaying ? "is-visible" : ""
-                            }`}
-                          >
-                            <i
-                              className={
-                                isTrackPlaying && isPlaying
-                                  ? "fas fa-pause"
-                                  : "fas fa-play"
-                              }
-                            />
-                          </div>
-                        </div>
-
-                        <div className="mh-row__text">
-                          <span className="mh-row__title">
-                            {s.title}
-                            {s.isRequestedTrack && (
-                              <span className="mh-chip-requested">
-                                درخواستی
-                              </span>
-                            )}
-                          </span>
-                          <span className="mh-row__subtitle">
-                            {s.artist} • {formatDuration(s.duration)}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="mh-row__actions">
-                        <button
-                          type="button"
-                          className="mh-icon-btn is-danger"
-                          onClick={() => removeFromPlaylist(s.id)}
-                          title="حذف از پلی‌لیست"
-                        >
-                          <i className="fas fa-trash" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
+        <PlaylistCard
+          playlists={playlists}
+          selectedPlaylistId={selectedPlaylistId}
+          playlistTracks={playlistTracks}
+          loadingPlaylist={loadingPlaylist}
+          playingPlaylistTrackId={playingPlaylistTrackId}
+          isPlaying={isPlaying}
+          onCreatePlaylist={openAddPlaylistModal}
+          onEditPlaylist={openEditPlaylistModal}
+          onDeletePlaylist={handleDeletePlaylist}
+          onSelectPlaylist={handleSelectPlaylist}
+          onPlayTrack={playPlaylistTrack}
+          onMoveTrack={movePlaylistTrack}
+          onRemoveTrack={removeFromPlaylist}
+        />
       </div>
 
       {/* ---------------------------------

@@ -10,6 +10,10 @@ import MusicArchiveCard from "../musicPlayer/MusicArchiveCard";
 import PlaylistCard from "../musicPlayer/PlaylistCard";
 import TrackRequestsCard from "../musicPlayer/TrackRequestsCard";
 
+import PlaylistFormModal from "../musicPlayer/PlaylistFormModal";
+import TrackFormModal from "../musicPlayer/TrackFormModal";
+import PreviewModal from "../musicPlayer/PreviewModal";
+
 import "../../assets/css/admin/musicSection.css";
 
 import {
@@ -101,6 +105,7 @@ export default function MusicSection() {
   const audioRef = useRef(null);
   const audioCacheRef = useRef({});
   const isSeekingRef = useRef(false);
+  const isPreviewSeekingRef = useRef(false);
   const [playerState, setPlayerState] = useState(null);
 
   const [playingTrackId, setPlayingTrackId] = useState(null);
@@ -735,7 +740,9 @@ export default function MusicSection() {
     const audio = previewAudioRef.current;
 
     const onTimeUpdate = () => {
-      setPreviewCurrentTime(audio.currentTime);
+      if (!isPreviewSeekingRef.current) {
+        setPreviewCurrentTime(audio.currentTime);
+      }
     };
 
     const onLoadedMetadata = () => {
@@ -767,13 +774,28 @@ export default function MusicSection() {
     setPreviewCurrentTime(0);
     setPreviewDuration(0);
   };
+  const togglePreviewPlay = async () => {
+    if (previewAudioRef.current.paused) {
+      await previewAudioRef.current.play();
+      setIsPreviewPlaying(true);
+    } else {
+      previewAudioRef.current.pause();
+      setIsPreviewPlaying(false);
+    }
+  };
   //--seek
-  const handlePreviewSeek = (e) => {
+  const handlePreviewSeekMouseDown = () => {
+    isPreviewSeekingRef.current = true;
+  };
+  const handlePreviewSeekChange = (e) => {
+    setPreviewCurrentTime(Number(e.target.value)); // فقط آپدیت UI هنگام کشیدن
+  };
+  const handlePreviewSeekMouseUp = (e) => {
     const value = Number(e.target.value);
-
-    previewAudioRef.current.currentTime = value;
-
-    setPreviewCurrentTime(value);
+    if (previewAudioRef.current) {
+      previewAudioRef.current.currentTime = value; // اعمال روی فایل صوتی در لحظه رها کردن
+    }
+    isPreviewSeekingRef.current = false;
   };
 
   /* ----- PLAYER ENGINE ----- */
@@ -1176,137 +1198,38 @@ export default function MusicSection() {
       -------------------------------------------------------------------*/}
 
       {/* مودال ساخت/ویرایش پلی‌لیست (فرم اختصاصی) */}
-      {showPlaylistModal && (
-        <div className="mh-modal-backdrop">
-          <div className="mh-modal">
-            <h4 className="mh-modal__title">
-              {playlistModalMode === "add"
-                ? "ایجاد پلی‌لیست جدید"
-                : "ویرایش پلی‌لیست"}
-            </h4>
-            <form onSubmit={submitPlaylistModal}>
-              <input
-                type="text"
-                className="mh-input"
-                value={playlistFormName}
-                onChange={(e) => setPlaylistFormName(e.target.value)}
-                placeholder="نام پلی‌لیست را وارد کنید..."
-                autoFocus
-              />
-              <div className="mh-modal__footer">
-                <button
-                  type="button"
-                  className="mh-btn mh-btn--ghost"
-                  onClick={() => setShowPlaylistModal(false)}
-                >
-                  لغو
-                </button>
-                <button
-                  type="submit"
-                  className="mh-btn mh-btn--primary"
-                  disabled={!playlistFormName.trim()}
-                >
-                  ذخیره
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <PlaylistFormModal
+        isOpen={showPlaylistModal}
+        mode={playlistModalMode}
+        name={playlistFormName}
+        onNameChange={setPlaylistFormName}
+        onSubmit={submitPlaylistModal}
+        onClose={() => setShowPlaylistModal(false)}
+      />
 
       {/* مودال ویرایش نام آهنگ (فرم اختصاصی) */}
-      {showTrackModal && (
-        <div className="mh-modal-backdrop">
-          <div className="mh-modal">
-            <h4 className="mh-modal__title">ویرایش نام آهنگ</h4>
-            <form onSubmit={submitTrackModal}>
-              <input
-                type="text"
-                className="mh-input"
-                value={trackFormName}
-                onChange={(e) => setTrackFormName(e.target.value)}
-                placeholder="نام جدید آهنگ را وارد کنید..."
-                autoFocus
-              />
-              <div className="mh-modal__footer">
-                <button
-                  type="button"
-                  className="mh-btn mh-btn--ghost"
-                  onClick={() => setShowTrackModal(false)}
-                >
-                  لغو
-                </button>
-                <button
-                  type="submit"
-                  className="mh-btn mh-btn--primary"
-                  disabled={!trackFormName.trim()}
-                >
-                  ذخیره
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <TrackFormModal
+        isOpen={showTrackModal}
+        name={trackFormName}
+        onNameChange={setTrackFormName}
+        onSubmit={submitTrackModal}
+        onClose={() => setShowTrackModal(false)}
+      />
 
       {/* مودال پیش‌نمایش آهنگ (پلیر اختصاصی) */}
-      {showPreviewModal && (
-        <div className="mh-modal-backdrop">
-          <div className="mh-modal mh-modal--wide">
-            <h4 className="mh-modal__title">
-              پیش‌نمایش آهنگ
-              <button
-                className="mh-icon-btn"
-                onClick={closePreviewModal}
-                title="بستن"
-              >
-                ✕
-              </button>
-            </h4>
-
-            <div className="mh-preview-track">{previewTrackTitle}</div>
-
-            <div className="mh-preview-progress">
-              <div
-                className="mh-preview-progress-fill"
-                style={{ width: `${previewProgressPct}%` }}
-              />
-              <input
-                type="range"
-                min="0"
-                max={previewDuration || 0}
-                value={previewCurrentTime}
-                onChange={handlePreviewSeek}
-              />
-            </div>
-
-            <div className="mh-preview-time">
-              <span>{formatTime(previewCurrentTime)}</span>
-              <span>{formatTime(previewDuration)}</span>
-            </div>
-
-            <div className="mh-preview-playbtn">
-              <button
-                type="button"
-                className="player-btn player-btn--main"
-                onClick={async () => {
-                  if (previewAudioRef.current.paused) {
-                    await previewAudioRef.current.play();
-                    setIsPreviewPlaying(true);
-                  } else {
-                    previewAudioRef.current.pause();
-                    setIsPreviewPlaying(false);
-                  }
-                }}
-              >
-                <i
-                  className={isPreviewPlaying ? "fas fa-pause" : "fas fa-play"}
-                />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <PreviewModal
+        isOpen={showPreviewModal}
+        trackTitle={previewTrackTitle}
+        isPlaying={isPreviewPlaying}
+        currentTime={previewCurrentTime}
+        duration={previewDuration}
+        progressPct={previewProgressPct}
+        onTogglePlay={togglePreviewPlay}
+        onSeekMouseDown={handlePreviewSeekMouseDown}
+        onSeekChange={handlePreviewSeekChange}
+        onSeekMouseUp={handlePreviewSeekMouseUp}
+        onClose={closePreviewModal}
+      />
     </div>
   );
 }

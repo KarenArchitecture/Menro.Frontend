@@ -7,7 +7,7 @@ import {
   waitForRefresh,
   clearAccessToken,
 } from "./tokenManager";
-import { globalLogout } from "../Context/AuthContext";
+import { globalLogout } from "../context/AuthContext";
 
 /**
  * Creates an axios instance wired into the shared token refresh flow.

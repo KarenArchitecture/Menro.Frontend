@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "../../Context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { useGlobalUI } from "../common/GlobalUI";
 import { getAdminComments } from "../../api/adminComments";
 import { toPersianDigits } from "../../utils/persianFormat";

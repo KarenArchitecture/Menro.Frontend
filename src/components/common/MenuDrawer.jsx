@@ -1,7 +1,7 @@
 // src/components/common/MenuDrawer.jsx
 import React, { cloneElement, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { useDrawerState } from "../../Context/DrawerStateContext";
+import { useDrawerState } from "../../context/DrawerStateContext";
 import "../../assets/css/menu-drawer.css";
 
 // --- Imported SVGs as Module URLs ---
@@ -22,8 +22,6 @@ import moonSvg from "../../assets/icons/drawer-menu/moon.svg";
 import notificationOnSvg from "../../assets/icons/drawer-menu/notification-on.svg";
 import notificationOffSvg from "../../assets/icons/drawer-menu/notification-off.svg";
 // --- End of Imports ---
-
-
 
 // Helper component to render an image from a given src prop
 function DrawerIcon({ src, alt = "", className = "" }) {
@@ -104,16 +102,18 @@ export default function MenuDrawer({
   const [mounted, setMounted] = useState(false); // Used to prevent SSR issues with createPortal
 
   // Define default items using the imported SVGs
-  const DEFAULT_MENU_ITEMS = useMemo(() => [
-    { label: "علاقه‌مندی ها", href: "/favorites", iconSrc: heartSvg },
-    { label: "پشتیبانی", href: "/support", iconSrc: smsSvg },
-    { label: "سوالات متداول", href: "#faq", iconSrc: helpSvg },
-    { label: "درباره ما", href: "#about", iconSrc: lampSvg },
-  ], []);
+  const DEFAULT_MENU_ITEMS = useMemo(
+    () => [
+      { label: "علاقه‌مندی ها", href: "/favorites", iconSrc: heartSvg },
+      { label: "پشتیبانی", href: "/support", iconSrc: smsSvg },
+      { label: "سوالات متداول", href: "#faq", iconSrc: helpSvg },
+      { label: "درباره ما", href: "#about", iconSrc: lampSvg },
+    ],
+    [],
+  );
 
   // Use provided items or default if none are passed
   const menuItems = items.length > 0 ? items : DEFAULT_MENU_ITEMS;
-
 
   const isLightMode = themeMode === "light";
 
@@ -148,7 +148,7 @@ export default function MenuDrawer({
 
       // Only open the drawer if the event was not default-prevented
       if (!event.defaultPrevented) {
-        setDrawerOpen(true)
+        setDrawerOpen(true);
       }
     };
 
@@ -157,7 +157,7 @@ export default function MenuDrawer({
       return cloneElement(trigger, {
         onClick: openMenu,
         "aria-haspopup": "dialog", // Accessibility: indicates it's a dialog
-        "aria-expanded": isOpen,   // Accessibility: indicates if the controlled element is expanded
+        "aria-expanded": isOpen, // Accessibility: indicates if the controlled element is expanded
       });
     }
 
@@ -171,12 +171,26 @@ export default function MenuDrawer({
         aria-expanded={isOpen}
         onClick={openMenu}
       >
-        <svg width="37" height="38" viewBox="0 0 37 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M20.0416 8.3125C19.403 8.3125 18.8853 8.84416 18.8853 9.5C18.8853 10.1558 19.403 10.6875 20.0416 10.6875L29.2916 10.6875C29.9302 10.6875 30.4478 10.1558 30.4478 9.5C30.4478 8.84416 29.9302 8.3125 29.2916 8.3125H20.0416Z" fill="#F0F0F0"/>
-          <path d="M7.70825 17.8125C7.06967 17.8125 6.552 18.3442 6.552 19C6.552 19.6558 7.06967 20.1875 7.70825 20.1875H29.2916C29.9302 20.1875 30.4478 19.6558 30.4478 19C30.4478 18.3442 29.9302 17.8125 29.2916 17.8125H7.70825Z" fill="#F0F0F0"/>
-          <path d="M13.8749 27.3125C13.2363 27.3125 12.7187 27.8442 12.7187 28.5C12.7187 29.1558 13.2363 29.6875 13.8749 29.6875L29.2916 29.6875C29.9302 29.6875 30.4478 29.1558 30.4478 28.5C30.4478 27.8442 29.9302 27.3125 29.2916 27.3125L13.8749 27.3125Z" fill="#F0F0F0"/>
+        <svg
+          width="37"
+          height="38"
+          viewBox="0 0 37 38"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M20.0416 8.3125C19.403 8.3125 18.8853 8.84416 18.8853 9.5C18.8853 10.1558 19.403 10.6875 20.0416 10.6875L29.2916 10.6875C29.9302 10.6875 30.4478 10.1558 30.4478 9.5C30.4478 8.84416 29.9302 8.3125 29.2916 8.3125H20.0416Z"
+            fill="#F0F0F0"
+          />
+          <path
+            d="M7.70825 17.8125C7.06967 17.8125 6.552 18.3442 6.552 19C6.552 19.6558 7.06967 20.1875 7.70825 20.1875H29.2916C29.9302 20.1875 30.4478 19.6558 30.4478 19C30.4478 18.3442 29.9302 17.8125 29.2916 17.8125H7.70825Z"
+            fill="#F0F0F0"
+          />
+          <path
+            d="M13.8749 27.3125C13.2363 27.3125 12.7187 27.8442 12.7187 28.5C12.7187 29.1558 13.2363 29.6875 13.8749 29.6875L29.2916 29.6875C29.9302 29.6875 30.4478 29.1558 30.4478 28.5C30.4478 27.8442 29.9302 27.3125 29.2916 27.3125L13.8749 27.3125Z"
+            fill="#F0F0F0"
+          />
         </svg>
-
       </button>
     );
   }, [trigger, isOpen]); // Dependencies: trigger element and open state

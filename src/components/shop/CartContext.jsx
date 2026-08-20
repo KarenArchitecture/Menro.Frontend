@@ -1,7 +1,20 @@
 // src/components/shop/CartContext.jsx
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { fetchCart, setCartItem, clearCart as clearCartApi, mergeGuestCart } from "../../api/cart";
-import { useAuth } from "../../Context/AuthContext";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  fetchCart,
+  setCartItem,
+  clearCart as clearCartApi,
+  mergeGuestCart,
+} from "../../api/cart";
+import { useAuth } from "../../context/AuthContext";
 
 const CartContext = createContext(null);
 
@@ -30,7 +43,9 @@ export function CartProvider({ children }) {
   // key -> { quantity, addons, meta } — local edits not yet confirmed by the server
   const [overrides, setOverrides] = useState({});
   const overridesRef = useRef({});
-  useEffect(() => { overridesRef.current = overrides; }, [overrides]);
+  useEffect(() => {
+    overridesRef.current = overrides;
+  }, [overrides]);
 
   const timersRef = useRef({});
   const inFlightRef = useRef({});
@@ -52,7 +67,14 @@ export function CartProvider({ children }) {
     setLoading(true);
     (async () => {
       if (user) {
-        try { await mergeGuestCart(); } catch (err) { console.warn("Cart merge failed:", err?.response?.data?.message || err.message); }
+        try {
+          await mergeGuestCart();
+        } catch (err) {
+          console.warn(
+            "Cart merge failed:",
+            err?.response?.data?.message || err.message,
+          );
+        }
       }
       await refresh();
     })();
@@ -67,64 +89,76 @@ export function CartProvider({ children }) {
     });
   }, []);
 
-  const sendToServer = useCallback(async (key, dto) => {
-    inFlightRef.current[key] = true;
-    dirtyRef.current[key] = false;
+  const sendToServer = useCallback(
+    async (key, dto) => {
+      inFlightRef.current[key] = true;
+      dirtyRef.current[key] = false;
 
-    try {
-      const result = await setCartItem(dto);
-      if (result.conflict) {
-        setConflict({ conflictingRestaurantName: result.conflictingRestaurantName, pendingDto: dto });
-        if (result.cart) setCart(result.cart);
-      } else {
-        setCart(result.cart ?? EMPTY_CART);
-      }
-    } catch (err) {
-      console.error("Cart update failed:", err?.response?.data?.message || err.message);
-    } finally {
-      inFlightRef.current[key] = false;
-
-      if (dirtyRef.current[key]) {
-        // A newer edit arrived while this request was in flight — fire it
-        // now with the freshest desired state instead of dropping it.
-        dirtyRef.current[key] = false;
-        const latest = overridesRef.current[key];
-        if (latest) {
-          sendToServer(key, {
-            foodId: latest.meta.foodId,
-            variantId: latest.meta.variantId,
-            quantity: latest.quantity,
-            addons: latest.addons,
+      try {
+        const result = await setCartItem(dto);
+        if (result.conflict) {
+          setConflict({
+            conflictingRestaurantName: result.conflictingRestaurantName,
+            pendingDto: dto,
           });
-          return;
+          if (result.cart) setCart(result.cart);
+        } else {
+          setCart(result.cart ?? EMPTY_CART);
         }
+      } catch (err) {
+        console.error(
+          "Cart update failed:",
+          err?.response?.data?.message || err.message,
+        );
+      } finally {
+        inFlightRef.current[key] = false;
+
+        if (dirtyRef.current[key]) {
+          // A newer edit arrived while this request was in flight — fire it
+          // now with the freshest desired state instead of dropping it.
+          dirtyRef.current[key] = false;
+          const latest = overridesRef.current[key];
+          if (latest) {
+            sendToServer(key, {
+              foodId: latest.meta.foodId,
+              variantId: latest.meta.variantId,
+              quantity: latest.quantity,
+              addons: latest.addons,
+            });
+            return;
+          }
+        }
+
+        clearOverride(key);
+        setPendingCount((c) => Math.max(0, c - 1));
+      }
+    },
+    [clearOverride],
+  );
+
+  const queueUpdate = useCallback(
+    (foodId, variantId, quantity, addons, meta) => {
+      const key = keyOf(foodId, variantId);
+      const wasPending = key in overridesRef.current;
+
+      setOverrides((prev) => ({
+        ...prev,
+        [key]: { quantity, addons, meta: { ...meta, foodId, variantId } },
+      }));
+      if (!wasPending) setPendingCount((c) => c + 1);
+
+      if (inFlightRef.current[key]) {
+        dirtyRef.current[key] = true;
+        return;
       }
 
-      clearOverride(key);
-      setPendingCount((c) => Math.max(0, c - 1));
-    }
-  }, [clearOverride]);
-
-  const queueUpdate = useCallback((foodId, variantId, quantity, addons, meta) => {
-    const key = keyOf(foodId, variantId);
-    const wasPending = key in overridesRef.current;
-
-    setOverrides((prev) => ({
-      ...prev,
-      [key]: { quantity, addons, meta: { ...meta, foodId, variantId } },
-    }));
-    if (!wasPending) setPendingCount((c) => c + 1);
-
-    if (inFlightRef.current[key]) {
-      dirtyRef.current[key] = true;
-      return;
-    }
-
-    clearTimeout(timersRef.current[key]);
-    timersRef.current[key] = setTimeout(() => {
-      sendToServer(key, { foodId, variantId, quantity, addons });
-    }, DEBOUNCE_MS);
-  }, [sendToServer]);
+      clearTimeout(timersRef.current[key]);
+      timersRef.current[key] = setTimeout(() => {
+        sendToServer(key, { foodId, variantId, quantity, addons });
+      }, DEBOUNCE_MS);
+    },
+    [sendToServer],
+  );
 
   // Immediately flush any debounced/queued edits — call this before
   // checkout so we never submit against a not-yet-synced cart.
@@ -142,13 +176,22 @@ export function CartProvider({ children }) {
           quantity: latest.quantity,
           addons: latest.addons,
         });
-      })
+      }),
     );
   }, [sendToServer]);
 
-  const setItem = useCallback((dto) => {
-    queueUpdate(dto.foodId, dto.variantId ?? null, dto.quantity, dto.addons ?? [], dto.meta || {});
-  }, [queueUpdate]);
+  const setItem = useCallback(
+    (dto) => {
+      queueUpdate(
+        dto.foodId,
+        dto.variantId ?? null,
+        dto.quantity,
+        dto.addons ?? [],
+        dto.meta || {},
+      );
+    },
+    [queueUpdate],
+  );
 
   const confirmSwitch = useCallback(async () => {
     if (!conflict?.pendingDto) return;
@@ -173,7 +216,9 @@ export function CartProvider({ children }) {
 
   const displayItems = useMemo(() => {
     const map = new Map();
-    cart.items.forEach((it) => map.set(keyOf(it.foodId, it.variantId), { ...it }));
+    cart.items.forEach((it) =>
+      map.set(keyOf(it.foodId, it.variantId), { ...it }),
+    );
 
     Object.entries(overrides).forEach(([key, ov]) => {
       const existing = map.get(key);
@@ -186,7 +231,8 @@ export function CartProvider({ children }) {
           ...existing,
           quantity: ov.quantity,
           addons: ov.addons,
-          lineTotal: (existing.unitPrice || ov.meta.unitPrice || 0) * ov.quantity,
+          lineTotal:
+            (existing.unitPrice || ov.meta.unitPrice || 0) * ov.quantity,
         });
       } else {
         const unitPrice = ov.meta.unitPrice || 0;
@@ -212,84 +258,150 @@ export function CartProvider({ children }) {
     return Array.from(map.values());
   }, [cart.items, overrides]);
 
-  const total = useMemo(() => displayItems.reduce((s, it) => s + (it.lineTotal || 0), 0), [displayItems]);
-  const count = useMemo(() => displayItems.reduce((s, it) => s + (it.quantity || 0), 0), [displayItems]);
+  const total = useMemo(
+    () => displayItems.reduce((s, it) => s + (it.lineTotal || 0), 0),
+    [displayItems],
+  );
+  const count = useMemo(
+    () => displayItems.reduce((s, it) => s + (it.quantity || 0), 0),
+    [displayItems],
+  );
 
   const getFoodItems = useCallback(
     (foodId) => displayItems.filter((i) => i.foodId === foodId),
-    [displayItems]
+    [displayItems],
   );
 
   const getFoodQty = useCallback(
     (foodId) => getFoodItems(foodId).reduce((sum, i) => sum + i.quantity, 0),
-    [getFoodItems]
+    [getFoodItems],
   );
 
   const getVariantItem = useCallback(
-    (foodId, variantId) => displayItems.find((i) => i.foodId === foodId && i.variantId === variantId) || null,
-    [displayItems]
+    (foodId, variantId) =>
+      displayItems.find(
+        (i) => i.foodId === foodId && i.variantId === variantId,
+      ) || null,
+    [displayItems],
   );
 
   const distinctFoodCount = useMemo(
     () => new Set(displayItems.map((i) => i.foodId)).size,
-    [displayItems]
+    [displayItems],
   );
 
-  const quickIncrement = useCallback((food) => {
-    const items = getFoodItems(food.id);
-    const defaultLine = items.find((i) => i.isDefaultVariant) || null;
-    const currentQty = defaultLine?.quantity ?? 0;
+  const quickIncrement = useCallback(
+    (food) => {
+      const items = getFoodItems(food.id);
+      const defaultLine = items.find((i) => i.isDefaultVariant) || null;
+      const currentQty = defaultLine?.quantity ?? 0;
 
-    setItem({
-      foodId: food.id,
-      variantId: defaultLine?.variantId ?? null,
-      quantity: currentQty + 1,
-      addons: defaultLine ? defaultLine.addons.map((a) => ({ foodAddonId: a.foodAddonId, quantity: a.quantity })) : [],
-      meta: defaultLine
-        ? { foodName: defaultLine.foodName, imageUrl: defaultLine.imageUrl, variantName: defaultLine.variantName, unitPrice: defaultLine.unitPrice, isDefaultVariant: true }
-        : { foodName: food.name, imageUrl: food.imageUrl, variantName: "", unitPrice: food.price, isDefaultVariant: true },
-    });
-  }, [getFoodItems, setItem]);
+      setItem({
+        foodId: food.id,
+        variantId: defaultLine?.variantId ?? null,
+        quantity: currentQty + 1,
+        addons: defaultLine
+          ? defaultLine.addons.map((a) => ({
+              foodAddonId: a.foodAddonId,
+              quantity: a.quantity,
+            }))
+          : [],
+        meta: defaultLine
+          ? {
+              foodName: defaultLine.foodName,
+              imageUrl: defaultLine.imageUrl,
+              variantName: defaultLine.variantName,
+              unitPrice: defaultLine.unitPrice,
+              isDefaultVariant: true,
+            }
+          : {
+              foodName: food.name,
+              imageUrl: food.imageUrl,
+              variantName: "",
+              unitPrice: food.price,
+              isDefaultVariant: true,
+            },
+      });
+    },
+    [getFoodItems, setItem],
+  );
 
-  const quickDecrement = useCallback((food) => {
-    const items = getFoodItems(food.id);
-    const target = items.find((i) => i.isDefaultVariant && i.quantity > 0) || items.find((i) => i.quantity > 0);
-    if (!target) return;
+  const quickDecrement = useCallback(
+    (food) => {
+      const items = getFoodItems(food.id);
+      const target =
+        items.find((i) => i.isDefaultVariant && i.quantity > 0) ||
+        items.find((i) => i.quantity > 0);
+      if (!target) return;
 
-    setItem({
-      foodId: food.id,
-      variantId: target.variantId,
-      quantity: target.quantity - 1,
-      addons: target.addons.map((a) => ({ foodAddonId: a.foodAddonId, quantity: a.quantity })),
-      meta: { foodName: target.foodName, imageUrl: target.imageUrl, variantName: target.variantName, unitPrice: target.unitPrice, isDefaultVariant: target.isDefaultVariant },
-    });
-  }, [getFoodItems, setItem]);
+      setItem({
+        foodId: food.id,
+        variantId: target.variantId,
+        quantity: target.quantity - 1,
+        addons: target.addons.map((a) => ({
+          foodAddonId: a.foodAddonId,
+          quantity: a.quantity,
+        })),
+        meta: {
+          foodName: target.foodName,
+          imageUrl: target.imageUrl,
+          variantName: target.variantName,
+          unitPrice: target.unitPrice,
+          isDefaultVariant: target.isDefaultVariant,
+        },
+      });
+    },
+    [getFoodItems, setItem],
+  );
 
-  const value = useMemo(() => ({
-    items: displayItems,
-    count,
-    distinctFoodCount,
-    total,
-    restaurantId: cart.restaurantId,
-    restaurantName: cart.restaurantName,
-    restaurantSlug: cart.restaurantSlug,
-    tableCount: cart.tableCount,
-    paymentMethod: cart.paymentMethod,
-    loading,
-    conflict,
-    hasPendingChanges: pendingCount > 0,
-    setItem,
-    confirmSwitch,
-    cancelSwitch,
-    clear,
-    refresh,
-    flushPending,
-    getFoodItems,
-    getFoodQty,
-    getVariantItem,
-    quickIncrement,
-    quickDecrement,
-  }), [displayItems, count, distinctFoodCount, total, cart, loading, conflict, pendingCount, setItem, confirmSwitch, cancelSwitch, clear, refresh, flushPending, getFoodItems, getFoodQty, getVariantItem, quickIncrement, quickDecrement]);
+  const value = useMemo(
+    () => ({
+      items: displayItems,
+      count,
+      distinctFoodCount,
+      total,
+      restaurantId: cart.restaurantId,
+      restaurantName: cart.restaurantName,
+      restaurantSlug: cart.restaurantSlug,
+      tableCount: cart.tableCount,
+      paymentMethod: cart.paymentMethod,
+      loading,
+      conflict,
+      hasPendingChanges: pendingCount > 0,
+      setItem,
+      confirmSwitch,
+      cancelSwitch,
+      clear,
+      refresh,
+      flushPending,
+      getFoodItems,
+      getFoodQty,
+      getVariantItem,
+      quickIncrement,
+      quickDecrement,
+    }),
+    [
+      displayItems,
+      count,
+      distinctFoodCount,
+      total,
+      cart,
+      loading,
+      conflict,
+      pendingCount,
+      setItem,
+      confirmSwitch,
+      cancelSwitch,
+      clear,
+      refresh,
+      flushPending,
+      getFoodItems,
+      getFoodQty,
+      getVariantItem,
+      quickIncrement,
+      quickDecrement,
+    ],
+  );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

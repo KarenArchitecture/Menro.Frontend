@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useDrawerState } from "../../Context/DrawerStateContext";
+import { useDrawerState } from "../../context/DrawerStateContext";
 import ComingSoonModal from "./ComingSoonModal";
 import { toPersianDigits } from "../../utils/persianNumbers";
 import useRequireLogin from "../../hooks/useRequireLogin";
@@ -14,7 +14,8 @@ const MobileNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const cart = useCart();
-  const { requireLogin, open, closeModal, goToLogin, modalProps } = useRequireLogin();
+  const { requireLogin, open, closeModal, goToLogin, modalProps } =
+    useRequireLogin();
 
   const handleGoToLogin = () => {
     closeModal();
@@ -41,9 +42,21 @@ const MobileNav = () => {
       returnUrl: "/profile",
       type: "profile",
       icon: (
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          width="28"
+          height="28"
+          viewBox="0 0 28 28"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <circle cx="13.9999" cy="7.47369" r="5.47369" fill="#FF683C" />
-          <ellipse cx="14" cy="20.5263" rx="9.57896" ry="5.47369" fill="#FF683C" />
+          <ellipse
+            cx="14"
+            cy="20.5263"
+            rx="9.57896"
+            ry="5.47369"
+            fill="#FF683C"
+          />
         </svg>
       ),
     });
@@ -56,7 +69,13 @@ const MobileNav = () => {
       returnUrl: "/orders",
       type: "orders",
       icon: (
-        <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          width="34"
+          height="34"
+          viewBox="0 0 34 34"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <path
             fillRule="evenodd"
             clipRule="evenodd"
@@ -75,8 +94,19 @@ const MobileNav = () => {
       <nav className="mobile-nav">
         <ul className="mobile-nav-list">
           <li>
-            <NavLink to="/home" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-              <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <NavLink
+              to="/home"
+              className={({ isActive }) =>
+                `nav-item ${isActive ? "active" : ""}`
+              }
+            >
+              <svg
+                width="34"
+                height="34"
+                viewBox="0 0 34 34"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <path
                   fillRule="evenodd"
                   clipRule="evenodd"
@@ -89,8 +119,18 @@ const MobileNav = () => {
           </li>
 
           <li>
-            <NavLink to="/location" onClick={openComingSoonModal} className="nav-item">
-              <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <NavLink
+              to="/location"
+              onClick={openComingSoonModal}
+              className="nav-item"
+            >
+              <svg
+                width="34"
+                height="34"
+                viewBox="0 0 34 34"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <path
                   d="M17 29C23.6274 29 29 26.6539 29 23.7599C29 22.2849 27.6045 20.9523 25.3585 20C23.988 22.4405 21.8981 24.5442 19.2434 25.645C17.8165 26.2368 16.1835 26.2368 14.7566 25.645C12.1019 24.5442 10.012 22.4405 8.6415 20C6.39554 20.9523 5 22.2849 5 23.7599C5 26.6539 10.3726 29 17 29Z"
                   fill="#999FA8"
@@ -112,7 +152,13 @@ const MobileNav = () => {
               className={`nav-item ${isOrdersActive ? "active" : ""}`}
               onClick={handleOrdersClick}
             >
-              <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg
+                width="34"
+                height="34"
+                viewBox="0 0 34 34"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <path
                   fillRule="evenodd"
                   clipRule="evenodd"
@@ -121,7 +167,11 @@ const MobileNav = () => {
                 />
               </svg>
               <span className="text">سفارش‌ها</span>
-              {cart.count > 0 && <span className="badge show">{toPersianDigits(cart.count)}</span>}
+              {cart.count > 0 && (
+                <span className="badge show">
+                  {toPersianDigits(cart.count)}
+                </span>
+              )}
             </a>
           </li>
 
@@ -129,11 +179,25 @@ const MobileNav = () => {
             <NavLink
               to="/profile"
               onClick={handleProfileClick}
-              className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+              className={({ isActive }) =>
+                `nav-item ${isActive ? "active" : ""}`
+              }
             >
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 28 28"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <circle cx="13.9999" cy="7.47369" r="5.47369" fill="#999FA8" />
-                <ellipse cx="14" cy="20.5263" rx="9.57896" ry="5.47369" fill="#999FA8" />
+                <ellipse
+                  cx="14"
+                  cy="20.5263"
+                  rx="9.57896"
+                  ry="5.47369"
+                  fill="#999FA8"
+                />
               </svg>
               <span className="text">حساب کاربری</span>
             </NavLink>
@@ -141,7 +205,11 @@ const MobileNav = () => {
         </ul>
       </nav>
 
-      <ComingSoonModal isOpen={isComingSoonOpen} onClose={closeComingSoonModal} title="به زودی" />
+      <ComingSoonModal
+        isOpen={isComingSoonOpen}
+        onClose={closeComingSoonModal}
+        title="به زودی"
+      />
 
       <ProtectedActionModal
         open={open}

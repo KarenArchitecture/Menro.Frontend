@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import "../assets/css/styles-orders.css";
 import ContinueShopping from "../components/orders/ContinueShopping";
 import { PreviousOrdersList } from "../components/orders/PreviousOrderCard";
-import { useAuth } from "../Context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import { getUserOrderHistory } from "../api/orders";
 import resolveFileUrl from "../utils/resolveFileUrl";
 

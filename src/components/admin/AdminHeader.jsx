@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 // import SearchBar from "../common/SearchBar"; // 🔕 Search disabled for now
-import { useAuth } from "../../Context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { FaMusic } from "react-icons/fa";
 export default function AdminHeader({

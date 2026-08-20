@@ -1,8 +1,9 @@
-// src/context/AuthContext.jsx
+// src/ontext/AuthContext.jsx
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import authAxios from "../api/authAxios";
 import userAxios from "../api/userAxios";
+import restaurantAuthAxios from "../api/restaurantAuthAxios";
 
 export let globalLogout = () => {};
 export function setGlobalLogout(fn) {
@@ -16,6 +17,12 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("accessToken"));
+
+  // وضعیت درخواست ثبت رستوران (owner pending) — فقط وقتی صراحتاً
+  // fetchRestaurantStatus صدا زده بشه پر میشه، نه به‌صورت خودکار برای همه‌ی کاربرها
+  const [restaurantStatus, setRestaurantStatus] = useState(null);
+  const [restaurantStatusLoading, setRestaurantStatusLoading] = useState(false);
+
   /* ------------------------
    * INITIAL LOAD
    * ---------------------- */
@@ -170,6 +177,33 @@ export function AuthProvider({ children }) {
   };
 
   /* ------------------------
+   * RESTAURANT STATUS
+   * ---------------------- */
+  // این متد عمداً به هیچ useEffect خودکاری وصل نیست. فقط جایی صدا زده
+  // میشه که واقعاً لازمه بدونیم کاربر یه درخواست ثبت رستوران pending داره یا نه
+  // (مثلاً داخل ProtectedRoute، وقتی کاربر بدون role owner سعی می‌کنه بره /admin)
+  const fetchRestaurantStatus = async () => {
+    if (!user) return null;
+
+    setRestaurantStatusLoading(true);
+    try {
+      const { data } = await restaurantAuthAxios.get("/my-status");
+      setRestaurantStatus(data);
+      return data;
+    } catch (err) {
+      if (err.response?.status === 404) {
+        // کاربر هیچ رستورانی ثبت نکرده
+        setRestaurantStatus(null);
+      } else {
+        console.warn("⚠️ خطا در گرفتن وضعیت رستوران:", err);
+      }
+      return null;
+    } finally {
+      setRestaurantStatusLoading(false);
+    }
+  };
+
+  /* ------------------------
     LOGOUT
    ---------------------- */
   const logout = async (redirect = true) => {
@@ -183,6 +217,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("accessToken");
     setToken(null);
     setAvatarUrl(null); // 🛑 عکس قبلی را هم پاک کن
+    setRestaurantStatus(null); // 🛑 وضعیت رستوران قبلی رو هم پاک کن
     setUser(null);
     localStorage.setItem("logout-event", Date.now().toString());
     await refreshUser();
@@ -217,6 +252,9 @@ export function AuthProvider({ children }) {
         setToken,
         completeLogin,
         registerUser,
+        restaurantStatus,
+        restaurantStatusLoading,
+        fetchRestaurantStatus,
       }}
     >
       {!loading && children}

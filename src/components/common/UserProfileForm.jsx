@@ -4,7 +4,7 @@ import {
   updateUserProfile,
   setUserPassword,
 } from "../../api/user.js";
-import { useAuth } from "../../Context/AuthContext.jsx";
+import { useAuth } from "../../context/AuthContext.jsx";
 import { Link, useLocation } from "react-router-dom";
 import useRequireLogin from "../../hooks/useRequireLogin";
 import ProtectedActionModal from "./ProtectedActionModal";

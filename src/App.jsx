@@ -18,7 +18,7 @@ import HomePage from "./pages/HomePage";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/Authentication/LoginPage";
 import MusicPage from "./pages/MusicPage";
-import NotFoundPage from "./pages/NotFoundPage";
+import NotFoundPage from "./pages/Errors/NotFoundPage";
 import Orders from "./pages/OrdersPage";
 import PopularFoodsBrowsePage from "./pages/PopularFoodsBrowsePage";
 import ProfilePage from "./pages/Authentication/ProfilePage";
@@ -27,19 +27,23 @@ import RegisterPage from "./pages/Authentication/RegisterPage";
 import RegisterRestaurantPage from "./pages/RegisterRestaurantPage";
 import RestaurantPage from "./pages/RestaurantPage";
 import RestaurantsBrowsePage from "./pages/RestaurantsBrowsePage";
-import UnauthorizedPage from "./pages/Authentication/UnauthorizedPage";
+import RestaurantStatusPage from "./pages/Errors/RestaurantStatusPage";
+import UnauthorizedPage from "./pages/Errors/UnauthorizedPage";
+import StandalonePageChrome from "./components/common/StandalonePageChrome";
 import UserProfileForm from "./components/common/UserProfileForm";
 import FoodCommentsPage from "./pages/FoodCommentsPage";
 import MyCommentsPage from "./pages/MyCommentsPage";
 import ScrollToTop from "./components/common/ScrollToTop";
-import PendingPaymentBanner, { markPendingCounterOrder } from "./components/common/PendingPaymentBanner";
+import PendingPaymentBanner, {
+  markPendingCounterOrder,
+} from "./components/common/PendingPaymentBanner";
 
 import MobileNav from "./components/common/MobileNav";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import {
   DrawerStateProvider,
   useDrawerState,
-} from "../src/Context/DrawerStateContext";
+} from "./context/DrawerStateContext";
 import { CartProvider } from "./components/shop/CartContext";
 import RestaurantSwitchConfirmModal from "./components/shop/RestaurantSwitchConfirmModal";
 
@@ -123,6 +127,7 @@ export default function App() {
                       "editor",
                       "contributor",
                     ]}
+                    checkPendingOwner
                   >
                     <AdminPage />
                   </ProtectedRoute>
@@ -190,18 +195,32 @@ export default function App() {
                 path="/profile/edit"
                 element={
                   <ProtectedRoute roles={["customer", "admin", "owner"]}>
-                    <UserProfileForm />
+                    <StandalonePageChrome>
+                      <UserProfileForm />
+                    </StandalonePageChrome>
                   </ProtectedRoute>
                 }
               />
               <Route path="/register" element={<RegisterPage />} />
               <Route
                 path="/register-restaurant"
-                element={<RegisterRestaurantPage />}
+                element={
+                  <ProtectedRoute checkPendingOwner>
+                    <RegisterRestaurantPage />
+                  </ProtectedRoute>
+                }
               />
               <Route path="/restaurant/:slug" element={<RestaurantPage />} />
               <Route path="/restaurant/:slug/music" element={<MusicPage />} />
               <Route path="/restaurants" element={<RestaurantsBrowsePage />} />
+              <Route
+                path="/restaurant-status"
+                element={
+                  <ProtectedRoute>
+                    <RestaurantStatusPage />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/unauthorized" element={<UnauthorizedPage />} />
               {/* 404 Catch-All Route */}
               <Route path="*" element={<NotFoundPage />} />

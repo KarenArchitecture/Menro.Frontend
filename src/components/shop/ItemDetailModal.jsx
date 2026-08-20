@@ -242,7 +242,6 @@ function ItemDetailModal({ item, onClose, onSelectComboFood }) {
 
   const sheetBodyRef = useRef(null);
 
-  
   useEffect(() => {
     if (!item) return;
     sheetBodyRef.current?.scrollTo(0, 0);

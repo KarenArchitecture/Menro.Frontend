@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth } from "../../Context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 import PostsPane from "./BlogManagementSection/PostsPane";
 import DisplayCategoriesPane from "./BlogManagementSection/DisplayCategoriesPane";

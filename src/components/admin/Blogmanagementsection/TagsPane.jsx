@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useAuth } from "../../../Context/AuthContext.jsx";
+import { useAuth } from "../../../context/AuthContext.jsx";
 import {
   getBlogTags,
   createBlogTag,

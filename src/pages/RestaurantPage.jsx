@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import usePageStyles from "../hooks/usePageStyles";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import UsualOrdersModal from "../components/shop/UsualOrdersModal";
 
 import ShopBanner from "../components/shop/ShopBanner";
 import MenuList from "../components/shop/MenuList";
@@ -31,6 +32,7 @@ function RestaurantContent() {
 
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedItem, setSelectedItem] = useState(null);
+  const [usualOrdersOpen, setUsualOrdersOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isNearPageBottom, setIsNearPageBottom] = useState(false);
 
@@ -178,6 +180,7 @@ function RestaurantContent() {
           searchValue={searchQuery}
           onSearchChange={handleRestaurantSearch}
           onSearchSubmit={handleRestaurantSearch}
+          onOpenUsualOrders={() => setUsualOrdersOpen(true)}
         />
       )}
 
@@ -242,6 +245,16 @@ function RestaurantContent() {
         count={cart.count}
         total={cart.total}
         onCheckout={handleCheckout}
+      />
+
+      <UsualOrdersModal
+        open={usualOrdersOpen}
+        restaurantId={banner?.id}
+        onClose={() => setUsualOrdersOpen(false)}
+        onSelectFood={(food) => {
+          setUsualOrdersOpen(false);
+          handleSelectItem(food);
+        }}
       />
     </div>
   );

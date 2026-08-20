@@ -18,6 +18,7 @@ function ShopBanner({
   onSearchSubmit,
   onSearchChange,
   searchValue = "",
+  onOpenUsualOrders,
 }) {
   const navigate = useNavigate();
   const cart = useCart();
@@ -55,6 +56,13 @@ function ShopBanner({
           },
         });
       },
+    });
+  };
+
+  const handleUsualOrdersClick = () => {
+    requireLogin({
+      type: "usual-orders",
+      onAuthenticated: () => onOpenUsualOrders?.(),
     });
   };
 
@@ -127,7 +135,11 @@ function ShopBanner({
         />
 
         <div className="reorder-and-music">
-          <button className="reorder-and-music-btn">
+          <button
+            type="button"
+            className="reorder-and-music-btn"
+            onClick={handleUsualOrdersClick}
+          >
             <span>همون همیشگی</span>
             <CircleIcon />
           </button>

@@ -6,6 +6,12 @@ import resolveFileUrl from "../utils/resolveFileUrl";
 import { toPersianDigits } from "../utils/persianNumbers";
 import "../assets/css/styles-bills.css";
 
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import gsap from "gsap";
+
+gsap.registerPlugin(ScrollTrigger);
+ScrollTrigger.normalizeScroll(true);
+
 const toPersianNum = (n) =>
   Number(n).toLocaleString("fa-IR").replace(/٫/g, ".");
 

@@ -6,9 +6,10 @@ import {
   checkSlugAvailability,
 } from "../../api/ownerRestaurant";
 import restaurantAxios from "../../api/restaurantAxios";
-import "../../assets/css/admin/restaurantProfileSection.css";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+
+import "../../assets/css/admin/restaurantProfileSection.css";
 
 export default function RestaurantProfileSection() {
   useDocumentTitle("پروفایل رستوران");
@@ -385,6 +386,200 @@ export default function RestaurantProfileSection() {
           )}
         </div>
 
+        {/* Images — brand identity, shown right after name/type/slug */}
+        <div className="form-section-heading form-section-heading--first">
+          <i className="fa-solid fa-images" />
+          <span>تصاویر عمومی رستوران</span>
+        </div>
+
+        <div className="images-grid">
+          {/* Home banner (portrait — spans full height of the two fields beside it) */}
+          <div className="image-field image-field--home">
+            <label htmlFor="restaurant-home-banner-btn">
+              عکس بنر صفحه عمومی منرو
+            </label>
+            <span className="image-field__hint">
+              این عکس به صورت عمودی (نسبت ۳:۴) در صفحه اصلی نمایش داده می‌شود
+            </span>
+
+            <div className="restaurant-profile-image-frame restaurant-profile-image-frame--portrait">
+              {homeBannerPreview ? (
+                <img
+                  src={homeBannerPreview}
+                  alt="عکس بنر صفحه عمومی منرو"
+                  className="restaurant-profile-image-frame__img"
+                  onError={(e) => {
+                    e.currentTarget.src = "/images/placeholder-banner.png";
+                  }}
+                />
+              ) : (
+                <span className="restaurant-profile-image-placeholder">
+                  <i className="fas fa-image" />
+                  عکسی انتخاب نشده
+                </span>
+              )}
+            </div>
+
+            <input
+              ref={homeBannerInputRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                setHomeBannerFile(file || null);
+                if (file) setHomeBannerPreview(URL.createObjectURL(file));
+                else setHomeBannerPreview(null);
+              }}
+            />
+
+            <button
+              id="restaurant-home-banner-btn"
+              type="button"
+              className="restaurant-profile-upload-btn"
+              onClick={() => homeBannerInputRef.current?.click()}
+            >
+              <i className="fas fa-cloud-arrow-up" />
+              <span>{homeBannerPreview ? "تغییر عکس" : "آپلود عکس"}</span>
+            </button>
+
+            {homeBannerPreview && (
+              <button
+                type="button"
+                className="restaurant-profile-remove-btn"
+                onClick={handleRemoveHomeBanner}
+              >
+                <i className="fas fa-trash" />
+                <span>حذف عکس</span>
+              </button>
+            )}
+          </div>
+
+          {/* Shop banner (landscape) */}
+          <div className="image-field image-field--shop">
+            <label htmlFor="restaurant-shop-banner-btn">
+              عکس بنر صفحه خانه رستوران
+            </label>
+
+            <div className="restaurant-profile-image-frame">
+              {shopBannerPreview ? (
+                <img
+                  src={shopBannerPreview}
+                  alt="بنر صفحه خانه رستوران"
+                  className="restaurant-profile-image-frame__img"
+                  onError={(e) => {
+                    e.currentTarget.src = "/images/placeholder-banner.png";
+                  }}
+                />
+              ) : (
+                <span className="restaurant-profile-image-placeholder">
+                  <i className="fas fa-image" />
+                  عکسی انتخاب نشده
+                </span>
+              )}
+            </div>
+
+            <input
+              ref={shopBannerInputRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                setShopBannerFile(file || null);
+                if (file) setShopBannerPreview(URL.createObjectURL(file));
+                else setShopBannerPreview(null);
+              }}
+            />
+
+            <button
+              id="restaurant-shop-banner-btn"
+              type="button"
+              className="restaurant-profile-upload-btn"
+              onClick={() => shopBannerInputRef.current?.click()}
+            >
+              <i className="fas fa-cloud-arrow-up" />
+              <span>{shopBannerPreview ? "تغییر عکس" : "آپلود عکس"}</span>
+            </button>
+
+            {shopBannerPreview && (
+              <button
+                type="button"
+                className="restaurant-profile-remove-btn"
+                onClick={handleRemoveShopBanner}
+              >
+                <i className="fas fa-trash" />
+                <span>حذف عکس</span>
+              </button>
+            )}
+          </div>
+
+          {/* Logo (circle) */}
+          <div className="image-field image-field--logo">
+            <label htmlFor="restaurant-logo-btn">عکس لوگو رستوران</label>
+
+            <div className="restaurant-profile-image-frame restaurant-profile-image-frame--circle">
+              {logoPreview ? (
+                <img
+                  src={logoPreview}
+                  alt="لوگو رستوران"
+                  className="restaurant-profile-image-frame__img"
+                  onError={(e) => {
+                    e.currentTarget.src = "/images/profile-default.jpg";
+                  }}
+                />
+              ) : (
+                <span className="restaurant-profile-image-placeholder">
+                  <i className="fas fa-image" />
+                  لوگویی انتخاب نشده
+                </span>
+              )}
+            </div>
+
+            <input
+              ref={logoInputRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                setLogoFile(file || null);
+                if (file) setLogoPreview(URL.createObjectURL(file));
+                else setLogoPreview(null);
+              }}
+            />
+
+            <button
+              id="restaurant-logo-btn"
+              type="button"
+              className="restaurant-profile-upload-btn"
+              onClick={() => logoInputRef.current?.click()}
+            >
+              <i className="fas fa-cloud-arrow-up" />
+              <span>{logoPreview ? "تغییر لوگو" : "آپلود لوگو"}</span>
+            </button>
+
+            {logoPreview && (
+              <button
+                type="button"
+                className="restaurant-profile-remove-btn"
+                onClick={handleRemoveLogo}
+              >
+                <i className="fas fa-trash" />
+                <span>حذف لوگو</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        <hr style={{ border: "1px solid #444", margin: "20px 0" }} />
+
+        {/* Operational info */}
+        <div className="form-section-heading">
+          <i className="fa-solid fa-clipboard-list" />
+          <span>اطلاعات و ساعت کاری رستوران</span>
+        </div>
+
         {/* Address */}
         <div className="input-group">
           <label htmlFor="restaurant-address">آدرس</label>
@@ -456,7 +651,7 @@ export default function RestaurantProfileSection() {
         <hr style={{ border: "1px solid #444", margin: "20px 0" }} />
 
         {/* Owner financial info */}
-        <div className="owner-details-heading">
+        <div className="form-section-heading">
           <i className="fa-solid fa-id-card" />
           <span>اطلاعات تکمیلی صاحب رستوران</span>
         </div>
@@ -510,179 +705,6 @@ export default function RestaurantProfileSection() {
               className="sheba-input"
             />
             <span className="sheba-prefix">IR</span>
-          </div>
-        </div>
-
-        <hr style={{ border: "1px solid #444", margin: "20px 0" }} />
-
-        {/* Images */}
-        <div className="images-grid">
-          {/* Home banner */}
-          <div className="image-field">
-            <label>عکس بنر صفحه خانه رستوران</label>
-
-            <div className="restaurant-profile-image-frame">
-              {homeBannerPreview ? (
-                <img
-                  src={homeBannerPreview}
-                  alt="بنر صفحه خانه رستوران"
-                  className="restaurant-profile-image-frame__img"
-                  onError={(e) => {
-                    e.currentTarget.src = "/images/placeholder-banner.png";
-                  }}
-                />
-              ) : (
-                <span className="restaurant-profile-image-placeholder">
-                  <i className="fas fa-image" />
-                  عکسی انتخاب نشده
-                </span>
-              )}
-            </div>
-
-            <input
-              ref={homeBannerInputRef}
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                setHomeBannerFile(file || null);
-                if (file) setHomeBannerPreview(URL.createObjectURL(file));
-                else setHomeBannerPreview(null);
-              }}
-            />
-
-            <button
-              type="button"
-              className="restaurant-profile-upload-btn"
-              onClick={() => homeBannerInputRef.current?.click()}
-            >
-              <i className="fas fa-cloud-arrow-up" />
-              <span>{homeBannerPreview ? "تغییر عکس" : "آپلود عکس"}</span>
-            </button>
-
-            {homeBannerPreview && (
-              <button
-                type="button"
-                className="restaurant-profile-remove-btn"
-                onClick={handleRemoveHomeBanner}
-              >
-                <i className="fas fa-trash" />
-                <span>حذف عکس</span>
-              </button>
-            )}
-          </div>
-
-          {/* Shop banner */}
-          <div className="image-field">
-            <label>عکس بنر صفحه فروشگاه رستوران</label>
-
-            <div className="restaurant-profile-image-frame">
-              {shopBannerPreview ? (
-                <img
-                  src={shopBannerPreview}
-                  alt="بنر صفحه فروشگاه رستوران"
-                  className="restaurant-profile-image-frame__img"
-                  onError={(e) => {
-                    e.currentTarget.src = "/images/placeholder-banner.png";
-                  }}
-                />
-              ) : (
-                <span className="restaurant-profile-image-placeholder">
-                  <i className="fas fa-image" />
-                  عکسی انتخاب نشده
-                </span>
-              )}
-            </div>
-
-            <input
-              ref={shopBannerInputRef}
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                setShopBannerFile(file || null);
-                if (file) setShopBannerPreview(URL.createObjectURL(file));
-                else setShopBannerPreview(null);
-              }}
-            />
-
-            <button
-              type="button"
-              className="restaurant-profile-upload-btn"
-              onClick={() => shopBannerInputRef.current?.click()}
-            >
-              <i className="fas fa-cloud-arrow-up" />
-              <span>{shopBannerPreview ? "تغییر عکس" : "آپلود عکس"}</span>
-            </button>
-
-            {shopBannerPreview && (
-              <button
-                type="button"
-                className="restaurant-profile-remove-btn"
-                onClick={handleRemoveShopBanner}
-              >
-                <i className="fas fa-trash" />
-                <span>حذف عکس</span>
-              </button>
-            )}
-          </div>
-
-          {/* Logo */}
-          <div className="image-field">
-            <label>عکس لوگو رستوران</label>
-
-            <div className="restaurant-profile-image-frame restaurant-profile-image-frame--circle">
-              {logoPreview ? (
-                <img
-                  src={logoPreview}
-                  alt="لوگو رستوران"
-                  className="restaurant-profile-image-frame__img"
-                  onError={(e) => {
-                    e.currentTarget.src = "/images/profile-default.jpg";
-                  }}
-                />
-              ) : (
-                <span className="restaurant-profile-image-placeholder">
-                  <i className="fas fa-image" />
-                  لوگویی انتخاب نشده
-                </span>
-              )}
-            </div>
-
-            <input
-              ref={logoInputRef}
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                setLogoFile(file || null);
-                if (file) setLogoPreview(URL.createObjectURL(file));
-                else setLogoPreview(null);
-              }}
-            />
-
-            <button
-              type="button"
-              className="restaurant-profile-upload-btn"
-              onClick={() => logoInputRef.current?.click()}
-            >
-              <i className="fas fa-cloud-arrow-up" />
-              <span>{logoPreview ? "تغییر لوگو" : "آپلود لوگو"}</span>
-            </button>
-
-            {logoPreview && (
-              <button
-                type="button"
-                className="restaurant-profile-remove-btn"
-                onClick={handleRemoveLogo}
-              >
-                <i className="fas fa-trash" />
-                <span>حذف لوگو</span>
-              </button>
-            )}
           </div>
         </div>
 

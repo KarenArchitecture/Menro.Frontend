@@ -99,11 +99,44 @@
   border: 1px solid rgba(239, 68, 68, 0.25);
 }
 
-/* images layout */
+/* ===== Images layout — bento-style asymmetric grid =====
+   The public "home page" image (RestaurantProfileImage) is used as a
+   PORTRAIT card on the landing/home page, while the shop-banner is a
+   LANDSCAPE strip and the logo is a small circle. Forcing all three
+   into equal-height columns broke the row as soon as one frame became
+   taller. Instead, the portrait image spans the full height of the
+   other two images stacked beside it — so the row height is always
+   correct and nothing collapses or leaves empty gaps. */
 .images-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(200px, 260px) 1fr;
+  grid-template-rows: auto auto;
   gap: 16px;
+  align-items: stretch;
+}
+
+.image-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* portrait hero image (public home page banner) — right column, full height */
+.image-field--home {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+}
+
+/* landscape shop banner — top of the left column */
+.image-field--shop {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+/* logo — bottom of the left column */
+.image-field--logo {
+  grid-column: 2;
+  grid-row: 2;
 }
 
 .image-field .image-preview {
@@ -136,10 +169,49 @@
   opacity: 0.7;
 }
 
+.image-field label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+/* small helper hint shown under a field label */
+.image-field__hint {
+  display: block;
+  margin-top: -6px;
+  margin-bottom: 10px;
+  font-size: 0.76rem;
+  font-weight: 400;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.55));
+}
+
 @media (max-width: 900px) {
-  .restaurant-profile-panel .form-grid,
+  .restaurant-profile-panel .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* stack all three image fields in their original order on small screens */
   .images-grid {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+  }
+
+  .image-field--home,
+  .image-field--shop,
+  .image-field--logo {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  /* on mobile there's no side content to match height with, so the
+     portrait frame goes back to a fixed, centered aspect-ratio box */
+  .restaurant-profile-image-frame--portrait {
+    flex: none;
+    min-height: 0;
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 3 / 4;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 
@@ -299,8 +371,8 @@
   color: #ef4444;
 }
 
-/* ===== Owner details section heading ===== */
-.owner-details-heading {
+/* ===== Section headings (used above each grouped part of the form) ===== */
+.form-section-heading {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -310,8 +382,14 @@
   color: var(--text-primary);
 }
 
-.owner-details-heading i {
+.form-section-heading i {
   color: var(--primary-color);
+}
+
+/* first heading in the form sits right after the identity fields,
+   needs a bit less top space since there's no <hr> before it */
+.form-section-heading--first {
+  margin-top: 4px;
 }
 
 /* ===== Sheba (IBAN) number input ===== */
@@ -380,6 +458,17 @@
   margin-left: auto;
   margin-right: auto;
   border-radius: 50%;
+}
+
+/* portrait frame — used only for the public home-page banner.
+   flex:1 makes it fill the full height of the two stacked images
+   beside it (shop banner + logo), so the row always balances,
+   regardless of screen size or content height. */
+.restaurant-profile-image-frame--portrait {
+  flex: 1;
+  width: 100%;
+  height: auto;
+  min-height: 220px;
 }
 
 .restaurant-profile-image-frame__img {

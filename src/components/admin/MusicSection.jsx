@@ -4,9 +4,13 @@ import ownerRestaurantAxios from "../../api/ownerRestaurantAxios";
 import { useMusicSignalR } from "../../hooks/useMusicSignalR";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+
+import NowPlayingBar from "../musicPlayer/NowPlayingBar";
+import MusicArchiveCard from "../musicPlayer/MusicArchiveCard";
+import TrackRequestsCard from "../musicPlayer/TrackRequestsCard";
+
 import "../../assets/css/admin/musicSection.css";
 
-import TrackRequestsCard from "../musicPlayer/TrackRequestsCard";
 import {
   MAX_TRACKS,
   MAX_PLAYLISTS,
@@ -45,7 +49,6 @@ export default function MusicSection() {
      STATE
   ------------------------------------------------------------------- */
   // tabs / archive / playlists
-  const [activeTab, setActiveTab] = useState("search");
   const [playlists, setPlaylists] = useState([]);
   const [selectedPlaylistId, setSelectedPlaylistId] = useState(null);
   const selectedPlaylistIdRef = useRef(selectedPlaylistId);
@@ -104,11 +107,7 @@ export default function MusicSection() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  const [query, setQuery] = useState("");
-  const [searchUrl, setSearchUrl] = useState("");
   const [playlistQuery, setPlaylistQuery] = useState("");
-
-  const [searching, setSearching] = useState(false);
 
   const [loadingArchive, setLoadingArchive] = useState(false);
   const [loadingPlaylist, setLoadingPlaylist] = useState(false);
@@ -124,16 +123,6 @@ export default function MusicSection() {
     playingPlaylistTrackIdRef.current = playingPlaylistTrackId;
   }, [playingPlaylistTrackId]);
 
-  const searchResults = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return tracks;
-    return tracks.filter(
-      (s) =>
-        (s.title || "").toLowerCase().includes(q) ||
-        (s.artist || "").toLowerCase().includes(q),
-    );
-  }, [query, tracks]);
-
   const filteredPlaylistTracks = useMemo(() => {
     const q = playlistQuery.trim().toLowerCase();
     if (!q) return playlistTracks;
@@ -143,9 +132,6 @@ export default function MusicSection() {
         (s.artist || "").toLowerCase().includes(q),
     );
   }, [playlistQuery, playlistTracks]);
-
-  const archiveCapacityText = `${tracks.length} / ${MAX_TRACKS}`;
-  const hasArchiveCapacity = tracks.length < MAX_TRACKS;
 
   /* --- REAL-TIME PROPS --- */
   const { user } = useAuth();
@@ -687,23 +673,6 @@ export default function MusicSection() {
     }
   };
 
-  // playlist/archive search
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    setSearching(true);
-    setTimeout(() => setSearching(false), 250);
-  };
-  // dummy online search!
-  const handleOnlineSearch = (e) => {
-    e.preventDefault();
-    if (!searchUrl.trim()) {
-      notify({ type: "warning", message: "لطفا لینک را وارد کنید." });
-      return;
-    }
-    notify({ type: "info", message: `در حال جستجوی لینک: ${searchUrl}` });
-    setSearchUrl("");
-  };
-
   /* ARCHIVE TRACK PREVIEW */
   //--playing track preview from archive
   const handlePreviewTrack = async (musicTrackId) => {
@@ -1142,238 +1111,35 @@ export default function MusicSection() {
       {/* ---------------------------------
           Now Playing bar
       --------------------------------- */}
-      <div className="player-bar">
-        <div className="player-bar__art-wrap">
-          <div className={`player-bar__art ${isPlaying ? "is-spinning" : ""}`}>
-            {nowPlayingTrack?.artworkUrl ? (
-              <img src={nowPlayingTrack.artworkUrl} alt="" />
-            ) : (
-              <span className="player-bar__art-hole" />
-            )}
-          </div>
-        </div>
-
-        <div className="player-bar__controls">
-          <button
-            className="player-btn player-btn--ghost"
-            title="قبلی"
-            onClick={playPreviousTrack}
-          >
-            <i className="fas fa-step-backward" />
-          </button>
-
-          <button
-            type="button"
-            className="player-btn player-btn--main"
-            onClick={toggleGlobalPlay}
-          >
-            <i className={isPlaying ? "fas fa-pause" : "fas fa-play"} />
-          </button>
-
-          <button
-            className="player-btn player-btn--ghost"
-            title="بعدی"
-            onClick={playNextTrack}
-          >
-            <i className="fas fa-step-forward" />
-          </button>
-        </div>
-
-        <div className="player-bar__meta">
-          <div className="player-bar__track-row">
-            <span
-              className={`player-bar__title ${nowPlayingTrack ? "" : "is-idle"}`}
-            >
-              {nowPlayingTrack?.title || "آهنگی در حال پخش نیست"}
-            </span>
-            <span className="player-bar__time">
-              {formatTime(currentTime)} / {formatTime(duration)}
-            </span>
-          </div>
-
-          <div className="player-bar__progress">
-            <div
-              className="player-bar__progress-fill"
-              style={{ width: `${mainProgressPct}%` }}
-            />
-            <input
-              type="range"
-              min="0"
-              max={duration || 0}
-              value={currentTime}
-              onMouseDown={handleSeekMouseDown}
-              onChange={handleSeekChange}
-              onMouseUp={handleSeekMouseUp}
-              onTouchStart={handleSeekMouseDown}
-              onTouchEnd={handleSeekMouseUp}
-            />
-          </div>
-        </div>
-      </div>
+      <NowPlayingBar
+        nowPlayingTrack={nowPlayingTrack}
+        isPlaying={isPlaying}
+        currentTime={currentTime}
+        duration={duration}
+        mainProgressPct={mainProgressPct}
+        onTogglePlay={toggleGlobalPlay}
+        onNext={playNextTrack}
+        onPrevious={playPreviousTrack}
+        onSeekMouseDown={handleSeekMouseDown}
+        onSeekChange={handleSeekChange}
+        onSeekMouseUp={handleSeekMouseUp}
+      />
 
       <div className="music-columns">
         {/* ---------------------------------
             آرشیو موسیقی
         --------------------------------- */}
-        <div className="music-card archive-card" style={{ flex: 1 }}>
-          <div className="music-card__header">
-            <h3 className="music-card__title">
-              <span className="icon-badge">
-                <i className="fas fa-compact-disc" />
-              </span>
-              آرشیو موسیقی
-            </h3>
-            <span className="pill-count">{archiveCapacityText}</span>
-          </div>
-
-          <div className="mh-tabs">
-            <button
-              type="button"
-              className={`mh-tab ${activeTab === "search" ? "is-active" : ""}`}
-              onClick={() => setActiveTab("search")}
-            >
-              <i className="fas fa-archive" /> مدیریت آرشیو
-            </button>
-            <button
-              type="button"
-              className={`mh-tab ${activeTab === "online" ? "is-active" : ""}`}
-              onClick={() => setActiveTab("online")}
-            >
-              <i className="fas fa-globe" /> جستجوی آنلاین آهنگ
-            </button>
-          </div>
-
-          {activeTab === "search" && (
-            <div className="music-tab-content">
-              <form className="mh-search-row" onSubmit={handleSearchSubmit}>
-                <input
-                  type="text"
-                  className="mh-input"
-                  value={query}
-                  placeholder="جستجو در آرشیو..."
-                  onChange={(e) => setQuery(e.target.value)}
-                />
-                <button
-                  type="submit"
-                  className="mh-btn mh-btn--primary"
-                  disabled={searching}
-                >
-                  {searching ? "..." : "جستجو"}
-                </button>
-              </form>
-
-              <input
-                type="file"
-                id="file-upload-archive"
-                accept="audio/*"
-                multiple
-                style={{ display: "none" }}
-                onChange={(e) => {
-                  onUploadFiles(e.target.files);
-                  e.target.value = null;
-                }}
-              />
-              <label htmlFor="file-upload-archive" className="mh-upload">
-                <i className="fas fa-cloud-upload-alt" /> بارگذاری فایل جدید از
-                سیستم
-              </label>
-
-              <div className="mh-list">
-                {!loadingArchive &&
-                  searchResults.map((r) => {
-                    const isTrackPlaying = playingTrackId === r.id;
-                    const isActive = isTrackPlaying && isPlaying;
-
-                    return (
-                      <div
-                        key={r.id}
-                        className={`mh-row ${isTrackPlaying ? "is-playing" : ""}`}
-                      >
-                        <div className="mh-row__info">
-                          <div
-                            className="mh-art"
-                            onClick={() => handlePreviewTrack(r.id, r.audioUrl)}
-                          >
-                            {r.artworkUrl ? (
-                              <img src={r.artworkUrl} alt="" />
-                            ) : (
-                              <div style={{ width: "100%", height: "100%" }} />
-                            )}
-                            <div
-                              className={`mh-art__overlay ${
-                                isTrackPlaying ? "is-visible" : ""
-                              }`}
-                            >
-                              <i
-                                className={
-                                  isActive ? "fas fa-pause" : "fas fa-play"
-                                }
-                              />
-                            </div>
-                          </div>
-
-                          <div className="mh-row__text">
-                            <span className="mh-row__title">{r.title}</span>
-                            <span className="mh-row__subtitle">
-                              {r.artist} • {formatDuration(r.duration)}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="mh-row__actions">
-                          <button
-                            onClick={() => openEditTrackModal(r.id, r.title)}
-                            className="mh-icon-btn"
-                            title="ویرایش نام"
-                          >
-                            <i className="fas fa-pencil-alt" />
-                          </button>
-
-                          <button
-                            onClick={() => addToPlaylist(r)}
-                            className="mh-icon-btn"
-                            title="افزودن به پلی‌لیست"
-                          >
-                            <i className="fas fa-plus" />
-                          </button>
-
-                          <button
-                            onClick={() => deleteTrackFromArchive(r.id)}
-                            className="mh-icon-btn is-danger"
-                            title="حذف از آرشیو"
-                          >
-                            <i className="fas fa-trash" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                {!loadingArchive && searchResults.length === 0 && (
-                  <div className="mh-empty">آهنگی در آرشیو یافت نشد</div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {activeTab === "online" && (
-            <div className="music-tab-content">
-              <form className="mh-search-row" onSubmit={handleOnlineSearch}>
-                <input
-                  type="url"
-                  className="mh-input"
-                  value={searchUrl}
-                  placeholder="لینک آهنگ را وارد کنید..."
-                  onChange={(e) => setSearchUrl(e.target.value)}
-                  dir="ltr"
-                />
-                <button type="submit" className="mh-btn mh-btn--primary">
-                  <i className="fas fa-search" /> جستجو
-                </button>
-              </form>
-            </div>
-          )}
-        </div>
+        <MusicArchiveCard
+          tracks={tracks}
+          loadingArchive={loadingArchive}
+          playingTrackId={playingTrackId}
+          isPlaying={isPlaying}
+          onUploadFiles={onUploadFiles}
+          onPreviewTrack={handlePreviewTrack}
+          onEditTrack={openEditTrackModal}
+          onAddToPlaylist={addToPlaylist}
+          onDeleteTrack={deleteTrackFromArchive}
+        />
 
         {/* ---------------------------------
             پلی‌لیست ادمین

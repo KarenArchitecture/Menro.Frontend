@@ -53,6 +53,7 @@ export default function Orders() {
       setOrders(
         data.map((o) => ({
           id: o.id,
+          restaurantId: o.restaurantId,
           restaurantName: o.restaurantName,
           // 🔧 backend changed table number (int) -> table label (string,
           // e.g. "میز ۱", "میز کنار پنجره"). The label already comes fully

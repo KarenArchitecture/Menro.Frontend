@@ -14,6 +14,11 @@ import PlaylistFormModal from "../musicPlayer/PlaylistFormModal";
 import TrackFormModal from "../musicPlayer/TrackFormModal";
 import PreviewModal from "../musicPlayer/PreviewModal";
 
+// music player hooks import
+import useTrackRequests from "../../hooks/musicPlayer/useTrackRequests";
+import usePreviewPlayer from "../../hooks/musicPlayer/usePreviewPlayer";
+import useMusicArchive from "../../hooks/musicPlayer/useMusicArchive";
+
 import "../../assets/css/admin/musicSection.css";
 
 import {
@@ -21,14 +26,12 @@ import {
   MAX_PLAYLISTS,
   formatTime,
   formatDuration,
+  withAuthToken,
 } from "../../utils/musicFormatters";
 
 // for api
 import {
-  getTracks,
   getTrack,
-  createTrack,
-  deleteTrack,
   createPlaylist,
   getPlaylists,
   getPlaylist,
@@ -36,12 +39,8 @@ import {
   addTrackToPlaylist,
   removeTrackFromPlaylist,
   activatePlaylist,
-  renameTrack,
   deletePlaylist,
   reorderPlaylistTrack,
-  getTrackRequests,
-  rejectTrackRequest,
-  approveTrackRequest,
   setCurrentTrack,
   advanceTrack,
   previousTrack,
@@ -62,20 +61,6 @@ export default function MusicSection() {
     selectedPlaylistIdRef.current = selectedPlaylistId;
   }, [selectedPlaylistId]);
 
-  const [tracks, setTracks] = useState([]);
-
-  const withAuthToken = (url) => {
-    if (!url) return url;
-    const token = localStorage.getItem("accessToken");
-    if (!token) return url;
-    const separator = url.includes("?") ? "&" : "?";
-    return `${url}${separator}access_token=${encodeURIComponent(token)}`;
-  };
-
-  // track requests
-  const [requestedTracks, setRequestedTracks] = useState([]);
-  const [loadingRequests, setLoadingRequests] = useState(false);
-
   // playing track (from playlist)
   const [playlistTracks, setPlaylistTracks] = useState([]);
   const [playingPlaylistTrackId, setPlayingPlaylistTrackId] = useState(null);
@@ -86,26 +71,10 @@ export default function MusicSection() {
   const [playlistFormName, setPlaylistFormName] = useState("");
   const [editingPlaylistId, setEditingPlaylistId] = useState(null);
 
-  // Modal state: ویرایش نام آهنگ (فرم اختصاصی، خارج از GlobalUI)
-  const [showTrackModal, setShowTrackModal] = useState(false);
-  const [trackFormName, setTrackFormName] = useState("");
-  const [editingTrackId, setEditingTrackId] = useState(null);
-
-  // پیش‌نمایش آهنگ از آرشیو
-  const previewAudioRef = useRef(new Audio());
-  const [previewTrackId, setPreviewTrackId] = useState(null);
-  const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
-
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [previewTrackTitle, setPreviewTrackTitle] = useState("");
-  const [previewCurrentTime, setPreviewCurrentTime] = useState(0);
-  const [previewDuration, setPreviewDuration] = useState(0);
-
   // Playing music (main player from playlist)
   const audioRef = useRef(null);
   const audioCacheRef = useRef({});
   const isSeekingRef = useRef(false);
-  const isPreviewSeekingRef = useRef(false);
   const [playerState, setPlayerState] = useState(null);
 
   const [playingTrackId, setPlayingTrackId] = useState(null);
@@ -113,7 +82,6 @@ export default function MusicSection() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  const [loadingArchive, setLoadingArchive] = useState(false);
   const [loadingPlaylist, setLoadingPlaylist] = useState(false);
 
   // handlers for ending tracks
@@ -191,6 +159,52 @@ export default function MusicSection() {
       console.error(err);
     }
   };
+  const {
+    tracks,
+    loadingArchive,
+    onUploadFiles,
+    deleteTrackFromArchive,
+    showTrackModal,
+    trackFormName,
+    setTrackFormName,
+    openEditTrackModal,
+    submitTrackModal,
+    closeTrackModal,
+  } = useMusicArchive({
+    onTrackDeleted: (trackId) => {
+      setPlaylistTracks((prev) =>
+        prev.filter((p) => p.musicTrackId !== trackId),
+      );
+    },
+    onTrackRenamed: async () => {
+      if (selectedPlaylistId) {
+        await refreshPlaylist(selectedPlaylistId);
+      }
+    },
+  });
+  const {
+    showPreviewModal,
+    previewTrackTitle,
+    isPreviewPlaying,
+    previewCurrentTime,
+    previewDuration,
+    previewProgressPct,
+    handlePreviewTrack,
+    closePreviewModal,
+    togglePreviewPlay,
+    handlePreviewSeekMouseDown,
+    handlePreviewSeekChange,
+    handlePreviewSeekMouseUp,
+  } = usePreviewPlayer({
+    tracks,
+    audioCacheRef,
+    onBeforePreviewStart: () => {
+      if (audioRef.current && !audioRef.current.paused) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      }
+    },
+  });
 
   /* -------------------------------------------------------------------
      FETCH DATA
@@ -208,33 +222,6 @@ export default function MusicSection() {
       return null;
     }
   };
-  //--fetch archive
-  const loadTracks = async () => {
-    setLoadingArchive(true);
-    try {
-      const res = await getTracks();
-      const mapped = res.data.map((t) => ({
-        id: t.id,
-        title: t.title,
-        artist: t.artist || "—",
-        duration: t.duration,
-        isActive: t.isActive,
-        source: "archive",
-        coverFileName: t.coverFileName,
-        artworkUrl: t.coverFileName,
-      }));
-      setTracks(mapped);
-    } catch (err) {
-      console.error(err);
-      notify({ type: "error", message: "دریافت آرشیو موسیقی با خطا مواجه شد" });
-    } finally {
-      setLoadingArchive(false);
-    }
-  };
-  useEffect(() => {
-    loadTracks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
   //--fetch playlists
   const loadPlaylists = async () => {
     try {
@@ -307,33 +294,24 @@ export default function MusicSection() {
       setLoadingPlaylist(false);
     }
   };
+  const {
+    requestedTracks,
+    loadingRequests,
+    fetchTrackRequests,
+    handleApproveRequest,
+    handleRejectRequest,
+  } = useTrackRequests({
+    onApproved: async () => {
+      if (selectedPlaylistId) {
+        await refreshPlaylist(selectedPlaylistId);
+      }
+    },
+  });
   useEffect(() => {
     if (!selectedPlaylistId) return;
     refreshPlaylist(selectedPlaylistId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPlaylistId]);
-  //--fetch track requests
-  const fetchTrackRequests = async () => {
-    try {
-      setLoadingRequests(true);
-
-      const response = await getTrackRequests();
-
-      setRequestedTracks(response.data ?? []);
-    } catch (error) {
-      console.error("Failed to load track requests", error);
-      notify({
-        type: "error",
-        message: "دریافت درخواست‌های آهنگ با خطا مواجه شد",
-      });
-    } finally {
-      setLoadingRequests(false);
-    }
-  };
-  useEffect(() => {
-    fetchTrackRequests();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // add track to playlist
   const addToPlaylist = async (track) => {
@@ -455,76 +433,10 @@ export default function MusicSection() {
       notify({ type: "error", message: "حذف از پلی‌لیست ناموفق بود" });
     }
   };
-  // delete from archive (entity حذف، غیرقابل‌بازگشت => تایید سراسری)
-  const deleteTrackFromArchive = async (id) => {
-    const confirmed = await confirmModal({
-      title: "حذف آهنگ",
-      message:
-        "آیا از حذف این آهنگ از آرشیو اطمینان دارید؟ این عملیات قابل بازگشت نیست.",
-      confirmText: "بله، حذف شود",
-      cancelText: "خیر",
-      danger: true,
-    });
-
-    if (!confirmed) return;
-
-    const backup = tracks.find((t) => t.id === id);
-    setTracks((prev) => prev.filter((t) => t.id !== id));
-
-    try {
-      await deleteTrack(id);
-      setPlaylistTracks((prev) => prev.filter((p) => p.musicTrackId !== id));
-      notify({ type: "success", message: "آهنگ با موفقیت از آرشیو حذف شد" });
-    } catch (err) {
-      console.error(err);
-      setTracks((prev) => [...prev, backup]);
-      notify({ type: "error", message: "حذف ناموفق بود" });
-    }
-  };
 
   /* -------------------------------------------------------------------
      FORM MODALS (ساخت/ویرایش پلی‌لیست و آهنگ — خارج از GlobalUI)
   ------------------------------------------------------------------- */
-  //--archive track modal
-  const openEditTrackModal = (trackId, currentTitle) => {
-    setEditingTrackId(trackId);
-    setTrackFormName(currentTitle || "");
-    setShowTrackModal(true);
-  };
-  const submitTrackModal = async (e) => {
-    e.preventDefault();
-
-    const title = trackFormName.trim();
-
-    if (!title) return;
-
-    try {
-      await renameTrack(editingTrackId, {
-        title,
-      });
-
-      setTracks((prev) =>
-        prev.map((t) => (t.id === editingTrackId ? { ...t, title } : t)),
-      );
-
-      if (selectedPlaylistId) {
-        await refreshPlaylist(selectedPlaylistId);
-      }
-
-      notify({ type: "success", message: "نام آهنگ با موفقیت تغییر کرد" });
-
-      setShowTrackModal(false);
-      setTrackFormName("");
-      setEditingTrackId(null);
-    } catch (err) {
-      console.error(err);
-
-      notify({
-        type: "error",
-        message: err?.response?.data?.message ?? "خطا در تغییر نام آهنگ",
-      });
-    }
-  };
   //--Playlist Modal
   const openAddPlaylistModal = () => {
     if (playlists.length >= MAX_PLAYLISTS) {
@@ -621,183 +533,6 @@ export default function MusicSection() {
   /* -------------------------------------------------------------------
      HANDLERS / HELPERS
   ------------------------------------------------------------------- */
-  // upload track handler
-  const onUploadFiles = async (files) => {
-    if (!files?.length) return;
-    let audioFiles = Array.from(files).filter((f) =>
-      f.type.startsWith("audio/"),
-    );
-    if (!audioFiles.length) return;
-
-    const remainingCapacity = MAX_TRACKS - tracks.length;
-    if (audioFiles.length > remainingCapacity) {
-      notify({
-        type: "warning",
-        message: `ظرفیت آرشیو محدود است. فقط ${remainingCapacity} فایل دیگر مجاز است.`,
-      });
-      audioFiles = audioFiles.slice(0, remainingCapacity);
-      if (!audioFiles.length) return;
-    }
-
-    let successCount = 0;
-
-    for (const file of audioFiles) {
-      try {
-        const formData = new FormData();
-        formData.append("Title", file.name.replace(/\.[^/.]+$/, ""));
-        formData.append("Artist", "—");
-        formData.append("AudioFile", file);
-
-        const res = await createTrack(formData);
-        setTracks((prev) => [
-          ...prev,
-          {
-            id: res.data.id,
-            title: res.data.title,
-            artist: res.data.artist,
-            duration: res.data.duration,
-            isActive: res.data.isActive,
-            source: "archive",
-            coverFileName: res.data.coverFileName,
-            artworkUrl: res.data.coverFileName,
-          },
-        ]);
-        successCount += 1;
-      } catch (err) {
-        console.error(err);
-        notify({ type: "error", message: `خطا در آپلود فایل «${file.name}»` });
-      }
-    }
-
-    if (successCount > 0) {
-      notify({
-        type: "success",
-        message:
-          successCount === 1
-            ? "آهنگ با موفقیت بارگذاری شد"
-            : `${successCount} آهنگ با موفقیت بارگذاری شد`,
-      });
-    }
-  };
-
-  /* ARCHIVE TRACK PREVIEW */
-  //--playing track preview from archive
-  const handlePreviewTrack = async (musicTrackId) => {
-    try {
-      const track = tracks.find((x) => x.id === musicTrackId);
-
-      // همان آهنگ قبلی
-      if (previewTrackId === musicTrackId && previewAudioRef.current) {
-        if (previewAudioRef.current.paused) {
-          await previewAudioRef.current.play();
-
-          setPreviewTrackTitle(track?.title ?? "پیش‌نمایش آهنگ");
-          setShowPreviewModal(true);
-          setIsPreviewPlaying(true);
-        } else {
-          previewAudioRef.current.pause();
-          setIsPreviewPlaying(false);
-        }
-
-        return;
-      }
-
-      // لود از کش یا API
-      if (!audioCacheRef.current[musicTrackId]) {
-        const res = await getTrack(musicTrackId);
-        audioCacheRef.current[musicTrackId] = res.data.audioUrl;
-      }
-
-      const audioUrl = audioCacheRef.current[musicTrackId];
-
-      if (!audioUrl) {
-        notify({ type: "error", message: "فایل صوتی یافت نشد" });
-        return;
-      }
-
-      // پخش آهنگ جدید
-      previewAudioRef.current.pause();
-      previewAudioRef.current.src = withAuthToken(audioUrl);
-
-      // check if other player is playing
-      if (audioRef.current && !audioRef.current.paused) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      }
-      await previewAudioRef.current.play();
-
-      setPreviewTrackId(musicTrackId);
-      setPreviewTrackTitle(track?.title ?? "پیش‌نمایش آهنگ");
-
-      setShowPreviewModal(true);
-      setIsPreviewPlaying(true);
-    } catch (err) {
-      console.error(err);
-      notify({ type: "error", message: "خطا در پخش موسیقی" });
-    }
-  };
-  useEffect(() => {
-    const audio = previewAudioRef.current;
-
-    const onTimeUpdate = () => {
-      if (!isPreviewSeekingRef.current) {
-        setPreviewCurrentTime(audio.currentTime);
-      }
-    };
-
-    const onLoadedMetadata = () => {
-      setPreviewDuration(audio.duration || 0);
-    };
-
-    const onEnded = () => {
-      setIsPreviewPlaying(false);
-    };
-
-    audio.addEventListener("timeupdate", onTimeUpdate);
-    audio.addEventListener("loadedmetadata", onLoadedMetadata);
-    audio.addEventListener("ended", onEnded);
-
-    return () => {
-      audio.removeEventListener("timeupdate", onTimeUpdate);
-      audio.removeEventListener("loadedmetadata", onLoadedMetadata);
-      audio.removeEventListener("ended", onEnded);
-    };
-  }, []);
-  //--close preview modal
-  const closePreviewModal = () => {
-    previewAudioRef.current.pause();
-
-    setShowPreviewModal(false);
-    setPreviewTrackId(null);
-    setIsPreviewPlaying(false);
-
-    setPreviewCurrentTime(0);
-    setPreviewDuration(0);
-  };
-  const togglePreviewPlay = async () => {
-    if (previewAudioRef.current.paused) {
-      await previewAudioRef.current.play();
-      setIsPreviewPlaying(true);
-    } else {
-      previewAudioRef.current.pause();
-      setIsPreviewPlaying(false);
-    }
-  };
-  //--seek
-  const handlePreviewSeekMouseDown = () => {
-    isPreviewSeekingRef.current = true;
-  };
-  const handlePreviewSeekChange = (e) => {
-    setPreviewCurrentTime(Number(e.target.value)); // فقط آپدیت UI هنگام کشیدن
-  };
-  const handlePreviewSeekMouseUp = (e) => {
-    const value = Number(e.target.value);
-    if (previewAudioRef.current) {
-      previewAudioRef.current.currentTime = value; // اعمال روی فایل صوتی در لحظه رها کردن
-    }
-    isPreviewSeekingRef.current = false;
-  };
-
   /* ----- PLAYER ENGINE ----- */
   //--get current track *****
   const getCurrentTrack = () => {
@@ -1072,60 +807,11 @@ export default function MusicSection() {
   /* -------------------------------------------------------------------
      TRACK REQUESTS: APPROVE / REJECT
   ------------------------------------------------------------------- */
-  const handleApproveRequest = async (track) => {
-    const previousRequests = requestedTracks;
-
-    // optimistic UI update (حذف از لیست درخواست‌ها)
-    setRequestedTracks((prev) => prev.filter((t) => t.id !== track.id));
-
-    try {
-      await approveTrackRequest(track.id);
-
-      if (selectedPlaylistId) {
-        await refreshPlaylist(selectedPlaylistId);
-      }
-
-      notify({
-        type: "success",
-        message: "درخواست تایید شد و به پلی‌لیست اضافه شد",
-      });
-    } catch (err) {
-      console.error(err);
-      setRequestedTracks(previousRequests);
-      notify({ type: "error", message: "خطا در تایید درخواست" });
-    }
-  };
-  const handleRejectRequest = async (trackId) => {
-    const confirmed = await confirmModal({
-      title: "رد درخواست",
-      message: "آیا از رد این درخواست آهنگ اطمینان دارید؟",
-      confirmText: "بله، رد شود",
-      cancelText: "خیر",
-      danger: true,
-    });
-
-    if (!confirmed) return;
-
-    try {
-      await rejectTrackRequest(trackId);
-
-      setRequestedTracks((prev) => prev.filter((t) => t.id !== trackId));
-
-      notify({ type: "success", message: "درخواست رد شد" });
-    } catch (err) {
-      console.error(err);
-      notify({ type: "error", message: "خطا در رد درخواست" });
-    }
-  };
-
   /* ----- purely visual derived values (no logic impact) ----- */
   const nowPlayingTrack = playlistTracks.find(
     (t) => t.id === playingPlaylistTrackId,
   );
   const mainProgressPct = duration ? (currentTime / duration) * 100 : 0;
-  const previewProgressPct = previewDuration
-    ? (previewCurrentTime / previewDuration) * 100
-    : 0;
 
   return (
     <div className="music-hub" dir="rtl">
@@ -1213,7 +899,7 @@ export default function MusicSection() {
         name={trackFormName}
         onNameChange={setTrackFormName}
         onSubmit={submitTrackModal}
-        onClose={() => setShowTrackModal(false)}
+        onClose={closeTrackModal}
       />
 
       {/* مودال پیش‌نمایش آهنگ (پلیر اختصاصی) */}

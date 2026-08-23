@@ -25,3 +25,11 @@ export const formatDuration = (duration) => {
 
   return `${minutes}:${seconds}`;
 };
+
+export const withAuthToken = (url) => {
+  if (!url) return url;
+  const token = localStorage.getItem("accessToken");
+  if (!token) return url;
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}access_token=${encodeURIComponent(token)}`;
+};

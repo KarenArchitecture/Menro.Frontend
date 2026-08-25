@@ -27,6 +27,37 @@
 }
 
 /* -----------------------------------------------------------------------
+   MUSIC PLAYER HEADER — power button
+   ----------------------------------------------------------------------- */
+
+.mp-header__power-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  flex-direction: row-reverse;
+  padding: 10px;
+  border-radius: 50%;
+  transition:
+    color 0.3s ease,
+    filter 0.3s ease,
+    transform 0.3s ease;
+}
+
+.mp-header__power-btn:hover {
+  color: var(--primary-color, #ff683c);
+  filter: drop-shadow(0 0 10px rgba(255, 104, 60, 0.65));
+  transform: scale(1.05);
+}
+
+.mp-header__power-btn:active {
+  transform: scale(0.95);
+}
+
+/* -----------------------------------------------------------------------
    NOW PLAYING BAR (signature element)
    ----------------------------------------------------------------------- */
 
@@ -541,6 +572,15 @@
   flex-shrink: 0;
   cursor: pointer;
   background: #2a2a2a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mh-art__placeholder {
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1;
 }
 
 .mh-art img {
@@ -732,10 +772,6 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-
-.playlist-card__tracks .mh-input {
-  max-height: 42px;
 }
 
 /* -----------------------------------------------------------------------
@@ -1000,7 +1036,7 @@
   max-height: 400px;
 }
 .archive-card .mh-list {
-  max-height: 276px;
+  max-height: 304px;
 }
 
 /* -----------------------------------------------------------------------

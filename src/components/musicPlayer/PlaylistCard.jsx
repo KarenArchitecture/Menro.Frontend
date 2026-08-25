@@ -23,7 +23,7 @@ export default function PlaylistCard({
   onRemoveTrack,
 }) {
   const [playlistQuery, setPlaylistQuery] = useState("");
-
+  const [brokenThumbs, setBrokenThumbs] = useState(() => new Set());
   const filteredPlaylistTracks = useMemo(() => {
     const q = playlistQuery.trim().toLowerCase();
     if (!q) return playlistTracks;
@@ -111,13 +111,15 @@ export default function PlaylistCard({
 
         {/* بخش آهنگ‌های داخل پلی‌لیست */}
         <div className="playlist-card__tracks">
-          <input
-            type="text"
-            className="mh-input"
-            placeholder="جستجو در این پلی‌لیست..."
-            value={playlistQuery}
-            onChange={(e) => setPlaylistQuery(e.target.value)}
-          />
+          <form className="mh-search-row">
+            <input
+              type="text"
+              className="mh-input"
+              placeholder="جستجو در این پلی‌لیست..."
+              value={playlistQuery}
+              onChange={(e) => setPlaylistQuery(e.target.value)}
+            />
+          </form>
 
           <div className="mh-list">
             {!loadingPlaylist && filteredPlaylistTracks.length === 0 && (
@@ -151,10 +153,16 @@ export default function PlaylistCard({
                       className="mh-art"
                       onClick={() => onPlayTrack(s.id, s.musicTrackId)}
                     >
-                      {s.artworkUrl ? (
-                        <img src={s.artworkUrl} alt="" />
+                      {s.artworkUrl && !brokenThumbs.has(s.id) ? (
+                        <img
+                          src={s.artworkUrl}
+                          alt=""
+                          onError={() =>
+                            setBrokenThumbs((prev) => new Set(prev).add(s.id))
+                          }
+                        />
                       ) : (
-                        <div style={{ width: "100%", height: "100%" }} />
+                        <i className="fas fa-music mh-art__placeholder" />
                       )}
                       <div
                         className={`mh-art__overlay ${

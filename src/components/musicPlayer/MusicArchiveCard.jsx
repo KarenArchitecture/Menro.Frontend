@@ -26,7 +26,7 @@ export default function MusicArchiveCard({
   uploadTotal,
 }) {
   const { notify } = useGlobalUI();
-
+  const [brokenThumbs, setBrokenThumbs] = useState(() => new Set());
   const [activeTab, setActiveTab] = useState("search");
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
@@ -162,10 +162,16 @@ export default function MusicArchiveCard({
                         className="mh-art"
                         onClick={() => onPreviewTrack(r.id, r.audioUrl)}
                       >
-                        {r.artworkUrl ? (
-                          <img src={r.artworkUrl} alt="" />
+                        {r.artworkUrl && !brokenThumbs.has(r.id) ? (
+                          <img
+                            src={r.artworkUrl}
+                            alt=""
+                            onError={() =>
+                              setBrokenThumbs((prev) => new Set(prev).add(r.id))
+                            }
+                          />
                         ) : (
-                          <div style={{ width: "100%", height: "100%" }} />
+                          <i className="fas fa-music mh-art__placeholder" />
                         )}
                         <div
                           className={`mh-art__overlay ${

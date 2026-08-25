@@ -38,20 +38,7 @@ export default function MusicPlayerHeader() {
         direction: "rtl",
       }}
     >
-      <button
-        onClick={handleGoAdmin}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-          background: "transparent",
-          border: "none",
-          cursor: "pointer",
-          color: "#fff",
-          flexDirection: "row-reverse",
-          padding: "10px",
-        }}
-      >
+      <button onClick={handleGoAdmin} className="mp-header__power-btn">
         <FaPowerOff size={35} />
       </button>
     </header>

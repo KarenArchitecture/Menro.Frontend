@@ -2,17 +2,19 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import ownerRestaurantAxios from "../../api/ownerRestaurantAxios";
 import { useMusicSignalR } from "../../hooks/useMusicSignalR";
-import { useGlobalUI } from "../common/GlobalUI";
+import { useGlobalUI } from "../../components/common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 
-import NowPlayingBar from "../musicPlayer/NowPlayingBar";
-import MusicArchiveCard from "../musicPlayer/MusicArchiveCard";
-import PlaylistCard from "../musicPlayer/PlaylistCard";
-import TrackRequestsCard from "../musicPlayer/TrackRequestsCard";
+import MusicHeader from "../../components/music/MusicPlayerHeader";
 
-import PlaylistFormModal from "../musicPlayer/PlaylistFormModal";
-import TrackFormModal from "../musicPlayer/TrackFormModal";
-import PreviewModal from "../musicPlayer/PreviewModal";
+import NowPlayingBar from "../../components/musicPlayer/NowPlayingBar";
+import MusicArchiveCard from "../../components/musicPlayer/MusicArchiveCard";
+import PlaylistCard from "../../components/musicPlayer/PlaylistCard";
+import TrackRequestsCard from "../../components/musicPlayer/TrackRequestsCard";
+
+import PlaylistFormModal from "../../components/musicPlayer/PlaylistFormModal";
+import TrackFormModal from "../../components/musicPlayer/TrackFormModal";
+import PreviewModal from "../../components/musicPlayer/PreviewModal";
 
 // music player hooks import
 import useTrackRequests from "../../hooks/musicPlayer/useTrackRequests";
@@ -26,7 +28,7 @@ import "../../assets/css/admin/musicSection.css";
 // for api
 import { getPlayerState } from "../../api/music";
 
-export default function MusicSection() {
+export default function MusicPlayerPage() {
   useDocumentTitle("پخش‌کننده موسیقی");
   /* -------------------------------------------------------------------
      STATE
@@ -180,7 +182,7 @@ export default function MusicSection() {
     onBeforePreviewStart: () => {
       if (audioRef.current && !audioRef.current.paused) {
         audioRef.current.pause();
-        setIsPlaying(false); // ⚠️ نکته پایین توضیح داده شده
+        setIsPlaying(false);
       }
     },
   });
@@ -201,111 +203,117 @@ export default function MusicSection() {
   });
 
   /* -------------------------------------------------------------------
-     TRACK REQUESTS: APPROVE / REJECT
+     RENDER
   ------------------------------------------------------------------- */
   return (
-    <div className="music-hub" dir="rtl">
-      {/* ---------------------------------
-          Now Playing bar
-      --------------------------------- */}
-      <NowPlayingBar
-        nowPlayingTrack={nowPlayingTrack}
-        isPlaying={isPlaying}
-        currentTime={currentTime}
-        duration={duration}
-        mainProgressPct={mainProgressPct}
-        onTogglePlay={toggleGlobalPlay}
-        onNext={playNextTrack}
-        onPrevious={playPreviousTrack}
-        onSeekMouseDown={handleSeekMouseDown}
-        onSeekChange={handleSeekChange}
-        onSeekMouseUp={handleSeekMouseUp}
-      />
+    <div className="admin-page">
+      <MusicHeader />
 
-      <div className="music-columns">
-        {/* ---------------------------------
-            آرشیو موسیقی
-        --------------------------------- */}
-        <MusicArchiveCard
-          tracks={tracks}
-          loadingArchive={loadingArchive}
-          playingTrackId={playingTrackId}
-          isPlaying={isPlaying}
-          onUploadFiles={onUploadFiles}
-          onPreviewTrack={handlePreviewTrack}
-          onEditTrack={openEditTrackModal}
-          onAddToPlaylist={addToPlaylist}
-          onDeleteTrack={deleteTrackFromArchive}
-        />
+      <div className="admin-content">
+        <div className="music-hub" dir="rtl">
+          {/* ---------------------------------
+              Now Playing bar
+          --------------------------------- */}
+          <NowPlayingBar
+            nowPlayingTrack={nowPlayingTrack}
+            isPlaying={isPlaying}
+            currentTime={currentTime}
+            duration={duration}
+            mainProgressPct={mainProgressPct}
+            onTogglePlay={toggleGlobalPlay}
+            onNext={playNextTrack}
+            onPrevious={playPreviousTrack}
+            onSeekMouseDown={handleSeekMouseDown}
+            onSeekChange={handleSeekChange}
+            onSeekMouseUp={handleSeekMouseUp}
+          />
 
-        {/* ---------------------------------
-            پلی‌لیست ادمین
-        --------------------------------- */}
-        <PlaylistCard
-          playlists={playlists}
-          selectedPlaylistId={selectedPlaylistId}
-          playlistTracks={playlistTracks}
-          loadingPlaylist={loadingPlaylist}
-          playingPlaylistTrackId={playingPlaylistTrackId}
-          isPlaying={isPlaying}
-          onCreatePlaylist={openAddPlaylistModal}
-          onEditPlaylist={openEditPlaylistModal}
-          onDeletePlaylist={handleDeletePlaylist}
-          onSelectPlaylist={handleSelectPlaylist}
-          onPlayTrack={playPlaylistTrack}
-          onMoveTrack={movePlaylistTrack}
-          onRemoveTrack={removeFromPlaylist}
-        />
+          <div className="music-columns">
+            {/* ---------------------------------
+                آرشیو موسیقی
+            --------------------------------- */}
+            <MusicArchiveCard
+              tracks={tracks}
+              loadingArchive={loadingArchive}
+              playingTrackId={playingTrackId}
+              isPlaying={isPlaying}
+              onUploadFiles={onUploadFiles}
+              onPreviewTrack={handlePreviewTrack}
+              onEditTrack={openEditTrackModal}
+              onAddToPlaylist={addToPlaylist}
+              onDeleteTrack={deleteTrackFromArchive}
+            />
+
+            {/* ---------------------------------
+                پلی‌لیست ادمین
+            --------------------------------- */}
+            <PlaylistCard
+              playlists={playlists}
+              selectedPlaylistId={selectedPlaylistId}
+              playlistTracks={playlistTracks}
+              loadingPlaylist={loadingPlaylist}
+              playingPlaylistTrackId={playingPlaylistTrackId}
+              isPlaying={isPlaying}
+              onCreatePlaylist={openAddPlaylistModal}
+              onEditPlaylist={openEditPlaylistModal}
+              onDeletePlaylist={handleDeletePlaylist}
+              onSelectPlaylist={handleSelectPlaylist}
+              onPlayTrack={playPlaylistTrack}
+              onMoveTrack={movePlaylistTrack}
+              onRemoveTrack={removeFromPlaylist}
+            />
+          </div>
+
+          {/* ---------------------------------
+              آهنگ‌های درخواستی
+          --------------------------------- */}
+          <TrackRequestsCard
+            requestedTracks={requestedTracks}
+            loadingRequests={loadingRequests}
+            onApprove={handleApproveRequest}
+            onReject={handleRejectRequest}
+            onRefresh={fetchTrackRequests}
+          />
+
+          {/* ------------------------------------------------------------------
+          -------------------------------MODALS---------------------------------
+          -------------------------------------------------------------------*/}
+
+          {/* مودال ساخت/ویرایش پلی‌لیست (فرم اختصاصی) */}
+          <PlaylistFormModal
+            isOpen={showPlaylistModal}
+            mode={playlistModalMode}
+            name={playlistFormName}
+            onNameChange={setPlaylistFormName}
+            onSubmit={submitPlaylistModal}
+            onClose={closePlaylistModal}
+          />
+
+          {/* مودال ویرایش نام آهنگ (فرم اختصاصی) */}
+          <TrackFormModal
+            isOpen={showTrackModal}
+            name={trackFormName}
+            onNameChange={setTrackFormName}
+            onSubmit={submitTrackModal}
+            onClose={closeTrackModal}
+          />
+
+          {/* مودال پیش‌نمایش آهنگ (پلیر اختصاصی) */}
+          <PreviewModal
+            isOpen={showPreviewModal}
+            trackTitle={previewTrackTitle}
+            isPlaying={isPreviewPlaying}
+            currentTime={previewCurrentTime}
+            duration={previewDuration}
+            progressPct={previewProgressPct}
+            onTogglePlay={togglePreviewPlay}
+            onSeekMouseDown={handlePreviewSeekMouseDown}
+            onSeekChange={handlePreviewSeekChange}
+            onSeekMouseUp={handlePreviewSeekMouseUp}
+            onClose={closePreviewModal}
+          />
+        </div>
       </div>
-
-      {/* ---------------------------------
-          آهنگ‌های درخواستی
-      --------------------------------- */}
-      <TrackRequestsCard
-        requestedTracks={requestedTracks}
-        loadingRequests={loadingRequests}
-        onApprove={handleApproveRequest}
-        onReject={handleRejectRequest}
-        onRefresh={fetchTrackRequests}
-      />
-
-      {/* ------------------------------------------------------------------
-      -------------------------------MODALS---------------------------------
-      -------------------------------------------------------------------*/}
-
-      {/* مودال ساخت/ویرایش پلی‌لیست (فرم اختصاصی) */}
-      <PlaylistFormModal
-        isOpen={showPlaylistModal}
-        mode={playlistModalMode}
-        name={playlistFormName}
-        onNameChange={setPlaylistFormName}
-        onSubmit={submitPlaylistModal}
-        onClose={closePlaylistModal}
-      />
-
-      {/* مودال ویرایش نام آهنگ (فرم اختصاصی) */}
-      <TrackFormModal
-        isOpen={showTrackModal}
-        name={trackFormName}
-        onNameChange={setTrackFormName}
-        onSubmit={submitTrackModal}
-        onClose={closeTrackModal}
-      />
-
-      {/* مودال پیش‌نمایش آهنگ (پلیر اختصاصی) */}
-      <PreviewModal
-        isOpen={showPreviewModal}
-        trackTitle={previewTrackTitle}
-        isPlaying={isPreviewPlaying}
-        currentTime={previewCurrentTime}
-        duration={previewDuration}
-        progressPct={previewProgressPct}
-        onTogglePlay={togglePreviewPlay}
-        onSeekMouseDown={handlePreviewSeekMouseDown}
-        onSeekChange={handlePreviewSeekChange}
-        onSeekMouseUp={handlePreviewSeekMouseUp}
-        onClose={closePreviewModal}
-      />
     </div>
   );
 }

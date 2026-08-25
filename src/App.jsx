@@ -2,7 +2,7 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
-import AdminMusicPage from "./pages/Admin/AdminMusicPage";
+import MusicPlayerPage from "./pages/Admin/MusicPlayerPage";
 import AdminPage from "./pages/Admin/AdminPage";
 import BillsPage from "./pages/BillsPage";
 import BlogPage from "./pages/BlogPage";
@@ -136,8 +136,8 @@ export default function App() {
               <Route
                 path="/admin/music"
                 element={
-                  <ProtectedRoute roles={["admin", "owner"]}>
-                    <AdminMusicPage />
+                  <ProtectedRoute roles={["owner"]}>
+                    <MusicPlayerPage />
                   </ProtectedRoute>
                 }
               />

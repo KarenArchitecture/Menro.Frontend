@@ -37,12 +37,10 @@ import ProfileSection from "../../components/admin/ProfileSection";
 /* ===================== Sections: misc / unused in current sidebar ===================== */
 import DashboardSection from "../../components/admin/DashboardSection";
 import ThemeSection from "../../components/admin/ThemeSection";
-import MusicSection from "../../components/admin/MusicSection";
 
 /* ===================== Data / context / hooks ===================== */
 import ownerRestaurantAxios from "../../api/ownerRestaurantAxios";
 import { useAuth } from "../../context/AuthContext";
-import { useMusicSignalR } from "../../hooks/useMusicSignalR";
 import { useGlobalUI } from "../../components/common/GlobalUI";
 
 export default function AdminPage() {
@@ -55,11 +53,9 @@ export default function AdminPage() {
 
   const { user } = useAuth();
 
-  const [restaurantId, setRestaurantId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [hasNewRequest, setHasNewRequest] = useState(false);
 
-  const { alertModal } = useGlobalUI();
   /* ---------------------------
    * LOAD RESTAURANT CONTEXT
    * -------------------------- */
@@ -75,26 +71,6 @@ export default function AdminPage() {
 
     if (user) load();
   }, [user]);
-
-  /* ---------------------------
-   * SIGNALR (single source of truth)
-   * -------------------------- */
-  // const handleTrackRequested = useCallback(() => {
-  //   setHasNewRequest(true);
-
-  //   alertModal({
-  //     title: "درخواست جدید موسیقی",
-  //     message: "یک درخواست جدید موسیقی از طرف مشتری ثبت شده است.",
-  //     buttonText: "مشاهده",
-  //   }).then(() => {
-  //     setActiveTab("music");
-  //     localStorage.setItem("admin-active-tab", "music");
-  //     setHasNewRequest(false);
-  //   });
-  // }, [alertModal]);
-  // useMusicSignalR(restaurantId, "admin", {
-  //   onCreated: handleTrackRequested,
-  // });
 
   /* ---------------------------
    * UI HANDLERS
@@ -170,8 +146,6 @@ export default function AdminPage() {
         return <DashboardSection />;
       case "theme":
         return <ThemeSection />;
-      case "music":
-        return <MusicSection />;
 
       default:
         return <div>در حال ساخت...</div>;

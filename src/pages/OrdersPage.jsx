@@ -7,6 +7,7 @@ import { PreviousOrdersList } from "../components/orders/PreviousOrderCard";
 import { useAuth } from "../context/AuthContext";
 import { getUserOrderHistory } from "../api/orders";
 import resolveFileUrl from "../utils/resolveFileUrl";
+import StateMessage from "../components/common/StateMessage";
 
 function GuestOrdersPrompt() {
   const navigate = useNavigate();
@@ -83,7 +84,21 @@ export default function Orders() {
   return (
     <div style={{ minHeight: "100vh" }}>
       <ContinueShopping />
-      {user ? <PreviousOrdersList orders={orders} /> : <GuestOrdersPrompt />}
+      {user ? (
+        orders.length > 0 ? (
+          <PreviousOrdersList orders={orders} />
+        ) : (
+          <StateMessage
+            kind="empty"
+            title="هنوز سفارشی ثبت نکرده‌اید"
+            className="fade-in"
+          >
+            وقتی سفارشی ثبت کنید، اینجا نمایش داده می‌شود.
+          </StateMessage>
+        )
+      ) : (
+        <GuestOrdersPrompt />
+      )}
     </div>
   );
 }

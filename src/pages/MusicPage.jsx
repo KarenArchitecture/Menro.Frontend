@@ -8,6 +8,7 @@ import MusicRequestModal from "../components/music/MusicRequestModal";
 import OrderSuccessModal from "../components/common/OrderSuccessModal";
 import { useGlobalUI } from "../components/common/GlobalUI";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import StateMessage from "../components/common/StateMessage";
 
 import "../assets/css/styles-music.css";
 
@@ -180,23 +181,33 @@ export default function MusicPage() {
         aria-hidden={isRequestModalOpen || showMusicSuccess}
       >
         <section className="music-page__list" aria-label="لیست آهنگ‌ها">
-          {tracks.map((track) => (
-            <MusicTrack
-              key={track.id}
-              title={track.title}
-              subtitle={track.subtitle}
-              image={track.imageUrl}
-              status={
-                track.status === "Requested"
-                  ? "requested"
-                  : track.status === "MineRequested"
-                    ? "mineRequested"
-                    : null
-              }
-              active={playback?.currentTrackId === track.id}
-              onActionClick={() => handleCopyTrack(track)}
-            />
-          ))}
+          {tracks.length > 0 ? (
+            tracks.map((track) => (
+              <MusicTrack
+                key={track.id}
+                title={track.title}
+                subtitle={track.subtitle}
+                image={track.imageUrl}
+                status={
+                  track.status === "Requested"
+                    ? "requested"
+                    : track.status === "MineRequested"
+                      ? "mineRequested"
+                      : null
+                }
+                active={playback?.currentTrackId === track.id}
+                onActionClick={() => handleCopyTrack(track)}
+              />
+            ))
+          ) : (
+            <StateMessage
+              kind="empty"
+              title="در حال حاضر موسیقی‌ای در حال پخش نیست"
+              className="fade-in"
+            >
+              می‌توانید با درخواست موسیقی، اولین آهنگ را به صف اضافه کنید.
+            </StateMessage>
+          )}
         </section>
       </main>
 

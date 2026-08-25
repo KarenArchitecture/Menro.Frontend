@@ -3,6 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { FaMusic } from "react-icons/fa";
+
+let musicPlayerWindowRef = null;
+
 export default function AdminHeader({
   isLoading = false, // show placeholders while fetching (دلخواه)
   onHamburger,
@@ -39,6 +42,15 @@ export default function AdminHeader({
     setMobileSearchOpen(false);
   };
   */
+  const handleOpenMusicPlayer = () => {
+    if (musicPlayerWindowRef && !musicPlayerWindowRef.closed) {
+      // تب از قبل بازه → فقط فوکوس کن، هیچ url ای پاس نده تا ریلود نشه
+      musicPlayerWindowRef.focus();
+    } else {
+      // تبی وجود نداره یا بسته شده → تازه باز کن
+      musicPlayerWindowRef = window.open("/admin/music", "musicPlayerWindow");
+    }
+  };
 
   return (
     <header className="main-header">
@@ -63,7 +75,7 @@ export default function AdminHeader({
           <button
             type="button"
             className="admin-music-btn"
-            onClick={() => window.open("/admin/music", "_blank")}
+            onClick={handleOpenMusicPlayer}
             style={{
               display: "flex",
               alignItems: "center",

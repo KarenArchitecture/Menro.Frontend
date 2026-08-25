@@ -55,6 +55,7 @@ export default function AdminPage() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [hasNewRequest, setHasNewRequest] = useState(false);
+  const [restaurantId, setRestaurantId] = useState();
 
   /* ---------------------------
    * LOAD RESTAURANT CONTEXT

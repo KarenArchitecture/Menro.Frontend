@@ -2540,3 +2540,71 @@ svg {
 .menu-state--error {
   color: #ff6b6b;
 }
+
+
+//usual orders
+.usual-orders-modal {
+    position: fixed;
+    inset-inline: 0;
+    top: 0;
+    bottom: 0;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    background-color: #0c0f14;
+    z-index: 2400;
+    transform: translateY(-100%);
+    transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.usual-orders-modal.active {
+    transform: translateY(0%);
+}
+
+.usual-orders-backdrop {
+    z-index: 2399;
+}
+
+.usual-orders-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 1.6rem 2rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.usual-orders-header__title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #fff;
+}
+
+.usual-orders-header__back {
+    width: 3.4rem;
+    height: 3.4rem;
+    background: #13171e !important;
+    border-radius: 1rem;
+}
+
+.usual-orders-header__title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.usual-orders-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.2rem;
+    padding: 1.6rem 2rem calc(88px + 2rem);
+    overflow-y: auto;
+}
+
+.usual-orders-grid .menu-card {
+    height: calc(25rem + 17px);
+}
+
+.usual-orders-grid .menu-card__footer {
+    margin-bottom: 17px;
+}

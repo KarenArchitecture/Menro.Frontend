@@ -449,7 +449,6 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-height: 84px;
   overflow-y: auto;
   padding-inline-end: 6px;
 }
@@ -994,4 +993,73 @@
   .requests-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* syncing both archive and playlist track list max-height */
+.playlist-card .mh-list {
+  max-height: 400px;
+}
+.archive-card .mh-list {
+  max-height: 276px;
+}
+
+/* -----------------------------------------------------------------------
+   UPLOAD PROGRESS (replaces .mh-upload while a file is uploading)
+   ----------------------------------------------------------------------- */
+
+.mh-upload-progress {
+  width: 100%;
+  height: 46px;
+  margin: 12px 0;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(245, 158, 11, 0.35);
+  background: rgba(245, 158, 11, 0.05);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+
+.mh-upload-progress__info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.78rem;
+}
+
+.mh-upload-progress__name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--mh-accent);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.mh-upload-progress__meta {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  direction: ltr;
+}
+
+.mh-upload-progress__bar {
+  position: relative;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.mh-upload-progress__fill {
+  position: absolute;
+  inset: 0;
+  width: 0%;
+  background: linear-gradient(90deg, var(--mh-accent), var(--mh-accent-2));
+  border-radius: 999px;
+  transition: width 0.15s ease;
 }

@@ -17,6 +17,7 @@ import { MAX_TRACKS } from "../../utils/musicFormatters";
  * onTrackRenamed: بعد از تغییر نام موفق صدا زده می‌شود، تا والد در صورت
  *   نیاز پلی‌لیست فعال را رفرش کند.
  */
+
 export default function useMusicArchive({ onTrackDeleted, onTrackRenamed }) {
   const { notify, confirmModal } = useGlobalUI();
 
@@ -26,6 +27,12 @@ export default function useMusicArchive({ onTrackDeleted, onTrackRenamed }) {
   const [showTrackModal, setShowTrackModal] = useState(false);
   const [trackFormName, setTrackFormName] = useState("");
   const [editingTrackId, setEditingTrackId] = useState(null);
+
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadFileName, setUploadFileName] = useState("");
+  const [uploadIndex, setUploadIndex] = useState(0);
+  const [uploadTotal, setUploadTotal] = useState(0);
 
   const loadTracks = async () => {
     setLoadingArchive(true);
@@ -56,6 +63,7 @@ export default function useMusicArchive({ onTrackDeleted, onTrackRenamed }) {
   }, []);
 
   const onUploadFiles = async (files) => {
+    if (uploading) return; // جلوگیری از درخواست هم‌زمان/تکراری
     if (!files?.length) return;
     let audioFiles = Array.from(files).filter((f) =>
       f.type.startsWith("audio/"),
@@ -73,33 +81,57 @@ export default function useMusicArchive({ onTrackDeleted, onTrackRenamed }) {
     }
 
     let successCount = 0;
+    setUploading(true);
+    setUploadTotal(audioFiles.length);
 
-    for (const file of audioFiles) {
-      try {
-        const formData = new FormData();
-        formData.append("Title", file.name.replace(/\.[^/.]+$/, ""));
-        formData.append("Artist", "—");
-        formData.append("AudioFile", file);
+    try {
+      for (let i = 0; i < audioFiles.length; i++) {
+        const file = audioFiles[i];
+        setUploadIndex(i + 1);
+        setUploadFileName(file.name);
+        setUploadProgress(0);
 
-        const res = await createTrack(formData);
-        setTracks((prev) => [
-          ...prev,
-          {
-            id: res.data.id,
-            title: res.data.title,
-            artist: res.data.artist,
-            duration: res.data.duration,
-            isActive: res.data.isActive,
-            source: "archive",
-            coverFileName: res.data.coverFileName,
-            artworkUrl: res.data.coverFileName,
-          },
-        ]);
-        successCount += 1;
-      } catch (err) {
-        console.error(err);
-        notify({ type: "error", message: `خطا در آپلود فایل «${file.name}»` });
+        try {
+          const formData = new FormData();
+          formData.append("Title", file.name.replace(/\.[^/.]+$/, ""));
+          formData.append("Artist", "—");
+          formData.append("AudioFile", file);
+
+          const res = await createTrack(formData, {
+            onUploadProgress: (evt) => {
+              if (!evt.total) return;
+              setUploadProgress(Math.round((evt.loaded * 100) / evt.total));
+            },
+          });
+
+          setTracks((prev) => [
+            ...prev,
+            {
+              id: res.data.id,
+              title: res.data.title,
+              artist: res.data.artist,
+              duration: res.data.duration,
+              isActive: res.data.isActive,
+              source: "archive",
+              coverFileName: res.data.coverFileName,
+              artworkUrl: res.data.coverFileName,
+            },
+          ]);
+          successCount += 1;
+        } catch (err) {
+          console.error(err);
+          notify({
+            type: "error",
+            message: `خطا در آپلود فایل «${file.name}»`,
+          });
+        }
       }
+    } finally {
+      setUploading(false);
+      setUploadProgress(0);
+      setUploadFileName("");
+      setUploadIndex(0);
+      setUploadTotal(0);
     }
 
     if (successCount > 0) {
@@ -187,6 +219,11 @@ export default function useMusicArchive({ onTrackDeleted, onTrackRenamed }) {
     tracks,
     loadingArchive,
     onUploadFiles,
+    uploading,
+    uploadProgress,
+    uploadFileName,
+    uploadIndex,
+    uploadTotal,
     deleteTrackFromArchive,
     showTrackModal,
     trackFormName,

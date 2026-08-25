@@ -19,6 +19,11 @@ export default function MusicArchiveCard({
   onEditTrack,
   onAddToPlaylist,
   onDeleteTrack,
+  uploading,
+  uploadProgress,
+  uploadFileName,
+  uploadIndex,
+  uploadTotal,
 }) {
   const { notify } = useGlobalUI();
 
@@ -109,16 +114,37 @@ export default function MusicArchiveCard({
             id="file-upload-archive"
             accept="audio/*"
             multiple
+            disabled={uploading}
             style={{ display: "none" }}
             onChange={(e) => {
               onUploadFiles(e.target.files);
               e.target.value = null;
             }}
           />
-          <label htmlFor="file-upload-archive" className="mh-upload">
-            <i className="fas fa-cloud-upload-alt" /> بارگذاری فایل جدید از
-            سیستم
-          </label>
+
+          {uploading ? (
+            <div className="mh-upload-progress">
+              <div className="mh-upload-progress__info">
+                <span className="mh-upload-progress__name">
+                  <i className="fas fa-spinner spin-icon" /> {uploadFileName}
+                </span>
+                <span className="mh-upload-progress__meta">
+                  {uploadIndex}/{uploadTotal} • {uploadProgress}٪
+                </span>
+              </div>
+              <div className="mh-upload-progress__bar">
+                <div
+                  className="mh-upload-progress__fill"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+          ) : (
+            <label htmlFor="file-upload-archive" className="mh-upload">
+              <i className="fas fa-cloud-upload-alt" /> بارگذاری فایل جدید از
+              سیستم
+            </label>
+          )}
 
           <div className="mh-list">
             {!loadingArchive &&

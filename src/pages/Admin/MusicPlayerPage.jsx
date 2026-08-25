@@ -113,6 +113,11 @@ export default function MusicPlayerPage() {
     tracks,
     loadingArchive,
     onUploadFiles,
+    uploading,
+    uploadProgress,
+    uploadFileName,
+    uploadIndex,
+    uploadTotal,
     deleteTrackFromArchive,
     showTrackModal,
     trackFormName,
@@ -244,6 +249,11 @@ export default function MusicPlayerPage() {
               onEditTrack={openEditTrackModal}
               onAddToPlaylist={addToPlaylist}
               onDeleteTrack={deleteTrackFromArchive}
+              uploading={uploading}
+              uploadProgress={uploadProgress}
+              uploadFileName={uploadFileName}
+              uploadIndex={uploadIndex}
+              uploadTotal={uploadTotal}
             />
 
             {/* ---------------------------------

@@ -222,9 +222,15 @@ export default function usePlaylistManager({
         const newPlaylist = {
           id: res.data.id,
           name: res.data.name,
+          tracks: 0,
+          isActive: true,
         };
 
-        setPlaylists((prev) => [...prev, newPlaylist]);
+        setPlaylists((prev) => [
+          ...prev.map((p) => ({ ...p, isActive: false })),
+          newPlaylist,
+        ]);
+
         setSelectedPlaylistId(newPlaylist.id);
         setPlaylistTracks([]);
 

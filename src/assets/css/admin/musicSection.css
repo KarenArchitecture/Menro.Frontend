@@ -449,7 +449,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-height: 400px;
+  max-height: 84px;
   overflow-y: auto;
   padding-inline-end: 6px;
 }
@@ -733,6 +733,10 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.playlist-card__tracks .mh-input {
+  max-height: 42px;
 }
 
 /* -----------------------------------------------------------------------

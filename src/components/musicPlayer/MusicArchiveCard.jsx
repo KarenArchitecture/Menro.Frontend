@@ -95,13 +95,13 @@ export default function MusicArchiveCard({
               placeholder="جستجو در آرشیو..."
               onChange={(e) => setQuery(e.target.value)}
             />
-            <button
+            {/* <button
               type="submit"
               className="mh-btn mh-btn--primary"
               disabled={searching}
             >
               {searching ? "..." : "جستجو"}
-            </button>
+            </button> */}
           </form>
 
           <input

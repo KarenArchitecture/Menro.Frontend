@@ -254,7 +254,7 @@ export default function AdminSidebar({
         <h1
           className="sidebar-logo"
           style={{ cursor: "pointer" }}
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/home")}
         >
           منرو
         </h1>

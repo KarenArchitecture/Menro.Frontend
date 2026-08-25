@@ -170,7 +170,7 @@ export default function LoginPage() {
   });
 
   const continueAsGuest = () => {
-    navigate(returnUrl?.startsWith("/") ? returnUrl : "/", { replace: true });
+    navigate("/home", { replace: true });
   };
 
   const switchMode = (next) => {

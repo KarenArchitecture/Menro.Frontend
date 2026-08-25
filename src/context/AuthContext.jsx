@@ -1,6 +1,7 @@
 // src/ontext/AuthContext.jsx
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
+import { useGlobalUI } from "../components/common/GlobalUI";
 import authAxios from "../api/authAxios";
 import userAxios from "../api/userAxios";
 import restaurantAuthAxios from "../api/restaurantAuthAxios";
@@ -13,6 +14,7 @@ export function setGlobalLogout(fn) {
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+  const { notify } = useGlobalUI();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [avatarUrl, setAvatarUrl] = useState(null);
@@ -206,23 +208,21 @@ export function AuthProvider({ children }) {
   /* ------------------------
     LOGOUT
    ---------------------- */
-  const logout = async (redirect = true) => {
-    try {
-      await authAxios.post("/logout", {}, { withCredentials: true });
-    } catch (err) {
-      console.warn("⚠️ logout request failed:", err);
-    }
-
+  const logout = (redirectTo = "/home") => {
     localStorage.removeItem("userPhone");
     localStorage.removeItem("accessToken");
-    setToken(null);
-    setAvatarUrl(null); // 🛑 عکس قبلی را هم پاک کن
-    setRestaurantStatus(null); // 🛑 وضعیت رستوران قبلی رو هم پاک کن
-    setUser(null);
     localStorage.setItem("logout-event", Date.now().toString());
-    await refreshUser();
 
-    if (redirect) window.location.href = "/"; // به صفحه اصلی برگرد
+    authAxios.post("/logout", {}, { withCredentials: true }).catch((err) => {
+      console.warn("⚠️ logout request failed:", err);
+    });
+
+    notify({ type: "success", message: "خروج از حساب با موفقیت انجام شد" });
+
+    // یک مکث کوتاه تا کاربر پیام موفقیت رو ببینه، بعد ریدایرکت
+    setTimeout(() => {
+      window.location.href = redirectTo;
+    }, 700);
   };
   // ثبت logout جهانی برای interceptor
   useEffect(() => {

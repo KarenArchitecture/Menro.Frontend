@@ -1,11 +1,8 @@
 // src/components/admin/AdminSidebar.jsx
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../context/AuthContext";
 import { useGlobalUI } from "../common/GlobalUI";
-import { getAdminComments } from "../../api/adminComments";
-import { toPersianDigits } from "../../utils/persianFormat";
 
 // Always-visible (for admin/owner), non-collapsible top item.
 const DASHBOARD_ITEM = {
@@ -139,9 +136,20 @@ export default function AdminSidebar({
   hasNewRequest = false,
 }) {
   const navigate = useNavigate();
-  const { confirmModal } = useGlobalUI();
   // role check - roles from auth context are compared case-insensitively
   const { user, logout } = useAuth();
+  const { confirmModal } = useGlobalUI();
+  const handleLogout = async () => {
+    const ok = await confirmModal({
+      title: "خروج از حساب",
+      message: "آیا مطمئن هستید که می‌خواهید از حساب خود خارج شوید؟",
+      confirmText: "خروج",
+      cancelText: "انصراف",
+    });
+    if (!ok) return;
+
+    logout();
+  };
   const userRoles = (user?.roles || []).map((r) => r.toLowerCase());
   const hasAnyRole = (requiredRoles) =>
     !requiredRoles ||
@@ -183,20 +191,6 @@ export default function AdminSidebar({
   const handleSelect = (key) => {
     onSelect?.(key);
     onClose?.();
-  };
-
-  const handleLogout = async () => {
-    const ok = await confirmModal({
-      title: "خروج از حساب",
-      message: "آیا مطمئن هستید که می‌خواهید از حساب خود خارج شوید؟",
-      confirmText: "خروج",
-      cancelText: "انصراف",
-      danger: true,
-    });
-    if (!ok) return;
-
-    logout();
-    navigate("/", { replace: false });
   };
 
   const renderItem = (item) => {
@@ -260,7 +254,7 @@ export default function AdminSidebar({
         <h1
           className="sidebar-logo"
           style={{ cursor: "pointer" }}
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/home")}
         >
           منرو
         </h1>

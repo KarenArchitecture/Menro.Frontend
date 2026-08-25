@@ -1,11 +1,11 @@
 // MusicTrack.jsx
-import React from "react";
+import React, { useState } from "react";
 
 export default function MusicTrack({
   title,
   subtitle,
   image,
-  status = null, // null | "requested" | "mineRequested"
+  status = null,
   active = false,
   onSelect,
   onActionClick,
@@ -15,6 +15,7 @@ export default function MusicTrack({
   requestButtonDisabled = false,
   onRequestClick,
 }) {
+  const [imgBroken, setImgBroken] = useState(false);
   const statusText =
     status === "requested"
       ? "درخواستی"
@@ -102,7 +103,16 @@ export default function MusicTrack({
       </div>
 
       <div className="music-track__thumb">
-        <img src={image} alt={title} className="music-track__img" />
+        {image && !imgBroken ? (
+          <img
+            src={image}
+            alt={title}
+            className="music-track__img"
+            onError={() => setImgBroken(true)}
+          />
+        ) : (
+          <i className="fas fa-music music-track__img-placeholder" />
+        )}
 
         {active && <div className="music-track__thumb-overlay" />}
 

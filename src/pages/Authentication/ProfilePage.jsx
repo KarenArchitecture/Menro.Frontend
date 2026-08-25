@@ -10,10 +10,8 @@ import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 export default function ProfilePage() {
   useDocumentTitle("پروفایل کاربری");
-  const { logout, user } = useAuth();
-  const navigate = useNavigate();
-  const { notify, confirmModal } = useGlobalUI();
-
+  const { user, logout } = useAuth();
+  const { confirmModal } = useGlobalUI();
   const handleLogout = async () => {
     const confirmed = await confirmModal({
       title: "خروج از حساب",
@@ -21,12 +19,10 @@ export default function ProfilePage() {
       confirmText: "بله، خارج می‌شوم",
       cancelText: "انصراف",
     });
-    if (confirmed) {
-      await logout(false);
-      navigate("/home", { replace: true });
-    }
-  };
+    if (!confirmed) return;
 
+    logout();
+  };
   const profileUser = {
     name: user?.fullName || "کاربر منرو",
     avatarUrl: user?.avatarUrl || null,
@@ -43,7 +39,7 @@ export default function ProfilePage() {
         type="button"
         className="profile-logout-btn"
         aria-label="خروج از حساب کاربری"
-        onClick={handleLogout}
+        onClick={() => handleLogout()}
       >
         <svg
           viewBox="0 0 24 24"

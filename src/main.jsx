@@ -22,11 +22,11 @@ const queryClient = new QueryClient();
 ReactDOM.createRoot(document.getElementById("root")).render(
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
-      <AuthProvider>
-        <GlobalUIProvider>
+      <GlobalUIProvider>
+        <AuthProvider>
           <App />
-        </GlobalUIProvider>
-      </AuthProvider>
+        </AuthProvider>
+      </GlobalUIProvider>
     </BrowserRouter>
   </QueryClientProvider>,
 );

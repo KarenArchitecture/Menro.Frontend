@@ -5,9 +5,10 @@ export const getTracks = () => apiClient.get("/admin/music/archive");
 
 export const getTrack = (id) => apiClient.get(`/admin/music/archive/${id}`);
 
-export const createTrack = (formData) =>
+export const createTrack = (formData, config) =>
   apiClient.post("/admin/music/archive", formData, {
     headers: { "Content-Type": "multipart/form-data" },
+    ...config,
   });
 
 export const renameTrack = (id, dto) =>

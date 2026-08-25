@@ -1,15 +1,31 @@
 import { FaPowerOff } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useGlobalUI } from "../../components/common/GlobalUI";
 
-export default function AdminHeader() {
+export default function MusicPlayerHeader() {
   useEffect(() => {
     document.title = "Music Player";
   }, []);
   const navigate = useNavigate();
+  const { confirmModal } = useGlobalUI();
 
-  const handleGoAdmin = () => {
-    navigate("/admin");
+  const handleGoAdmin = async () => {
+    const ok = await confirmModal({
+      title: "خروج از موزیک پلیر",
+      message: "آیا از خروج مطمئن هستید؟",
+      confirmText: "خروج",
+      cancelText: "انصراف",
+      danger: true,
+    });
+
+    if (!ok) return;
+
+    if (window.opener && !window.opener.closed) {
+      window.close();
+    } else {
+      navigate("/admin");
+    }
   };
 
   return (
@@ -22,20 +38,7 @@ export default function AdminHeader() {
         direction: "rtl",
       }}
     >
-      <button
-        onClick={handleGoAdmin}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-          background: "transparent",
-          border: "none",
-          cursor: "pointer",
-          color: "#fff",
-          flexDirection: "row-reverse",
-          padding: "10px",
-        }}
-      >
+      <button onClick={handleGoAdmin} className="mp-header__power-btn">
         <FaPowerOff size={35} />
       </button>
     </header>

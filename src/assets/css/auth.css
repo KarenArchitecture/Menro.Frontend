@@ -30,8 +30,8 @@
   --auth-input-bg: #141922;
   --auth-input-border: #262c35;
   --auth-input-border-focus: var(--auth-accent);
-  --auth-otp-bg: var(--auth-white);
-  --auth-otp-text: #17191c;
+  --auth-otp-bg: var(--auth-input-bg);
+  --auth-otp-text: var(--auth-text);
 
   /* --- feedback --- */
   --auth-error: #ff6b6b;

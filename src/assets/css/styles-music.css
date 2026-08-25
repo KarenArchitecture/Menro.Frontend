@@ -299,7 +299,10 @@
   overflow: hidden;
   position: relative;
   flex: 0 0 auto;
-  background: #20262f;
+  background: #2a2a2a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .music-track__img {
@@ -307,6 +310,11 @@
   height: 100%;
   object-fit: cover;
   display: block;
+}
+.music-track__img-placeholder {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 16px;
+  line-height: 1;
 }
 
 .music-track__thumb-overlay {

@@ -2,6 +2,7 @@ import { FaPowerOff } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useGlobalUI } from "../../components/common/GlobalUI";
+import { checkOtherTabsOpen } from "../../utils/tabPresence";
 
 export default function MusicPlayerHeader() {
   useEffect(() => {
@@ -21,7 +22,9 @@ export default function MusicPlayerHeader() {
 
     if (!ok) return;
 
-    if (window.opener && !window.opener.closed) {
+    const othersOpen = await checkOtherTabsOpen();
+
+    if (othersOpen) {
       window.close();
     } else {
       navigate("/admin");

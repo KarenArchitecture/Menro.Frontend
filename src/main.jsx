@@ -8,6 +8,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { GlobalUIProvider } from "./components/common/GlobalUI/GlobalUIProvider";
+import { registerTabPresence } from "./utils/tabPresence";
+registerTabPresence();
 
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./assets/css/generic.css";

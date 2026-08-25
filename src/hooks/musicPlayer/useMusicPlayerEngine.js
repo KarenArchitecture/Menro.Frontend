@@ -10,14 +10,6 @@ import {
 } from "../../api/music";
 import { withAuthToken } from "../../utils/musicFormatters";
 
-/**
- * موتور اصلی پخش موسیقی از پلی‌لیست: پخش/توقف، بعدی/قبلی، seek،
- * حذف از پلی‌لیست (وقتی روی پخش زنده اثر دارد)، و همگام‌سازی با SignalR.
- *
- * پارامترها از دامنه‌ی پلی‌لیست (usePlaylistManager) می‌آیند، چون این
- * دو دامنه عمیقاً به هم وابسته‌اند (تقریباً هر عملیات پخش نیاز به دانستن
- * پلی‌لیست فعال دارد).
- */
 export default function useMusicPlayerEngine({
   playlistTracks,
   playlistTracksRef,
@@ -67,8 +59,6 @@ export default function useMusicPlayerEngine({
     audio.pause();
     audio.src = withAuthToken(url);
     audio.load();
-
-    await new Promise((r) => requestAnimationFrame(r));
 
     return true;
   };
@@ -150,6 +140,11 @@ export default function useMusicPlayerEngine({
       audio.removeEventListener("timeupdate", updateTime);
       audio.removeEventListener("loadedmetadata", updateDuration);
       audio.removeEventListener("ended", handleEnded);
+
+      // موقع خروج کامل از صفحه‌ی موزیک (unmount)، پخش واقعاً متوقف بشه —
+      // وگرنه Audio element مستقل از React زنده می‌ماند و پخش ادامه می‌یابد
+      audio.pause();
+      audio.src = "";
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -221,8 +216,6 @@ export default function useMusicPlayerEngine({
 
       audio.pause();
       audio.currentTime = 0;
-
-      await new Promise((r) => requestAnimationFrame(r));
 
       audio.src = withAuthToken(audioUrl);
 

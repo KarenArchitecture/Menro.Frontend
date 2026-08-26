@@ -47,6 +47,10 @@ export default function RestaurantStatusPage() {
   const [notFound, setNotFound] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
+  const handleGoToAdmin = () => {
+    logout(`/login?returnUrl=${encodeURIComponent("/admin")}`);
+  };
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -75,8 +79,7 @@ export default function RestaurantStatusPage() {
     });
     if (!ok) return;
 
-    logout();
-    navigate("/", { replace: false });
+    logout("/home");
   };
 
   // اولین لود، هنوز جوابی از /my-status نیومده
@@ -189,7 +192,7 @@ export default function RestaurantStatusPage() {
             <button
               type="button"
               className="auth-btn auth-btn-primary"
-              onClick={() => navigate("/admin")}
+              onClick={handleGoToAdmin}
             >
               ورود به پنل مدیریت
             </button>

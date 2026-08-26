@@ -133,7 +133,7 @@ export default function LoginPage() {
 
     try {
       await completeLogin(data.accessToken);
-      navigate(returnUrl?.startsWith("/") ? returnUrl : "/", {
+      navigate(returnUrl?.startsWith("/") ? returnUrl : "/home", {
         replace: true,
       });
     } catch (err) {

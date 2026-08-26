@@ -407,7 +407,14 @@ function GeneralTextsPane({ onSaved }) {
 
       <div className="panel-actions">
         <button className="btn btn-primary" disabled={saving} onClick={save}>
-          {saving ? "در حال ذخیره..." : "ذخیره تغییرات"}
+          {saving ? (
+            <>
+              <span className="submit-spinner" aria-hidden="true" />
+              در حال ذخیره...
+            </>
+          ) : (
+            "ذخیره تغییرات"
+          )}
         </button>
       </div>
     </div>
@@ -711,7 +718,11 @@ function ReasonsPane({ onSaved }) {
                 onClick={() => remove(reason.id)}
                 title="حذف"
               >
-                <i className="fas fa-trash" />
+                {deletingId === reason.id ? (
+                  <span className="submit-spinner" aria-hidden="true" />
+                ) : (
+                  <i className="fas fa-trash" />
+                )}
               </button>
             </div>
           </div>
@@ -729,7 +740,12 @@ function ReasonsPane({ onSaved }) {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h4>{modalReason.id ? "ویرایش دلیل" : "دلیل جدید"}</h4>
-              <button className="btn-icon" onClick={closeReasonModal}>
+              <button
+                className="btn-icon"
+                onClick={closeReasonModal}
+                disabled={saving}
+              >
+                {" "}
                 <i className="fas fa-times" />
               </button>
             </div>
@@ -861,7 +877,14 @@ function ReasonsPane({ onSaved }) {
                 disabled={saving}
                 onClick={save}
               >
-                {saving ? "در حال ذخیره..." : "ذخیره"}
+                {saving ? (
+                  <>
+                    <span className="submit-spinner" aria-hidden="true" />
+                    در حال ذخیره...
+                  </>
+                ) : (
+                  "ذخیره"
+                )}
               </button>
             </div>
           </div>
@@ -1129,7 +1152,11 @@ function FaqPane({ onSaved }) {
                   onClick={() => remove(faq.id)}
                   title="حذف"
                 >
-                  <i className="fas fa-trash" />
+                  {deletingId === faq.id ? (
+                    <span className="submit-spinner" aria-hidden="true" />
+                  ) : (
+                    <i className="fas fa-trash" />
+                  )}
                 </button>
               </div>
             </div>
@@ -1148,7 +1175,11 @@ function FaqPane({ onSaved }) {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h4>{modalFaq.id ? "ویرایش سوال" : "سوال جدید"}</h4>
-              <button className="btn-icon" onClick={() => setModalFaq(null)}>
+              <button
+                className="btn-icon"
+                onClick={() => setModalFaq(null)}
+                disabled={saving}
+              >
                 <i className="fas fa-times" />
               </button>
             </div>
@@ -1212,7 +1243,14 @@ function FaqPane({ onSaved }) {
                 disabled={saving}
                 onClick={save}
               >
-                {saving ? "در حال ذخیره..." : "ذخیره"}
+                {saving ? (
+                  <>
+                    <span className="submit-spinner" aria-hidden="true" />
+                    در حال ذخیره...
+                  </>
+                ) : (
+                  "ذخیره"
+                )}
               </button>
             </div>
           </div>

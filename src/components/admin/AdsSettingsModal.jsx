@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import adSettingsAxios from "../../api/adSettingsAxios";
 import { useGlobalUI } from "../common/GlobalUI";
+import "../../assets/css/admin/admin.css";
 import "../../assets/css/admin/AdsSettingsModal.css";
 
 const AD_TYPES = [
@@ -37,6 +38,8 @@ export default function AdsSettingsModal({ onClose }) {
   const { notify } = useGlobalUI();
   const [dayError, setDayError] = useState("");
   const [clickError, setClickError] = useState("");
+
+  const [saving, setSaving] = useState(false);
 
   const current = settings[adType];
   const isBanner = adType === "banner";
@@ -173,12 +176,15 @@ export default function AdsSettingsModal({ onClose }) {
 
     const dtos = convertUiToDtos(adType, current);
 
+    setSaving(true);
     try {
       await adSettingsAxios.post("", dtos);
       notify({ type: "success", message: "تنظیمات با موفقیت ذخیره شد" });
     } catch (err) {
       console.error(err);
       notify({ type: "error", message: "خطا در ذخیره تنظیمات" });
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -186,7 +192,7 @@ export default function AdsSettingsModal({ onClose }) {
     adType === "slider" ? "اسلایدر صفحه اصلی" : "بنر تمام صفحه";
 
   return (
-    <div className="adsettings-overlay" onClick={onClose}>
+    <div className="adsettings-overlay" onClick={() => !saving && onClose?.()}>
       <div className="adsettings-modal" onClick={(e) => e.stopPropagation()}>
         <div className="adsettings-modal__header">
           <h3>
@@ -197,6 +203,7 @@ export default function AdsSettingsModal({ onClose }) {
             onClick={onClose}
             aria-label="بستن"
             title="بستن"
+            disabled={saving}
           >
             <i className="fa-solid fa-xmark" />
           </button>
@@ -218,6 +225,7 @@ export default function AdsSettingsModal({ onClose }) {
                         value={t.key}
                         checked={adType === t.key}
                         onChange={() => setAdType(t.key)}
+                        disabled={saving}
                       />
                       <div className="choice-card">
                         <i className={t.icon}></i>
@@ -394,8 +402,19 @@ export default function AdsSettingsModal({ onClose }) {
                   </strong>
                 </div>
 
-                <button className="btn btn-primary full-width" type="submit">
-                  ذخیره تنظیمات {adTypeLabel}
+                <button
+                  className="btn btn-primary full-width"
+                  type="submit"
+                  disabled={saving}
+                >
+                  {saving ? (
+                    <>
+                      <span className="submit-spinner" aria-hidden="true" />
+                      در حال ذخیره...
+                    </>
+                  ) : (
+                    `ذخیره تنظیمات ${adTypeLabel}`
+                  )}
                 </button>
               </div>
             </div>

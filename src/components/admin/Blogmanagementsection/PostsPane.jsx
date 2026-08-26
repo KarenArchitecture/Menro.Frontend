@@ -421,7 +421,11 @@ export default function PostsPane() {
                 <i className="fas fa-plus" />
                 پست جدید
               </h3>
-              <button className="btn-icon" onClick={() => setCreating(false)}>
+              <button
+                className="btn-icon"
+                onClick={() => setCreating(false)}
+                disabled={savingNew}
+              >
                 <i className="fas fa-times" />
               </button>
             </div>
@@ -460,7 +464,14 @@ export default function PostsPane() {
                   disabled={savingNew}
                   onClick={submitNewPost}
                 >
-                  {savingNew ? "در حال ساخت..." : "ساخت و ادامه"}
+                  {savingNew ? (
+                    <>
+                      <span className="submit-spinner" aria-hidden="true" />
+                      در حال ساخت...
+                    </>
+                  ) : (
+                    "ساخت و ادامه"
+                  )}
                 </button>
               </div>
             </div>

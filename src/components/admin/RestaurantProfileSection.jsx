@@ -9,6 +9,7 @@ import restaurantAxios from "../../api/restaurantAxios";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 
+import "../../assets/css/admin/admin.css";
 import "../../assets/css/admin/restaurantProfileSection.css";
 
 export default function RestaurantProfileSection() {
@@ -174,21 +175,19 @@ export default function RestaurantProfileSection() {
   // SUBMIT
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true); // ✅ همیشه از همون اول ست میشه
 
     const trimmedSlug = slug.trim();
 
-    // بررسی خاموش اسلاگ - فقط در صورت تکراری بودن state تغییر می‌کند
     if (trimmedSlug && trimmedSlug !== originalSlug) {
-      setSubmitting(true);
       try {
         const slugRes = await checkSlugAvailability(trimmedSlug);
         const available = Boolean(slugRes.data?.available);
         if (!available) {
-          setSlugAvailable(false); // فقط در خطا نمایش داده شود
+          setSlugAvailable(false);
           setSubmitting(false);
           return;
         }
-        // available === true → عمداً setSlugAvailable صدا زده نمی‌شود تا فلش نزند
       } catch (err) {
         console.error("Slug check failed:", err);
         setSubmitting(false);
@@ -203,7 +202,6 @@ export default function RestaurantProfileSection() {
     try {
       const formData = new FormData();
 
-      // required text fields
       formData.append("Name", name);
       formData.append("Slug", trimmedSlug);
       formData.append("RestaurantCategoryId", type);
@@ -216,7 +214,6 @@ export default function RestaurantProfileSection() {
       formData.append("OpenTime", openTime);
       formData.append("CloseTime", closeTime);
 
-      // files (optional)
       if (homeBannerFile) {
         formData.append("HomeBanner", homeBannerFile);
       } else if (!homeBannerPreview) {
@@ -240,15 +237,13 @@ export default function RestaurantProfileSection() {
       console.log("Updated:", res.data);
       if (trimmedSlug) {
         setOriginalSlug(trimmedSlug);
-        // اینجا هم دیگه لازم نیست setSlugAvailable(true) کنیم، چون فیلد دیگه دِرتی نیست
-        // (slug === originalSlug شده و اون پیام‌ها اصلاً رندر نمی‌شن)
       }
       notify({ type: "success", message: "پروفایل با موفقیت بروزرسانی شد" });
     } catch (err) {
       console.error("Update failed:", err);
       notify({ type: "error", message: "خطا در بروزرسانی پروفایل رستوران" });
     } finally {
-      setSubmitting(false);
+      setSubmitting(false); // ✅ در همه حالت‌ها (موفق یا خطا) خاموش میشه
     }
   };
 
@@ -711,7 +706,14 @@ export default function RestaurantProfileSection() {
         <hr style={{ border: "1px solid #444", margin: "20px 0" }} />
 
         <button type="submit" className="btn btn-primary" disabled={submitting}>
-          {submitting ? "در حال ذخیره..." : "ذخیره تغییرات رستوران"}
+          {submitting ? (
+            <>
+              <span className="submit-spinner" aria-hidden="true" />
+              در حال ذخیره...
+            </>
+          ) : (
+            "ذخیره تغییرات رستوران"
+          )}
         </button>
       </form>
     </div>

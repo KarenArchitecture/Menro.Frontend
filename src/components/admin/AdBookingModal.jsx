@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import adminRestaurantAdAxios from "../../api/adminRestaurantAdAxios";
 import adSettingsAxios from "../../api/adSettingsAxios";
 import { useGlobalUI } from "../common/GlobalUI";
+import "../../assets/css/admin/admin.css";
 import "../../assets/css/admin/AdBookingModal.css";
 
 export default function AdBookingModal({ onClose, onSuccess }) {
@@ -27,6 +28,9 @@ export default function AdBookingModal({ onClose, onSuccess }) {
   const [advertisementText, setAdvertisementText] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+
+  const [submitting, setSubmitting] = useState(false);
+
   const fileInputRef = useRef(null);
 
   // نرخ‌ها و محدودیت‌ها (از بک‌اند)
@@ -106,7 +110,7 @@ export default function AdBookingModal({ onClose, onSuccess }) {
     document.body.style.overflow = "hidden";
 
     const onKeyDown = (e) => {
-      if (e.key === "Escape") onClose?.();
+      if (e.key === "Escape" && !submitting) onClose?.();
     };
     window.addEventListener("keydown", onKeyDown);
 
@@ -114,7 +118,7 @@ export default function AdBookingModal({ onClose, onSuccess }) {
       document.body.style.overflow = prevOverflow;
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [onClose]);
+  }, [onClose, submitting]);
 
   // --- قیمت نهایی ---
   const totalCost = useMemo(() => {
@@ -159,6 +163,7 @@ export default function AdBookingModal({ onClose, onSuccess }) {
     });
     if (!ok) return;
 
+    setSubmitting(true);
     try {
       const placementType = adType === "slider" ? 1 : 2;
       const billingType =
@@ -198,6 +203,8 @@ export default function AdBookingModal({ onClose, onSuccess }) {
           err?.response?.data?.error ||
           "خطایی رخ داد.",
       });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -217,7 +224,7 @@ export default function AdBookingModal({ onClose, onSuccess }) {
 
   // ----------------- UI -----------------
   return (
-    <div className="adbook-overlay" onClick={() => onClose?.()}>
+    <div className="adbook-overlay" onClick={() => !submitting && onClose?.()}>
       <div className="adbook-modal" onClick={(e) => e.stopPropagation()}>
         <div className="adbook-modal__header">
           <h3>
@@ -227,6 +234,7 @@ export default function AdBookingModal({ onClose, onSuccess }) {
             className="btn-icon"
             onClick={() => onClose?.()}
             aria-label="بستن"
+            disabled={submitting}
           >
             <i className="fa-solid fa-xmark" />
           </button>
@@ -446,8 +454,16 @@ export default function AdBookingModal({ onClose, onSuccess }) {
                   className="btn btn-primary full-width"
                   style={{ marginTop: 20 }}
                   onClick={handleSubmit}
+                  disabled={submitting}
                 >
-                  ثبت و پرداخت
+                  {submitting ? (
+                    <>
+                      <span className="submit-spinner" aria-hidden="true" />
+                      در حال ثبت...
+                    </>
+                  ) : (
+                    "ثبت و پرداخت"
+                  )}
                 </button>
               </div>
             </div>

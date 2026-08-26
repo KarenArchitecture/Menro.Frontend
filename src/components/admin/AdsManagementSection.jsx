@@ -5,6 +5,7 @@ import AdsSettingsModal from "./AdsSettingsModal";
 import adminRestaurantAdAxios from "../../api/adminRestaurantAdAxios";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+import "../../assets/css/admin/admin.css";
 import "../../assets/css/admin/AdsManagementSection.css";
 
 /* ---------- helpers ---------- */
@@ -54,6 +55,7 @@ export default function AdsManagementSection() {
   const [requests, setRequests] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [selected, setSelected] = useState(null);
+  const [processingId, setProcessingId] = useState(null);
   const [rangeKey, setRangeKey] = useState("today");
   const [showSettings, setShowSettings] = useState(false);
   const { notify } = useGlobalUI();
@@ -172,6 +174,7 @@ export default function AdsManagementSection() {
 
   /* ---------- Approve ---------- */
   const handleApprove = async (requestId) => {
+    setProcessingId(requestId);
     try {
       await adminRestaurantAdAxios.post(`/${requestId}/approve`);
 
@@ -188,11 +191,14 @@ export default function AdsManagementSection() {
     } catch (err) {
       console.error("Approve error:", err);
       notify({ type: "error", message: "تایید تبلیغ با خطا مواجه شد." });
+    } finally {
+      setProcessingId(null);
     }
   };
 
   /* ---------- Reject ---------- */
   const handleReject = async (requestId, reason) => {
+    setProcessingId(requestId);
     try {
       await adminRestaurantAdAxios.post(`/${requestId}/reject`, {
         id: requestId,
@@ -218,6 +224,8 @@ export default function AdsManagementSection() {
     } catch (err) {
       console.error("Reject error:", err);
       notify({ type: "error", message: "رد کردن تبلیغ با خطا مواجه شد." });
+    } finally {
+      setProcessingId(null);
     }
   };
 
@@ -351,6 +359,7 @@ export default function AdsManagementSection() {
         onClose={() => setSelected(null)}
         onApprove={selected?.status === "pending" ? handleApprove : undefined}
         onReject={selected?.status === "pending" ? handleReject : undefined}
+        submitting={processingId === selected?.id}
       />
 
       {showSettings && (

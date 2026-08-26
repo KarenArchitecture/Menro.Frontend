@@ -78,6 +78,7 @@ export default function MusicPlayerPage() {
   // usePlaylistManager
   const {
     playlists,
+    setPlaylists,
     selectedPlaylistId,
     selectedPlaylistIdRef,
     playlistTracks,
@@ -167,6 +168,11 @@ export default function MusicPlayerPage() {
     selectedPlaylistId,
     selectedPlaylistIdRef,
     refreshPlaylist,
+    onTrackCountChanged: (playlistId, count) => {
+      setPlaylists((prev) =>
+        prev.map((p) => (p.id === playlistId ? { ...p, tracks: count } : p)),
+      );
+    },
   });
 
   // usePreviewPlayer

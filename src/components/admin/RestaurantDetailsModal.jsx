@@ -108,7 +108,10 @@ export default function RestaurantDetailsModal({
   };
 
   return (
-    <div className="admin-modal-overlay" onClick={onClose}>
+    <div
+      className="admin-modal-overlay"
+      onClick={() => !actionLoading && onClose?.()}
+    >
       <div
         className="admin-modal restaurant-mgmt__view-modal"
         onClick={(e) => e.stopPropagation()}
@@ -118,7 +121,11 @@ export default function RestaurantDetailsModal({
             <i className="fas fa-store" />
             اطلاعات رستوران
           </h3>
-          <button className="btn-icon" onClick={onClose}>
+          <button
+            className="btn-icon"
+            onClick={onClose}
+            disabled={actionLoading}
+          >
             <i className="fas fa-times" />
           </button>
         </div>
@@ -221,6 +228,7 @@ export default function RestaurantDetailsModal({
                     placeholder="دلیل رد درخواست را بنویسید..."
                     value={rejectReasonDraft}
                     onChange={(e) => setRejectReasonDraft(e.target.value)}
+                    disabled={actionLoading}
                   />
                 </div>
               )}
@@ -244,12 +252,23 @@ export default function RestaurantDetailsModal({
                   disabled={actionLoading}
                   onClick={handleRejectSubmit}
                 >
-                  {actionLoading ? "در حال ثبت..." : "تایید رد درخواست"}
+                  {actionLoading ? (
+                    <>
+                      <span className="submit-spinner" aria-hidden="true" />
+                      در حال ثبت...
+                    </>
+                  ) : (
+                    "تایید رد درخواست"
+                  )}
                 </button>
               </>
             ) : (
               <>
-                <button className="btn btn-secondary" onClick={onClose}>
+                <button
+                  className="btn btn-secondary"
+                  onClick={onClose}
+                  disabled={actionLoading}
+                >
                   بستن
                 </button>
                 <button
@@ -264,7 +283,14 @@ export default function RestaurantDetailsModal({
                   disabled={actionLoading}
                   onClick={handleApproveClick}
                 >
-                  {actionLoading ? "در حال تایید..." : "تایید رستوران"}
+                  {actionLoading ? (
+                    <>
+                      <span className="submit-spinner" aria-hidden="true" />
+                      در حال تایید...
+                    </>
+                  ) : (
+                    "تایید رستوران"
+                  )}
                 </button>
               </>
             )

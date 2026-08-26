@@ -124,7 +124,14 @@ export default function HeroPane() {
               disabled={saving}
               onClick={save}
             >
-              {saving ? "در حال ذخیره..." : "ذخیره تغییرات"}
+              {saving ? (
+                <>
+                  <span className="submit-spinner" aria-hidden="true" />
+                  در حال ذخیره...
+                </>
+              ) : (
+                "ذخیره تغییرات"
+              )}
             </button>
           </div>
         </>

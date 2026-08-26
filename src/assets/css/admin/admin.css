@@ -120,6 +120,15 @@
   transition: all 0.15s ease;
 }
 
+.submit-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(250, 250, 244, 0.35);
+  border-top-color: var(--auth-white);
+  border-radius: 50%;
+  animation: upf-spin 0.7s linear infinite;
+}
+
 @media (max-width: 720px) {
   .admin-toolbar-group {
     width: 100%;

@@ -474,6 +474,7 @@ export default function UserManagementSection() {
               <button
                 className="btn-icon"
                 onClick={() => setRolesModalUser(null)}
+                disabled={savingRoles}
               >
                 <i className="fas fa-times" />
               </button>
@@ -528,7 +529,14 @@ export default function UserManagementSection() {
                 disabled={savingRoles}
                 onClick={saveRoles}
               >
-                {savingRoles ? "در حال ذخیره..." : "ذخیره"}
+                {savingRoles ? (
+                  <>
+                    <span className="submit-spinner" aria-hidden="true" />
+                    در حال ذخیره...
+                  </>
+                ) : (
+                  "ذخیره"
+                )}
               </button>
             </div>
           </div>

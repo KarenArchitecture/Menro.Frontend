@@ -8,6 +8,7 @@ export default function AdRequestModal({
   onClose,
   onApprove,
   onReject,
+  submitting = false,
 }) {
   // ✅ Hooks must be called unconditionally (React rules)
   const [showRejectInput, setShowRejectInput] = useState(false);
@@ -107,14 +108,20 @@ export default function AdRequestModal({
       id="ad-request-modal"
       className="modal-overlay"
       style={{ display: "flex" }}
-      onClick={(e) => e.target.id === "ad-request-modal" && onClose?.()}
+      onClick={(e) =>
+        e.target.id === "ad-request-modal" && !submitting && onClose?.()
+      }
     >
       <div className="modal-content" style={{ maxWidth: 820 }}>
         <div className="modal-header">
           <h3>
             درخواست تبلیغ #{request.code} — {request.restaurantName}
           </h3>
-          <button className="btn btn-icon" onClick={onClose}>
+          <button
+            className="btn btn-icon"
+            onClick={onClose}
+            disabled={submitting}
+          >
             <i className="fas fa-times" />
           </button>
         </div>
@@ -275,8 +282,18 @@ export default function AdRequestModal({
                 className="btn btn-primary"
                 type="button"
                 onClick={handleApproveOrBack}
+                disabled={submitting}
               >
-                {showRejectInput ? "برگشت" : "تایید"}
+                {submitting && !showRejectInput ? (
+                  <>
+                    <span className="submit-spinner" aria-hidden="true" />
+                    در حال تایید...
+                  </>
+                ) : showRejectInput ? (
+                  "برگشت"
+                ) : (
+                  "تایید"
+                )}
               </button>
             )}
 
@@ -285,8 +302,18 @@ export default function AdRequestModal({
                 className="btn btn-danger"
                 type="button"
                 onClick={handleRejectClick}
+                disabled={submitting}
               >
-                {showRejectInput ? "ثبت رد" : "رد"}
+                {submitting && showRejectInput ? (
+                  <>
+                    <span className="submit-spinner" aria-hidden="true" />
+                    در حال ثبت رد...
+                  </>
+                ) : showRejectInput ? (
+                  "ثبت رد"
+                ) : (
+                  "رد"
+                )}
               </button>
             )}
           </div>

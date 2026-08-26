@@ -53,6 +53,7 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
   const { notify, confirmModal } = useGlobalUI();
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [showInvoiceView, setShowInvoiceView] = useState(false);
 
@@ -110,10 +111,10 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
   const totalPrice = dto.totalPrice ?? 0;
 
   const handleAdvanceClick = async () => {
-    if (loading || error || !details) return;
+    if (loading || submitting || error || !details) return;
 
     try {
-      setLoading(true);
+      setSubmitting(true);
       const res = await adminOrderAxios.put(`/${dto.id}/advance`);
       const newStatus = res.data.status;
 
@@ -124,12 +125,12 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
       setError("خطا در تغییر وضعیت سفارش");
       notify({ type: "error", message: "خطا در تغییر وضعیت سفارش" });
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   const handleCancelClick = async () => {
-    if (loading || error || !details) return;
+    if (loading || submitting || error || !details) return;
 
     const confirmed = await confirmModal({
       title: "لغو سفارش",
@@ -141,7 +142,7 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
     if (!confirmed) return;
 
     try {
-      setLoading(true);
+      setSubmitting(true);
       const res = await adminOrderAxios.put(`/${dto.id}/cancel`);
       const newStatus = res.data.status;
 
@@ -152,7 +153,7 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
       setError("خطا در لغو سفارش");
       notify({ type: "error", message: "خطا در لغو سفارش" });
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -161,7 +162,9 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
       id="order-modal"
       className="modal-overlay"
       style={{ display: "flex" }}
-      onClick={(e) => e.target.id === "order-modal" && onClose?.()}
+      onClick={(e) =>
+        e.target.id === "order-modal" && !submitting && onClose?.()
+      }
     >
       <div className="modal-content" style={{ maxWidth: 800 }}>
         <div className="modal-header order-modal-header">
@@ -194,6 +197,7 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
               className="btn btn-icon"
               onClick={onClose}
               aria-label="بستن"
+              disabled={submitting}
             >
               <i className="fas fa-times" />
             </button>
@@ -341,9 +345,16 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
             <button
               className="btn btn-primary"
               onClick={handleAdvanceClick}
-              disabled={loading || !!error || !details}
+              disabled={loading || submitting || !!error || !details}
             >
-              {primaryActionLabel}
+              {submitting ? (
+                <>
+                  <span className="submit-spinner" aria-hidden="true" />
+                  در حال ثبت...
+                </>
+              ) : (
+                primaryActionLabel
+              )}
             </button>
           )}
 
@@ -351,18 +362,29 @@ export default function OrderModal({ open, order, onClose, onApprove }) {
             <button
               className="btn"
               onClick={handleCancelClick}
-              disabled={loading || !!error || !details}
+              disabled={loading || submitting || !!error || !details}
               style={{
                 background: "#d32f2f",
                 borderColor: "#d32f2f",
                 color: "white",
               }}
             >
-              لغو سفارش
+              {submitting ? (
+                <>
+                  <span className="submit-spinner" aria-hidden="true" />
+                  در حال لغو...
+                </>
+              ) : (
+                "لغو سفارش"
+              )}
             </button>
           )}
 
-          <button className="btn btn-secondary" onClick={onClose}>
+          <button
+            className="btn btn-secondary"
+            onClick={onClose}
+            disabled={submitting}
+          >
             بستن
           </button>
         </div>

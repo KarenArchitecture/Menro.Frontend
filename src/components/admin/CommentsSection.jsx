@@ -19,6 +19,7 @@ export default function CommentsSection() {
   useDocumentTitle("مدیریت نظرات");
   const { notify, confirmModal } = useGlobalUI();
   const [activeTab, setActiveTab] = useState("pending");
+  const [submittingAction, setSubmittingAction] = useState(null); // null | "approve" | "reject"
   const [selected, setSelected] = useState(null);
   const queryClient = useQueryClient();
 
@@ -50,6 +51,7 @@ export default function CommentsSection() {
     queryClient.invalidateQueries({ queryKey: ["admin-comments"] });
 
   const handleApprove = async (id, replyText) => {
+    setSubmittingAction("approve");
     try {
       await approveComment(id, replyText);
       invalidateAll();
@@ -58,6 +60,8 @@ export default function CommentsSection() {
     } catch (err) {
       console.error("خطا در تایید نظر:", err);
       notify({ type: "error", message: "تایید نظر با خطا مواجه شد" });
+    } finally {
+      setSubmittingAction(null);
     }
   };
 
@@ -68,6 +72,8 @@ export default function CommentsSection() {
       danger: true,
     });
     if (!ok) return;
+
+    setSubmittingAction("reject");
     try {
       await rejectComment(id, reason);
       invalidateAll();
@@ -76,6 +82,8 @@ export default function CommentsSection() {
     } catch (err) {
       console.error("خطا در رد نظر:", err);
       notify({ type: "error", message: "رد نظر با خطا مواجه شد" });
+    } finally {
+      setSubmittingAction(null);
     }
   };
 
@@ -160,6 +168,7 @@ export default function CommentsSection() {
         onClose={() => setSelected(null)}
         onApprove={selected?.status === "pending" ? handleApprove : undefined}
         onReject={selected?.status === "pending" ? handleReject : undefined}
+        submitting={submittingAction}
       />
     </div>
   );

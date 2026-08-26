@@ -5,8 +5,9 @@ export default function CommentModal({
   open,
   comment,
   onClose,
-  onApprove, // (id, replyText | null) => void
-  onReject, // (id, reason) => void
+  onApprove,
+  onReject,
+  submitting = null, // null | "approve" | "reject"
 }) {
   // ✅ Hooks must be called unconditionally (React rules)
   const [mode, setMode] = useState("idle"); // "idle" | "reply" | "reject"
@@ -87,14 +88,21 @@ export default function CommentModal({
       id="comment-modal"
       className="modal-overlay"
       style={{ display: "flex" }}
-      onClick={(e) => e.target.id === "comment-modal" && onClose?.()}
+      onClick={(e) =>
+        e.target.id === "comment-modal" && !submitting && onClose?.()
+      }
     >
       <div className="modal-content" style={{ maxWidth: 720 }}>
         <div className="modal-header">
           <h3>
             نظر #{comment.code} — {comment.title}
           </h3>
-          <button className="btn btn-icon" onClick={onClose}>
+          <button
+            className="btn btn-icon"
+            onClick={onClose}
+            disabled={Boolean(submitting)}
+          >
+            {" "}
             <i className="fas fa-times" />
           </button>
         </div>
@@ -237,6 +245,7 @@ export default function CommentModal({
                     className="btn btn-primary"
                     type="button"
                     onClick={handleReplyToggle}
+                    disabled={Boolean(submitting)}
                   >
                     پاسخ و تایید
                   </button>
@@ -244,13 +253,22 @@ export default function CommentModal({
                     className="btn btn-secondary"
                     type="button"
                     onClick={handleApproveOnly}
+                    disabled={Boolean(submitting)}
                   >
-                    تایید بدون پاسخ
+                    {submitting === "approve" ? (
+                      <>
+                        <span className="submit-spinner" aria-hidden="true" />
+                        در حال تایید...
+                      </>
+                    ) : (
+                      "تایید بدون پاسخ"
+                    )}
                   </button>
                   <button
                     className="btn btn-danger"
                     type="button"
                     onClick={handleRejectToggle}
+                    disabled={Boolean(submitting)}
                   >
                     رد
                   </button>
@@ -263,13 +281,22 @@ export default function CommentModal({
                     className="btn btn-primary"
                     type="button"
                     onClick={handleReplyToggle}
+                    disabled={Boolean(submitting)}
                   >
-                    ثبت پاسخ و تایید
+                    {submitting === "approve" ? (
+                      <>
+                        <span className="submit-spinner" aria-hidden="true" />
+                        در حال ثبت...
+                      </>
+                    ) : (
+                      "ثبت پاسخ و تایید"
+                    )}
                   </button>
                   <button
                     className="btn btn-secondary"
                     type="button"
                     onClick={handleCancel}
+                    disabled={Boolean(submitting)}
                   >
                     انصراف
                   </button>
@@ -282,13 +309,22 @@ export default function CommentModal({
                     className="btn btn-danger"
                     type="button"
                     onClick={handleRejectToggle}
+                    disabled={Boolean(submitting)}
                   >
-                    ثبت رد
+                    {submitting === "reject" ? (
+                      <>
+                        <span className="submit-spinner" aria-hidden="true" />
+                        در حال ثبت...
+                      </>
+                    ) : (
+                      "ثبت رد"
+                    )}
                   </button>
                   <button
                     className="btn btn-secondary"
                     type="button"
                     onClick={handleCancel}
+                    disabled={Boolean(submitting)}
                   >
                     انصراف
                   </button>

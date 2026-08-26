@@ -32,6 +32,10 @@ export default function CategorySettingsSection() {
   const [globalCategories, setGlobalCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [creatingCategory, setCreatingCategory] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+
   // Add
   const [nameInput, setNameInput] = useState("");
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
@@ -78,6 +82,7 @@ export default function CategorySettingsSection() {
       return;
     }
 
+    setCreatingCategory(true);
     try {
       const dto = { name, iconId: selectedIconId };
       await adminGlobalCategoryAxios.post("/add", dto);
@@ -96,6 +101,8 @@ export default function CategorySettingsSection() {
             ? "این دسته‌بندی از قبل وجود دارد."
             : extractApiErrorMessage(err, "خطا در افزودن دسته‌بندی عمومی"),
       });
+    } finally {
+      setCreatingCategory(false);
     }
   };
 
@@ -111,6 +118,7 @@ export default function CategorySettingsSection() {
     });
     if (!ok) return;
 
+    setDeletingId(catId);
     try {
       await adminGlobalCategoryAxios.delete(`/delete/${catId}`);
       await loadCategories();
@@ -118,6 +126,8 @@ export default function CategorySettingsSection() {
     } catch (err) {
       console.error("Failed to delete global category", err);
       notify({ type: "error", message: "حذف دسته‌بندی با خطا مواجه شد" });
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -154,6 +164,7 @@ export default function CategorySettingsSection() {
       return;
     }
 
+    setSavingEdit(true);
     try {
       const dto = { id: editingId, name: newName, iconId: editIconId ?? null };
       await adminGlobalCategoryAxios.put("/update", dto);
@@ -169,6 +180,8 @@ export default function CategorySettingsSection() {
             ? "این نام قبلاً برای دسته‌بندی دیگری استفاده شده است."
             : extractApiErrorMessage(err, "خطا در ذخیره تغییرات"),
       });
+    } finally {
+      setSavingEdit(false);
     }
   };
   const cancelEdit = () => {
@@ -196,7 +209,11 @@ export default function CategorySettingsSection() {
             placeholder="نام دسته‌بندی عمومی خود را وارد کنید..."
             value={nameInput}
             onChange={(e) => setNameInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && submitCreateGlobalCategory()}
+            onKeyDown={(e) =>
+              e.key === "Enter" &&
+              !creatingCategory &&
+              submitCreateGlobalCategory()
+            }
           />
 
           {/* 🔹 دکمه انتخاب آیکن */}
@@ -235,8 +252,16 @@ export default function CategorySettingsSection() {
           <button
             className="btn btn-primary"
             onClick={submitCreateGlobalCategory}
+            disabled={creatingCategory}
           >
-            افزودن
+            {creatingCategory ? (
+              <>
+                <span className="submit-spinner" aria-hidden="true" />
+                در حال افزودن...
+              </>
+            ) : (
+              "افزودن"
+            )}
           </button>
         </div>
 
@@ -286,6 +311,7 @@ export default function CategorySettingsSection() {
                     className="btn btn-icon"
                     title="ویرایش"
                     onClick={() => getGlobalCategory(cat.id)}
+                    disabled={deletingId === cat.id}
                   >
                     <i className="fas fa-edit" />
                   </button>
@@ -293,8 +319,13 @@ export default function CategorySettingsSection() {
                     className="btn btn-icon btn-danger"
                     title="حذف"
                     onClick={() => removeGlobalCategory(cat.id)}
+                    disabled={deletingId === cat.id}
                   >
-                    <i className="fas fa-trash" />
+                    {deletingId === cat.id ? (
+                      <span className="submit-spinner" aria-hidden="true" />
+                    ) : (
+                      <i className="fas fa-trash" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -313,6 +344,7 @@ export default function CategorySettingsSection() {
                 className="btn btn-icon"
                 onClick={cancelEdit}
                 aria-label="بستن"
+                disabled={savingEdit}
               >
                 <i className="fas fa-times" />
               </button>
@@ -325,6 +357,7 @@ export default function CategorySettingsSection() {
                 type="text"
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
+                disabled={savingEdit}
               />
 
               <label>آیکن</label>
@@ -342,18 +375,37 @@ export default function CategorySettingsSection() {
                     <GenericCategoryIcon />
                   )}
                 </div>
-                <button className="btn" onClick={() => setEditPickerOpen(true)}>
+                <button
+                  className="btn"
+                  onClick={() => setEditPickerOpen(true)}
+                  disabled={savingEdit}
+                >
                   تغییر آیکن
                 </button>
               </div>
             </div>
 
             <div className="modal-footer">
-              <button className="btn" onClick={cancelEdit}>
+              <button
+                className="btn"
+                onClick={cancelEdit}
+                disabled={savingEdit}
+              >
                 انصراف
               </button>
-              <button className="btn btn-primary" onClick={saveEdit}>
-                ذخیره
+              <button
+                className="btn btn-primary"
+                onClick={saveEdit}
+                disabled={savingEdit}
+              >
+                {savingEdit ? (
+                  <>
+                    <span className="submit-spinner" aria-hidden="true" />
+                    در حال ذخیره...
+                  </>
+                ) : (
+                  "ذخیره"
+                )}
               </button>
             </div>
           </div>

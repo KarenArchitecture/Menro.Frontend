@@ -16,6 +16,7 @@ export default function useMusicPlayerEngine({
   selectedPlaylistId,
   selectedPlaylistIdRef,
   refreshPlaylist,
+  onTrackCountChanged,
 }) {
   const { notify } = useGlobalUI();
 
@@ -292,6 +293,10 @@ export default function useMusicPlayerEngine({
       await removeTrackFromPlaylist(selectedPlaylistId, playlistTrackId);
 
       const updatedTracks = await refreshPlaylist(selectedPlaylistId);
+
+      if (onTrackCountChanged) {
+        onTrackCountChanged(selectedPlaylistId, updatedTracks.length);
+      }
 
       notify({ type: "success", message: "آهنگ از پلی‌لیست حذف شد" });
 

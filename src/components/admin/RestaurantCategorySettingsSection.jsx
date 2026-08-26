@@ -24,6 +24,7 @@ export default function RestaurantCategorySettingsSection() {
   const { notify, confirmModal } = useGlobalUI();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState(null);
 
   // Add
   const [nameInput, setNameInput] = useState("");
@@ -89,6 +90,7 @@ export default function RestaurantCategorySettingsSection() {
     });
     if (!confirmed) return;
 
+    setDeletingId(catId);
     try {
       await adminRestaurantCategoryAxios.delete(`/delete/${catId}`);
       await loadCategories();
@@ -99,6 +101,8 @@ export default function RestaurantCategorySettingsSection() {
         type: "error",
         message: err.response?.data?.message ?? "خطا در حذف دسته‌بندی",
       });
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -179,7 +183,9 @@ export default function RestaurantCategorySettingsSection() {
             placeholder="نام نوع رستوران را وارد کنید..."
             value={nameInput}
             onChange={(e) => setNameInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && submitCreateCategory()}
+            onKeyDown={(e) =>
+              e.key === "Enter" && !submitting && submitCreateCategory()
+            }
           />
 
           <button
@@ -187,7 +193,14 @@ export default function RestaurantCategorySettingsSection() {
             onClick={submitCreateCategory}
             disabled={submitting}
           >
-            {submitting ? "در حال افزودن…" : "افزودن"}
+            {submitting ? (
+              <>
+                <span className="submit-spinner" aria-hidden="true" />
+                در حال افزودن...
+              </>
+            ) : (
+              "افزودن"
+            )}
           </button>
         </div>
 
@@ -229,6 +242,7 @@ export default function RestaurantCategorySettingsSection() {
                     className="btn btn-icon"
                     title="ویرایش"
                     onClick={() => getCategory(cat.id)}
+                    disabled={deletingId === cat.id}
                   >
                     <i className="fas fa-edit" />
                   </button>
@@ -236,8 +250,13 @@ export default function RestaurantCategorySettingsSection() {
                     className="btn btn-icon btn-danger"
                     title="حذف"
                     onClick={() => removeCategory(cat.id)}
+                    disabled={deletingId === cat.id}
                   >
-                    <i className="fas fa-trash" />
+                    {deletingId === cat.id ? (
+                      <span className="submit-spinner" aria-hidden="true" />
+                    ) : (
+                      <i className="fas fa-trash" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -256,6 +275,7 @@ export default function RestaurantCategorySettingsSection() {
                 className="btn btn-icon"
                 onClick={cancelEdit}
                 aria-label="بستن"
+                disabled={savingEdit}
               >
                 <i className="fas fa-times" />
               </button>
@@ -268,12 +288,19 @@ export default function RestaurantCategorySettingsSection() {
                 type="text"
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && saveEdit()}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && !savingEdit && saveEdit()
+                }
+                disabled={savingEdit}
               />
             </div>
 
             <div className="modal-footer">
-              <button className="btn" onClick={cancelEdit}>
+              <button
+                className="btn"
+                onClick={cancelEdit}
+                disabled={savingEdit}
+              >
                 انصراف
               </button>
               <button
@@ -281,7 +308,14 @@ export default function RestaurantCategorySettingsSection() {
                 onClick={saveEdit}
                 disabled={savingEdit}
               >
-                {savingEdit ? "در حال ذخیره…" : "ذخیره"}
+                {savingEdit ? (
+                  <>
+                    <span className="submit-spinner" aria-hidden="true" />
+                    در حال ذخیره...
+                  </>
+                ) : (
+                  "ذخیره"
+                )}
               </button>
             </div>
           </div>

@@ -213,6 +213,14 @@
   box-sizing: border-box;
 }
 
+.total-cost {
+  display: flex;
+  flex-direction: column; /* به‌جای row */
+  align-items: flex-start; /* یا flex-end بسته به راست‌چین بودن */
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
 @media (max-width: 640px) {
   .adsettings-modal .input-row {
     flex-direction: column;

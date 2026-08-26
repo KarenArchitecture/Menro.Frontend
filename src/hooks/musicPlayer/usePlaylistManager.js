@@ -138,7 +138,14 @@ export default function usePlaylistManager({
     if (!selectedPlaylistId) return;
     try {
       await addTrackToPlaylist(selectedPlaylistId, { musicTrackId: track.id });
-      await refreshPlaylist(selectedPlaylistId);
+      const updated = await refreshPlaylist(selectedPlaylistId);
+
+      setPlaylists((prev) =>
+        prev.map((p) =>
+          p.id === selectedPlaylistId ? { ...p, tracks: updated.length } : p,
+        ),
+      );
+
       notify({ type: "success", message: "آهنگ به پلی‌لیست اضافه شد" });
     } catch (err) {
       console.error(err);
@@ -291,6 +298,7 @@ export default function usePlaylistManager({
     refreshPlaylist,
     loadPlaylists,
     addToPlaylist,
+    setPlaylists,
     handleDeletePlaylist,
     openAddPlaylistModal,
     openEditPlaylistModal,

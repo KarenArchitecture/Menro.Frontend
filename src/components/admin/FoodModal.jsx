@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useGlobalUI } from "../common/GlobalUI";
 import adminFoodAxios from "../../api/adminFoodAxios";
+import "../../assets/css/admin/admin.css";
 import "../../assets/css/admin/foodModal.css";
 
 function uid() {
@@ -531,7 +532,9 @@ export default function FoodModal({
       id="food-modal"
       className="modal-overlay"
       style={{ display: isOpen ? "flex" : "none" }}
-      onClick={(e) => e.target.id === "food-modal" && onClose?.()}
+      onClick={(e) =>
+        e.target.id === "food-modal" && !isSubmitting && onClose?.()
+      }
     >
       <div
         className={`modal-content ${showExtraColumn ? "modal-content--wide" : ""}`}
@@ -539,7 +542,11 @@ export default function FoodModal({
         {" "}
         <div className="modal-header">
           <h3 id="modal-title">{title}</h3>
-          <button className="btn btn-icon" onClick={onClose}>
+          <button
+            className="btn btn-icon"
+            onClick={onClose}
+            disabled={isSubmitting}
+          >
             <i className="fas fa-times" />
           </button>
         </div>
@@ -942,13 +949,26 @@ export default function FoodModal({
           </form>
         </div>
         <div className="modal-footer">
-          <button type="submit" form="food-form" className="btn btn-primary">
-            ذخیره غذا
+          <button
+            type="submit"
+            form="food-form"
+            className="btn btn-primary"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <span className="submit-spinner" aria-hidden="true" />
+                در حال ذخیره...
+              </>
+            ) : (
+              "ذخیره غذا"
+            )}
           </button>
 
           <button
             type="button"
             className="btn btn-secondary"
+            disabled={isSubmitting}
             onClick={() => {
               resetForm();
               onClose?.();

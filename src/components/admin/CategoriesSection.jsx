@@ -5,6 +5,8 @@ import adminCustomCategoryAxios from "../../api/adminCustomCategoryAxios.js";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 
+import "../../assets/css/admin/admin.css";
+
 function GenericCategoryIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
@@ -29,20 +31,6 @@ function extractApiErrorMessage(err, fallback) {
 export default function CategoriesSection() {
   useDocumentTitle("دسته‌بندی‌های رستوران");
   const { notify, confirmModal } = useGlobalUI();
-  const [categories, setCategories] = useState(() => {
-    try {
-      const saved = localStorage.getItem("admin.categories");
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("admin.categories", JSON.stringify(categories));
-    } catch {}
-  }, [categories]);
 
   // states
   const [nameInput, setNameInput] = useState("");
@@ -64,6 +52,11 @@ export default function CategoriesSection() {
   // global categories
   const [globalCategories, setGlobalCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [creatingCategory, setCreatingCategory] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+  const [addingGlobalId, setAddingGlobalId] = useState(null);
+
   useEffect(() => {
     const loadCategories = async () => {
       try {
@@ -116,6 +109,7 @@ export default function CategoriesSection() {
     });
     if (!ok) return;
 
+    setDeletingId(catId);
     try {
       await adminCustomCategoryAxios.delete(`/delete/${catId}`);
       await loadCustomCategories();
@@ -123,6 +117,8 @@ export default function CategoriesSection() {
     } catch (err) {
       console.error("Failed to delete custom category", err);
       notify({ type: "error", message: "حذف دسته‌بندی با خطا مواجه شد" });
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -156,6 +152,7 @@ export default function CategoriesSection() {
       return;
     }
 
+    setCreatingCategory(true);
     try {
       const dto = { name, iconId: selectedIconId };
       await adminCustomCategoryAxios.post("/add", dto);
@@ -174,11 +171,14 @@ export default function CategoriesSection() {
             ? "این دسته‌بندی از قبل وجود دارد."
             : extractApiErrorMessage(err, "خطا در افزودن دسته‌بندی"),
       });
+    } finally {
+      setCreatingCategory(false);
     }
   };
 
   // add from predefined (global)
   const addPredefined = async (globalCat) => {
+    setAddingGlobalId(globalCat.id);
     try {
       await adminCustomCategoryAxios.post("/add-from-global", null, {
         params: { globalCategoryId: globalCat.id },
@@ -194,6 +194,8 @@ export default function CategoriesSection() {
             ? "این دسته‌بندی قبلاً به لیست شما اضافه شده است."
             : extractApiErrorMessage(err, "افزودن دسته‌بندی با خطا مواجه شد"),
       });
+    } finally {
+      setAddingGlobalId(null);
     }
   };
 
@@ -208,6 +210,7 @@ export default function CategoriesSection() {
       return;
     }
 
+    setSavingEdit(true);
     try {
       const dto = { id: editingId, name: newName, iconId: editIconId ?? null };
       await adminCustomCategoryAxios.put("/update", dto);
@@ -223,6 +226,8 @@ export default function CategoriesSection() {
             ? "این نام قبلاً برای دسته‌بندی دیگری استفاده شده است."
             : extractApiErrorMessage(err, "خطا در ذخیره تغییرات"),
       });
+    } finally {
+      setSavingEdit(false);
     }
   };
 
@@ -255,7 +260,11 @@ export default function CategoriesSection() {
                 setErrors((prev) => ({ ...prev, name: "", duplicate: "" }));
               }
             }}
-            onKeyDown={(e) => e.key === "Enter" && submitCreateCustomCategory()}
+            onKeyDown={(e) =>
+              e.key === "Enter" &&
+              !creatingCategory &&
+              submitCreateCustomCategory()
+            }
           />
 
           <button
@@ -294,8 +303,16 @@ export default function CategoriesSection() {
           <button
             className="btn btn-primary"
             onClick={submitCreateCustomCategory}
+            disabled={creatingCategory}
           >
-            افزودن
+            {creatingCategory ? (
+              <>
+                <span className="submit-spinner" aria-hidden="true" />
+                در حال افزودن...
+              </>
+            ) : (
+              "افزودن"
+            )}
           </button>
         </div>
 
@@ -324,9 +341,14 @@ export default function CategoriesSection() {
                 type="button"
                 className="tag"
                 onClick={() => addPredefined(item)}
+                disabled={addingGlobalId === item.id}
                 title="افزودن به دسته‌بندی‌های من"
               >
-                <i className="fas fa-plus" />
+                {addingGlobalId === item.id ? (
+                  <span className="submit-spinner" aria-hidden="true" />
+                ) : (
+                  <i className="fas fa-plus" />
+                )}
                 {item.icon && item.icon.url ? (
                   <img
                     src={item.icon.url}
@@ -403,6 +425,7 @@ export default function CategoriesSection() {
                       className="btn btn-icon"
                       title="ویرایش"
                       onClick={() => getCustomCategory(cat.id)}
+                      disabled={deletingId === cat.id}
                     >
                       <i className="fas fa-edit" />
                     </button>
@@ -411,8 +434,13 @@ export default function CategoriesSection() {
                     className="btn btn-icon btn-danger"
                     title="حذف"
                     onClick={() => removeCustomCategory(cat.id)}
+                    disabled={deletingId === cat.id}
                   >
-                    <i className="fas fa-trash" />
+                    {deletingId === cat.id ? (
+                      <span className="submit-spinner" aria-hidden="true" />
+                    ) : (
+                      <i className="fas fa-trash" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -431,6 +459,7 @@ export default function CategoriesSection() {
                 className="btn btn-icon"
                 onClick={cancelEdit}
                 aria-label="بستن"
+                disabled={savingEdit}
               >
                 <i className="fas fa-times" />
               </button>
@@ -443,6 +472,7 @@ export default function CategoriesSection() {
                 type="text"
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
+                disabled={savingEdit}
               />
 
               <label>آیکن</label>
@@ -463,18 +493,37 @@ export default function CategoriesSection() {
                     <GenericCategoryIcon />
                   )}
                 </div>
-                <button className="btn" onClick={() => setEditPickerOpen(true)}>
+                <button
+                  className="btn"
+                  onClick={() => setEditPickerOpen(true)}
+                  disabled={savingEdit}
+                >
                   تغییر آیکن
                 </button>
               </div>
             </div>
 
             <div className="modal-footer">
-              <button className="btn" onClick={cancelEdit}>
+              <button
+                className="btn"
+                onClick={cancelEdit}
+                disabled={savingEdit}
+              >
                 انصراف
               </button>
-              <button className="btn btn-primary" onClick={saveEdit}>
-                ذخیره
+              <button
+                className="btn btn-primary"
+                onClick={saveEdit}
+                disabled={savingEdit}
+              >
+                {savingEdit ? (
+                  <>
+                    <span className="submit-spinner" aria-hidden="true" />
+                    در حال ذخیره...
+                  </>
+                ) : (
+                  "ذخیره"
+                )}
               </button>
             </div>
           </div>

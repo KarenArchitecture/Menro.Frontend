@@ -299,7 +299,11 @@ export default function TagsPane() {
                 <i className="fas fa-hashtag" />
                 {modalTag.id ? "ویرایش برچسب" : "برچسب جدید"}
               </h3>
-              <button className="btn-icon" onClick={() => setModalTag(null)}>
+              <button
+                className="btn-icon"
+                onClick={() => setModalTag(null)}
+                disabled={saving}
+              >
                 <i className="fas fa-times" />
               </button>
             </div>
@@ -350,7 +354,14 @@ export default function TagsPane() {
                   disabled={saving}
                   onClick={save}
                 >
-                  {saving ? "در حال ذخیره..." : "ذخیره"}
+                  {saving ? (
+                    <>
+                      <span className="submit-spinner" aria-hidden="true" />
+                      در حال ذخیره...
+                    </>
+                  ) : (
+                    "ذخیره"
+                  )}
                 </button>
               </div>
             </div>

@@ -33,6 +33,7 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
   const [q, setQ] = useState("");
   const [backendIcons, setBackendIcons] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   // role check
   const { user } = useAuth();
@@ -43,14 +44,14 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
     if (!open) return;
 
     const handleKeyDown = (e) => {
-      if (e.key === "Escape") {
-        onClose?.(); // بستن مودال
+      if (e.key === "Escape" && !uploading && !deletingId) {
+        onClose?.();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, onClose]);
+  }, [open, onClose, uploading, deletingId]);
 
   useEffect(() => {
     if (open) {
@@ -120,6 +121,7 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
     });
     if (!ok) return;
 
+    setDeletingId(id);
     try {
       await iconAxios.delete(`/delete?id=${id}`);
       setBackendIcons((prev) => prev.filter((x) => x.id !== id));
@@ -129,6 +131,8 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
         type: "error",
         message: err.response?.data?.message ?? "خطا در حذف آیکن",
       });
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -137,7 +141,12 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
       <div className="modal">
         <div className="modal-header">
           <h4>انتخاب آیکن</h4>
-          <button className="btn btn-icon" onClick={onClose} aria-label="بستن">
+          <button
+            className="btn btn-icon"
+            onClick={onClose}
+            aria-label="بستن"
+            disabled={uploading || Boolean(deletingId)}
+          >
             <i className="fas fa-times" />
           </button>
         </div>
@@ -171,8 +180,16 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
                   document.getElementById("icon-picker-upload-svg").click()
                 }
               >
-                <i className="fas fa-upload" />{" "}
-                {uploading ? "در حال آپلود…" : "آپلود آیکن جدید"}
+                {uploading ? (
+                  <>
+                    <span className="submit-spinner" aria-hidden="true" />
+                    در حال آپلود...
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-upload" /> آپلود آیکن جدید
+                  </>
+                )}
               </button>
             </>
           )}
@@ -214,11 +231,16 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
                   <button
                     className="delete-icon-btn"
                     title="حذف آیکن"
+                    disabled={deletingId === item.id}
                     onClick={() => {
                       handleDeleteIcon(item.id);
                     }}
                   >
-                    <i className="fas fa-trash" />
+                    {deletingId === item.id ? (
+                      <span className="submit-spinner" aria-hidden="true" />
+                    ) : (
+                      <i className="fas fa-trash" />
+                    )}
                   </button>
                 )}
               </div>
@@ -231,7 +253,11 @@ export default function IconPicker({ open, onClose, value, onSelect }) {
         </div>
 
         <div className="modal-footer">
-          <button className="btn" onClick={onClose}>
+          <button
+            className="btn"
+            onClick={onClose}
+            disabled={uploading || Boolean(deletingId)}
+          >
             بستن
           </button>
         </div>

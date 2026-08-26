@@ -486,16 +486,31 @@ export default function UserManagementSection() {
                 </div>
               )}
               <div className="user-mgmt__role-picker">
-                {availableRoles.map((role) => (
-                  <label key={role} className="user-mgmt__role-option">
-                    <input
-                      type="checkbox"
-                      checked={rolesDraft.includes(role)}
-                      onChange={() => toggleDraftRole(role)}
-                    />
-                    {role}
-                  </label>
-                ))}
+                {availableRoles.map((role) => {
+                  const isOwnerRole = role === "Owner";
+                  return (
+                    <label
+                      key={role}
+                      className={`user-mgmt__role-option ${isOwnerRole ? "is-locked" : ""}`}
+                      title={
+                        isOwnerRole
+                          ? "این نقش فقط از طریق تایید ثبت رستوران اعطا می‌شود"
+                          : undefined
+                      }
+                    >
+                      <input
+                        type="checkbox"
+                        checked={rolesDraft.includes(role)}
+                        disabled={isOwnerRole}
+                        onChange={() => !isOwnerRole && toggleDraftRole(role)}
+                      />
+                      {role}
+                      {isOwnerRole && (
+                        <i className="fas fa-lock user-mgmt__role-lock-icon" />
+                      )}
+                    </label>
+                  );
+                })}
               </div>
               {rolesError && <span className="form-error">{rolesError}</span>}
             </div>

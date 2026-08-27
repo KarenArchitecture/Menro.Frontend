@@ -119,7 +119,6 @@ export default function CombosSection() {
     setComboIds(nextIds);
     try {
       await setCombosForFood(selectedFoodId, nextIds);
-      // keep the rail badge for THIS food in sync immediately, no full refetch needed
       setComboCounts((prev) => ({ ...prev, [selectedFoodId]: nextIds.length }));
     } catch (err) {
       setComboIds(prevIds);
@@ -127,15 +126,21 @@ export default function CombosSection() {
         type: "error",
         message: "ذخیره ترکیب‌ها ناموفق بود. دوباره تلاش کنید.",
       });
+      throw err;
     } finally {
       setSavingCombos(false);
     }
   };
 
-  const handleAddCombos = (newIds) => {
+  const handleAddCombos = async (newIds) => {
     const merged = Array.from(new Set([...comboIds, ...newIds]));
-    setPickerOpen(false);
-    persistCombos(merged);
+    try {
+      await persistCombos(merged);
+      notify({ type: "success", message: "ترکیب‌ها با موفقیت اضافه شد" });
+      setPickerOpen(false); // ✅ فقط بعد از موفقیت بسته میشه
+    } catch {
+      // خطا از قبل داخل persistCombos نوتیف شده؛ مودال باز می‌مونه تا کاربر دوباره تلاش کنه
+    }
   };
 
   const handleRemoveCombo = async (foodId) => {
@@ -149,8 +154,8 @@ export default function CombosSection() {
     try {
       await persistCombos(comboIds.filter((id) => id !== foodId));
       notify({ type: "success", message: "ترکیب حذف شد" });
-    } catch (err) {
-      notify({ type: "error", message: "حذف ترکیب با خطا مواجه شد" });
+    } catch {
+      // خطا از قبل داخل persistCombos نوتیف شده
     }
   };
 
@@ -367,6 +372,7 @@ export default function CombosSection() {
         candidateFoods={candidateFoods}
         onClose={() => setPickerOpen(false)}
         onConfirm={handleAddCombos}
+        submitting={savingCombos}
       />
     </>
   );

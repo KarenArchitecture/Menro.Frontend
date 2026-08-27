@@ -1,5 +1,5 @@
 // src/components/admin/ComboPickerModal.jsx
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import resolveFileUrl from "../../utils/resolveFileUrl";
 import { groupFoodsByCategory } from "../../utils/groupFoodsByCategory";
 
@@ -8,6 +8,7 @@ export default function ComboPickerModal({
   candidateFoods,
   onClose,
   onConfirm,
+  submitting = false,
 }) {
   const [query, setQuery] = useState("");
   const [selectedIds, setSelectedIds] = useState(new Set());
@@ -23,17 +24,24 @@ export default function ComboPickerModal({
     return groupFoodsByCategory(filtered);
   }, [candidateFoods, query]);
 
-  if (!open) return null;
+  // ✅ useEffect باید همینجا باشه، قبل از هر return شرطی
+  useEffect(() => {
+    if (!open) {
+      setSelectedIds(new Set());
+      setQuery("");
+      setOpenCats(new Set());
+    }
+  }, [open]);
+
+  if (!open) return null; // ✅ حالا این بعد از همه‌ی hook هاست
 
   const isOpen = (cat) => openCats.has(cat);
 
   const toggleGroup = (cat) => {
     setOpenCats((prev) => {
       const next = new Set(prev);
-
       if (next.has(cat)) next.delete(cat);
       else next.add(cat);
-
       return next;
     });
   };
@@ -41,27 +49,19 @@ export default function ComboPickerModal({
   const toggle = (id) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-
       if (next.has(id)) next.delete(id);
       else next.add(id);
-
       return next;
     });
   };
 
   const handleConfirm = () => {
-    if (selectedIds.size === 0) return;
-
+    if (selectedIds.size === 0 || submitting) return;
     onConfirm(Array.from(selectedIds));
-
-    setSelectedIds(new Set());
-    setQuery("");
   };
 
   const handleClose = () => {
-    setSelectedIds(new Set());
-    setQuery("");
-    setOpenCats(new Set());
+    if (submitting) return;
     onClose?.();
   };
 
@@ -77,8 +77,11 @@ export default function ComboPickerModal({
       <div className="modal-content combos-mgmt__picker-modal">
         <div className="modal-header">
           <h3>افزودن ترکیب پیشنهادی</h3>
-
-          <button className="btn btn-icon" onClick={handleClose}>
+          <button
+            className="btn btn-icon"
+            onClick={handleClose}
+            disabled={submitting}
+          >
             <i className="fas fa-times" />
           </button>
         </div>
@@ -183,18 +186,28 @@ export default function ComboPickerModal({
           <button
             type="button"
             className="btn btn-primary"
-            disabled={selectedIds.size === 0}
+            disabled={selectedIds.size === 0 || submitting}
             onClick={handleConfirm}
           >
-            افزودن
-            {selectedIds.size > 0 &&
-              ` (${selectedIds.size.toLocaleString("fa-IR")} مورد)`}
+            {submitting ? (
+              <>
+                <span className="submit-spinner" aria-hidden="true" />
+                در حال افزودن...
+              </>
+            ) : (
+              <>
+                افزودن
+                {selectedIds.size > 0 &&
+                  ` (${selectedIds.size.toLocaleString("fa-IR")} مورد)`}
+              </>
+            )}
           </button>
 
           <button
             type="button"
             className="btn btn-secondary"
             onClick={handleClose}
+            disabled={submitting}
           >
             انصراف
           </button>

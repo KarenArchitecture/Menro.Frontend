@@ -3,11 +3,21 @@ import { useEffect } from "react";
 
 export default function ModalRoot({ modal, onClose }) {
   const isConfirm = modal?.kind === "confirm";
+  const isUnsaved = modal?.kind === "unsaved";
 
   useEffect(() => {
     if (!modal) return;
 
     const handleKeyDown = (e) => {
+      if (isUnsaved) {
+        // برای حالت سه‌گزینه‌ای، Enter را عمداً غیرفعال می‌گذاریم
+        // چون معنایش (ذخیره؟ عدم ذخیره؟) مبهم است؛ فقط ESC = انصراف
+        if (e.key === "Escape") {
+          e.preventDefault();
+          onClose("cancel");
+        }
+        return;
+      }
       if (e.key === "Enter") {
         e.preventDefault();
         onClose(true);
@@ -19,15 +29,18 @@ export default function ModalRoot({ modal, onClose }) {
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [modal, onClose]);
+  }, [modal, onClose, isUnsaved]);
 
   if (!modal) return null;
 
   return (
-    <div className="gui-modal-backdrop" onClick={() => onClose(false)}>
+    <div
+      className="gui-modal-backdrop"
+      onClick={() => onClose(isUnsaved ? "cancel" : false)}
+    >
       <div
         className={`gui-modal ${modal.danger ? "gui-modal--danger" : ""}`}
-        role={isConfirm ? "alertdialog" : "dialog"}
+        role={isConfirm || isUnsaved ? "alertdialog" : "dialog"}
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
       >
@@ -35,7 +48,31 @@ export default function ModalRoot({ modal, onClose }) {
         {modal.message && <p className="gui-modal__message">{modal.message}</p>}
 
         <div className="gui-modal__actions">
-          {isConfirm ? (
+          {isUnsaved ? (
+            <>
+              <button
+                type="button"
+                className="gui-btn gui-btn--ghost"
+                onClick={() => onClose("cancel")}
+              >
+                {modal.cancelText || "انصراف"}
+              </button>
+              <button
+                type="button"
+                className="gui-btn gui-btn--ghost"
+                onClick={() => onClose("discard")}
+              >
+                {modal.discardText || "ذخیره نشود"}
+              </button>
+              <button
+                type="button"
+                className="gui-btn gui-btn--primary"
+                onClick={() => onClose("save")}
+              >
+                {modal.saveText || "ذخیره شود"}
+              </button>
+            </>
+          ) : isConfirm ? (
             <>
               <button
                 type="button"

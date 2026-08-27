@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+
 import { useAuth } from "../../context/AuthContext";
+
 import {
   getBlogPost,
   updateBlogPost,
@@ -14,9 +16,12 @@ import {
   normalizeTagNameLive,
   normalizeTagNameFinal,
 } from "../../utils/tagName";
+
 import { useGlobalUI } from "../../components/common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+
 import BlogContentEditor from "../../components/blogPostEditor/BlogContentEditor";
+
 import "../../assets/css/admin/admin.css";
 import "../../assets/css/admin/blogPostEditorPage.css";
 
@@ -76,10 +81,12 @@ export default function BlogPostEditorPage() {
   );
   const { id } = useParams();
   const navigate = useNavigate();
-  const { notify } = useGlobalUI();
+  const { notify, confirmUnsavedChanges } = useGlobalUI();
+
   useDocumentTitle("ویرایش پست وبلاگ");
 
   const [draft, setDraft] = useState(null);
+  const [isDirty, setIsDirty] = useState(false);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [togglingPublish, setTogglingPublish] = useState(false);
@@ -91,6 +98,14 @@ export default function BlogPostEditorPage() {
   const [tagSearch, setTagSearch] = useState("");
   const [newTagName, setNewTagName] = useState("");
   const [creatingTag, setCreatingTag] = useState(false);
+
+  // ✅ Wrapper مشترک برای هر تغییری که باید dirty را true کند.
+  // به‌جای فراخوانی مستقیم setDraft در همه‌جا، از این استفاده می‌کنیم تا
+  // فراموش نشدن dirty-marking روی هیچ فیلدی رخ ندهد.
+  const updateDraft = (patch) => {
+    setDraft((prev) => ({ ...prev, ...patch }));
+    setIsDirty(true);
+  };
 
   useEffect(() => {
     const prev = document.body.style.overflowX;
@@ -112,6 +127,7 @@ export default function BlogPostEditorPage() {
         ]);
         if (!cancelled) {
           setDraft(draftFromApi(post));
+          setIsDirty(false);
           setCategories(cats);
           setTags(allTags);
         }
@@ -138,24 +154,22 @@ export default function BlogPostEditorPage() {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
-      setDraft((prev) => ({
-        ...prev,
+      updateDraft({
         coverFile: file,
         coverSrc: reader.result,
         removeImage: false,
-      }));
+      });
     };
     reader.readAsDataURL(file);
   };
 
   const handleRemoveCoverImage = (e) => {
     e.stopPropagation();
-    setDraft((prev) => ({
-      ...prev,
+    updateDraft({
       coverFile: null,
       coverSrc: "",
       removeImage: true,
-    }));
+    });
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -169,7 +183,12 @@ export default function BlogPostEditorPage() {
           : [...prev.tagIds, tagId],
       };
     });
+    setIsDirty(true);
   };
+
+  // ⚠️ عمداً از updateDraft استفاده نمی‌کند: انتشار/پیش‌نویس بلافاصله با
+  // بک‌اند sync می‌شود (toggleBlogPostPublish)، پس این تغییر خودش یک
+  // «تغییر ذخیره‌نشده» محسوب نمی‌شود.
   const handleTogglePublish = async () => {
     if (togglingPublish) return;
     setTogglingPublish(true);
@@ -198,6 +217,7 @@ export default function BlogPostEditorPage() {
       const created = await createBlogTag(name);
       setTags((prev) => [...prev, created]);
       setDraft((prev) => ({ ...prev, tagIds: [...prev.tagIds, created.id] }));
+      setIsDirty(true);
       setNewTagName("");
     } catch (err) {
       notify({
@@ -225,25 +245,59 @@ export default function BlogPostEditorPage() {
     return errs;
   };
 
+  // ✅ حالا true/false برمی‌گرداند تا caller (مثلاً handleBack) بفهمد
+  // ذخیره واقعاً موفق بوده یا نه.
   const save = async () => {
     const errs = validate();
     if (Object.keys(errs).length) {
       setErrors(errs);
-      return;
+      return false;
     }
     setErrors({});
     setSaving(true);
     try {
       const updated = await updateBlogPost(id, draftToFormData(draft));
       setDraft(draftFromApi(updated));
+      setIsDirty(false);
       notify({ type: "success", message: "پست ذخیره شد" });
+      return true;
     } catch (err) {
       notify({
         type: "error",
         message: apiErrorMessage(err, "ذخیره پست با خطا مواجه شد."),
       });
+      return false;
     } finally {
       setSaving(false);
+    }
+  };
+
+  // ✅ دکمه‌ی «بازگشت»: اگر تغییر ذخیره‌نشده‌ای هست، قبل از خروج می‌پرسد.
+  const handleBack = async () => {
+    if (saving) return;
+
+    if (!isDirty) {
+      navigate(-1);
+      return;
+    }
+
+    const result = await confirmUnsavedChanges({
+      title: "تغییرات ذخیره‌نشده",
+      message:
+        "تغییراتی روی این پست اعمال کرده‌اید که هنوز ذخیره نشده است. آیا می‌خواهید قبل از خروج ذخیره شوند؟",
+    });
+
+    if (result === "cancel") return; // همینجا می‌مانیم
+
+    if (result === "discard") {
+      navigate(-1); // بدون ذخیره خارج شو
+      return;
+    }
+
+    if (result === "save") {
+      const success = await save();
+      if (success) navigate(-1); // فقط در صورت موفقیت واقعی خارج شو
+      // در صورت خطا، همین صفحه می‌مانیم تا کاربر دوباره تلاش کند
     }
   };
 
@@ -287,7 +341,7 @@ export default function BlogPostEditorPage() {
           >
             <i className="fas fa-eye" />
           </button>
-          <button className="bpe__back" onClick={() => navigate(-1)}>
+          <button className="bpe__back" onClick={handleBack} disabled={saving}>
             <i className="fas fa-arrow-right" /> بازگشت
           </button>
         </div>
@@ -313,7 +367,7 @@ export default function BlogPostEditorPage() {
                 className="bpe__input bpe__title-input"
                 value={draft.title}
                 maxLength={TITLE_MAX}
-                onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+                onChange={(e) => updateDraft({ title: e.target.value })}
               />
               {errors.title && (
                 <span className="bpe__error">{errors.title}</span>
@@ -330,10 +384,7 @@ export default function BlogPostEditorPage() {
                   value={draft.slug}
                   dir="ltr"
                   onChange={(e) =>
-                    setDraft({
-                      ...draft,
-                      slug: sanitizeSlugInput(e.target.value),
-                    })
+                    updateDraft({ slug: sanitizeSlugInput(e.target.value) })
                   }
                 />
               </div>
@@ -406,9 +457,7 @@ export default function BlogPostEditorPage() {
               <select
                 className="bpe__select"
                 value={draft.categoryId}
-                onChange={(e) =>
-                  setDraft({ ...draft, categoryId: e.target.value })
-                }
+                onChange={(e) => updateDraft({ categoryId: e.target.value })}
               >
                 <option value="">بدون دسته‌بندی</option>
                 {categories.map((cat) => (
@@ -427,7 +476,7 @@ export default function BlogPostEditorPage() {
                 className="bpe__input"
                 value={draft.readingMins}
                 onChange={(e) =>
-                  setDraft({ ...draft, readingMins: Number(e.target.value) })
+                  updateDraft({ readingMins: Number(e.target.value) })
                 }
               />
               {errors.readingMins && (
@@ -509,7 +558,11 @@ export default function BlogPostEditorPage() {
                   disabled={!normalizeTagNameFinal(newTagName) || creatingTag}
                   onClick={handleCreateTag}
                 >
-                  <i className="fas fa-plus" />
+                  {creatingTag ? (
+                    <span className="submit-spinner" aria-hidden="true" />
+                  ) : (
+                    <i className="fas fa-plus" />
+                  )}
                 </button>
               </div>
             )}
@@ -520,7 +573,14 @@ export default function BlogPostEditorPage() {
             disabled={saving}
             onClick={save}
           >
-            {saving ? "در حال ذخیره..." : "ذخیره تغییرات"}
+            {saving ? (
+              <>
+                <span className="submit-spinner" aria-hidden="true" />
+                در حال ذخیره...
+              </>
+            ) : (
+              "ذخیره تغییرات"
+            )}
           </button>
         </div>
       </div>

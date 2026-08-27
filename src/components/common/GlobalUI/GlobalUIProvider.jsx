@@ -84,6 +84,27 @@ export function GlobalUIProvider({ children }) {
     [],
   );
 
+  // confirmUnsavedChanges({ title, message, saveText, discardText, cancelText })
+  // -> Promise<"save" | "discard" | "cancel">
+  const confirmUnsavedChanges = useCallback(
+    ({ title, message, saveText, discardText, cancelText } = {}) => {
+      return new Promise((resolve) => {
+        resolverRef.current = resolve;
+        setModal({
+          kind: "unsaved",
+          title: title || "تغییرات ذخیره‌نشده",
+          message:
+            message ||
+            "تغییراتی که اعمال کرده‌اید ذخیره نشده است. می‌خواهید قبل از خروج ذخیره شوند؟",
+          saveText,
+          discardText,
+          cancelText,
+        });
+      });
+    },
+    [],
+  );
+
   const closeModal = useCallback((result) => {
     resolverRef.current?.(result);
     resolverRef.current = null;
@@ -91,7 +112,9 @@ export function GlobalUIProvider({ children }) {
   }, []);
 
   return (
-    <GlobalUIContext.Provider value={{ notify, alertModal, confirmModal }}>
+    <GlobalUIContext.Provider
+      value={{ notify, alertModal, confirmModal, confirmUnsavedChanges }}
+    >
       {children}
       <ToastStack toasts={toasts} onDismiss={dismissToast} />
       <ModalRoot modal={modal} onClose={closeModal} />

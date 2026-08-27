@@ -425,6 +425,14 @@ export default function BlogContentEditor({ postId }) {
                 editor.chain().focus().toggleHeading({ level: 3 }).run()
               }
             />
+            <ToolbarButton
+              icon="fas fa-heading fa-xs"
+              title="تیتر خیلی کوچک"
+              active={editor.isActive("heading", { level: 4 })}
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level: 4 }).run()
+              }
+            />
             <span className="bpe__editor-sep" />
             <ToolbarButton
               icon="fas fa-list-ul"
@@ -475,18 +483,14 @@ export default function BlogContentEditor({ postId }) {
                     content: [
                       {
                         type: "detailsSummary",
-                        content: [
-                          { type: "text", text: "سؤال را اینجا بنویسید" },
-                        ],
+                        content: [{ type: "text", text: "سر تیتر" }],
                       },
                       {
                         type: "detailsContent",
                         content: [
                           {
                             type: "paragraph",
-                            content: [
-                              { type: "text", text: "پاسخ را اینجا بنویسید" },
-                            ],
+                            content: [{ type: "text", text: "توضیحات" }],
                           },
                         ],
                       },

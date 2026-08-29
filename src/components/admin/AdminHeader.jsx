@@ -90,7 +90,7 @@ export default function AdminHeader({
             type="button"
             className="admin-subscribe-btn"
             aria-label="خرید اشتراک"
-            onClick={() => {}}
+            onClick={() => navigate("/subscriptions")}
           >
             خرید اشتراک
           </button>

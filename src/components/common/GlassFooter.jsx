@@ -27,13 +27,13 @@ export default function GlassFooter() {
             />
           </div>
           <nav className="footer-glass__nav" aria-label="لینک‌های فوتر">
-            <a href="#">وب اپ</a>
-            <a href="#">درباره ما</a>
-            <a href="#">اشتراک‌ها</a>
-            <a href="#">مقالات</a>
-            <a href="#">سوالات متداول</a>
-            <a href="#">رستوران ها</a>
-            <a href="#">نقشه</a>
+            <a href="/home">وب اپ</a>
+            {/* <a href="#">درباره ما</a> */}
+            <a href="/subscriptions">اشتراک‌ها</a>
+            <a href="/blog">بلاگ</a>
+            {/* <a href="#">سوالات متداول</a> */}
+            <a href="/restaurants">رستوران ها</a>
+            {/* <a href="#">نقشه</a> */}
           </nav>
         </div>
 

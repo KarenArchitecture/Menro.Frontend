@@ -107,7 +107,7 @@ export default function MenuDrawer({
       { label: "علاقه‌مندی ها", href: "/favorites", iconSrc: heartSvg },
       { label: "پشتیبانی", href: "/support", iconSrc: smsSvg },
       { label: "سوالات متداول", href: "#faq", iconSrc: helpSvg },
-      { label: "درباره ما", href: "#about", iconSrc: lampSvg },
+      // { label: "درباره ما", href: "#about", iconSrc: lampSvg },
     ],
     [],
   );

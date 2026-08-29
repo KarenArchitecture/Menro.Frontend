@@ -1,4 +1,4 @@
-import React from "react";
+import { Link } from "react-router-dom";
 import "../../assets/css/app-header-styles.css";
 /**
  * AppHeader – pill-shaped, reusable site header.
@@ -21,12 +21,12 @@ export default function AppHeader({
           className="brand-logo"
         />
       ),
-      href: "#",
+      href: "/",
       active: true,
     },
     { label: "وب‌اپ", href: "/home" },
-    { label: "اشتراک‌ها", href: "#" },
-    { label: "درباره‌ما", href: "#" },
+    { label: "بلاگ", href: "/blog" },
+    { label: "اشتراک‌ها", href: "/subscriptions" },
   ],
   leftIcons = [],
   position = "fixed",
@@ -67,16 +67,28 @@ export default function AppHeader({
 
           {/* LEFT: circular icon buttons */}
           <ul className="app-header__left">
-            {leftIcons.map((it) => (
-              <li key={it.key} className={`icon-wrap ${it.key}`}>
+            {leftIcons.map((it) => {
+              const button = (
                 <button className="icon-btn" type="button" aria-label={it.key}>
                   {it.icon}
                 </button>
-                {typeof it.badge === "number" && it.badge > 0 && (
-                  <span className="badge">{it.badge}</span>
-                )}
-              </li>
-            ))}
+              );
+
+              return (
+                <li key={it.key} className={`icon-wrap ${it.key}`}>
+                  {it.key === "profile" ? (
+                    <Link to="/login" className="icon-btn-link">
+                      {button}
+                    </Link>
+                  ) : (
+                    button
+                  )}
+                  {typeof it.badge === "number" && it.badge > 0 && (
+                    <span className="badge">{it.badge}</span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </div>
       </div>

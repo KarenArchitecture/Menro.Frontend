@@ -30,6 +30,8 @@ import RestaurantsBrowsePage from "./pages/RestaurantsBrowsePage";
 import RestaurantStatusPage from "./pages/Errors/RestaurantStatusPage";
 import UnauthorizedPage from "./pages/Errors/UnauthorizedPage";
 import StandalonePageChrome from "./components/common/StandalonePageChrome";
+import SubscriptionsPage from "./pages/SubscriptionsPage";
+import UnauthorizedPage from "./pages/Authentication/UnauthorizedPage";
 import UserProfileForm from "./components/common/UserProfileForm";
 import FoodCommentsPage from "./pages/FoodCommentsPage";
 import MyCommentsPage from "./pages/MyCommentsPage";
@@ -84,10 +86,16 @@ export default function App() {
     "/music",
     "/favorites",
     "/blog",
+    "/subscriptions",
   ];
 
-  // "/orders/bill" so the app shell doesn't add blank padding at the bottom
-  const NO_PADDING_PREFIXES = ["/landing", "/blog", "/orders/bill"];
+  // 3. Added "/orders/bill" so the app shell doesn't add blank padding at the bottom
+  const NO_PADDING_PREFIXES = [
+    "/landing",
+    "/blog",
+    "/orders/bill",
+    "/subscriptions",
+  ];
 
   const hideMobileNav =
     pathname === "/" ||
@@ -221,6 +229,7 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route path="/subscriptions" element={<SubscriptionsPage />} />
               <Route path="/unauthorized" element={<UnauthorizedPage />} />
               {/* 404 Catch-All Route */}
               <Route path="*" element={<NotFoundPage />} />

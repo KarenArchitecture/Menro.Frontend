@@ -1,0 +1,257 @@
+/* src/assets/css/subscriptions-pricing-cards.css */
+
+.sub-plans {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem 5rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0; /* cards sit flush against each other */
+  align-items: center;
+}
+
+/* Card backgrounds are pre-made PNGs. overflow + border-box origin/clip
+   makes sure the image is forced to fully cover the card with no bleed
+   around the edges, regardless of the source image's own dimensions. */
+.sub-plan-card {
+  position: relative;
+  box-sizing: border-box;
+  height: 560px; /* fixed — does NOT grow with feature count */
+  border-radius: var(--sub-radius-lg);
+  border: 1px solid var(--sub-border);
+  padding: 2.25rem 1.85rem 2.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  overflow: hidden;
+  background-color: #101114;
+  background-image: var(--sub-card-bg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-origin: border-box;
+  background-clip: border-box;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    filter 0.3s ease;
+}
+
+.sub-plan-card--green {
+  border-color: var(--sub-green-border);
+}
+.sub-plan-card--purple {
+  border-color: var(--sub-purple-border);
+}
+.sub-plan-card--orange {
+  border-color: var(--sub-orange-border);
+}
+
+/* Side cards recede slightly and sit at a lower z-index so the popular
+   card's overlap visually covers their inner border/corner. */
+.sub-plan-card:not(.sub-plan-card--popular) {
+  z-index: 1;
+  transform: scale(0.97);
+  filter: brightness(0.92) saturate(0.92);
+}
+.sub-plan-card:not(.sub-plan-card--popular):hover {
+  filter: brightness(1) saturate(1);
+}
+
+/* The featured plan: taller, overlaps both neighbours via negative
+   margin, and sits above them (z-index) so their diverging borders are
+   hidden underneath it. */
+.sub-plan-card--popular {
+  height: 620px;
+  margin: 0 -22px;
+  padding: 2.5rem 2rem 2.5rem;
+  z-index: 3;
+  transform: translateY(-24px) scale(1.04);
+  box-shadow:
+    0 30px 70px rgba(168, 85, 247, 0.32),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+.sub-plan-card--popular:hover {
+  transform: translateY(-26px) scale(1.05);
+}
+
+.sub-plan-card__name {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+.sub-plan-card--popular .sub-plan-card__name {
+  font-size: 1.45rem;
+}
+
+.sub-plan-card--green .sub-plan-card__name {
+  color: var(--sub-green);
+}
+.sub-plan-card--purple .sub-plan-card__name {
+  color: var(--sub-purple);
+}
+.sub-plan-card--orange .sub-plan-card__name {
+  color: var(--sub-accent);
+}
+
+.sub-plan-card__price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.sub-plan-card__price-value {
+  font-size: 1.9rem;
+  font-weight: 900;
+  color: #fff;
+}
+.sub-plan-card--popular .sub-plan-card__price-value {
+  font-size: 2.15rem;
+}
+
+.sub-plan-card__price-unit {
+  font-size: 0.82rem;
+  color: var(--sub-muted);
+}
+
+.sub-plan-card__subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--sub-muted);
+  line-height: 1.7;
+  flex-shrink: 0;
+}
+
+/* ---------- Features viewport (fixed height, internal scroll) ---------- */
+.sub-plan-card__features-viewport {
+  position: relative;
+  flex: 1;
+  min-height: 0; /* required so flex child can actually be clipped */
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
+}
+
+.sub-plan-card__features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+/* Auto-scrolling marquee — only applied to plans whose feature list
+   exceeds the card's fixed height (pro / advanced). The list is rendered
+   twice in the DOM and this animation moves exactly one copy's worth of
+   height (-50%) so the loop is seamless. */
+.sub-plan-card__features.is-scrolling {
+  animation: sub-plan-features-scroll linear infinite;
+  animation-duration: var(--scroll-duration, 14s);
+}
+
+.sub-plan-card__features-viewport:hover .sub-plan-card__features.is-scrolling {
+  animation-play-state: paused;
+}
+
+@keyframes sub-plan-features-scroll {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+.sub-plan-card__features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  font-size: 0.88rem;
+  color: #e6e8eb;
+  line-height: 1.6;
+}
+
+.sub-plan-card__features i {
+  margin-top: 3px;
+  flex-shrink: 0;
+  font-size: 0.85rem;
+}
+
+.sub-plan-card--green .sub-plan-card__features i {
+  color: var(--sub-green);
+}
+.sub-plan-card--purple .sub-plan-card__features i {
+  color: var(--sub-purple);
+}
+.sub-plan-card--orange .sub-plan-card__features i {
+  color: var(--sub-accent);
+}
+
+.sub-plan-card__cta {
+  margin-top: 1rem;
+  flex-shrink: 0;
+  height: 48px;
+  border: none;
+  border-radius: var(--sub-radius-sm);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
+}
+
+.sub-plan-card__cta:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.sub-plan-card--green .sub-plan-card__cta {
+  background: var(--sub-green);
+  color: #06210f;
+}
+.sub-plan-card--purple .sub-plan-card__cta {
+  background: linear-gradient(135deg, #c79bff, var(--sub-purple));
+  color: #1a1030;
+}
+.sub-plan-card--orange .sub-plan-card__cta {
+  background: var(--sub-accent);
+  color: #2a1400;
+}
+
+@media (max-width: 980px) {
+  .sub-plans {
+    grid-template-columns: 1fr;
+    max-width: 460px;
+    row-gap: 1.75rem;
+  }
+  .sub-plan-card,
+  .sub-plan-card--popular {
+    height: 520px;
+    margin: 0;
+    padding: 2.25rem 1.85rem 2.25rem;
+    transform: none;
+    filter: none;
+  }
+  .sub-plan-card--popular {
+    order: -1;
+  }
+  .sub-plan-card:hover,
+  .sub-plan-card--popular:hover {
+    transform: none;
+    filter: none;
+  }
+}

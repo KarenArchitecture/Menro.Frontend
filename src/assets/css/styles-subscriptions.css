@@ -1,0 +1,68 @@
+/* src/assets/css/subscriptions-page.css
+   Page-level shell for the Subscriptions page. All selectors are scoped
+   under .subscription-page so nothing here can collide with generic.css /
+   main.css or any other page's styles. */
+
+.subscription-page {
+  /* ---- scoped design tokens (NOT :root, so they stay local) ---- */
+  --sub-bg: #0b0f13;
+  --sub-surface: rgba(255, 255, 255, 0.035);
+  --sub-border: rgba(255, 255, 255, 0.09);
+  --sub-text: #ffffff;
+  --sub-muted: #9aa0ac;
+  --sub-accent: #ff9d10;
+  --sub-accent-2: #ff683c;
+
+  --sub-green: #2fd480;
+  --sub-green-bg: linear-gradient(160deg, #123422 0%, #0b0f13 65%);
+  --sub-green-border: rgba(47, 212, 128, 0.35);
+
+  --sub-purple: #b083ff;
+  --sub-purple-bg: linear-gradient(160deg, #241a45 0%, #120e22 65%);
+  --sub-purple-border: rgba(176, 131, 255, 0.4);
+
+  --sub-orange-bg: linear-gradient(160deg, #2c1a10 0%, #120d0a 65%);
+  --sub-orange-border: rgba(255, 157, 16, 0.35);
+
+  --sub-radius-lg: 22px;
+  --sub-radius-md: 14px;
+  --sub-radius-sm: 10px;
+
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  background: var(--sub-bg);
+  color: var(--sub-text);
+  font-family: "Vazirmatn", sans-serif;
+}
+
+.subscription-page * {
+  box-sizing: border-box;
+}
+
+/* fixed AppHeader needs an absolutely-positioned, centered wrapper */
+.subscription-page__header-wrapper {
+  position: absolute;
+  top: 20px;
+  left: 0;
+  width: 100%;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+}
+
+/* first section needs room to clear the fixed pill header */
+.subscription-page__spacer {
+  height: 11rem;
+}
+
+.subscription-page__footer {
+  margin-top: 6rem;
+}
+
+@media (max-width: 768px) {
+  .subscription-page__spacer {
+    height: 8.5rem;
+  }
+}

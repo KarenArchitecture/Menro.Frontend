@@ -1,0 +1,196 @@
+/* src/assets/css/subscriptions-hero.css */
+
+.sub-hero {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 2rem 3.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.sub-hero__title {
+  margin: 0;
+  font-size: clamp(2.2rem, 3.4vw, 2.8rem);
+  font-weight: 800;
+  line-height: 1.4;
+  color: #fff;
+}
+
+.sub-hero__title-highlight {
+  color: var(--sub-accent-2);
+}
+
+.sub-hero__subtitle {
+  margin: 0;
+  color: var(--sub-muted);
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.sub-hero__toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-direction: row-reverse;
+}
+
+/* ---------- Pill with the two labels + switch ---------- */
+.sub-hero__toggle-labels {
+  position: relative;
+  display: flex;
+  flex-direction: row-reverse; /* first DOM child (یک‌ماهه) ends up on the left */
+  align-items: center;
+  gap: 0.9rem;
+  background: var(--sub-surface);
+  border: 1px solid var(--sub-border);
+  border-radius: 999px;
+  padding: 0.5rem 1.1rem;
+  transition: border-color 0.25s ease;
+  isolation: isolate;
+}
+
+/* "lamp" glow blobs — one per side, toggled by state class */
+.sub-hero__toggle-labels::before,
+.sub-hero__toggle-labels::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 104, 60, 0.55) 0%,
+    rgba(255, 104, 60, 0) 72%
+  );
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* right blob = یک‌ساله side */
+.sub-hero__toggle-labels::before {
+  right: -14px;
+}
+/* left blob = یک‌ماهه side */
+.sub-hero__toggle-labels::after {
+  left: -14px;
+}
+
+.sub-hero__toggle-labels.glow-yearly {
+  border-color: rgba(255, 104, 60, 0.55);
+  box-shadow: 4px 0 18px -4px rgba(255, 104, 60, 0.35);
+}
+.sub-hero__toggle-labels.glow-yearly::before {
+  opacity: 1;
+}
+
+.sub-hero__toggle-labels.glow-monthly {
+  border-color: rgba(255, 104, 60, 0.55);
+  box-shadow: -4px 0 18px -4px rgba(255, 104, 60, 0.35);
+}
+.sub-hero__toggle-labels.glow-monthly::after {
+  opacity: 1;
+}
+
+.sub-hero__toggle-label {
+  position: relative;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--sub-muted);
+  transition: color 0.15s ease;
+}
+
+.sub-hero__toggle-label.is-active {
+  color: #fff;
+}
+
+/* ---------- Switch ---------- */
+.sub-hero__switch {
+  position: relative;
+  width: 46px;
+  height: 26px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.12);
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.sub-hero__switch.is-yearly {
+  background: rgba(255, 104, 60, 0.28);
+}
+
+.sub-hero__switch-thumb {
+  position: absolute;
+  top: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  transition:
+    right 0.2s ease,
+    left 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.sub-hero__switch.is-yearly .sub-hero__switch-thumb {
+  right: 3px;
+  left: auto;
+  background: #ff683c;
+  box-shadow: 0 2px 10px rgba(255, 104, 60, 0.55);
+}
+
+.sub-hero__switch.is-monthly .sub-hero__switch-thumb {
+  left: 3px;
+  right: auto;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+/* ---------- Discount hint (svg placeholder, sits next to the switch) ---------- */
+.sub-hero__discount-hint {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-start;
+  margin-top: -18px;
+}
+
+.sub-hero__discount-arrow {
+  display: block;
+  width: 80px;
+  height: 80px;
+  transform: scaleX(
+    -1
+  ); /* remove if your provided svg is already oriented correctly */
+}
+
+.sub-hero__discount-badge {
+  margin-top: -6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--sub-accent);
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .sub-hero__toggle-row {
+    flex-direction: column;
+  }
+  .sub-hero__discount-hint {
+    margin-top: 0.4rem;
+    align-items: center;
+  }
+  .sub-hero__discount-arrow {
+    display: none;
+  }
+}

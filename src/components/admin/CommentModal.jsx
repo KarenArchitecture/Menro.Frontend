@@ -1,6 +1,9 @@
 // src/components/admin/CommentModal.jsx
 import React, { useEffect, useState } from "react";
 
+import { formatPersianDate } from "../../utils/formatPersianDate";
+import { toPersianDigits } from "../../utils/persianNumbers";
+
 export default function CommentModal({
   open,
   comment,
@@ -29,7 +32,7 @@ export default function CommentModal({
   const renderStars = (rating) => {
     const r = Number(rating) || 0;
     return (
-      <span style={{ letterSpacing: 2 }}>
+      <span style={{ letterSpacing: 2, direction: "ltr", display: "inline-block" }}>
         <span style={{ color: "#ff683c" }}>{"★".repeat(r)}</span>
         <span style={{ color: "rgba(255,255,255,0.2)" }}>
           {"★".repeat(5 - r)}
@@ -92,7 +95,7 @@ export default function CommentModal({
       <div className="modal-content" style={{ maxWidth: 720 }}>
         <div className="modal-header">
           <h3>
-            نظر #{comment.code} — {comment.title}
+            نظر #{toPersianDigits(comment.code)} — {comment.title}
           </h3>
           <button className="btn btn-icon" onClick={onClose}>
             <i className="fas fa-times" />
@@ -119,7 +122,7 @@ export default function CommentModal({
               <strong>امتیاز:</strong> {renderStars(comment.rating)}
             </div>
             <div>
-              <strong>تاریخ ثبت:</strong> {comment.date}
+              <strong>تاریخ ثبت:</strong> {formatPersianDate(comment.date)}
             </div>
           </div>
 

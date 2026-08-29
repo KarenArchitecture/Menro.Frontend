@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useGlobalUI } from "../common/GlobalUI";
+import { toPersianDigits } from "../../utils/persianNumbers";
 
 // Always-visible (for admin/owner), non-collapsible top item.
 const DASHBOARD_ITEM = {
@@ -130,10 +131,11 @@ const NAV_GROUPS = [
 
 export default function AdminSidebar({
   isOpen = false,
-  onClose = () => {},
+  onClose = () => { },
   activeTab,
   onSelect,
   hasNewRequest = false,
+  pendingCommentsCount = 0, // ✅ new
 }) {
   const navigate = useNavigate();
   // role check - roles from auth context are compared case-insensitively
@@ -240,6 +242,21 @@ export default function AdminSidebar({
               NEW
             </span>
           )}
+          {item.key === "comments" && pendingCommentsCount > 0 && (
+            <span
+              style={{
+                background: "#ff683c",
+                color: "white",
+                marginRight: "8px",
+                padding: "2px 8px",
+                borderRadius: "10px",
+                fontSize: "12px",
+                fontWeight: "bold",
+              }}
+            >
+              {toPersianDigits(pendingCommentsCount)}
+            </span>
+          )}
         </a>
       </li>
     );
@@ -285,9 +302,8 @@ export default function AdminSidebar({
             <div key={group.key} className="admin-sidebar__group">
               <button
                 type="button"
-                className={`nav-section-title admin-sidebar__group-toggle ${
-                  isGroupOpen ? "open" : ""
-                }`}
+                className={`nav-section-title admin-sidebar__group-toggle ${isGroupOpen ? "open" : ""
+                  }`}
                 onClick={() => toggleGroup(group.key)}
                 aria-expanded={isGroupOpen}
               >

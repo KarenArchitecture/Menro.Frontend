@@ -40,6 +40,8 @@ import ThemeSection from "../../components/admin/ThemeSection";
 
 /* ===================== Data / context / hooks ===================== */
 import ownerRestaurantAxios from "../../api/ownerRestaurantAxios";
+import { useQuery } from "@tanstack/react-query";
+import { getOwnerComments } from "../../api/ownerComments";
 import { useAuth } from "../../context/AuthContext";
 import { useGlobalUI } from "../../components/common/GlobalUI";
 
@@ -56,6 +58,16 @@ export default function AdminPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [hasNewRequest, setHasNewRequest] = useState(false);
   const [restaurantId, setRestaurantId] = useState();
+
+  const isOwner = (user?.roles || []).some(
+    (r) => r.toLowerCase() === "owner",
+  );
+
+  const { data: pendingComments = [] } = useQuery({
+    queryKey: ["owner-comments", "pending"],
+    queryFn: () => getOwnerComments("pending"),
+    enabled: Boolean(user) && isOwner,
+  });
 
   /* ---------------------------
    * LOAD RESTAURANT CONTEXT
@@ -165,6 +177,7 @@ export default function AdminPage() {
         activeTab={activeTab}
         onSelect={handleSelectTab}
         hasNewRequest={hasNewRequest}
+        pendingCommentsCount={pendingComments.length}
       />
 
       <main className="main-content">

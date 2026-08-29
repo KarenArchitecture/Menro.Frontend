@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import CommentModal from "./CommentModal";
 import {
-  getAdminComments,
+  getOwnerComments,
   approveComment,
   rejectComment,
-} from "../../api/adminComments";
+} from "../../api/ownerComments";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 
@@ -24,20 +24,20 @@ export default function CommentsSection() {
 
   const { data: comments = [], isLoading } = useQuery({
     queryKey: ["admin-comments", activeTab],
-    queryFn: () => getAdminComments(activeTab),
+    queryFn: () => getOwnerComments(activeTab),
   });
 
   const { data: pendingList = [] } = useQuery({
     queryKey: ["admin-comments", "pending"],
-    queryFn: () => getAdminComments("pending"),
+    queryFn: () => getOwnerComments("pending"),
   });
   const { data: approvedList = [] } = useQuery({
     queryKey: ["admin-comments", "approved"],
-    queryFn: () => getAdminComments("approved"),
+    queryFn: () => getOwnerComments("approved"),
   });
   const { data: rejectedList = [] } = useQuery({
     queryKey: ["admin-comments", "rejected"],
-    queryFn: () => getAdminComments("rejected"),
+    queryFn: () => getOwnerComments("rejected"),
   });
 
   const counts = {

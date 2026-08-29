@@ -1,6 +1,6 @@
 // src/components/subscriptions/SubscriptionsDemoBanner.jsx
 import React, { useState } from "react";
-import "../../assets/css/subscriptions-demo-banner.css";
+import "../../assets/css/subscriptions/subscriptions-demo-banner.css";
 
 const DEMO_FEATURES = [
   "امکان شماره ۵ با متن تقریبا طولانی",

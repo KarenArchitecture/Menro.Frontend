@@ -31,7 +31,6 @@ import RestaurantStatusPage from "./pages/Errors/RestaurantStatusPage";
 import UnauthorizedPage from "./pages/Errors/UnauthorizedPage";
 import StandalonePageChrome from "./components/common/StandalonePageChrome";
 import SubscriptionsPage from "./pages/SubscriptionsPage";
-import UnauthorizedPage from "./pages/Authentication/UnauthorizedPage";
 import UserProfileForm from "./components/common/UserProfileForm";
 import FoodCommentsPage from "./pages/FoodCommentsPage";
 import MyCommentsPage from "./pages/MyCommentsPage";

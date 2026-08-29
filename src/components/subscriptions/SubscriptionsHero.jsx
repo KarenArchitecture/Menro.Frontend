@@ -1,6 +1,6 @@
 // src/components/subscriptions/SubscriptionsHero.jsx
 import React from "react";
-import "../../assets/css/subscriptions-hero.css";
+import "../../assets/css/subscriptions/subscriptions-hero.css";
 
 export default function SubscriptionsHero({
   billingCycle = "yearly",

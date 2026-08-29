@@ -1,6 +1,6 @@
 // src/components/subscriptions/SubscriptionsPricingCards.jsx
 import React from "react";
-import "../../assets/css/subscriptions-pricing-cards.css";
+import "../../assets/css/subscriptions/subscriptions-pricing-cards.css";
 
 // NOTE: placeholder plan data mirroring the design mock. Swap numbers /
 // feature copy / bgImage for real content whenever it's ready.

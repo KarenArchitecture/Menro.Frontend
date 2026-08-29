@@ -1,6 +1,6 @@
 // src/components/subscriptions/SubscriptionsContactSection.jsx
 import React, { useState } from "react";
-import "../../assets/css/subscriptions-contact-section.css";
+import "../../assets/css/subscriptions/subscriptions-contact-section.css";
 
 const DEFAULT_CITIES = ["تهران", "مشهد", "اصفهان", "شیراز", "تبریز", "کرج"];
 

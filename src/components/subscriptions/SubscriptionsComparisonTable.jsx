@@ -1,6 +1,6 @@
 // src/components/subscriptions/SubscriptionsComparisonTable.jsx
 import React from "react";
-import "../../assets/css/subscriptions-comparison-table.css";
+import "../../assets/css/subscriptions/subscriptions-comparison-table.css";
 
 const DEFAULT_PLANS = [
   { id: "custom", name: "سفارشی", cta: "تماس بگیرید", theme: "neutral" },

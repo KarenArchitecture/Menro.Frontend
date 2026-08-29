@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import "../../assets/css/subscriptions-trusted-brands.css";
+import "../../assets/css/subscriptions/subscriptions-trusted-brands.css";
 
 // Top row — scrolls left. Exactly 10 real brand logos.
 const DEFAULT_TOP_LOGOS = [

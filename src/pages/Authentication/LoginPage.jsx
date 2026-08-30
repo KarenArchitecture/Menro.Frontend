@@ -110,29 +110,24 @@ export default function LoginPage() {
     },
   });
 
-  /* shared handler for the login response, 
-    used by both OTP and password login */
+  /* shared handler for the login response, used by both OTP and password
+     login. بک‌اند دیگه فرم/ mسیر جدای ثبت‌نام نداره: اگه شماره تازه بود،
+     خودش همون لحظه یک حساب می‌سازه و isNewUser: true برمی‌گردونه. کافیه
+     همون‌جا لاگین رو کامل کنیم و کاربر تازه رو به پروفایل بفرستیم تا
+     اسم/رمز/عکس دلخواهش رو (اختیاری) ست کنه. */
   const handleVerified = async (data) => {
-    if (data.needsRegister) {
-      localStorage.setItem(
-        "userPhone",
-        JSON.stringify({
-          value: phone,
-          registrationTicket: data.registrationTicket, // 👈 جدید
-          expiresAt: Date.now() + 10 * 60 * 1000, // 10 دقیقه
-        }),
-      );
-      navigate(
-        `/register${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ""}`,
-        { replace: true },
-      );
-      return;
-    }
-
     setMsg("");
 
     try {
       await completeLogin(data.accessToken);
+
+      if (data.isNewUser) {
+        // کاربر تازه‌ساز؛ صفحه‌ی پروفایل خودش با state.isNewUser
+        // پیام خوش‌آمدگویی رو نشون میده (نه اینجا، چون داریم ریدایرکت میشیم)
+        navigate("/profile", { replace: true, state: { isNewUser: true } });
+        return;
+      }
+
       navigate(returnUrl?.startsWith("/") ? returnUrl : "/home", {
         replace: true,
       });

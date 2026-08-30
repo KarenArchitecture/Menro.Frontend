@@ -1,4 +1,5 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useGlobalUI } from "../../components/common/GlobalUI";
 import ProfileHeader from "../../components/profile/ProfileHeader";
@@ -11,7 +12,19 @@ import useDocumentTitle from "../../hooks/useDocumentTitle";
 export default function ProfilePage() {
   useDocumentTitle("پروفایل کاربری");
   const { user, logout } = useAuth();
-  const { confirmModal } = useGlobalUI();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { notify, confirmModal } = useGlobalUI();
+
+  useEffect(() => {
+    if (location.state?.isNewUser) {
+      notify({ type: "success", message: "به منرو خوش آمدید" });
+      // پاک کردن state تا با رفرش یا برگشت دوباره نمایش داده نشه
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleLogout = async () => {
     const confirmed = await confirmModal({
       title: "خروج از حساب",

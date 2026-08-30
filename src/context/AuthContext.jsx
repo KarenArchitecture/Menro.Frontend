@@ -50,7 +50,6 @@ export function AuthProvider({ children }) {
       if (!cancelled) {
         setUser({
           id: decoded.nameid || decoded.sub,
-          email: decoded.email,
           roles: normalizedRoles.map((r) => r.toLowerCase()),
           fullName: decoded.fullName || decoded.name || "",
         });
@@ -67,7 +66,6 @@ export function AuthProvider({ children }) {
         if (cancelled) return;
         setUser({
           id: res.data.id,
-          email: res.data.email,
           phoneNumber: res.data.phoneNumber,
           roles: res.data.roles.map((r) => r.toLowerCase()),
           fullName: res.data.fullName,
@@ -123,7 +121,6 @@ export function AuthProvider({ children }) {
       const res = await authAxios.get("/me");
       setUser({
         id: res.data.id,
-        email: res.data.email,
         phoneNumber: res.data.phoneNumber,
         roles: res.data.roles.map((r) => r.toLowerCase()),
         fullName: res.data.fullName,
@@ -138,37 +135,12 @@ export function AuthProvider({ children }) {
   };
 
   /* ------------------------
-   * REGISTER
-   * ---------------------- */
-  const registerUser = async (payload) => {
-    try {
-      const { data } = await authAxios.post("/register", payload);
-
-      // پاسخ معمولاً شامل accessToken است
-      const accessToken = data.token || data.accessToken;
-
-      // 1) ذخیره توکن
-      localStorage.setItem("accessToken", accessToken);
-      setToken(accessToken);
-
-      // 2) پاک کردن شماره موقت (اگر استفاده شده مثل OTP)
-      localStorage.removeItem("userPhone");
-
-      // 3) لود اطلاعات کاربر
-      await refreshUser();
-
-      return data;
-    } catch (err) {
-      const message =
-        err.response?.data?.message ||
-        "خطا در ثبت‌نام. لطفاً دوباره تلاش کنید.";
-      throw new Error(message);
-    }
-  };
-
-  /* ------------------------
    * LOGIN
    * ---------------------- */
+  // دیگه registerUser/`/register` نداریم — ثبت‌نام همیشه همون لحظه‌ی
+  // لاگین (داخل /login/otp) و توسط خود بک‌اند انجام میشه. فرانت فقط
+  // accessToken رو می‌گیره و کامل می‌کنه، فرقی نمی‌کنه کاربر تازه‌ساز
+  // باشه یا قدیمی.
   const completeLogin = async (accessToken) => {
     if (!accessToken) throw new Error("accessToken یافت نشد.");
 
@@ -209,7 +181,6 @@ export function AuthProvider({ children }) {
     LOGOUT
    ---------------------- */
   const logout = (redirectTo = "/home") => {
-    localStorage.removeItem("userPhone");
     localStorage.removeItem("accessToken");
     localStorage.setItem("logout-event", Date.now().toString());
 
@@ -251,7 +222,6 @@ export function AuthProvider({ children }) {
         avatarUrl,
         setToken,
         completeLogin,
-        registerUser,
         restaurantStatus,
         restaurantStatusLoading,
         fetchRestaurantStatus,

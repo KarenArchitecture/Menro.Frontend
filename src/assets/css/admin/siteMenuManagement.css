@@ -1,0 +1,150 @@
+/* ==========================================================================
+   MenuManagementSection
+   Reuses .panel / .modal / .custom-icon-row / .content-tab-nav / .actions /
+   .btn-icon / .mh-reorder-btn primitives already shared across the admin
+   dashboard (Blog, Landing). Only menu-specific bits (prefixed
+   menu-mgmt__) are added here.
+   ========================================================================== */
+
+/* ----- Label row + char counter (title / url inputs) ----- */
+
+#menu-management-view .menu-mgmt__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+#menu-management-view .menu-mgmt__char-count {
+  font-size: 11px;
+  color: var(--text-muted, rgba(255, 255, 255, 0.5));
+  font-variant-numeric: tabular-nums;
+}
+
+#menu-management-view .menu-mgmt__muted-text {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--text-muted, #a1a1aa);
+}
+
+/* ----- Item list ----- */
+
+.menu-mgmt__panel-actions--start {
+  margin-bottom: 18px;
+}
+
+.custom-icons-list.menu-mgmt__item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.menu-mgmt__item-row {
+  align-items: center;
+}
+
+.menu-mgmt__item-row--inactive {
+  opacity: 0.55;
+}
+
+.menu-mgmt__status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.menu-mgmt__status-dot--active {
+  background: #22c55e;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #22c55e 20%, transparent);
+}
+
+.menu-mgmt__status-dot--inactive {
+  background: #71717a;
+}
+
+.menu-mgmt__item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.menu-mgmt__item-url {
+  display: block;
+  direction: ltr;
+  text-align: right;
+  color: var(--text-muted, rgba(255, 255, 255, 0.55));
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.menu-mgmt__item-badge {
+  display: inline-flex;
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  background: color-mix(in srgb, var(--accent, #f97316) 16%, transparent);
+  color: var(--accent, #f97316);
+}
+
+/* ----- Parent select (Header nesting) ----- */
+
+.menu-mgmt__parent-select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #16161c;
+  color: var(--text-primary, #f4f4f5);
+  font-size: 13px;
+}
+
+/* ----- IsActive checkbox row ----- */
+
+.menu-mgmt__checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--text-primary, #f4f4f5);
+  cursor: pointer;
+}
+
+.menu-mgmt__checkbox-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent, #f97316);
+  cursor: pointer;
+}
+
+/* ----- Hamburger placeholder notice ----- */
+
+.menu-mgmt__hamburger-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 16px 18px;
+  font-size: 13px;
+  line-height: 1.9;
+  color: var(--text-muted, #a1a1aa);
+}
+
+.menu-mgmt__hamburger-notice i {
+  color: var(--accent, #f97316);
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.menu-mgmt__hamburger-notice code {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-size: 12px;
+}

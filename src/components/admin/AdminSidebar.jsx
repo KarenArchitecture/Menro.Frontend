@@ -111,6 +111,12 @@ const NAV_GROUPS = [
         icon: "fas fa-home",
         roles: ["admin"],
       },
+      {
+        key: "siteMenu",
+        label: "مدیریت لینک صفحات",
+        icon: "fas fa-link",
+        roles: ["admin"],
+      },
     ],
   },
   {

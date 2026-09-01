@@ -10,6 +10,8 @@ import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 import "../../assets/css/admin/siteLinkManagement.css";
+// TODO: مسیر واقعی admin-modal.css رو اینجا با مسیر پروژه هماهنگ کن
+import "../../assets/css/admin/admin-modal.css";
 
 /* ======================================================================
  * MenuManagementSection
@@ -23,13 +25,17 @@ import "../../assets/css/admin/siteLinkManagement.css";
  * and standalone toggles (theme, notifications) that don't map onto the
  * plain MenuItem shape (Title/Url only). Left as a placeholder tab until
  * the entity grows an Icon field / a separate model is decided on.
+ * Tab + pane are commented out below (no plan for this section for now).
  *
  * NOTE on ordering: MenuItem.Order is a single flat counter per location
  * (see MenuItemService.ReorderAsync — it rewrites Order for the whole
  * location from one OrderedIds list), not per-parent. So the list below
- * is one flat, order-sorted list; child items just carry a "زیرمجموعه‌ی"
- * badge pointing at their parent's title, they don't get visually nested
- * in the ordering itself.
+ * is one flat, order-sorted list.
+ *
+ * NOTE on nesting (sub-group / parent selection): the "آیتم والد"
+ * control and the "زیرمجموعه‌ی" badge are commented out for now — not
+ * planned for this phase. Backend still supports ParentId, so re-enabling
+ * later is just uncommenting the relevant JSX blocks below.
  * ==================================================================== */
 
 const LOCATIONS = [
@@ -56,13 +62,13 @@ function toPersianDigits(value) {
 }
 
 export default function SiteLinkManagementSection() {
-  useDocumentTitle("مدیریت منوها");
+  useDocumentTitle("مدیریت لینک صفحات");
   const [activeTab, setActiveTab] = useState("Header");
 
   return (
     <div id="menu-management-view" className="menu-mgmt">
       <div className="view-header">
-        <h2 className="content-title">مدیریت منوها</h2>
+        <h2 className="content-title">مدیریت لینک صفحات</h2>
       </div>
 
       <nav className="content-tab-nav">
@@ -77,6 +83,8 @@ export default function SiteLinkManagementSection() {
             <span>{loc.label}</span>
           </button>
         ))}
+
+        {/* تب منوی همبرگر — فعلاً برنامه‌ای برای این بخش نداریم
         <button
           type="button"
           className={`content-tab-link ${activeTab === "Hamburger" ? "active" : ""}`}
@@ -85,6 +93,7 @@ export default function SiteLinkManagementSection() {
           <i className="fas fa-bars" />
           <span>همبرگر (موبایل)</span>
         </button>
+        */}
       </nav>
 
       {LOCATIONS.map(
@@ -99,6 +108,7 @@ export default function SiteLinkManagementSection() {
           ),
       )}
 
+      {/* pane منوی همبرگر — فعلاً برنامه‌ای برای این بخش نداریم
       {activeTab === "Hamburger" && (
         <div className="content-tab-pane active">
           <div className="panel">
@@ -115,6 +125,7 @@ export default function SiteLinkManagementSection() {
           </div>
         </div>
       )}
+      */}
     </div>
   );
 }
@@ -167,11 +178,12 @@ function MenuLocationPane({ location, allowNesting }) {
   };
   const closeModal = () => setModalItem(null);
 
-  // Only top-level items (no parent of their own) are offered as parents,
-  // to keep nesting at a single level. The item being edited is excluded.
-  const parentOptions = allowNesting
-    ? items.filter((i) => i.parentId == null && i.id !== modalItem?.id)
-    : [];
+  // sub-group / parent selection غیرفعاله فعلاً — نگه داشتم برای وقتی که
+  // دوباره فعالش کردیم، ولی چون بخش انتخاب والد کامنته این دیگه استفاده
+  // نمیشه.
+  // const parentOptions = allowNesting
+  //   ? items.filter((i) => i.parentId == null && i.id !== modalItem?.id)
+  //   : [];
 
   const save = async () => {
     const errs = {};
@@ -195,7 +207,8 @@ function MenuLocationPane({ location, allowNesting }) {
           title,
           url,
           isActive: modalItem.isActive,
-          parentId: allowNesting ? modalItem.parentId : null,
+          // sub-group غیرفعاله فعلاً، همیشه بدون والد ذخیره می‌کنیم
+          parentId: null,
         });
         setItems((prev) =>
           prev.map((i) => (i.id === updated.id ? updated : i)),
@@ -206,7 +219,7 @@ function MenuLocationPane({ location, allowNesting }) {
           title,
           url,
           isActive: modalItem.isActive,
-          parentId: allowNesting ? modalItem.parentId : null,
+          parentId: null,
         });
         setItems((prev) => [...prev, created]);
       }
@@ -228,10 +241,7 @@ function MenuLocationPane({ location, allowNesting }) {
   const remove = async (item) => {
     const confirmed = await confirmModal({
       title: "حذف آیتم منو",
-      message:
-        item.parentId == null && items.some((i) => i.parentId === item.id)
-          ? "این آیتم زیرمجموعه دارد؛ حذف آن باعث می‌شود زیرمجموعه‌ها بدون والد بمانند. ادامه می‌دهید؟"
-          : "این آیتم از منو حذف می‌شود.",
+      message: "این آیتم از منو حذف می‌شود.",
       confirmText: "حذف شود",
       cancelText: "انصراف",
       danger: true,
@@ -306,9 +316,6 @@ function MenuLocationPane({ location, allowNesting }) {
 
       <div className="custom-icons-list menu-mgmt__item-list">
         {items.map((item, index) => {
-          const parent = item.parentId
-            ? items.find((i) => i.id === item.parentId)
-            : null;
           return (
             <div
               key={item.id}
@@ -327,11 +334,13 @@ function MenuLocationPane({ location, allowNesting }) {
               <div className="name menu-mgmt__item-main">
                 <strong>{item.title}</strong>
                 <small className="menu-mgmt__item-url">{item.url}</small>
+                {/* بج زیرمجموعه — همراه با sub-group فعلاً کامنته
                 {parent && (
                   <span className="menu-mgmt__item-badge">
                     زیرمجموعه‌ی: {parent.title}
                   </span>
                 )}
+                */}
               </div>
               <div className="actions">
                 <button
@@ -380,10 +389,16 @@ function MenuLocationPane({ location, allowNesting }) {
       </div>
 
       {modalItem && (
-        <div className="modal-backdrop" onClick={() => !saving && closeModal()}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h4>{modalItem.id ? "ویرایش آیتم منو" : "آیتم جدید"}</h4>
+        <div
+          className="admin-modal-overlay"
+          onClick={() => !saving && closeModal()}
+        >
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-modal__header">
+              <h3>
+                <i className={modalItem.id ? "fas fa-pen" : "fas fa-plus"} />
+                {modalItem.id ? "ویرایش آیتم منو" : "آیتم جدید"}
+              </h3>
               <button
                 className="btn-icon"
                 onClick={closeModal}
@@ -392,87 +407,98 @@ function MenuLocationPane({ location, allowNesting }) {
                 <i className="fas fa-times" />
               </button>
             </div>
-            <div className="form-vertical">
-              <div className="input-group">
-                <div className="menu-mgmt__label-row">
-                  <label>عنوان</label>
-                  <span className="menu-mgmt__char-count">
-                    {toPersianDigits(modalItem.title.length)}/
-                    {toPersianDigits(MENU_TITLE_MAX)}
-                  </span>
-                </div>
-                <input
-                  type="text"
-                  value={modalItem.title}
-                  maxLength={MENU_TITLE_MAX}
-                  onChange={(e) =>
-                    setModalItem({ ...modalItem, title: e.target.value })
-                  }
-                />
-                {errors.title && (
-                  <span className="form-error">{errors.title}</span>
-                )}
-              </div>
 
-              <div className="input-group">
-                <div className="menu-mgmt__label-row">
-                  <label>لینک</label>
-                  <span className="menu-mgmt__char-count">
-                    {toPersianDigits(modalItem.url.length)}/
-                    {toPersianDigits(MENU_URL_MAX)}
-                  </span>
-                </div>
-                <input
-                  type="text"
-                  dir="ltr"
-                  placeholder="/blog یا https://..."
-                  value={modalItem.url}
-                  maxLength={MENU_URL_MAX}
-                  onChange={(e) =>
-                    setModalItem({ ...modalItem, url: e.target.value })
-                  }
-                />
-                {errors.url && <span className="form-error">{errors.url}</span>}
-              </div>
-
-              {allowNesting && (
+            <div className="admin-modal__body">
+              <div className="form-vertical">
                 <div className="input-group">
-                  <label>آیتم والد (اختیاری)</label>
-                  <select
-                    className="menu-mgmt__parent-select"
-                    value={modalItem.parentId || ""}
+                  <div className="menu-mgmt__label-row">
+                    <label>عنوان</label>
+                    <span className="menu-mgmt__char-count">
+                      {toPersianDigits(modalItem.title.length)}/
+                      {toPersianDigits(MENU_TITLE_MAX)}
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    value={modalItem.title}
+                    maxLength={MENU_TITLE_MAX}
+                    onChange={(e) =>
+                      setModalItem({ ...modalItem, title: e.target.value })
+                    }
+                  />
+                  {errors.title && (
+                    <span className="form-error">{errors.title}</span>
+                  )}
+                </div>
+
+                <div className="input-group">
+                  <div className="menu-mgmt__label-row">
+                    <label>لینک</label>
+                    <span className="menu-mgmt__char-count">
+                      {toPersianDigits(modalItem.url.length)}/
+                      {toPersianDigits(MENU_URL_MAX)}
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    dir="ltr"
+                    placeholder="/blog یا https://..."
+                    value={modalItem.url}
+                    maxLength={MENU_URL_MAX}
+                    onChange={(e) =>
+                      setModalItem({ ...modalItem, url: e.target.value })
+                    }
+                  />
+                  {errors.url && (
+                    <span className="form-error">{errors.url}</span>
+                  )}
+                </div>
+
+                {/* انتخاب آیتم والد (sub-group) — فعلاً برنامه‌ای نداریم
+                {allowNesting && (
+                  <div className="input-group">
+                    <label>آیتم والد (اختیاری)</label>
+                    <select
+                      className="menu-mgmt__parent-select"
+                      value={modalItem.parentId || ""}
+                      onChange={(e) =>
+                        setModalItem({
+                          ...modalItem,
+                          parentId: e.target.value || null,
+                        })
+                      }
+                    >
+                      <option value="">بدون والد (سطح اول)</option>
+                      {parentOptions.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.title}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="menu-mgmt__muted-text">
+                      برای ساخت زیرمنو، والدش را از این لیست انتخاب کن. فقط
+                      آیتم‌های سطح اول قابل انتخاب به‌عنوان والد هستند.
+                    </p>
+                  </div>
+                )}
+                */}
+
+                <label className="menu-mgmt__checkbox-row">
+                  <input
+                    type="checkbox"
+                    checked={modalItem.isActive}
                     onChange={(e) =>
                       setModalItem({
                         ...modalItem,
-                        parentId: e.target.value || null,
+                        isActive: e.target.checked,
                       })
                     }
-                  >
-                    <option value="">بدون والد (سطح اول)</option>
-                    {parentOptions.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.title}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="menu-mgmt__muted-text">
-                    برای ساخت زیرمنو، والدش را از این لیست انتخاب کن. فقط
-                    آیتم‌های سطح اول قابل انتخاب به‌عنوان والد هستند.
-                  </p>
-                </div>
-              )}
-
-              <label className="menu-mgmt__checkbox-row">
-                <input
-                  type="checkbox"
-                  checked={modalItem.isActive}
-                  onChange={(e) =>
-                    setModalItem({ ...modalItem, isActive: e.target.checked })
-                  }
-                />
-                <span>این آیتم در منو نمایش داده شود (فعال)</span>
-              </label>
+                  />
+                  <span>این آیتم در منو نمایش داده شود (فعال)</span>
+                </label>
+              </div>
             </div>
+
             <div className="modal-footer">
               {errors.submit && (
                 <span className="form-error">{errors.submit}</span>

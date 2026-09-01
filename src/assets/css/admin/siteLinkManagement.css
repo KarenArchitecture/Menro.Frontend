@@ -121,7 +121,9 @@
   cursor: pointer;
 }
 
-/* ----- Hamburger placeholder notice ----- */
+/* ----- Hamburger placeholder notice -----
+   (Currently unused since the Hamburger tab/pane are commented out in the
+   JSX, kept here in case that section gets re-enabled later.) */
 
 .menu-mgmt__hamburger-notice {
   display: flex;
@@ -147,4 +149,31 @@
   padding: 1px 6px;
   border-radius: 5px;
   font-size: 12px;
+}
+
+/* ==========================================================================
+   Modal size override — scoped to this section only
+   --------------------------------------------------------------------------
+   admin-modal.css defines .admin-modal with max-width:1200px / height:92vh,
+   sized for bigger/denser modals (choice-grid pickers, etc). This section's
+   modal is a small two/three-field form, so it should stay compact like it
+   originally was — width ~600px, height sized to its own content instead of
+   forcing near-fullscreen height. Scoped under #menu-management-view so it
+   doesn't affect .admin-modal usage in other sections.
+   ========================================================================== */
+
+#menu-management-view .admin-modal {
+  max-width: 600px;
+  height: auto;
+  max-height: 90vh;
+}
+
+#menu-management-view .admin-modal__body {
+  padding: 24px 26px;
+}
+
+@media (max-width: 900px) {
+  #menu-management-view .admin-modal {
+    max-width: 100%;
+  }
 }

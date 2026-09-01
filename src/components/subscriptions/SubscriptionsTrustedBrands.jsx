@@ -32,9 +32,15 @@ const DEFAULT_BOTTOM_LOGOS = [
 
 /**
  * Repeats `logos` until it has at least `minCount` items, re-keying each
- * copy so React doesn't complain about duplicate keys.
+ * copy so React doesn't complain about duplicate keys. minCount should be
+ * generous enough that one full set of tiles is comfortably wider than the
+ * widest viewport you support — otherwise the viewport could momentarily
+ * outrun the content during the loop. 24 tiles at ~136px each (120px tile +
+ * 16px effective gap) is ~3260px, safely covering anything up to a large
+ * desktop monitor.
  */
 function fillRow(logos, minCount) {
+  if (!logos?.length) return [];
   const out = [];
   let copy = 0;
   while (out.length < minCount) {
@@ -46,30 +52,62 @@ function fillRow(logos, minCount) {
   return out;
 }
 
-function MarqueeRow({ logos, direction = "left", minTiles = 20, speed = 40 }) {
-  // Build one full lap of tiles, then duplicate it once so the track can
-  // loop seamlessly from -50% back to 0 — the two halves are pixel-identical,
-  // so the instant the first half fully exits, the second half is already
-  // sitting exactly where it was, with zero gap.
-  const lap = useMemo(() => fillRow(logos, minTiles), [logos, minTiles]);
-  const track = useMemo(
-    () => [
-      ...lap.map((l) => ({ ...l, _key: `${l._key}-a` })),
-      ...lap.map((l) => ({ ...l, _key: `${l._key}-b` })),
-    ],
-    [lap],
-  );
+/**
+ * Structured to exactly mirror the working text ticker in
+ * components/landing/BlogsSection.jsx (.blogs__marquee > .marquee__track >
+ * .marquee__row (x2) > .marquee__item): a single CSS `@keyframes`
+ * animation — translateX(0) -> translateX(-50%) — applied to a track that
+ * renders the SAME sequence of tiles twice in a row. No JS drives the
+ * transform; the browser's own animation timeline handles it, exactly like
+ * the blog ticker already does without any snap.
+ *
+ * All horizontal spacing between tiles comes from padding on each tile
+ * (.sub-brands__tile), never from a flex `gap` on the row/track. That's
+ * the actual fix: `gap` only sits *between* items (N items => N-1 gaps),
+ * so halving an even-length track's total width also halves an *odd* gap
+ * count — a half-gap mismatch between the assumed loop distance and the
+ * true one. That mismatch is what produced the "replay/snap" every cycle,
+ * in every earlier version of this component (including the ones that
+ * mixed `gap` with a trailing `padding-inline-end` "patch"). Padding on
+ * every tile, including the last one, sidesteps the arithmetic entirely —
+ * duplicating a row and shifting by exactly half the track's rendered
+ * width is always exact, regardless of tile count or parity.
+ */
+function MarqueeRow({
+  logos,
+  direction = "left",
+  minTiles = 24,
+  duration = 42,
+}) {
+  const items = useMemo(() => fillRow(logos, minTiles), [logos, minTiles]);
+  if (!items.length) return null;
 
   return (
-    <div className={`sub-brands__row sub-brands__row--${direction}`}>
+    <div className="sub-brands__lane">
       <div
-        className="sub-brands__row-track"
+        className={`sub-brands__track sub-brands__track--${direction}`}
         dir="ltr"
-        style={{ animationDuration: `${speed}s` }}
+        style={{ "--sub-brands-duration": `${duration}s` }}
       >
-        {track.map((logo) => (
-          <div key={logo._key} className="sub-brands__tile">
-            <img src={logo.src} alt={logo.alt} loading="lazy" />
+        {[0, 1].map((copyIndex) => (
+          <div
+            className="sub-brands__row"
+            key={copyIndex}
+            aria-hidden={copyIndex === 1}
+          >
+            {items.map((logo) => (
+              <div
+                key={`${logo._key}-${copyIndex}`}
+                className="sub-brands__tile"
+              >
+                <img
+                  src={logo.src}
+                  alt={copyIndex === 0 ? logo.alt : ""}
+                  loading="lazy"
+                  draggable="false"
+                />
+              </div>
+            ))}
           </div>
         ))}
       </div>
@@ -88,6 +126,9 @@ export default function SubscriptionsTrustedBrands({
       <h2 className="sub-brands__title">{title}</h2>
       <p className="sub-brands__subtitle">{subtitle}</p>
 
+      {/* Two fully independent lanes — separate elements, separate CSS
+          animations, nothing shared or synchronized beyond both starting
+          the instant they mount. */}
       <div className="sub-brands__marquee">
         <MarqueeRow logos={topLogos} direction="left" />
         <MarqueeRow logos={bottomLogos} direction="right" />

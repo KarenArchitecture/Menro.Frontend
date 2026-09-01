@@ -3,96 +3,156 @@
 .sub-contact {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 0 2rem;
-  display: grid;
-  grid-template-columns: 1fr 1.4fr;
-  gap: 2rem;
+  padding: 0 1.5rem;
+  direction: rtl; /* Ensure the whole block respects Right-To-Left layout */
+}
+
+/* Unified Dark Container */
+.sub-contact__wrapper {
+  background: #151921; /* Matches the dark surface tone from the image */
+  border-radius: 20px;
+  padding: 3.5rem 4rem;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
+  gap: 3rem;
 }
 
-.sub-contact__city {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  background: var(--sub-surface);
-  border: 1px solid var(--sub-border);
-  border-radius: var(--sub-radius-md);
-  padding: 1.25rem 1.4rem;
-}
-
-.sub-contact__city label {
-  font-size: 0.85rem;
-  color: var(--sub-muted);
-}
-
-.sub-contact__city select {
-  height: 46px;
-  padding: 0 0.9rem;
-  border-radius: var(--sub-radius-sm);
-  border: 1px solid var(--sub-border);
-  background: rgba(0, 0, 0, 0.3);
-  color: #fff;
-  font: inherit;
-  font-size: 0.92rem;
-}
-
+/* -------------------------------- */
+/* Right Side (Text / Info)         */
+/* -------------------------------- */
 .sub-contact__info {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 157, 16, 0.1),
-    rgba(255, 255, 255, 0.02)
-  );
-  border: 1px solid var(--sub-border);
-  border-radius: var(--sub-radius-lg);
-  padding: 2rem 2.2rem;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 1.25rem;
+  max-width: 580px;
 }
 
 .sub-contact__title {
   margin: 0;
-  font-size: 1.3rem;
+  font-size: 3rem;
   font-weight: 800;
+  color: #ffffff;
+}
+
+.sub-contact__title-highlight {
+  color: #ff5232; /* Coral/Orange matching image */
 }
 
 .sub-contact__subtitle {
-  margin: 0 0 0.6rem;
-  color: var(--sub-muted);
-  font-size: 0.9rem;
+  margin: 0;
+  color: #8b929e; /* Muted text color */
+
   line-height: 1.8;
-  max-width: 480px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  white-space: pre-line; /* Allows the \n in the subtitle prop to break lines */
 }
 
-.sub-contact__phone {
-  align-self: flex-start;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  height: 50px;
-  padding: 0 1.4rem;
-  border-radius: 999px;
-  background: var(--sub-accent);
-  color: #2a1400;
-  font-weight: 800;
+/* -------------------------------- */
+/* Left Side (Form Actions)         */
+/* -------------------------------- */
+.sub-contact__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  width: 100%;
+  max-width: 320px;
+}
+
+.sub-contact__label {
   font-size: 0.95rem;
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Select Dropdown */
+.sub-contact__select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.sub-contact__select {
+  width: 100%;
+  height: 54px;
+  padding: 0 1.2rem 0 2.8rem; /* Padding adjusted for RTL (extra space on left for arrow) */
+  border-radius: 12px;
+  border: none;
+  background: #ffffff;
+  color: #000000;
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  outline: none;
+}
+
+.sub-contact__select-arrow {
+  position: absolute;
+  left: 1.2rem; /* Positioned on the left side of the input */
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: #000000;
+  pointer-events: none;
+}
+
+/* Phone Button */
+.sub-contact__phone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Pushes icon to the right, number to the left */
+  padding: 0 1.2rem;
+  width: 100%;
+  height: 54px;
+  border-radius: 12px;
+  background: #ff5232; /* Orange background */
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.1rem;
   text-decoration: none;
   transition:
     transform 0.15s ease,
     filter 0.15s ease;
 }
 
+.sub-contact__phone i {
+  font-size: 1.2rem;
+}
+
 .sub-contact__phone:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   filter: brightness(1.08);
 }
 
+.sub-contact-city {
+  font-size: 2rem;
+  text-align: center;
+  font-weight: 300;
+  letter-spacing: 3px;
+}
+
+/* Responsive Styles */
 @media (max-width: 860px) {
-  .sub-contact {
-    grid-template-columns: 1fr;
+  .sub-contact__wrapper {
+    flex-direction: column;
+    text-align: center;
+    padding: 2.5rem 1.5rem;
   }
-  .sub-contact__phone {
-    align-self: stretch;
-    justify-content: center;
+
+  .sub-contact__info {
+    align-items: center;
+  }
+
+  .sub-contact__actions {
+    max-width: 100%;
+  }
+
+  .sub-contact__label {
+    text-align: right;
   }
 }

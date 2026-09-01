@@ -1,142 +1,258 @@
 /* src/assets/css/subscriptions-comparison-table.css */
-
 .sub-compare {
+  width: 100%; /* Takes full width so the background spans edge-to-edge */
+  margin-bottom: 6rem;
+  direction: rtl !important;
+  color: #fff;
+  font-family: inherit;
+
+  /* Radial Gradient background matching Figma */
+  background: radial-gradient(
+    circle at 50% 30%,
+    rgba(47, 43, 163, 0.2) 0%,
+    rgba(53, 25, 100, 0) 100%
+  );
+}
+.sub-compare__container {
   max-width: 1180px;
-  margin: 0 auto 6rem;
-  padding: 0 2rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
 }
 
 .sub-compare__scroll {
   overflow-x: auto;
-  border-radius: var(--sub-radius-lg);
-  border: 1px solid var(--sub-border);
-  background: var(--sub-surface);
+  padding-bottom: 1rem;
 }
 
 .sub-compare__table {
-  min-width: 640px;
+  min-width: 720px;
 }
 
+/* Header Grid Row */
 .sub-compare__header {
   display: grid;
-  gap: 0.5rem;
-  padding: 1.25rem 1.25rem 1rem;
-  position: sticky;
-  top: 0;
-  z-index: 3;
-  background: rgba(11, 15, 19, 0.92);
-  backdrop-filter: blur(6px);
-  border-bottom: 1px solid var(--sub-border);
+  margin: 3rem auto 2.5rem 15rem;
+  align-items: center;
+  gap: 3rem;
 }
 
+/* Vertical Toggle Control Cell */
+.sub-compare__toggle-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-left: 1rem;
+}
+
+.sub-compare__toggle-label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #6e7681;
+  transition: color 0.25s ease;
+  user-select: none;
+}
+
+.sub-compare__toggle-label.is-active {
+  color: #ffffff;
+}
+
+/* 
+  Vertical Pill Switch
+  Fixed dimensions: 28px width, 52px height, 3px padding
+*/
+.sub-compare__toggle-switch {
+  width: 28px;
+  height: 52px;
+  background: #0b0f15;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  position: relative;
+  cursor: pointer;
+  padding: 4px; /* Clean padding spacing */
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-start; /* Forces thumb to start at top */
+  justify-content: center;
+  outline: none;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.sub-compare__toggle-thumb {
+  display: block;
+  width: 18px;
+  height: 18px;
+  background: #ff5232;
+  border-radius: 50%;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 8px rgba(255, 82, 50, 0.6);
+}
+/* 
+  Subtle half-border glow effects with smooth fading gradient borders
+*/
+.sub-compare__toggle-switch.is-annual {
+  border-top-color: rgba(255, 82, 50, 0.7);
+  border-right-color: rgba(255, 82, 50, 0.25);
+  border-left-color: rgba(255, 82, 50, 0.25);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 -4px 12px rgba(255, 82, 50, 0.25);
+}
+.sub-compare__toggle-switch.is-annual .sub-compare__toggle-thumb {
+  transform: translateY(0); /* Rests at top padding */
+}
+
+.sub-compare__toggle-switch.is-monthly {
+  margin-left: 0.5rem;
+  border-bottom-color: #ff5232;
+  border-right-color: rgba(255, 82, 50, 0.5);
+  border-left-color: rgba(255, 82, 50, 0.5);
+  border-top-color: rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 8px 20px -2px rgba(255, 82, 50, 0.45),
+    inset 0 -4px 8px -2px rgba(255, 82, 50, 0.35);
+}
+
+.sub-compare__toggle-switch.is-monthly {
+  border-bottom-color: rgba(255, 82, 50, 0.7);
+  border-right-color: rgba(255, 82, 50, 0.25);
+  border-left-color: rgba(255, 82, 50, 0.25);
+  border-top-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(255, 82, 50, 0.25);
+}
+
+.sub-compare__toggle-switch.is-monthly .sub-compare__toggle-thumb {
+  transform: translateY(24px); /* Moves down within inner bounds */
+}
+/* Unified Plans Card Container */
+/* Unified Plans Card Container */
+.sub-compare__plans-card {
+  grid-column: 2 / -1; /* Spans from the 2nd column to the end */
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 equal columns for the plans */
+  background: rgba(14, 17, 23, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 1.25rem 0.5rem;
+  /* Removed the hard gap here so it matches the row spacing naturally */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Plan Cells */
 .sub-compare__header-cell {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.6rem 0.4rem;
-  border-radius: var(--sub-radius-sm);
-}
-
-.sub-compare__header-cell.is-popular {
-  background: rgba(176, 131, 255, 0.1);
-  border: 1px solid var(--sub-purple-border);
+  justify-content: center;
+  gap: 0.4rem;
+  text-align: center;
 }
 
 .sub-compare__plan-name {
-  font-size: 0.92rem;
+  font-size: 1.2rem;
   font-weight: 800;
-  color: #fff;
+  color: #ffffff;
 }
 
-.sub-compare__header-cell--green .sub-compare__plan-name {
-  color: var(--sub-green);
-}
-.sub-compare__header-cell--purple .sub-compare__plan-name {
-  color: var(--sub-purple);
-}
-.sub-compare__header-cell--orange .sub-compare__plan-name {
-  color: var(--sub-accent);
+.sub-compare__plan-price {
+  font-size: 0.75rem;
+  color: #ff5232;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .sub-compare__plan-cta {
-  height: 34px;
-  padding: 0 0.9rem;
-  border-radius: 999px;
-  border: 1px solid var(--sub-border);
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
-  font-size: 0.76rem;
-  font-weight: 700;
+  width: 100%;
+  max-width: 110px;
+  height: 36px;
+  margin-top: 0.2rem;
+  border-radius: 10px;
+  border: none;
+  background: #ffffff;
+  color: #0d1117;
+  font-size: 0.8rem;
+  font-weight: 800;
   cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
 }
 
 .sub-compare__plan-cta:hover {
-  background: rgba(255, 255, 255, 0.1);
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
-.sub-compare__header-cell--green .sub-compare__plan-cta {
-  background: var(--sub-green);
-  color: #06210f;
-  border-color: transparent;
-}
-.sub-compare__header-cell--purple .sub-compare__plan-cta {
-  background: linear-gradient(135deg, #c79bff, var(--sub-purple));
-  color: #1a1030;
-  border-color: transparent;
-}
-.sub-compare__header-cell--orange .sub-compare__plan-cta {
-  background: var(--sub-accent);
-  color: #2a1400;
-  border-color: transparent;
+/* Category Sections */
+.sub-compare__category {
+  margin-bottom: 1.5rem;
 }
 
+/* Category Title Header with expanded padding */
 .sub-compare__category-title {
   display: grid;
-  padding: 1.1rem 1.25rem 0.4rem;
+  padding: 2.25rem 1.25rem 1.1rem;
 }
 
 .sub-compare__category-title-inner {
   grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  font-size: 0.95rem;
+  gap: 0.75rem;
+  font-size: 1.05rem;
   font-weight: 800;
-  color: #fff;
+  color: #ffffff;
 }
 
-.sub-compare__category-title-inner i {
-  color: var(--sub-accent);
-  font-size: 0.9rem;
+.sub-compare__category-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
 }
 
+/* Data Rows with increased vertical breathing room */
 .sub-compare__row {
   display: grid;
-  gap: 0.5rem;
-  padding: 0.85rem 1.25rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  gap: 1rem;
+  padding: 1.6rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   align-items: center;
 }
 
 .sub-compare__row-label {
-  font-size: 0.85rem;
-  color: var(--sub-muted);
+  font-size: 0.9rem;
+  color: #ffffff;
+  font-weight: 600;
+  text-align: right;
 }
 
 .sub-compare__row-value {
   text-align: center;
-  font-size: 0.85rem;
-  color: #e6e8eb;
-  font-weight: 600;
+  font-size: 0.9rem;
+  color: #ffffff;
+  font-weight: 700;
 }
 
 @media (max-width: 640px) {
-  .sub-compare__header,
-  .sub-compare__category-title,
+  .sub-compare__plans-card {
+    padding: 1rem 0.25rem;
+    gap: 0.25rem;
+  }
+
   .sub-compare__row {
-    padding-inline: 0.9rem;
+    padding: 1.2rem 0.75rem;
+  }
+
+  .sub-compare__plan-name {
+    font-size: 0.95rem;
+  }
+
+  .sub-compare__plan-cta {
+    height: 32px;
+    font-size: 0.72rem;
   }
 }

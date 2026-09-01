@@ -1,10 +1,10 @@
-/* src/assets/css/subscriptions-trusted-brands.css */
-
 .sub-brands {
   max-width: 1180px;
   margin: 0 auto;
   padding: 0 2rem 6rem;
   text-align: center;
+  /* Prevents horizontal body scrollbars */
+  overflow: hidden;
 }
 
 .sub-brands__title {
@@ -15,88 +15,97 @@
 
 .sub-brands__subtitle {
   margin: 0 0 2.5rem;
-  color: var(--sub-muted);
+  color: var(--sub-muted, #666);
   font-size: 0.95rem;
 }
 
-/* Marquee wrapper — full-bleed edge-to-edge, purely decorative, never
-   interactable (no hover pause, no clicks, no text selection). */
+/* 
+  FULL-BLEED FIX: 
+  `margin-inline` breaks out of the centered 1180px container safely 
+  in both RTL and LTR without using transform positioning.
+*/
 .sub-brands__marquee {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
   width: 100vw;
-  margin: 0 calc(50% - 50vw);
+  margin-inline: calc(50% - 50vw) !important;
+  position: relative;
+  overflow: hidden;
   pointer-events: none;
   user-select: none;
+  direction: ltr !important;
+}
+
+.sub-brands__lane {
+  overflow: hidden;
+  width: 100%;
+  direction: ltr !important;
+}
+
+.sub-brands__track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: sub-brands-marquee-left var(--sub-brands-duration, 40s) linear
+    infinite;
+}
+
+.sub-brands__track--right {
+  animation-name: sub-brands-marquee-right;
 }
 
 .sub-brands__row {
-  overflow: hidden;
-  width: 100%;
-}
-
-.sub-brands__row-track {
   display: flex;
+  flex: 0 0 auto;
   width: max-content;
-  gap: 1rem;
-  will-change: transform;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-}
-
-.sub-brands__row--left .sub-brands__row-track {
-  animation-name: sub-brands-scroll-left;
-}
-
-.sub-brands__row--right .sub-brands__row-track {
-  animation-name: sub-brands-scroll-right;
-}
-
-@keyframes sub-brands-scroll-left {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-@keyframes sub-brands-scroll-right {
-  from {
-    transform: translateX(-50%);
-  }
-  to {
-    transform: translateX(0);
-  }
+  align-items: center;
 }
 
 .sub-brands__tile {
+  display: inline-flex;
   flex: 0 0 auto;
-  width: 120px;
-  height: 120px;
-  border-radius: var(--sub-radius-md);
-  background: var(--sub-surface);
-  border: 1px solid var(--sub-border);
-  overflow: hidden; /* clip the image to the tile, no padding gap */
+  padding-inline: 0.5rem;
 }
 
 .sub-brands__tile img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* fill the entire tile, matches Figma */
   display: block;
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: var(--sub-radius-md, 12px);
+  background: var(--sub-surface, #fff);
+  border: 1px solid var(--sub-border, #eee);
+  box-sizing: border-box;
+}
+
+@keyframes sub-brands-marquee-left {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes sub-brands-marquee-right {
+  0% {
+    transform: translate3d(-50%, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 @media (max-width: 640px) {
-  .sub-brands__tile {
+  .sub-brands__tile img {
     width: 90px;
     height: 90px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sub-brands__row-track {
+  .sub-brands__track {
     animation: none;
   }
 }

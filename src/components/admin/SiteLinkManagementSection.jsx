@@ -5,11 +5,11 @@ import {
   updateMenuItem,
   deleteMenuItem,
   reorderMenuItems,
-} from "../../api/AdminSiteMenu";
+} from "../../api/adminSiteLink";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 
-import "../../assets/css/admin/siteMenuManagement.css";
+import "../../assets/css/admin/siteLinkManagement.css";
 
 /* ======================================================================
  * MenuManagementSection
@@ -55,7 +55,7 @@ function toPersianDigits(value) {
   return String(value).replace(/[0-9]/g, (d) => persianDigits[Number(d)]);
 }
 
-export default function SiteMenuManagementSection() {
+export default function SiteLinkManagementSection() {
   useDocumentTitle("مدیریت منوها");
   const [activeTab, setActiveTab] = useState("Header");
 

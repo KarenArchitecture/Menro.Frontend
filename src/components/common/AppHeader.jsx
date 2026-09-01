@@ -1,10 +1,35 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getHeaderMenu } from "../../api/SiteLink";
 import "../../assets/css/app-header-styles.css";
+
+/** آیتم برند/لوگو همیشه ثابت است و از بک‌اند نمی‌آید. */
+const BRAND_LINK = {
+  id: "brand",
+  label: (
+    <img
+      src="/images/menro-header-logo.png"
+      alt="منرو"
+      className="brand-logo"
+    />
+  ),
+  href: "/",
+  active: true,
+};
+
+/** فال‌بک برای زمانی که API در دسترس نیست یا هنوز چیزی برایش تعریف نشده. */
+const DEFAULT_LINKS = [
+  BRAND_LINK,
+  { id: "webapp", label: "وب‌اپ", href: "/home" },
+  { id: "blog", label: "بلاگ", href: "/blog" },
+  { id: "subscriptions", label: "اشتراک‌ها", href: "/subscriptions" },
+];
+
 /**
  * AppHeader – pill-shaped, reusable site header.
  *
  * Props:
- * - rightLinks: [{label, href, active}]    // “منرو”, “خانه”, “نقشه”, “مقالات”, …
+ * - rightLinks: [{label, href, active}]    // اگر پاس داده شود، دیگر از API چیزی گرفته نمی‌شود (override دستی)
  * - leftIcons:  [{key, icon, badge}]       // profile/search/cart icons, etc.
  * - position: "fixed" | "sticky"           // default: "fixed" (follows scroll)
  * - top: number                            // CSS pixels (default: 12)
@@ -12,28 +37,64 @@ import "../../assets/css/app-header-styles.css";
  * - className: string                      // extra classes for the wrapper
  */
 export default function AppHeader({
-  rightLinks = [
-    {
-      label: (
-        <img
-          src="/images/menro-header-logo.png"
-          alt="منرو"
-          className="brand-logo"
-        />
-      ),
-      href: "/",
-      active: true,
-    },
-    { label: "وب‌اپ", href: "/home" },
-    { label: "بلاگ", href: "/blog" },
-    { label: "اشتراک‌ها", href: "/subscriptions" },
-  ],
+  rightLinks,
   leftIcons = [],
   position = "fixed",
   top = 12,
   maxWidth = 1140,
   className = "",
 }) {
+  const [links, setLinks] = useState(rightLinks ?? DEFAULT_LINKS);
+
+  useEffect(() => {
+    // اگر رابط والد رو منوی سفارشی داده، همان اولویت دارد و دیگر فچ نمی‌کنیم.
+    if (rightLinks) {
+      setLinks(rightLinks);
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    async function fetchMenu() {
+      try {
+        const items = await getHeaderMenu();
+
+        if (!isMounted) return;
+
+        if (items.length === 0) {
+          setLinks(DEFAULT_LINKS);
+          return;
+        }
+
+        const mapped = items
+          .filter((item) => item.isActive)
+          .map((item) => ({
+            id: item.id,
+            label: item.title,
+            href: item.url,
+            children: (item.children ?? [])
+              .filter((child) => child.isActive)
+              .map((child) => ({
+                id: child.id,
+                label: child.title,
+                href: child.url,
+              })),
+          }));
+
+        setLinks([BRAND_LINK, ...mapped]);
+      } catch (error) {
+        console.error("خطا در دریافت منوی هدر:", error);
+        if (isMounted) setLinks(DEFAULT_LINKS);
+      }
+    }
+
+    fetchMenu();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [rightLinks]);
+
   return (
     <header
       className={`app-header ${className}`}
@@ -51,18 +112,38 @@ export default function AppHeader({
         <div className="app-header__nav">
           {/* RIGHT: Brand + links (RTL order) */}
           <ul className="app-header__right">
-            {rightLinks.map((item, i) => (
-              <li key={`${item.label}-${i}`}>
-                <a
-                  href={item.href}
-                  className={`app-header__link${
-                    item.active ? " is-active" : ""
-                  }`}
+            {links.map((item, i) => {
+              const hasChildren = item.children && item.children.length > 0;
+              return (
+                <li
+                  key={item.id ?? `${i}`}
+                  className={`app-header__item${hasChildren ? " has-dropdown" : ""}`}
                 >
-                  {item.label}
-                </a>
-              </li>
-            ))}
+                  <a
+                    href={item.href}
+                    className={`app-header__link${
+                      item.active ? " is-active" : ""
+                    }`}
+                  >
+                    {item.label}
+                  </a>
+                  {hasChildren && (
+                    <ul className="app-header__dropdown">
+                      {item.children.map((child) => (
+                        <li key={child.id}>
+                          <a
+                            href={child.href}
+                            className="app-header__dropdown-link"
+                          >
+                            {child.label}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              );
+            })}
           </ul>
 
           {/* LEFT: circular icon buttons */}

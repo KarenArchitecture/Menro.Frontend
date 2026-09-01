@@ -30,7 +30,7 @@ import RestaurantCategorySettingsSection from "../../components/admin/Restaurant
 import AdsManagementSection from "../../components/admin/AdsManagementSection";
 import BlogManagementSection from "../../components/admin/BlogManagementSection";
 import LandingManagementSection from "../../components/admin/LandingManagementSection";
-import SiteMenuManagementSection from "../../components/admin/SiteMenuManagementSection";
+import SiteLinkManagementSection from "../../components/admin/SiteLinkManagementSection";
 
 /* ===================== Sections: account ===================== */
 import ProfileSection from "../../components/admin/ProfileSection";
@@ -138,8 +138,8 @@ export default function AdminPage() {
         return <BlogManagementSection />;
       case "landing":
         return <LandingManagementSection />;
-      case "siteMenu":
-        return <SiteMenuManagementSection />;
+      case "siteLink":
+        return <SiteLinkManagementSection />;
 
       // --- account ---
       case "profile":

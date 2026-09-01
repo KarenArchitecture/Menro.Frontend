@@ -112,7 +112,7 @@ const NAV_GROUPS = [
         roles: ["admin"],
       },
       {
-        key: "siteMenu",
+        key: "siteLink",
         label: "مدیریت لینک صفحات",
         icon: "fas fa-link",
         roles: ["admin"],

@@ -72,6 +72,7 @@ export default function usePlaylistManager({
         artworkUrl: t.coverUrl,
         audioUrl: t.audioUrl,
         isRequestedTrack: t.isRequestedTrack,
+        sortOrder: t.sortOrder,
         source: "playlist",
       }));
 

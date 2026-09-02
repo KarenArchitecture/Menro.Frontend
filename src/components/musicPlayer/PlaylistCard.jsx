@@ -26,12 +26,15 @@ export default function PlaylistCard({
   const [brokenThumbs, setBrokenThumbs] = useState(() => new Set());
   const filteredPlaylistTracks = useMemo(() => {
     const q = playlistQuery.trim().toLowerCase();
-    if (!q) return playlistTracks;
-    return playlistTracks.filter(
-      (t) =>
-        t.title?.toLowerCase().includes(q) ||
-        t.artist?.toLowerCase().includes(q),
-    );
+    if (!q)
+      return playlistTracks.map((t, i) => ({ ...t, displayIndex: i + 1 }));
+    return playlistTracks
+      .map((t, i) => ({ ...t, displayIndex: i + 1 }))
+      .filter(
+        (t) =>
+          t.title?.toLowerCase().includes(q) ||
+          t.artist?.toLowerCase().includes(q),
+      );
   }, [playlistQuery, playlistTracks]);
 
   return (
@@ -126,7 +129,7 @@ export default function PlaylistCard({
               <div className="mh-empty">آهنگی یافت نشد</div>
             )}
 
-            {filteredPlaylistTracks.map((s, index) => {
+            {filteredPlaylistTracks.map((s) => {
               const isTrackPlaying = playingPlaylistTrackId === s.id;
               return (
                 <div
@@ -136,46 +139,46 @@ export default function PlaylistCard({
                   <div className="mh-row__info">
                     <div className="mh-reorder">
                       <button
-                        disabled={index === 0}
+                        disabled={s.displayIndex === 1}
                         onClick={() => onMoveTrack(s.id, "up")}
                       >
                         <i className="fas fa-chevron-up" />
                       </button>
                       <button
-                        disabled={index === filteredPlaylistTracks.length - 1}
+                        disabled={s.displayIndex === playlistTracks.length}
                         onClick={() => onMoveTrack(s.id, "down")}
                       >
                         <i className="fas fa-chevron-down" />
                       </button>
                     </div>
-
                     <div
-                      className="mh-art"
+                      className="mh-art-wrap"
                       onClick={() => onPlayTrack(s.id, s.musicTrackId)}
                     >
-                      {s.artworkUrl && !brokenThumbs.has(s.id) ? (
-                        <img
-                          src={s.artworkUrl}
-                          alt=""
-                          onError={() =>
-                            setBrokenThumbs((prev) => new Set(prev).add(s.id))
-                          }
-                        />
-                      ) : (
-                        <i className="fas fa-music mh-art__placeholder" />
-                      )}
-                      <div
-                        className={`mh-art__overlay ${
-                          isTrackPlaying ? "is-visible" : ""
-                        }`}
-                      >
-                        <i
-                          className={
-                            isTrackPlaying && isPlaying
-                              ? "fas fa-pause"
-                              : "fas fa-play"
-                          }
-                        />
+                      <span className="mh-art__index">{s.displayIndex}</span>
+                      <div className="mh-art">
+                        {s.artworkUrl && !brokenThumbs.has(s.id) ? (
+                          <img
+                            src={s.artworkUrl}
+                            alt=""
+                            onError={() =>
+                              setBrokenThumbs((prev) => new Set(prev).add(s.id))
+                            }
+                          />
+                        ) : (
+                          <i className="fas fa-music mh-art__placeholder" />
+                        )}
+                        <div
+                          className={`mh-art__overlay ${isTrackPlaying ? "is-visible" : ""}`}
+                        >
+                          <i
+                            className={
+                              isTrackPlaying && isPlaying
+                                ? "fas fa-pause"
+                                : "fas fa-play"
+                            }
+                          />
+                        </div>
                       </div>
                     </div>
 

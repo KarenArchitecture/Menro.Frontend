@@ -113,13 +113,13 @@ export default function useMusicPlayerEngine({
       const tracks = playlistTracksRef.current;
       const currentId = playingPlaylistTrackIdRef.current;
 
-      const currentIndex = tracks.findIndex((x) => x.id === currentId);
+      if (!tracks.length) return;
 
+      const currentIndex = tracks.findIndex((x) => x.id === currentId);
       if (currentIndex === -1) return;
 
-      const nextTrack = tracks[currentIndex + 1];
-
-      if (!nextTrack) return;
+      // اگر ترک آخر بود، به ترک اول پلی‌لیست برگرد
+      const nextTrack = tracks[currentIndex + 1] ?? tracks[0];
 
       try {
         await syncAndPlay(nextTrack, "next");
@@ -245,6 +245,8 @@ export default function useMusicPlayerEngine({
 
   const playNextTrack = async () => {
     try {
+      if (!playlistTracks.length) return;
+
       const currentIndex = getCurrentPlaylistTrackIndex();
 
       if (currentIndex === -1) {
@@ -253,10 +255,7 @@ export default function useMusicPlayerEngine({
         return;
       }
 
-      const nextTrack = playlistTracks[currentIndex + 1];
-
-      if (!nextTrack) return;
-
+      const nextTrack = playlistTracks[currentIndex + 1] ?? playlistTracks[0];
       await syncAndPlay(nextTrack, "next");
     } catch (err) {
       console.error(err);

@@ -7,18 +7,18 @@ import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 import MusicHeader from "../../components/music/MusicPlayerHeader";
 
-// music player components import
+// music player components
 import NowPlayingBar from "../../components/musicPlayer/NowPlayingBar";
 import MusicArchiveCard from "../../components/musicPlayer/MusicArchiveCard";
 import PlaylistCard from "../../components/musicPlayer/PlaylistCard";
 import TrackRequestsCard from "../../components/musicPlayer/TrackRequestsCard";
 
-// music player modals import
+// music player modals
 import PlaylistFormModal from "../../components/musicPlayer/PlaylistFormModal";
 import TrackFormModal from "../../components/musicPlayer/TrackFormModal";
 import PreviewModal from "../../components/musicPlayer/PreviewModal";
 
-// music player hooks import
+// music player hooks
 import useTrackRequests from "../../hooks/musicPlayer/useTrackRequests";
 import usePreviewPlayer from "../../hooks/musicPlayer/usePreviewPlayer";
 import useMusicArchive from "../../hooks/musicPlayer/useMusicArchive";

@@ -10,6 +10,8 @@ import { useCart } from "../components/shop/CartContext";
 import { checkoutCart } from "../api/cart";
 import resolveFileUrl from "../utils/resolveFileUrl";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import usePendingOrders from "../hooks/usePendingOrders";
+import PendingOrdersCard from "../components/checkout/PendingOrdersCard";
 
 export default function CheckoutPage() {
   useDocumentTitle("تسویه حساب");
@@ -17,6 +19,7 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
   const cart = useCart();
   const [localCart, setLocalCart] = useState([]);
+  const pendingOrders = usePendingOrders();
 
   useEffect(() => {
     setLocalCart(
@@ -72,16 +75,18 @@ export default function CheckoutPage() {
       <CheckoutHeader />
 
       {cart.items.length === 0 ? (
-        <StateMessage kind="empty" title="سبد خرید شما خالی است">
-          هنوز چیزی به سبد خرید اضافه نکرده‌اید.
-          <div className="state-message__action">
-            <button onClick={() => navigate("/restaurants")}>
-              مشاهده رستوران‌ها
-            </button>
-          </div>
-        </StateMessage>
+        pendingOrders.length > 0 ? (
+          <PendingOrdersCard orders={pendingOrders} variant="empty" />
+        ) : (
+          <StateMessage kind="empty" title="سبد خرید شما خالی است">
+            ...
+          </StateMessage>
+        )
       ) : (
         <>
+          {pendingOrders.length > 0 && (
+            <PendingOrdersCard orders={pendingOrders} variant="withCart" />
+          )}
           <div className="checkout-cards">
             {localCart.map((item) => (
               <CartCard key={item.id} item={item} onChangeQty={changeQty} />
@@ -90,6 +95,7 @@ export default function CheckoutPage() {
           <div className="footer-spacer" aria-hidden="true" />
         </>
       )}
+
 
       <CheckoutFooter
         total={cart.total}

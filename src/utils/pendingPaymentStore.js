@@ -1,10 +1,10 @@
+import { currentIdentity, setIdentity, GUEST_ID } from "./pendingIdentity";
+import { migratePendingOrdersIdentity } from "./pendingOrdersStore";
+
 const KEY_PREFIX = "menro_pending_counter_order";
-const IDENTITY_KEY = "menro_pending_identity";
-const GUEST_ID = "guest";
 const BANNER_LIFETIME_MS = 2 * 60 * 60 * 1000;
 
 const keyFor = (identity) => `${KEY_PREFIX}:${identity || GUEST_ID}`;
-const currentIdentity = () => localStorage.getItem(IDENTITY_KEY) || GUEST_ID;
 
 export function markPendingCounterOrder(orderId, restaurantName) {
   localStorage.setItem(
@@ -35,25 +35,24 @@ export function readPendingCounterOrder() {
   }
 }
 
-// Called by AuthContext whenever the resolved user identity changes.
 export function setPendingPaymentIdentity(userId) {
   const previous = currentIdentity();
   const next = userId || GUEST_ID;
   if (previous === next) return;
 
   if (previous === GUEST_ID && next !== GUEST_ID) {
-    // Guest just logged in — same person, carry their reminder forward.
     const guestRaw = localStorage.getItem(keyFor(GUEST_ID));
     if (guestRaw) {
       localStorage.setItem(keyFor(next), guestRaw);
       localStorage.removeItem(keyFor(GUEST_ID));
     }
   } else {
-    // Any other switch (userA -> userB, userA -> guest via logout, etc.)
-    // never carries over. Drop the outgoing identity's slot entirely.
     localStorage.removeItem(keyFor(previous));
   }
 
-  localStorage.setItem(IDENTITY_KEY, next);
+  migratePendingOrdersIdentity(previous, next);
+
+  setIdentity(next);
   window.dispatchEvent(new Event("menro-pending-order-changed"));
+  window.dispatchEvent(new Event("menro-pending-orders-changed"));
 }

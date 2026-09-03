@@ -97,6 +97,7 @@ export default function CheckoutPage() {
         discount={0}
         onConfirm={handleConfirmOrder}
         restaurantId={cart.restaurantId}
+        restaurantName={cart.restaurantName}
         paymentMethod={cart.paymentMethod}
         hasItems={cart.items.length > 0}
       />

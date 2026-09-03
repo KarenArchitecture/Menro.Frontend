@@ -5,11 +5,15 @@ import { useGlobalUI } from "../components/common/GlobalUI";
 import authAxios from "../api/authAxios";
 import userAxios from "../api/userAxios";
 import restaurantAuthAxios from "../api/restaurantAuthAxios";
+import { setPendingPaymentIdentity } from "../utils/pendingPaymentStore";
 
-export let globalLogout = () => {};
+export let globalLogout = () => { };
 export function setGlobalLogout(fn) {
   globalLogout = fn;
 }
+
+
+
 
 const AuthContext = createContext(null);
 
@@ -24,6 +28,10 @@ export function AuthProvider({ children }) {
   // fetchRestaurantStatus صدا زده بشه پر میشه، نه به‌صورت خودکار برای همه‌ی کاربرها
   const [restaurantStatus, setRestaurantStatus] = useState(null);
   const [restaurantStatusLoading, setRestaurantStatusLoading] = useState(false);
+
+  useEffect(() => {
+    setPendingPaymentIdentity(user?.id ?? null);
+  }, [user]);
 
   /* ------------------------
    * INITIAL LOAD
@@ -171,11 +179,9 @@ export function AuthProvider({ children }) {
    * ---------------------- */
   const completeLogin = async (accessToken) => {
     if (!accessToken) throw new Error("accessToken یافت نشد.");
-
     localStorage.setItem("accessToken", accessToken);
     setToken(accessToken);
-
-    await refreshUser();
+    await refreshUser(); // → user changes → useEffect fires → identity handled correctly
   };
 
   /* ------------------------
@@ -212,6 +218,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("userPhone");
     localStorage.removeItem("accessToken");
     localStorage.setItem("logout-event", Date.now().toString());
+    setPendingPaymentIdentity(null);
 
     authAxios.post("/logout", {}, { withCredentials: true }).catch((err) => {
       console.warn("⚠️ logout request failed:", err);
@@ -219,11 +226,11 @@ export function AuthProvider({ children }) {
 
     notify({ type: "success", message: "خروج از حساب با موفقیت انجام شد" });
 
-    // یک مکث کوتاه تا کاربر پیام موفقیت رو ببینه، بعد ریدایرکت
     setTimeout(() => {
       window.location.href = redirectTo;
     }, 700);
   };
+
   // ثبت logout جهانی برای interceptor
   useEffect(() => {
     setGlobalLogout(logout);
@@ -231,7 +238,10 @@ export function AuthProvider({ children }) {
   // sync logout بین تب‌ها
   useEffect(() => {
     const syncLogout = (event) => {
-      if (event.key === "logout-event") setUser(null);
+      if (event.key === "logout-event") {
+        setUser(null);
+        setPendingPaymentIdentity(null); // 🔧 other open tabs drop it too
+      }
     };
     window.addEventListener("storage", syncLogout);
     return () => window.removeEventListener("storage", syncLogout);

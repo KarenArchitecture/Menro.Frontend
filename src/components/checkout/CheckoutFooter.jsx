@@ -1,8 +1,9 @@
 // src/components/checkout/CheckoutFooter.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import OrderSuccessModal from "../common/OrderSuccessModal";
-import { markPendingCounterOrder } from "../common/PendingPaymentBanner";
+import { markPendingCounterOrder } from "../../utils/pendingPaymentStore";
 import { fetchRestaurantTables } from "../../api/cart";
+import { addPendingOrder } from "../../utils/pendingOrdersStore";
 
 const formatIR = (n) => Number(n || 0).toLocaleString("fa-IR");
 
@@ -11,7 +12,8 @@ export default function CheckoutFooter({
   items = [],
   discount = 0,
   onConfirm,
-  restaurantId, // ← جایگزین tableCount
+  restaurantId,
+  restaurantName,
   paymentMethod = "",
   hasItems = true,
 }) {
@@ -95,6 +97,11 @@ export default function CheckoutFooter({
       if (isPayAtCounter) {
         markPendingCounterOrder(result.orderId, result.restaurantName || "");
       }
+      addPendingOrder({                                    // 🔧 اضافه شد — مستقل از شیوه پرداخت
+        orderId: result.orderId,
+        invoiceNumber: result.invoiceNumber,
+        totalPrice: result.totalPrice,
+      });
 
       setShowSuccess(true);
     } catch (err) {
@@ -125,7 +132,9 @@ export default function CheckoutFooter({
 
       {hasItems && paymentMethod === "PayAfterServing" && (
         <div className="checkout-payment-notice">
-          پرداخت‌های این رستوران پس از صرف غذا، پای صندوق صورت می‌گیرد
+          {restaurantName
+            ? <>پرداخت‌های «{restaurantName}» پس از صرف غذا، پای صندوق صورت می‌گیرد</>
+            : <>پرداخت‌های این رستوران پس از صرف غذا، پای صندوق صورت می‌گیرد</>}
         </div>
       )}
 

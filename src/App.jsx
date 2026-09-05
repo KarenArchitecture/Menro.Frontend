@@ -35,9 +35,8 @@ import UserProfileForm from "./components/common/UserProfileForm";
 import FoodCommentsPage from "./pages/FoodCommentsPage";
 import MyCommentsPage from "./pages/MyCommentsPage";
 import ScrollToTop from "./components/common/ScrollToTop";
-import PendingPaymentBanner, {
-  markPendingCounterOrder,
-} from "./components/common/PendingPaymentBanner";
+import { markPendingCounterOrder } from "./utils/pendingPaymentStore"; // was "./components/common/PendingPaymentBanner"
+import PendingPaymentBanner from "./components/common/PendingPaymentBanner";
 
 import MobileNav from "./components/common/MobileNav";
 import ProtectedRoute from "./components/common/ProtectedRoute";

@@ -2,12 +2,15 @@ import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import CommentModal from "./CommentModal";
 import {
-  getAdminComments,
+  getOwnerComments,
   approveComment,
   rejectComment,
-} from "../../api/adminComments";
+} from "../../api/ownerComments";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+
+import { formatPersianDate } from "../../utils/formatPersianDate";
+import { toPersianDigits } from "../../utils/persianNumbers";
 
 const TABS = [
   { key: "pending", label: "در انتظار پاسخ" },
@@ -24,21 +27,21 @@ export default function CommentsSection() {
   const queryClient = useQueryClient();
 
   const { data: comments = [], isLoading } = useQuery({
-    queryKey: ["admin-comments", activeTab],
-    queryFn: () => getAdminComments(activeTab),
+    queryKey: ["owner-comments", activeTab],
+    queryFn: () => getOwnerComments(activeTab),
   });
 
   const { data: pendingList = [] } = useQuery({
-    queryKey: ["admin-comments", "pending"],
-    queryFn: () => getAdminComments("pending"),
+    queryKey: ["owner-comments", "pending"],
+    queryFn: () => getOwnerComments("pending"),
   });
   const { data: approvedList = [] } = useQuery({
-    queryKey: ["admin-comments", "approved"],
-    queryFn: () => getAdminComments("approved"),
+    queryKey: ["owner-comments", "approved"],
+    queryFn: () => getOwnerComments("approved"),
   });
   const { data: rejectedList = [] } = useQuery({
-    queryKey: ["admin-comments", "rejected"],
-    queryFn: () => getAdminComments("rejected"),
+    queryKey: ["owner-comments", "rejected"],
+    queryFn: () => getOwnerComments("rejected"),
   });
 
   const counts = {
@@ -48,7 +51,7 @@ export default function CommentsSection() {
   };
 
   const invalidateAll = () =>
-    queryClient.invalidateQueries({ queryKey: ["admin-comments"] });
+    queryClient.invalidateQueries({ queryKey: ["owner-comments"] });
 
   const handleApprove = async (id, replyText) => {
     setSubmittingAction("approve");
@@ -118,7 +121,7 @@ export default function CommentsSection() {
                 className={`btn ${activeTab === t.key ? "btn-primary" : "btn-secondary"}`}
                 onClick={() => setActiveTab(t.key)}
               >
-                {t.label} ({counts[t.key]})
+                {t.label} ({toPersianDigits(counts[t.key])})
               </button>
             ))}
           </div>
@@ -139,17 +142,24 @@ export default function CommentsSection() {
           >
             <div className="order-bar__info">
               <div className="order-bar__title">
-                <span className="order-code">نظر #{c.code}</span>
+                <span
+                  className="order-code"
+                  style={{ direction: "ltr", display: "inline-block" }}
+                >
+                  نظر #{toPersianDigits(c.code)}
+                </span>
                 <span className="order-customer"> — {c.title}</span>
               </div>
               <div className="order-bar__meta">
                 <span>{c.userName}</span>
                 <span className="dot-sep">·</span>
-                <span style={{ color: "#ff683c" }}>
+                <span
+                  style={{ color: "#ff683c", direction: "ltr", display: "inline-block" }}
+                >
                   {renderStars(c.rating)}
                 </span>
                 <span className="dot-sep">·</span>
-                <span>{c.date}</span>
+                <span>{formatPersianDate(c.date)}</span>
               </div>
               <div className="order-bar__preview">{c.commentText}</div>
             </div>

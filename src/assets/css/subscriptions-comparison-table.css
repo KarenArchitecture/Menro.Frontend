@@ -7,10 +7,12 @@
   font-family: inherit;
 
   /* Radial Gradient background matching Figma */
-  background: radial-gradient(
-    circle at 50% 30%,
-    rgba(47, 43, 163, 0.2) 0%,
-    rgba(53, 25, 100, 0) 100%
+  background-color: #0d1016; /* Base background color */
+  background-image: radial-gradient(
+    50% 50% at 50% 50%,
+    #131530 0%,
+    #0f121d 50%,
+    #0d1016 100%
   );
 }
 .sub-compare__container {
@@ -206,14 +208,20 @@
   font-size: 1.05rem;
   font-weight: 800;
   color: #ffffff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 2rem;
 }
 
 .sub-compare__category-icon {
-  width: 22px;
-  height: 22px;
+  width: 2rem;
+  height: 2rem;
   object-fit: contain;
 }
 
+.category_label {
+  font-size: 1.5rem;
+  font-weight: 500;
+}
 /* Data Rows with increased vertical breathing room */
 .sub-compare__row {
   display: grid;
@@ -224,15 +232,15 @@
 }
 
 .sub-compare__row-label {
-  font-size: 0.9rem;
-  color: #ffffff;
+  font-size: 1.2rem;
+  color: #999fab;
   font-weight: 600;
   text-align: right;
 }
 
 .sub-compare__row-value {
   text-align: center;
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: #ffffff;
   font-weight: 700;
 }
@@ -255,4 +263,10 @@
     height: 32px;
     font-size: 0.72rem;
   }
+}
+.sub-compare__plan-price-period {
+  color: #fff;
+}
+.sub-compare__plan-price-amount {
+  font-size: 1rem;
 }

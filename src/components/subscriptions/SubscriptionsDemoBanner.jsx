@@ -21,7 +21,6 @@ export default function SubscriptionsDemoBanner({
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // TODO: wire this up to the real "request a demo" endpoint.
     if (onSubmit) {
       onSubmit({ phone, notes });
     } else {
@@ -54,25 +53,24 @@ export default function SubscriptionsDemoBanner({
         ))}
       </ul>
 
+      {/* Updated Form Section */}
       <form className="sub-demo__form" onSubmit={handleSubmit}>
         <div className="sub-demo__field">
-          <i
-            className="fas fa-mobile-alt sub-demo__field-icon"
-            aria-hidden="true"
-          />
+          <span className="sub-demo__field-label">شماره همراه...</span>
           <input
             type="tel"
-            placeholder="شماره همراه..."
+            placeholder="۰۹..."
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
+            dir="ltr"
           />
         </div>
 
-        <div className="sub-demo__field sub-demo__field--tagged">
-          <span className="sub-demo__field-tag">توضیحات</span>
+        <div className="sub-demo__field">
+          <span className="sub-demo__field-label">توضیحات</span>
           <input
             type="text"
-            placeholder="نام مجموعه..."
+            placeholder="...نام مجموعه"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />

@@ -22,11 +22,18 @@
   border-radius: var(--sub-radius-lg);
   overflow: hidden;
 }
-
+.sub-demo__info {
+  width: 26rem;
+  justify-items: start;
+  display: flex;
+  flex-direction: column;
+  justify-content: normal;
+  margin-top: -2rem;
+}
 /* ---- info column (rightmost in RTL) ---- */
 .sub-demo__title {
   margin: 0 0 0.3rem;
-  font-size: 1.5rem;
+  font-size: 3.5rem;
   font-weight: 800;
   color: #fff;
 }
@@ -45,14 +52,14 @@
 }
 
 .sub-demo__price-unit {
-  font-size: 0.95rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: #d8dadd;
 }
 
 .sub-demo__note {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 1.4rem;
   color: var(--sub-muted);
   line-height: 1.9;
 }
@@ -65,12 +72,13 @@
   display: flex;
   flex-direction: column;
   gap: 1.35rem;
+  direction: ltr;
 }
 
 .sub-demo__features li {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 0.7rem;
   font-size: 0.95rem;
   font-weight: 600;
@@ -181,4 +189,73 @@
   .sub-demo__form {
     order: 3;
   }
+}
+/* ---- form column (leftmost) ---- */
+.sub-demo__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem; /* Matches the spacing in the image */
+}
+
+.sub-demo__field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px; /* Chunkier height to match image */
+  border-radius: 16px; /* Rounded rectangle instead of pill */
+  background: #ffffff;
+  padding: 0 1.5rem;
+}
+
+/* The label on the right side */
+.sub-demo__field-label {
+  flex-shrink: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #17181c;
+  white-space: nowrap;
+}
+
+/* The input on the left side */
+.sub-demo__field input {
+  flex: 1;
+  height: 100%;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 1.05rem;
+  color: #17181c;
+  text-align: left; /* Pushes the placeholder to the far left */
+  padding-right: 1.5rem; /* Gap between label and input */
+}
+
+.sub-demo__field input::placeholder {
+  color: #a0a4ab;
+  font-weight: 500;
+}
+
+/* Submit Button */
+.sub-demo__submit {
+  height: 60px;
+  border: none;
+  border-radius: 16px;
+  background: #ff5232; /* Exact coral/orange */
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(255, 82, 50, 0.25); /* Ambient orange glow */
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.sub-demo__submit:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+  box-shadow: 0 12px 28px rgba(255, 82, 50, 0.35);
 }

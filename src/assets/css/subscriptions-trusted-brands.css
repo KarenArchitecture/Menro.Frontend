@@ -1,10 +1,10 @@
 .sub-brands {
   max-width: 1180px;
-  margin: 0 auto;
+  margin: auto;
   padding: 0 2rem 6rem;
   text-align: center;
   /* Prevents horizontal body scrollbars */
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 
 .sub-brands__title {

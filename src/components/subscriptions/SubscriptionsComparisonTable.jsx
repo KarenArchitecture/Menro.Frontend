@@ -6,28 +6,37 @@ const DEFAULT_PLANS = [
   {
     id: "basic",
     name: "پایه",
-    price: "۱۹۹ هزار تومان / ماه",
+    priceAmount: "۱۹۹ هزار تومان",
+    pricePeriod: "/ ماه",
     cta: "انتخاب پلن",
   },
   {
     id: "advanced",
     name: "پیشرفته",
-    price: "۲۵۹ هزار تومان / ماه",
+    priceAmount: "۲۵۹ هزار تومان",
+    pricePeriod: "/ ماه",
     cta: "انتخاب پلن",
   },
   {
     id: "pro",
     name: "حرفه‌ای",
-    price: "۵۴۹ هزار تومان / ماه",
+    priceAmount: "۵۴۹ هزار تومان",
+    pricePeriod: "/ ماه",
     cta: "انتخاب پلن",
   },
-  { id: "custom", name: "سفارشی", price: "تماس بگیرید", cta: "تماس با ما" },
+  {
+    id: "custom",
+    name: "سفارشی",
+    priceAmount: "تماس بگیرید",
+    pricePeriod: "", // Empty or custom period label if needed
+    cta: "تماس با ما",
+  },
 ];
 
 const DEFAULT_CATEGORIES = [
   {
     id: "general-1",
-    iconSrc: "/images/subscriptions/icons/category-general.svg",
+    iconSrc: "/images/subscriptions/3dcube.svg",
     title: "اطلاعات کلی",
     rows: [
       {
@@ -46,7 +55,7 @@ const DEFAULT_CATEGORIES = [
   },
   {
     id: "general-2",
-    iconSrc: "/images/subscriptions/icons/category-details.svg",
+    iconSrc: "/images/subscriptions/graph.svg",
     title: "کلی اطلاعات",
     rows: [
       {
@@ -65,7 +74,7 @@ const DEFAULT_CATEGORIES = [
   },
   {
     id: "general-3",
-    iconSrc: "/images/subscriptions/icons/category-features.svg",
+    iconSrc: "/images/subscriptions/graph.svg",
     title: "ویژگی‌های پیشرفته",
     rows: [
       {
@@ -84,7 +93,7 @@ const DEFAULT_CATEGORIES = [
   },
   {
     id: "general-4",
-    iconSrc: "/images/subscriptions/icons/category-support.svg",
+    iconSrc: "/images/subscriptions/3dcube.svg",
     title: "پشتیبانی و خدمات",
     rows: [
       {
@@ -110,7 +119,7 @@ export default function SubscriptionsComparisonTable({
   const [isAnnual, setIsAnnual] = useState(true);
 
   const gridStyle = {
-    gridTemplateColumns: `1.4fr repeat(5, minmax(110px, 1fr))`,
+    gridTemplateColumns: `1.4fr repeat(${plans.length}, minmax(110px, 1fr))`,
   };
 
   return (
@@ -154,9 +163,19 @@ export default function SubscriptionsComparisonTable({
                 {plans.map((plan) => (
                   <div key={plan.id} className="sub-compare__header-cell">
                     <span className="sub-compare__plan-name">{plan.name}</span>
-                    <span className="sub-compare__plan-price">
-                      {plan.price}
-                    </span>
+
+                    {/* Split Pricing Section */}
+                    <div className="sub-compare__plan-price">
+                      <span className="sub-compare__plan-price-amount">
+                        {plan.priceAmount}
+                      </span>
+                      {plan.pricePeriod && (
+                        <span className="sub-compare__plan-price-period">
+                          {plan.pricePeriod}
+                        </span>
+                      )}
+                    </div>
+
                     <button type="button" className="sub-compare__plan-cta">
                       {plan.cta}
                     </button>
@@ -165,7 +184,7 @@ export default function SubscriptionsComparisonTable({
               </div>
             </div>
 
-            {/* 4 Categories & Data Rows */}
+            {/* Categories & Data Rows */}
             {categories.map((cat) => (
               <div key={cat.id} className="sub-compare__category">
                 <div className="sub-compare__category-title" style={gridStyle}>
@@ -175,7 +194,7 @@ export default function SubscriptionsComparisonTable({
                       alt=""
                       className="sub-compare__category-icon"
                     />
-                    <span>{cat.title}</span>
+                    <span className="category_label">{cat.title}</span>
                   </div>
                 </div>
 

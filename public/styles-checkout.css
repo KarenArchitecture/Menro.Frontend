@@ -46,7 +46,6 @@ h2 {
 
 .checkout-container {
     margin: 0 auto;
-    padding: 2.8rem 0;
     margin-bottom: 7rem;
 }
 
@@ -1092,4 +1091,10 @@ h2 {
     padding: 0.8rem 1.6rem;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
     z-index: 999;
+}
+
+.footer-spacer--with-pending {
+  /* ارتفاع تقریبی خود pending-orders-card--attached: تراز بزن اگه با
+     پدینگ/فونت واقعی رندرشده فرق داشت */
+  height: calc(var(--footer-h) + 7.2rem);
 }

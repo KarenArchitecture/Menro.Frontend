@@ -432,3 +432,76 @@
         font-size: 1rem;
     }
 }
+
+
+.orders-auth-prompt {
+  max-width: 420px;
+  margin: 2rem auto;
+  padding: 2.5rem 2rem 2rem;
+  background: linear-gradient(180deg, #1c2128 0%, #15181d 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 1.6rem;
+  text-align: center;
+  color: #fff;
+}
+
+.orders-auth-prompt--compact {
+  margin-top: 1.2rem;
+}
+
+.orders-auth-prompt__icon-wrap {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orders-auth-prompt__icon-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 104, 60, 0.35) 0%,
+    rgba(255, 104, 60, 0) 70%
+  );
+  filter: blur(4px);
+}
+
+.orders-auth-prompt__icon-circle {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(255, 104, 60, 0.12);
+  border: 1px solid rgba(255, 104, 60, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orders-auth-prompt__icon {
+  width: 28px;
+  height: 28px;
+  color: #ff683c;
+}
+
+.orders-auth-prompt__title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+}
+
+.orders-auth-prompt__text {
+  font-size: 0.95rem;
+  color: #9ca3af;
+  line-height: 1.8;
+  margin-bottom: 1.6rem;
+}
+
+.orders-auth-prompt__btn {
+  width: 100%;
+}

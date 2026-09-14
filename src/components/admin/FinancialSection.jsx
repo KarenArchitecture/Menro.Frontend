@@ -87,7 +87,7 @@ export default function FinancialSection() {
   useEffect(() => {
     getRestaurantPaymentMethod()
       .then(setPaymentMethodState)
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const handleSelectMethod = async (value) => {
@@ -123,13 +123,7 @@ export default function FinancialSection() {
               type="button"
               disabled={opt.disabled || savingMethod}
               onClick={() => handleSelectMethod(opt.value)}
-              className={`chip ${paymentMethod === opt.value ? "chip--active" : ""}`}
-              style={{
-                justifyContent: "flex-start",
-                padding: "14px 18px",
-                opacity: opt.disabled ? 0.5 : 1,
-                cursor: opt.disabled ? "not-allowed" : "pointer",
-              }}
+              className={`payment-chip ${paymentMethod === opt.value ? "payment-chip--active" : ""}`}
             >
               {opt.label}
             </button>

@@ -75,27 +75,39 @@ export default function CheckoutPage() {
       <CheckoutHeader />
 
       {cart.items.length === 0 ? (
-        pendingOrders.length > 0 ? (
-          <PendingOrdersCard orders={pendingOrders} variant="empty" />
-        ) : (
+        pendingOrders.length === 0 && (
           <StateMessage kind="empty" title="سبد خرید شما خالی است">
             ...
           </StateMessage>
         )
       ) : (
         <>
-          {pendingOrders.length > 0 && (
-            <PendingOrdersCard orders={pendingOrders} variant="withCart" />
-          )}
           <div className="checkout-cards">
             {localCart.map((item) => (
               <CartCard key={item.id} item={item} onChangeQty={changeQty} />
             ))}
           </div>
-          <div className="footer-spacer" aria-hidden="true" />
+          <div
+            className={`footer-spacer ${pendingOrders.length > 0 ? "footer-spacer--with-pending" : ""
+              }`}
+            aria-hidden="true"
+          />
         </>
       )}
 
+      {/* سفارش‌های ثبت‌شده‌ی هنوز completed-نشده — همیشه فیکس پایین صفحه */}
+      {pendingOrders.length > 0 && (
+        <PendingOrdersCard
+          orders={pendingOrders}
+          variant={cart.items.length > 0 ? "withCart" : "empty"}
+        />
+      )}
+
+      {/* سبد خالی + سفارش pending → کارت بالا کل فوتر رو جایگزین می‌کنه،
+          این اسپیسر فقط برای اطمینانه اگه محتوای دیگه‌ای بعداً بالاش اضافه شد */}
+      {cart.items.length === 0 && pendingOrders.length > 0 && (
+        <div className="footer-spacer" aria-hidden="true" />
+      )}
 
       <CheckoutFooter
         total={cart.total}
@@ -104,6 +116,7 @@ export default function CheckoutPage() {
         onConfirm={handleConfirmOrder}
         restaurantId={cart.restaurantId}
         restaurantName={cart.restaurantName}
+        restaurantSlug={cart.restaurantSlug}
         paymentMethod={cart.paymentMethod}
         hasItems={cart.items.length > 0}
       />

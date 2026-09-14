@@ -14,6 +14,7 @@ export default function CheckoutFooter({
   onConfirm,
   restaurantId,
   restaurantName,
+  restaurantSlug,
   paymentMethod = "",
   hasItems = true,
 }) {
@@ -222,9 +223,7 @@ export default function CheckoutFooter({
         total={orderSnapshot?.total ?? 0}
         invoiceNumber={orderSnapshot?.invoiceNumber}
         primaryActionTo={
-          orderSnapshot?.variant === "invoice"
-            ? "/orders"
-            : `/orders/bill/${orderSnapshot?.orderId}`
+          restaurantSlug ? `/restaurant/${restaurantSlug}` : "/orders"
         }
         formatPrice={formatIR}
         onClose={handleSuccessContinue}

@@ -26,7 +26,7 @@
     justify-content: space-between;
     gap: 1.2rem;
     min-height: 4.6rem;
-    background: #0c0f14;
+    background: linear-gradient(180deg, #262B33, #161B20);
     border-radius: 1.2rem;
     padding: 0.9rem 1.8rem;
 }
@@ -70,39 +70,40 @@
 /* --- Fixed bottom positioning (Checkout page) --- */
 
 .pending-orders-card--fixed {
-  position: fixed;
-  inset-inline: 0;
-  z-index: 1000;
-  margin: 0; /* override the default margin-bottom:1.2rem */
-  box-sizing: border-box;
+    position: fixed;
+    inset-inline: 0;
+    z-index: 1000;
+    margin: 0;
+    /* override the default margin-bottom:1.2rem */
+    box-sizing: border-box;
 }
 
 /* variant="empty": cart has nothing to check out, so this card
    fully REPLACES the checkout-footer — same look, same spot */
 .pending-orders-card--standalone {
-  bottom: 0;
-  background: #0c0f14;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 1.6rem 1.6rem 0 0;
-  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.28);
-  padding: var(--footer-pad-y, 1.6rem) 1.8rem
-    calc(var(--footer-pad-y, 1.6rem) + var(--footer-safe, 0px));
-  min-height: var(--footer-h);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+    bottom: 0;
+    background: #0c0f14;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 1.6rem 1.6rem 0 0;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.28);
+    padding: var(--footer-pad-y, 1.6rem) 1.8rem calc(var(--footer-pad-y, 1.6rem) + var(--footer-safe, 0px));
+    min-height: var(--footer-h);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .pending-orders-card--standalone .pending-orders-card__title {
-  margin-bottom: 1rem;
+    margin-bottom: 1rem;
 }
 
 /* variant="withCart": sits flush above the real checkout-footer —
    no gap, square bottom corners so both read as one panel */
 .pending-orders-card--attached {
-  bottom: var(--footer-h);
-  background: #0c0f14;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 1.6rem 1.6rem 0 0;
-  box-shadow: none; /* the shadow already lives on the footer beneath it */
+    bottom: var(--footer-h);
+    background: #0c0f14;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 1.6rem 1.6rem 0 0;
+    box-shadow: none;
+    /* the shadow already lives on the footer beneath it */
 }

@@ -1098,3 +1098,36 @@ h2 {
      پدینگ/فونت واقعی رندرشده فرق داشت */
   height: calc(var(--footer-h) + 7.2rem);
 }
+
+
+/* ردیف فاکتورهای completed-نشده، وقتی داخل خود checkout-footer ادغام شده */
+.checkout-footer__pending-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  min-height: 4rem;
+  background: linear-gradient(180deg, #262B33, #161B20);
+  border-radius: 1.2rem;
+  padding: 0.8rem 1.6rem;
+}
+
+.checkout-footer__pending-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #9eabb8;
+  white-space: nowrap;
+}
+
+.checkout-footer__pending-value {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #ff683c;
+  text-align: left;
+  overflow-wrap: break-word;
+}
+
+/* ارتفاع بیشتر برای اسپیسر، چون footer یه ردیف اضافه پیدا کرده */
+.footer-spacer--with-pending {
+  height: calc(var(--footer-h) + 6.8rem); /* عدد تقریبیه — بعد از تست تنظیمش کن */
+}

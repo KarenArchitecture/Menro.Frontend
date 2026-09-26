@@ -102,6 +102,7 @@ export default function App() {
           چون بیرون از یک کامپوننت، JSX هیچ‌وقت رندر نمی‌شه */}
       <Toaster
         position="top-center"
+        containerStyle={{ zIndex: 2000 }}
         toastOptions={{ style: { fontFamily: "Vazirmatn" } }}
       />
 

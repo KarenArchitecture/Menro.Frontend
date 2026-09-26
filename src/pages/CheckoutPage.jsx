@@ -1,11 +1,10 @@
 // src/pages/CheckoutPage.jsx
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import usePageStyles from "../hooks/usePageStyles";
 import CheckoutHeader from "../components/checkout/CheckoutHeader";
 import CartCard from "../components/checkout/CartCard";
 import CheckoutFooter from "../components/checkout/CheckoutFooter";
-import StateMessage from "../components/common/StateMessage";
+import EmptyCartMessage from "../components/checkout/EmptyCartMessage";
 import { useCart } from "../components/shop/CartContext";
 import { checkoutCart } from "../api/cart";
 import resolveFileUrl from "../utils/resolveFileUrl";
@@ -16,7 +15,6 @@ import PendingOrdersCard from "../components/checkout/PendingOrdersCard";
 export default function CheckoutPage() {
   useDocumentTitle("تسویه حساب");
   usePageStyles("/styles-checkout.css");
-  const navigate = useNavigate();
   const cart = useCart();
   const [localCart, setLocalCart] = useState([]);
   const pendingOrders = usePendingOrders();
@@ -75,11 +73,7 @@ export default function CheckoutPage() {
       <CheckoutHeader />
 
       {cart.items.length === 0 ? (
-        pendingOrders.length === 0 && (
-          <StateMessage kind="empty" title="سبد خرید شما خالی است">
-            ...
-          </StateMessage>
-        )
+        <EmptyCartMessage />
       ) : (
         <>
           <div className="checkout-cards">
@@ -95,18 +89,12 @@ export default function CheckoutPage() {
         </>
       )}
 
-      {/* سفارش‌های ثبت‌شده‌ی هنوز completed-نشده — همیشه فیکس پایین صفحه */}
-      {pendingOrders.length > 0 && (
-        <PendingOrdersCard
-          orders={pendingOrders}
-          variant={cart.items.length > 0 ? "withCart" : "empty"}
-        />
-      )}
-
-      {/* سبد خالی + سفارش pending → کارت بالا کل فوتر رو جایگزین می‌کنه،
-          این اسپیسر فقط برای اطمینانه اگه محتوای دیگه‌ای بعداً بالاش اضافه شد */}
+      {/* حالت اول: سبد خالی + سفارش completed-نشده → این کارت کل فوتر رو جایگزین می‌کنه */}
       {cart.items.length === 0 && pendingOrders.length > 0 && (
-        <div className="footer-spacer" aria-hidden="true" />
+        <>
+          <PendingOrdersCard orders={pendingOrders} variant="empty" />
+          <div className="footer-spacer" aria-hidden="true" />
+        </>
       )}
 
       <CheckoutFooter
@@ -119,6 +107,7 @@ export default function CheckoutPage() {
         restaurantSlug={cart.restaurantSlug}
         paymentMethod={cart.paymentMethod}
         hasItems={cart.items.length > 0}
+        pendingOrders={pendingOrders}
       />
     </div>
   );

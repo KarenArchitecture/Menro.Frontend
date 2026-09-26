@@ -2,51 +2,41 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import RatingModal from "../common/RatingModal";
-import useDocumentTitle from "../../hooks/useDocumentTitle";
 
-const PreviousOrderCard = ({ order }) => {
+const PreviousOrderCard = ({ order, currentRating = null, onRate }) => {
   const {
-    id, // Ensure we extract ID for routing and logging
+    id,
+    restaurantId,
     restaurantName,
     orderTypeTag,
     date,
     logo,
     items = [],
     totalPrice,
-    rating: initialRating, // rename prop to initialize state
   } = order;
 
   const navigate = useNavigate();
-
-  // State for modal visibility and the current rating
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentRating, setCurrentRating] = useState(initialRating);
 
-  // Logic for displaying exactly 3 items and the "View Bill" box
   const maxVisible = 3;
   const visibleItems = items.slice(0, maxVisible);
   const remainingCount =
     items.length > maxVisible ? items.length - maxVisible : 0;
 
-  // Handle routing to the bill page
   const handleViewBillClick = () => {
-    // Adjust this route to match your actual App.jsx routes
     navigate(`/orders/bill/${id}`);
   };
 
-  // Handle rating submission from the modal
+  // 🔧 دیگه رای رو داخل کارت ذخیره نمی‌کنیم — فقط به بالادستی (OrdersPage)
+  // اطلاع می‌دیم که چه امتیازی برای این رستوران ثبت شده
   const handleRateSubmit = (selectedRating) => {
-    console.log(`Submitted rating: ${selectedRating} for order ${id}`);
-
-    // 1. Send the rating to your backend here (e.g., axios.post)
-
-    // 2. Update local state so the UI immediately switches to the rated view
-    setCurrentRating(selectedRating);
+    onRate?.(restaurantId, selectedRating);
   };
+
+  const hasRated = currentRating !== null && currentRating !== undefined;
 
   return (
     <div dir="rtl" className="po-container">
-      {/* Header Section */}
       <div className="po-header">
         <div className="po-logo-wrapper">
           <img src={logo} alt={restaurantName} className="po-logo" />
@@ -60,7 +50,6 @@ const PreviousOrderCard = ({ order }) => {
         </div>
       </div>
 
-      {/* Images & View Bill Row */}
       <div className="po-images-row">
         {visibleItems.map((item) => (
           <div key={item.id} className="po-image-wrapper">
@@ -69,7 +58,6 @@ const PreviousOrderCard = ({ order }) => {
           </div>
         ))}
 
-        {/* View Bill Button (Flexes to fill remaining space) */}
         <button className="po-view-bill-btn" onClick={handleViewBillClick}>
           {remainingCount > 0 && (
             <span className="po-view-bill-count">+{remainingCount}</span>
@@ -78,7 +66,6 @@ const PreviousOrderCard = ({ order }) => {
         </button>
       </div>
 
-      {/* Total Order Amount */}
       <div className="po-total-section">
         <span className="po-total-label">مجموع سفارش</span>
         <div className="po-total-value">
@@ -87,17 +74,20 @@ const PreviousOrderCard = ({ order }) => {
         </div>
       </div>
 
-      {/* Action / Rating Section */}
-      {currentRating === null || currentRating === undefined ? (
+      {!hasRated ? (
         <button className="po-rate-btn" onClick={() => setIsModalOpen(true)}>
-          <span>به منرو امتیاز دهید</span>
+          <span>به {restaurantName} امتیاز دهید</span>
           <span>ثبت امتیاز</span>
         </button>
       ) : (
-        <div className="po-rated-box">
-          <span className="po-rated-text">امتیاز شما به منرو</span>
+        // 🔧 حالا قابل کلیک هست تا کاربر بتونه هر وقت خواست رایش رو اصلاح کنه
+        <button
+          type="button"
+          className="po-rated-box po-rated-box--editable"
+          onClick={() => setIsModalOpen(true)}
+        >
+          <span className="po-rated-text">امتیاز شما به {restaurantName}</span>
           <div className="po-stars">
-            {/* Renders 5 stars, filling them based on the currentRating */}
             {[1, 2, 3, 4, 5].map((star) => (
               <i
                 key={star}
@@ -109,22 +99,21 @@ const PreviousOrderCard = ({ order }) => {
               ></i>
             ))}
           </div>
-        </div>
+        </button>
       )}
 
-      {/* Rating Modal Wrapper */}
       <RatingModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleRateSubmit}
         restaurantName={restaurantName}
+        initialRating={currentRating || 0}
       />
     </div>
   );
 };
 
-// --- EXPORTING A MOCK LIST TO TEST BOTH STATES ---
-export function PreviousOrdersList({ orders }) {
+export function PreviousOrdersList({ orders, ratingsByRestaurant = {}, onRate }) {
   if (!orders?.length) return null;
   return (
     <div
@@ -136,8 +125,15 @@ export function PreviousOrdersList({ orders }) {
       }}
     >
       {orders.map((order) => (
-        <PreviousOrderCard key={order.id} order={order} />
+        <PreviousOrderCard
+          key={order.id}
+          order={order}
+          currentRating={ratingsByRestaurant[order.restaurantId] ?? null}
+          onRate={onRate}
+        />
       ))}
     </div>
   );
 }
+
+export default PreviousOrderCard;

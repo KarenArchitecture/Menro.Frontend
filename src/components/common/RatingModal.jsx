@@ -7,8 +7,9 @@ const RatingModal = ({
   onClose,
   onSubmit,
   restaurantName = "منرو",
+  initialRating = 0,
 }) => {
-  const [rating, setRating] = useState(0);
+  const [rating, setRating] = useState(initialRating);
   const [hover, setHover] = useState(0);
   const [isClosing, setIsClosing] = useState(false);
 
@@ -16,8 +17,9 @@ const RatingModal = ({
   useEffect(() => {
     if (isOpen) {
       setIsClosing(false);
+      setRating(initialRating);
     }
-  }, [isOpen]);
+  }, [isOpen, initialRating]);
 
   // Intercept the close action to play the animation first
   const handleClose = () => {
@@ -26,8 +28,6 @@ const RatingModal = ({
     setTimeout(() => {
       onClose();
       setIsClosing(false);
-      // Optional: reset rating on close
-      // setRating(0);
     }, 300);
   };
 
@@ -41,7 +41,6 @@ const RatingModal = ({
   const handleSubmit = () => {
     if (rating > 0 && !isClosing) {
       onSubmit(rating);
-      setRating(0);
       handleClose();
     }
   };
@@ -81,9 +80,8 @@ const RatingModal = ({
                 onClick={() => !isClosing && setRating(star)}
               >
                 <i
-                  className={`fa-star rm-star ${
-                    isActive ? "fa-solid active" : "fa-regular inactive"
-                  }`}
+                  className={`fa-star rm-star ${isActive ? "fa-solid active" : "fa-regular inactive"
+                    }`}
                 ></i>
                 <span
                   className={`rm-star-number ${isActive ? "active-num" : "inactive-num"}`}

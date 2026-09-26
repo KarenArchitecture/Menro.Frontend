@@ -62,31 +62,6 @@ const MobileNav = () => {
     });
   };
 
-  const handleOrdersClick = (event) => {
-    event.preventDefault();
-    requireLogin({
-      onAuthenticated: () => navigate("/orders"),
-      returnUrl: "/orders",
-      type: "orders",
-      icon: (
-        <svg
-          width="34"
-          height="34"
-          viewBox="0 0 34 34"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M8.93321 7.26939C7.88732 8.19002 7.61183 9.74835 7.06086 12.865L6.11938 18.1906C5.34461 22.5732 4.95723 24.7645 6.08665 26.2079C7.21607 27.6512 9.31812 27.6512 13.5222 27.6512H20.4777C24.6818 27.6512 26.7839 27.6512 27.9133 26.2079C29.0427 24.7645 28.6553 22.5732 27.8806 18.1906L26.9391 12.865C26.3881 9.74835 26.1126 8.19002 25.0667 7.26939C24.0208 6.34875 22.526 6.34875 19.5362 6.34875H14.4637C11.474 6.34875 9.9791 6.34875 8.93321 7.26939ZM14.3365 11.3416C14.7247 12.5065 15.7722 13.3386 17.0005 13.3386C18.2288 13.3386 19.2763 12.5065 19.6644 11.3416C19.8377 10.8217 20.3756 10.5491 20.8658 10.7329C21.3561 10.9167 21.613 11.4872 21.4398 12.0071C20.794 13.945 19.0516 15.3357 17.0005 15.3357C14.9494 15.3357 13.2069 13.945 12.5612 12.0071C12.3879 11.4872 12.6448 10.9167 13.1351 10.7329C13.6253 10.5491 14.1632 10.8217 14.3365 11.3416Z"
-            fill="#FF683C"
-          />
-        </svg>
-      ),
-    });
-  };
-
   const isOrdersActive = location.pathname.startsWith("/orders");
 
   const navContent = (
@@ -147,10 +122,9 @@ const MobileNav = () => {
           </li>
 
           <li className="mobile-menu-cart">
-            <a
-              href="/orders"
-              className={`nav-item ${isOrdersActive ? "active" : ""}`}
-              onClick={handleOrdersClick}
+            <NavLink
+              to="/orders"
+              className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
             >
               <svg
                 width="34"
@@ -168,11 +142,9 @@ const MobileNav = () => {
               </svg>
               <span className="text">سفارش‌ها</span>
               {cart.count > 0 && (
-                <span className="badge show">
-                  {toPersianDigits(cart.count)}
-                </span>
+                <span className="badge show">{toPersianDigits(cart.count)}</span>
               )}
-            </a>
+            </NavLink>
           </li>
 
           <li>

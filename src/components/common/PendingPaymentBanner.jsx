@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { getOrderBill } from "../../api/cart";
 import { readPendingCounterOrder, clearPendingCounterOrder } from "../../utils/pendingPaymentStore";
+import "../../assets/css/pending-payment-banner.css";
 
 const REMINDER_INTERVAL_MS = 1 * 60 * 1000;
 const STATUS_CHECK_INTERVAL_MS = 20000;
@@ -16,19 +17,24 @@ export default function PendingPaymentBanner() {
     toast.custom(
       (t) => (
         <div
+          dir="rtl"
+          className="pending-payment-banner"
           onClick={() => {
             toast.dismiss(t.id);
             navigate(`/orders/bill/${pending.orderId}`);
           }}
-          style={{ /* unchanged */ }}
         >
-          <strong style={{ color: "#ff683c", fontSize: "1.3rem" }}>یادآوری پرداخت</strong>
-          <span style={{ fontSize: "1.15rem", lineHeight: 1.7 }}>
+          <strong className="pending-payment-banner__title">یادآوری پرداخت</strong>
+          <span className="pending-payment-banner__text">
             سفارش شما از {pending.restaurantName || "رستوران"} در انتظار پرداخت پای صندوق است.
           </span>
         </div>
       ),
-      { duration: 6000, position: "top-center" }
+      {
+        id: "pending-payment-banner", // 🔧 جلوی چند نسخه‌ی هم‌زمان از همین بنر رو می‌گیره
+        duration: 6000,
+        position: "top-center",
+      }
     );
   }, [navigate]);
 

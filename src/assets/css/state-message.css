@@ -56,7 +56,7 @@
 .state-message--empty {
     --state-color: #ff683c;
     --state-glow: rgba(255, 104, 60, 0.25);
-    margin: 0 2.5rem 2.8rem;
+    margin: 2.5rem 2.5rem 2.8rem;
 }
 .state-message--error {
     --state-color: #f87171;

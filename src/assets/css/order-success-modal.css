@@ -352,3 +352,59 @@
     color: #ff683c;
     font-weight: 800;
 }
+
+
+/* --- Progress ring (checkout / pay-at-counter variant) --- */
+
+.order-success-modal__iconWrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.order-success-modal__icon-circle {
+    position: relative;
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: #ff683c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+.order-success-modal__ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-90deg);
+    z-index: 0;
+}
+
+.order-success-modal__ring-track {
+    stroke: rgba(255, 104, 60, 0.2);
+}
+
+.order-success-modal__ring-fill {
+    stroke: #ff683c;
+    stroke-linecap: round;
+}
+
+.order-success-modal__ring.is-running .order-success-modal__ring-fill {
+    animation: order-success-ring-fill var(--ring-duration) linear forwards;
+}
+
+@keyframes order-success-ring-fill {
+    from {
+        stroke-dashoffset: var(--ring-circumference);
+    }
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+.order-success-modal__backdrop:disabled {
+    cursor: default;
+}

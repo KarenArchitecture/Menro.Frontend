@@ -11,6 +11,7 @@
 .card {
     --card-bg: #0c0f14;
 }
+
 /* Header */
 .header {
     /* margin-bottom: 2rem; */
@@ -25,6 +26,7 @@
     align-items: center;
     gap: 12px;
 }
+
 .header__search {
     flex: 1;
 }
@@ -42,6 +44,7 @@
     border-radius: 12px;
     cursor: pointer;
 }
+
 .header__hamburger img {
     width: 37px;
     height: 38px;
@@ -69,6 +72,7 @@
     padding: 0 !important;
     margin: 0 !important;
 }
+
 /* ===== Main Content Area ===== */
 /* ===== Carousel (layout + visuals only) ===== */
 .carousel {
@@ -155,12 +159,10 @@
     top: calc(-0.9 * var(--dock-cut-size));
     width: var(--dock-cut-size);
     height: var(--dock-cut-size);
-    background: radial-gradient(
-        circle at top left,
-        transparent 0,
-        transparent calc(var(--dock-cut-size) - 0.1rem),
-        var(--dock-bg) var(--dock-cut-size)
-    );
+    background: radial-gradient(circle at top left,
+            transparent 0,
+            transparent calc(var(--dock-cut-size) - 0.1rem),
+            var(--dock-bg) var(--dock-cut-size));
     pointer-events: none;
 }
 
@@ -172,12 +174,10 @@
     bottom: -0.1rem;
     width: var(--dock-cut-size);
     height: var(--dock-cut-size);
-    background: radial-gradient(
-        circle at top left,
-        transparent 0,
-        transparent calc(var(--dock-cut-size) - 0.1rem),
-        var(--dock-bg) var(--dock-cut-size)
-    );
+    background: radial-gradient(circle at top left,
+            transparent 0,
+            transparent calc(var(--dock-cut-size) - 0.1rem),
+            var(--dock-bg) var(--dock-cut-size));
     pointer-events: none;
 }
 
@@ -294,8 +294,7 @@
     font-weight: 500;
 }
 
-.res-more-link svg {
-}
+.res-more-link svg {}
 
 /* ===== Cards Container ===== */
 .cards-container {
@@ -314,8 +313,8 @@
     display: none;
 }
 
-.cards-container + .res-title-box,
-.wide-carousel-cards + .res-title-box {
+.cards-container+.res-title-box,
+.wide-carousel-cards+.res-title-box {
     margin-top: 1.2rem;
 }
 
@@ -360,11 +359,9 @@
     pointer-events: none;
     border-radius: inherit;
 
-    background: linear-gradient(
-        to bottom,
-        rgba(0, 0, 0, 0) 50%,
-        rgba(0, 0, 0, 0.8) 100%
-    );
+    background: linear-gradient(to bottom,
+            rgba(0, 0, 0, 0) 50%,
+            rgba(0, 0, 0, 0.8) 100%);
 }
 
 .logo-container {
@@ -437,9 +434,11 @@
 .time-badge {
     display: flex;
     align-self: end !important;
-    justify-content: space-between; /* little space between time and status */
+    justify-content: space-between;
+    /* little space between time and status */
     background-color: #1e232a;
-    color: #fafaf4; /* default text color (time stays white) */
+    color: #fafaf4;
+    /* default text color (time stays white) */
     padding: 0.2rem 0.5rem;
     border-radius: 0.6rem;
     font-size: 0.8rem;
@@ -457,14 +456,19 @@
     color: #70fd9a;
 
     font-size: 0.8rem;
-} /* green */
+}
+
+/* green */
 .time-badge__status.closed {
     color: #dc2626;
-} /* red */
+}
+
+/* red */
 
 :root {
     --badge-overlay: 35px;
 }
+
 .time-badge span {
     text-align: center;
     border-radius: 6px;
@@ -523,9 +527,12 @@
 /* Single banner */
 .single-banner {
     padding: 0 2.5rem;
-    margin-bottom: 2.8rem;
     display: block;
     overflow: hidden;
+}
+
+.single-banner {
+    margin-bottom: 2.8rem !important;
 }
 
 .banner-content {
@@ -613,11 +620,13 @@
     padding: 2.8rem 2.5rem;
     text-align: center;
 }
+
 .unauth-cta__title {
     font-size: 1.4rem;
     margin: 2rem 0;
     font-weight: 600;
 }
+
 .unauth-cta__button {
     display: inline-block;
     padding: 1rem 2rem;
@@ -636,9 +645,11 @@
     0% {
         opacity: 0.6;
     }
+
     50% {
         opacity: 1;
     }
+
     100% {
         opacity: 0.6;
     }
@@ -710,11 +721,9 @@
     pointer-events: none;
     border-radius: inherit;
 
-    background: linear-gradient(
-        to bottom,
-        rgba(0, 0, 0, 0) 50%,
-        rgba(0, 0, 0, 0.3) 100%
-    );
+    background: linear-gradient(to bottom,
+            rgba(0, 0, 0, 0) 50%,
+            rgba(0, 0, 0, 0.3) 100%);
 }
 
 .popular-food-row__category-icon {
@@ -772,6 +781,7 @@
     margin: 0;
     color: #d17842;
 }
+
 .food-price span {
     font-size: 13px;
     font-weight: 700;
@@ -795,9 +805,11 @@
     font-size: 1rem;
     font-weight: 800;
 }
+
 .qty-controls {
     display: flex;
-    flex-direction: row-reverse; /* RTL: + on right, – on left */
+    flex-direction: row-reverse;
+    /* RTL: + on right, – on left */
     align-items: center;
     gap: 8px;
 }
@@ -890,6 +902,7 @@
     font-size: 1.1rem;
     font-weight: 700;
 }
+
 .rating-chip .voters {
     opacity: 0.85;
     font-size: 0.9rem;
@@ -909,17 +922,21 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 150px; /* Give it some space */
+    min-height: 150px;
+    /* Give it some space */
 }
 
 .loading-spinner {
     width: 50px;
     height: 50px;
-    border: 5px solid #f3f3f3; /* Light grey */
-    border-top: 5px solid #d17842; /* Your theme's orange color */
+    border: 5px solid #f3f3f3;
+    /* Light grey */
+    border-top: 5px solid #d17842;
+    /* Your theme's orange color */
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
+
 .resend-btn {
     margin-top: 10px;
     background: none;
@@ -943,6 +960,7 @@
     0% {
         transform: rotate(0deg);
     }
+
     100% {
         transform: rotate(360deg);
     }
@@ -978,6 +996,7 @@
         font-weight: 800;
         text-decoration: none;
     }
+
     .mobile-nav {
         display: none;
     }
@@ -988,6 +1007,7 @@
         font-weight: 500;
         gap: 0.5rem;
     }
+
     .mobile-nav .nav-icon {
         display: none;
     }
@@ -1014,6 +1034,7 @@
         text-align: center;
         width: 100vw;
     }
+
     .banner-dots {
         display: inline-flex;
         justify-content: center;
@@ -1063,6 +1084,7 @@
         border-radius: 1rem;
         overflow: hidden;
     }
+
     .single-banner-img {
         display: block;
         width: 100%;
@@ -1164,5 +1186,6 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
-    overflow: visible; /* prevents horizontal scroll behavior */
+    overflow: visible;
+    /* prevents horizontal scroll behavior */
 }

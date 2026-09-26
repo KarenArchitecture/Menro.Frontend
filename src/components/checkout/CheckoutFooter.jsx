@@ -4,6 +4,7 @@ import OrderSuccessModal from "../common/OrderSuccessModal";
 import { markPendingCounterOrder } from "../../utils/pendingPaymentStore";
 import { fetchRestaurantTables } from "../../api/cart";
 import { addPendingOrder } from "../../utils/pendingOrdersStore";
+import { toPersianDigits } from "../../utils/persianNumbers";
 
 const formatIR = (n) => Number(n || 0).toLocaleString("fa-IR");
 
@@ -14,8 +15,10 @@ export default function CheckoutFooter({
   onConfirm,
   restaurantId,
   restaurantName,
+  restaurantSlug,
   paymentMethod = "",
   hasItems = true,
+  pendingOrders = [], // 🔧 سفارش‌های ثبت‌شده‌ی هنوز completed-نشده (حالت سوم)
 }) {
   const [isPickingTable, setIsPickingTable] = useState(false);
   const [selectedTable, setSelectedTable] = useState(undefined);
@@ -67,6 +70,10 @@ export default function CheckoutFooter({
 
     if (isSubmitting) return;
 
+    // 🔧 قبل از onConfirm بگیرش — چون داخل onConfirm، cart.refresh() سبد
+    // (و از جمله restaurantSlug) رو پاک می‌کنه و prop بعدش دیگه معتبر نیست
+    const capturedRestaurantSlug = restaurantSlug;
+
     try {
       setIsSubmitting(true);
 
@@ -79,9 +86,8 @@ export default function CheckoutFooter({
       setOrderSnapshot({
         orderId: result.orderId,
         invoiceNumber: result.invoiceNumber,
-        // "checkout" -> pay-at-counter (invoice chip, no CTA)
-        // "invoice"  -> pay-after-serving (CTA button, no chip)
         variant: isPayAtCounter ? "checkout" : "invoice",
+        restaurantSlug: capturedRestaurantSlug, // 🔧 مقدار درست، نه prop زنده
         items: (result.items || []).map((it, idx) => ({
           id: idx,
           name: it.variantName
@@ -97,7 +103,7 @@ export default function CheckoutFooter({
       if (isPayAtCounter) {
         markPendingCounterOrder(result.orderId, result.restaurantName || "");
       }
-      addPendingOrder({                                    // 🔧 اضافه شد — مستقل از شیوه پرداخت
+      addPendingOrder({
         orderId: result.orderId,
         invoiceNumber: result.invoiceNumber,
         totalPrice: result.totalPrice,
@@ -118,11 +124,13 @@ export default function CheckoutFooter({
   const isChoosingTable = isPickingTable && selectedTable === undefined;
   const payDisabled = isChoosingTable || isSubmitting;
 
-  const payLabel = !isPickingTable
-    ? "پرداخت"
-    : selectedTable === undefined
-      ? "میز خود را انتخاب کنید"
-      : "تایید و پرداخت";
+  // 🔧 متن دکمه به شیوه‌ی پرداخت وابسته‌ست و بعد از انتخاب میز دیگه عوض نمی‌شه
+  const baseLabel = paymentMethod === "BankGateway" ? "پرداخت" : "ثبت سفارش";
+  const payLabel = isChoosingTable ? "میز خود را انتخاب کنید" : baseLabel;
+
+  const pendingInvoiceList = pendingOrders
+    .map((o) => toPersianDigits(o.invoiceNumber))
+    .join("، ");
 
   return (
     <>
@@ -142,13 +150,28 @@ export default function CheckoutFooter({
         <div
           className={`checkout-footer ${isPickingTable ? "is-picking-table" : ""}`}
         >
-          <div className="discount-wrapper">
-            <input
-              type="text"
-              className="discount-input"
-              placeholder="کد تخفیف دارم..."
-            />
-          </div>
+          {/* 🔧 حالت سوم: سبد پر + سفارش قبلی هنوز completed-نشده — ادغام‌شده با فوتر، نه یه کارت جدا */}
+          {pendingOrders.length > 0 && (
+            <div className="checkout-footer__pending-row">
+              <span className="checkout-footer__pending-label">
+                شماره فاکتور سفارش‌های قبل شما
+              </span>
+              <span className="checkout-footer__pending-value">
+                {pendingInvoiceList}
+              </span>
+            </div>
+          )}
+
+          {/* 🔧 فقط برای پرداخت آنلاین (فعلاً هیچ رستورانی این رو انتخاب نکرده) */}
+          {paymentMethod === "BankGateway" && (
+            <div className="discount-wrapper">
+              <input
+                type="text"
+                className="discount-input"
+                placeholder="کد تخفیف دارم..."
+              />
+            </div>
+          )}
 
           <div className="footer-main">
             <div className="footer-total">
@@ -200,31 +223,14 @@ export default function CheckoutFooter({
       <OrderSuccessModal
         open={showSuccess}
         variant={orderSnapshot?.variant ?? "checkout"}
-        iconSrc={
-          orderSnapshot?.variant === "invoice"
-            ? "/images/checkout-success-check.png"
-            : "/images/checkout-success.png"
-        }
-        title={
-          orderSnapshot?.variant === "invoice" ? (
-            <>
-              سفارش شما <span>ثبت شد</span>
-            </>
-          ) : (
-            <>
-              سفارش در انتظار <span>پرداخت حضوری شماست</span>
-            </>
-          )
-        }
-        subtitle=""
         items={orderSnapshot?.items ?? []}
         discount={0}
         total={orderSnapshot?.total ?? 0}
         invoiceNumber={orderSnapshot?.invoiceNumber}
         primaryActionTo={
-          orderSnapshot?.variant === "invoice"
-            ? "/orders"
-            : `/orders/bill/${orderSnapshot?.orderId}`
+          orderSnapshot?.restaurantSlug
+            ? `/restaurant/${orderSnapshot.restaurantSlug}`
+            : "/orders"
         }
         formatPrice={formatIR}
         onClose={handleSuccessContinue}

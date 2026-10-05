@@ -9,6 +9,7 @@ import AdminSidebar from "../../components/admin/AdminSidebar";
 
 /* ===================== Sections: restaurant-mgmt ===================== */
 import RestaurantProfileSection from "../../components/admin/RestaurantProfileSection";
+import QrCodeSection from "../../components/admin/QrCodeSection";
 import RestaurantTablesSection from "../../components/admin/RestaurantTablesSection";
 import MenuManagementSection from "../../components/admin/MenuManagementSection";
 import CategoriesSection from "../../components/admin/CategoriesSection";
@@ -60,9 +61,7 @@ export default function AdminPage() {
   const [hasNewRequest, setHasNewRequest] = useState(false);
   const [restaurantId, setRestaurantId] = useState();
 
-  const isOwner = (user?.roles || []).some(
-    (r) => r.toLowerCase() === "owner",
-  );
+  const isOwner = (user?.roles || []).some((r) => r.toLowerCase() === "owner");
 
   const { data: pendingComments = [] } = useQuery({
     queryKey: ["owner-comments", "pending"],
@@ -110,6 +109,8 @@ export default function AdminPage() {
       // --- restaurant-mgmt ---
       case "restaurant-profile":
         return <RestaurantProfileSection />;
+      case "restaurant-qr":
+        return <QrCodeSection />;
       case "restaurant-tables":
         return <RestaurantTablesSection />;
       case "menu":

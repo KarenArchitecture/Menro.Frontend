@@ -1,0 +1,397 @@
+/* src/assets/css/admin/QrCodeSection.css
+   استایل اختصاصی تب «کد QR». فقط کلاس‌های .panel، .btn-icon و .empty-hint
+   از admin-dashboard.css به ارث می‌رسد. */
+
+.qrc-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.qrc-header {
+  align-items: flex-start;
+}
+
+.qrc-subtitle {
+  margin: 4px 0 0;
+  text-align: right;
+  font-size: 0.9rem;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.6));
+}
+
+.qrc-count-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--primary-color, #ff683c);
+  font-weight: 700;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* ---------- Main QR ---------- */
+.qrc-main {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.qrc-preview-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* زمینه‌ی QR همیشه سفید است (quiet zone) */
+.qrc-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.qrc-preview canvas {
+  max-width: 100%;
+  height: auto !important;
+}
+
+.qrc-link-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 6px 6px 10px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-color, #3a3a3a);
+}
+
+.qrc-link {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.78rem;
+  color: var(--text-secondary, #bbb);
+}
+
+/* ---------- Settings ---------- */
+.qrc-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.qrc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.qrc-field__label {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-primary, #eaeaea);
+}
+
+.qrc-swatches {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.qrc-swatch {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.qrc-swatch:hover {
+  transform: scale(1.08);
+}
+
+.qrc-swatch--active {
+  border-color: var(--primary-color, #ff683c);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+}
+
+.qrc-segmented {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 3px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-color, #3a3a3a);
+}
+
+.qrc-segmented__btn {
+  padding: 7px 18px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary, #bbb);
+  font-family: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.qrc-segmented__btn--active {
+  background: rgba(245, 158, 11, 0.16);
+  color: var(--primary-color, #ff683c);
+  font-weight: 700;
+}
+
+.qrc-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--text-primary, #eaeaea);
+  cursor: pointer;
+}
+
+.qrc-toggle input {
+  accent-color: var(--primary-color, #ff683c);
+  width: 16px;
+  height: 16px;
+}
+
+.qrc-toggle em {
+  font-style: normal;
+  font-size: 0.8rem;
+  color: var(--text-muted, #888);
+}
+
+.qrc-toggle--disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* ---------- Buttons ---------- */
+.qrc-downloads {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.qrc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  background: transparent;
+  color: var(--primary-color, #ff683c);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.qrc-btn:hover:not(:disabled) {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: var(--primary-color, #ff683c);
+}
+
+.qrc-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.qrc-btn--primary {
+  background: var(--primary-color, #ff683c);
+  border-color: var(--primary-color, #ff683c);
+  color: #fff;
+}
+
+.qrc-btn--primary:hover:not(:disabled) {
+  background: var(--primary-color, #ff683c);
+  filter: brightness(1.08);
+}
+
+.qrc-btn--small {
+  padding: 7px 12px;
+  font-size: 0.82rem;
+  width: 100%;
+}
+
+.qrc-tip {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: var(--text-muted, #888);
+}
+
+.qrc-tip i {
+  margin-top: 4px;
+}
+
+/* ---------- Tables ---------- */
+.qrc-tables {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.qrc-tables__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.qrc-tables__head h4 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.qrc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 14px;
+}
+
+.qrc-table-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: border-color 0.15s ease;
+}
+
+.qrc-table-card:hover {
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.qrc-table-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(245, 158, 11, 0.14);
+  color: var(--primary-color, #ff683c);
+  font-size: 1.05rem;
+}
+
+.qrc-table-card__label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary, #eaeaea);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 800px) {
+  .qrc-main {
+    grid-template-columns: 1fr;
+  }
+  .qrc-preview-card {
+    max-width: 320px;
+    margin-inline: auto;
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .qrc-header,
+  .qrc-tables__head {
+    flex-wrap: wrap;
+  }
+  .qrc-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+}
+
+/* ---------- Printable card (به انتهای QrCodeSection.css اضافه شود) ---------- */
+.qrc-card-grid {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.qrc-card-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.qrc-card-preview img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.qrc-input {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-color, #3a3a3a);
+  border-radius: 8px;
+  padding: 9px 12px;
+  color: var(--text-primary, #eaeaea);
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.qrc-input:focus {
+  outline: none;
+  border-color: var(--primary-color, #ff683c);
+}
+
+@media (max-width: 800px) {
+  .qrc-card-grid {
+    grid-template-columns: 1fr;
+  }
+  .qrc-card-preview {
+    max-width: 320px;
+    margin-inline: auto;
+    width: 100%;
+  }
+}

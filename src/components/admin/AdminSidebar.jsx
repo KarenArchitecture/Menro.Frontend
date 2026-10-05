@@ -30,6 +30,11 @@ const NAV_GROUPS = [
         icon: "fas fa-store",
       },
       {
+        key: "restaurant-qr",
+        label: "کد QR",
+        icon: "fas fa-qrcode",
+      },
+      {
         key: "restaurant-tables",
         label: "میزهای رستوران",
         icon: "fas fa-chair",
@@ -137,7 +142,7 @@ const NAV_GROUPS = [
 
 export default function AdminSidebar({
   isOpen = false,
-  onClose = () => { },
+  onClose = () => {},
   activeTab,
   onSelect,
   hasNewRequest = false,
@@ -308,8 +313,9 @@ export default function AdminSidebar({
             <div key={group.key} className="admin-sidebar__group">
               <button
                 type="button"
-                className={`nav-section-title admin-sidebar__group-toggle ${isGroupOpen ? "open" : ""
-                  }`}
+                className={`nav-section-title admin-sidebar__group-toggle ${
+                  isGroupOpen ? "open" : ""
+                }`}
                 onClick={() => toggleGroup(group.key)}
                 aria-expanded={isGroupOpen}
               >

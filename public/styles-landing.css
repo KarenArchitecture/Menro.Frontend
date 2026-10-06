@@ -1,7 +1,9 @@
 /***************************************
  * 1) Tokens & Reset
  **************************************/
-
+.app-shell__content {
+  padding-bottom: 0 !important;
+}
 :root {
   --bg: #0f0f10;
   --bg-hero: #0b0f13;
@@ -162,6 +164,7 @@ body {
 }
 
 .hero__title {
+  margin: 0;
   color: var(--text);
   font-size: 50px;
   font-weight: 800;
@@ -173,6 +176,7 @@ body {
 }
 
 .hero__description {
+  margin: 0;
   font-size: 40px;
   font-weight: 400;
 }
@@ -184,7 +188,7 @@ body {
 }
 
 .hero .search-bar {
-  width: 100% !important;
+  width: 170% !important;
   height: 6rem;
   padding: 0 0.9rem;
   border-radius: 22px;
@@ -199,7 +203,9 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
     0 10px 24px rgba(0, 0, 0, 0.25);
 }
-
+.hero__search {
+  margin-left: 16rem;
+}
 .hero .search-bar input {
   flex: 1 1 auto;
   height: 100%;
@@ -520,8 +526,8 @@ body {
 
 /* Placement approximations to match the mock */
 .pos-a {
-  top: 29rem;
-  right: 13rem;
+  top: 19rem;
+  right: 7rem;
 }
 
 .pos-b {
@@ -557,10 +563,10 @@ body {
 }
 
 .pos-f {
-  top: 22rem;
-  left: 20rem;
-  width: 12rem;
-  height: 12rem;
+  top: 34rem;
+  left: 51rem;
+  width: 10rem;
+  height: 10rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -583,10 +589,10 @@ body {
 }
 
 .pos-i {
-  left: 15rem;
-  top: 92rem;
-  width: 12rem;
-  height: 12rem;
+  left: 5rem;
+  top: 45rem;
+  width: 10rem;
+  height: 10rem;
   background: linear-gradient(246.95deg, #111b2f 0.52%, #111b2f 98.07%);
 }
 
@@ -597,7 +603,7 @@ body {
 }
 
 .why-menro-logo-icon {
-  width: 7rem;
+  width: 3.7rem;
   height: auto;
   display: block;
   object-fit: contain;
@@ -660,8 +666,8 @@ body {
 
 /* --- Sales Boost Card --- */
 .sales-boost {
-  width: 320px;
-  height: 320px;
+  width: 18rem;
+  height: 18rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1084,6 +1090,7 @@ body {
     font-weight: 800;
     color: #fff;
     width: 100%;
+    font-size: 4rem !important;
   }
 
   .bp__glow {
@@ -1181,8 +1188,8 @@ body {
 
 /* general info cards */
 .info-card {
-  width: 310px;
-  height: 310px;
+  width: 22rem;
+  height: 19rem;
 }
 
 .info-card__header {
@@ -1204,13 +1211,14 @@ body {
 }
 
 .info-desc {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 500;
   color: #999fa8;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0 0.2rem 0 0;
+  margin: 0;
 }
 
 /***************************************
@@ -1246,8 +1254,8 @@ body {
   visibility: hidden;
 }
 .stat-icon {
-  width: 120px;
-  height: 120px;
+  width: 12rem;
+  height: 12rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1345,8 +1353,8 @@ body {
 
 @media (max-width: 480px) {
   .stat-icon {
-    width: 8rem;
-    height: 8rem;
+    width: 10rem;
+    height: 10rem;
   }
 
   .stat-item {
@@ -1370,11 +1378,11 @@ body {
   }
 
   .stat-number {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
 
   .stat-text {
-    font-size: 1.55rem;
+    font-size: 1.6rem;
   }
 }
 
@@ -1569,8 +1577,8 @@ body {
   .install-banner__phone--back {
     width: clamp(22rem, 52vw, 29rem);
     right: auto;
-    left: 14%;
-    top: 2.4rem;
+    left: 12%;
+    top: 4.6rem;
     opacity: 0.7;
     filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.4));
     z-index: 3;
@@ -1578,8 +1586,8 @@ body {
 
   .install-banner__phone--front {
     width: clamp(27rem, 64vw, 36rem);
-    right: 6%;
-    top: -0.4rem;
+    right: 9%;
+    top: 2.6rem;
     z-index: 4;
   }
 
@@ -3397,5 +3405,5 @@ body {
 
 /* FINAL FIXES */
 .footer-bg {
-  margin-bottom: 10rem;
+  margin-bottom: 0 !important;
 }

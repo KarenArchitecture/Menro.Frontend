@@ -43,3 +43,10 @@ export const createOrder = async (orderPayload) => {
     throw err;
   }
 };
+
+// 🔁 "همون همیشگی": غذاهای پرسفارش کاربر در یک رستوران
+// Backend: GET /api/user/orders/restaurant/{slug}/frequent-foods
+export const getUserFrequentFoodsAtRestaurant = (slug) =>
+  userAxios
+    .get(`/orders/restaurant/${encodeURIComponent(slug)}/frequent-foods`)
+    .then((r) => r.data);

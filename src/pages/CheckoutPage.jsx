@@ -81,11 +81,7 @@ export default function CheckoutPage() {
               <CartCard key={item.id} item={item} onChangeQty={changeQty} />
             ))}
           </div>
-          <div
-            className={`footer-spacer ${pendingOrders.length > 0 ? "footer-spacer--with-pending" : ""
-              }`}
-            aria-hidden="true"
-          />
+          <div className="footer-spacer" aria-hidden="true" />
         </>
       )}
 

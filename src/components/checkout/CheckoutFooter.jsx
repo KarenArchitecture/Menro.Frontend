@@ -1,5 +1,5 @@
 // src/components/checkout/CheckoutFooter.jsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import OrderSuccessModal from "../common/OrderSuccessModal";
 import { markPendingCounterOrder } from "../../utils/pendingPaymentStore";
 import { fetchRestaurantTables } from "../../api/cart";
@@ -44,6 +44,46 @@ export default function CheckoutFooter({
       cancelled = true;
     };
   }, [restaurantId]);
+
+  const footerRef = useRef(null);
+  const noticeRef = useRef(null);
+  const pickingRef = useRef(false);
+
+  const hasNotice = hasItems && paymentMethod === "PayAfterServing";
+
+  useEffect(() => {
+    pickingRef.current = isPickingTable;
+  }, [isPickingTable]);
+
+  useEffect(() => {
+    const footer = footerRef.current;
+    if (!footer || !hasItems) return;
+    const notice = noticeRef.current;
+    const root = document.documentElement;
+
+    const update = () => {
+      root.style.setProperty("--footer-live-h", `${footer.offsetHeight}px`);
+      if (!pickingRef.current) {
+        root.style.setProperty("--footer-base-h", `${footer.offsetHeight}px`);
+      }
+      root.style.setProperty(
+        "--notice-h",
+        notice ? `${notice.offsetHeight}px` : "0px"
+      );
+    };
+
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(footer);
+    if (notice) ro.observe(notice);
+
+    return () => {
+      ro.disconnect();
+      ["--footer-live-h", "--footer-base-h", "--notice-h"].forEach((v) =>
+        root.style.removeProperty(v)
+      );
+    };
+  }, [hasItems, hasNotice, pendingOrders.length, paymentMethod, restaurantName]);
 
   const tableOptions = useMemo(() => {
     const opts = tables.map((t) => ({
@@ -138,17 +178,18 @@ export default function CheckoutFooter({
         <div className="table-overlay" onClick={handleCloseTableSelector} />
       )}
 
-      {hasItems && paymentMethod === "PayAfterServing" && (
-        <div className="checkout-payment-notice">
-          {restaurantName
-            ? <>پرداخت‌های «{restaurantName}» پس از صرف غذا، پای صندوق صورت می‌گیرد</>
-            : <>پرداخت‌های این رستوران پس از صرف غذا، پای صندوق صورت می‌گیرد</>}
-        </div>
+      {hasNotice && (
+        <p className="checkout-payment-notice" ref={noticeRef}>
+          {restaurantName ? <>پرداخت‌های «{restaurantName}»</> : <>پرداخت‌های این رستوران</>}{" "}
+          <span>پس از صرف غذا</span>، پای صندوق صورت می‌گیرد
+        </p>
       )}
 
       {hasItems && (
         <div
-          className={`checkout-footer ${isPickingTable ? "is-picking-table" : ""}`}
+          ref={footerRef}
+          className={`checkout-footer ${isPickingTable ? "is-picking-table" : ""} ${hasNotice ? "has-notice" : ""
+            }`}
         >
           {/* 🔧 حالت سوم: سبد پر + سفارش قبلی هنوز completed-نشده — ادغام‌شده با فوتر، نه یه کارت جدا */}
           {pendingOrders.length > 0 && (

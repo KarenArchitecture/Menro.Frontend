@@ -41,7 +41,7 @@ function MenuSectionHeaderSkeleton() {
   );
 }
 
-function MenuCardSkeleton({ vertical = false, shortTitle = false }) {
+export function MenuCardSkeleton({ vertical = false, shortTitle = false }) {
   return (
     <div className={`menu-card food-card-skeleton ${vertical ? "menu-card--vertical" : ""}`}>
       <div className="menu-card__media">
@@ -50,9 +50,8 @@ function MenuCardSkeleton({ vertical = false, shortTitle = false }) {
 
       <div className="menu-card__body">
         <div
-          className={`food-title-skeleton skeleton-shimmer ${
-            shortTitle ? "food-title-skeleton--short" : ""
-          }`}
+          className={`food-title-skeleton skeleton-shimmer ${shortTitle ? "food-title-skeleton--short" : ""
+            }`}
         />
         <div className="menu-card__price">
           <div className="shop-price-skeleton skeleton-shimmer" />
@@ -79,10 +78,9 @@ export function ShopMenuSkeleton({
           <MenuSectionHeaderSkeleton />
 
           <div
-            className={`food_items shop-food-row-skeleton ${
-                vertical ? "vertical-scroll" : "horizontal-scroll"
-            }`}
-            >
+            className={`food_items shop-food-row-skeleton ${vertical ? "vertical-scroll" : "horizontal-scroll"
+              }`}
+          >
             {Array.from({ length: cardsPerSection }).map((_, cardIndex) => (
               <MenuCardSkeleton
                 key={cardIndex}

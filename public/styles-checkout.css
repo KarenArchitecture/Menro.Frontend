@@ -102,7 +102,7 @@ h2 {
     display: flex;
     align-items: center;
     flex-direction: column;
-    gap: 1.2rem;
+    gap: 0;
 }
 
 .cart-items {
@@ -113,7 +113,11 @@ h2 {
 
 .cart-card-wrap {
     position: relative;
-    margin-bottom: 4rem; /* space for the pill so next card doesn't overlap */
+    margin-bottom: 2rem; /* space for the pill so next card doesn't overlap */
+}
+
+.cart-card-wrap--has-addons {
+    margin-bottom: calc(38px + 2rem);
 }
 
 /* the card itself */
@@ -653,9 +657,7 @@ h2 {
     visibility: visible;
 }
 /* Checkout Footer */
-.footer-spacer {
-    height: var(--footer-h);
-}
+
 
 .checkout-footer {
     position: fixed;
@@ -1079,26 +1081,6 @@ h2 {
     cursor: pointer;
 }
 
-.checkout-payment-notice {
-    position: fixed;
-    inset-inline: 0;
-    bottom: calc(var(--footer-h, 8.4rem));
-    background: #0c0f14;
-    color: #ff683c;
-    font-size: 1.2rem;
-    font-weight: 700;
-    text-align: center;
-    padding: 0.8rem 1.6rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-    z-index: 999;
-}
-
-.footer-spacer--with-pending {
-  /* ارتفاع تقریبی خود pending-orders-card--attached: تراز بزن اگه با
-     پدینگ/فونت واقعی رندرشده فرق داشت */
-  height: calc(var(--footer-h) + 7.2rem);
-}
-
 
 /* ردیف فاکتورهای completed-نشده، وقتی داخل خود checkout-footer ادغام شده */
 .checkout-footer__pending-row {
@@ -1128,6 +1110,39 @@ h2 {
 }
 
 /* ارتفاع بیشتر برای اسپیسر، چون footer یه ردیف اضافه پیدا کرده */
-.footer-spacer--with-pending {
-  height: calc(var(--footer-h) + 6.8rem); /* عدد تقریبیه — بعد از تست تنظیمش کن */
+
+.footer-spacer {
+  height: calc(
+    var(--footer-base-h, var(--footer-h)) + var(--notice-h, 0px) + 1.6rem
+  );
+}
+
+.checkout-payment-notice {
+  position: fixed;
+  inset-inline: 0;
+  bottom: var(--footer-live-h, var(--footer-h));
+  margin: 0;
+  padding: 2.4rem 1.6rem 1.2rem;
+  background: #13171e;
+  border-radius: 1.6rem 1.6rem 0 0;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.28);
+  z-index: 999;
+
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.7;
+  color: #fff;
+  text-align: right;
+  transition: bottom 0.25s ease;
+}
+
+.checkout-payment-notice span {
+  color: #ff683c;
+}
+
+.checkout-footer.has-notice {
+  background: #13171e;
+  border-top: none;
+  border-radius: 0;
+  box-shadow: none;
 }

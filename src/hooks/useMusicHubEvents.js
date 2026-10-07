@@ -2,13 +2,14 @@ import { useEffect, useRef } from "react";
 import { getMusicConnection } from "../utils/signalr";
 import { MusicHubEvents } from "../utils/musicHubContract";
 
-// عضویت گروه رو Provider سراسری مدیریت می‌کنه؛ این hook فقط گوش می‌ده.
+// عضویت گروه رو AdminNotificationProvider مدیریت می‌کنه؛ این hook فقط گوش می‌ده.
 export function useMusicHubEvents({
   onCreated,
   onApproved,
   onRejected,
   onPlaybackChanged,
   onPlaylistChanged,
+  onOrderCreated,
 } = {}) {
   const handlersRef = useRef({});
   handlersRef.current = {
@@ -17,11 +18,11 @@ export function useMusicHubEvents({
     onRejected,
     onPlaybackChanged,
     onPlaylistChanged,
+    onOrderCreated,
   };
 
   useEffect(() => {
     const connection = getMusicConnection();
-    const h = handlersRef.current;
     const subs = [
       [
         MusicHubEvents.TrackRequested,
@@ -42,6 +43,10 @@ export function useMusicHubEvents({
       [
         MusicHubEvents.PlaylistChanged,
         () => handlersRef.current.onPlaylistChanged?.(),
+      ],
+      [
+        MusicHubEvents.OrderCreated,
+        (d) => handlersRef.current.onOrderCreated?.(d),
       ],
     ];
     subs.forEach(([evt, fn]) => connection.on(evt, fn));

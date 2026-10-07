@@ -1,10 +1,11 @@
 // src/components/admin/OrdersSection.jsx
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import OrderModal from "./OrderModal";
 import adminOrderAxios from "../../api/adminOrderAxios";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 import { toPersianDigits } from "../../utils/persianNumbers";
+import { useMusicHubEvents } from "../../hooks/useMusicHubEvents";
 
 const now = Date.now();
 const DAY = 24 * 60 * 60 * 1000;
@@ -87,6 +88,7 @@ export default function OrdersSection() {
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const debounceRef = useRef(null);
+  const requestIdRef = useRef(0);
 
   const restaurantPaymentMethod = orders.find(Boolean)?.paymentMethod;
 
@@ -179,32 +181,50 @@ export default function OrdersSection() {
     setSelected(null);
   };
 
-  useEffect(() => {
-    let cancelled = false;
-    async function loadOrders() {
+  // silent=true یعنی رفرش پس‌زمینه: لودینگ نشان نمی‌دهد و لیست پرش نمی‌کند.
+  const loadOrders = useCallback(
+    async ({ silent = false } = {}) => {
+      // هر درخواست جدید، پاسخ درخواست‌های قبلی را بی‌اعتبار می‌کند
+      // (جلوگیری از اینکه جواب کهنه روی جواب تازه بنشیند)
+      const id = ++requestIdRef.current;
       try {
-        setLoading(true);
-        setError("");
+        if (!silent) {
+          setLoading(true);
+          setError("");
+        }
         const [activeRes, historyRes] = await Promise.all([
           adminOrderAxios.get("/active"),
           adminOrderAxios.get("/history"),
         ]);
-        if (!cancelled) setOrders([...activeRes.data, ...historyRes.data]);
+        if (id !== requestIdRef.current) return;
+        setOrders([...activeRes.data, ...historyRes.data]);
+        setError("");
       } catch (e) {
-        if (!cancelled) {
-          console.error("خطا در دریافت سفارش‌ها:", e);
+        if (id !== requestIdRef.current) return;
+        console.error("خطا در دریافت سفارش‌ها:", e);
+        // رفرش پس‌زمینه نباید لیست فعلی را با پیام خطا خراب کند
+        if (!silent) {
           setError("خطا در دریافت سفارش‌ها");
           notify({ type: "error", message: "خطا در دریافت سفارش‌ها" });
         }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (id === requestIdRef.current) setLoading(false);
       }
-    }
+    },
+    [notify],
+  );
+
+  useEffect(() => {
     loadOrders();
     return () => {
-      cancelled = true;
+      requestIdRef.current++; // بعد از unmount هیچ پاسخی state را ست نکند
     };
-  }, []);
+  }, [loadOrders]);
+
+  // سفارش جدید آمد و ادمین روی همین تب است: فقط همین لیست بی‌صدا رفرش شود
+  useMusicHubEvents({
+    onOrderCreated: () => loadOrders({ silent: true }),
+  });
 
   return (
     <div className="panel orders-panel">

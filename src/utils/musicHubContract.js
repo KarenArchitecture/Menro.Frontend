@@ -12,4 +12,5 @@ export const MusicHubEvents = {
   TrackRejected: "RequestRejected",
   PlaylistChanged: "PlaylistChanged",
   PlaybackChanged: "PlaybackChanged",
+  OrderCreated: "OrderCreated",
 };

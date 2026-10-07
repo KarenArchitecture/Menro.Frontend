@@ -83,9 +83,11 @@ export function AdminNotificationProvider({ children }) {
 
     const connection = getMusicConnection();
     const onRequested = () => push("music_request");
+    const onOrder = () => push("order");
     let cancelled = false;
 
     connection.on(MusicHubEvents.TrackRequested, onRequested);
+    connection.on(MusicHubEvents.OrderCreated, onOrder);
 
     (async () => {
       try {
@@ -103,6 +105,7 @@ export function AdminNotificationProvider({ children }) {
       cancelled = true;
       unregisterActiveRoom("admin", restaurantId);
       connection.off(MusicHubEvents.TrackRequested, onRequested);
+      connection.off(MusicHubEvents.OrderCreated, onOrder);
       if (connection.state === "Connected") {
         connection
           .invoke(MusicHubMethods.LeaveAsAdmin, restaurantId)

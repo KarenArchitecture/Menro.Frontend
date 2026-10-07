@@ -1,5 +1,7 @@
 // src/pages/AdminPage.jsx
 import { useState, useCallback, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 /* ===================== Layout ===================== */
@@ -51,9 +53,15 @@ export default function AdminPage() {
   useDocumentTitle("پنل مدیریت");
   const cssReady = usePageStyles("/admin-dashboard.css");
 
-  const [activeTab, setActiveTab] = useState(
-    () => localStorage.getItem("admin-active-tab") || "dashboard",
-  );
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab =
+    searchParams.get("tab") ||
+    localStorage.getItem("admin-active-tab") ||
+    "dashboard";
+
+  useEffect(() => {
+    localStorage.setItem("admin-active-tab", activeTab);
+  }, [activeTab]);
 
   const { user } = useAuth();
 
@@ -88,16 +96,16 @@ export default function AdminPage() {
   /* ---------------------------
    * UI HANDLERS
    * -------------------------- */
-  const handleSelectTab = useCallback((tab) => {
-    setActiveTab(tab);
-    localStorage.setItem("admin-active-tab", tab);
-
-    setSidebarOpen(false);
-
-    if (tab === "music") {
-      setHasNewRequest(false);
-    }
-  }, []);
+  const handleSelectTab = useCallback(
+    (tab) => {
+      setSearchParams({ tab }, { replace: true });
+      setSidebarOpen(false);
+      if (tab === "music") {
+        setHasNewRequest(false);
+      }
+    },
+    [setSearchParams],
+  );
 
   const toggleSidebar = () => setSidebarOpen((v) => !v);
   const closeSidebar = () => setSidebarOpen(false);

@@ -130,6 +130,19 @@
   color: var(--gui-text);
 }
 
+.gui-toast__action {
+  flex-shrink: 0;
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 /* ==========================================================================
    MODALS (alert + confirm)
    ========================================================================== */

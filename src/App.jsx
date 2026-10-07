@@ -46,6 +46,7 @@ import {
 } from "./context/DrawerStateContext";
 import { CartProvider } from "./components/shop/CartContext";
 import RestaurantSwitchConfirmModal from "./components/shop/RestaurantSwitchConfirmModal";
+import { AdminNotificationProvider } from "./notifications/AdminNotificationProvider";
 
 // --- Page wrapper for 3D depth animation ---
 // (defined ONCE, at module scope, outside App)
@@ -112,131 +113,138 @@ export default function App() {
         containerStyle={{ zIndex: 2000 }}
         toastOptions={{ style: { fontFamily: "Vazirmatn" } }}
       />
-
-      <DrawerStateProvider>
-        <CartProvider>
-          <ScrollToTop />
-          <PendingPaymentBanner />
-          <PageWrapper
-            hideMobileNav={hideMobileNav}
-            removePadding={removePadding}
-          >
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedRoute
-                    roles={[
-                      "admin",
-                      "owner",
-                      "author",
-                      "editor",
-                      "contributor",
-                    ]}
-                    checkPendingOwner
-                  >
-                    <AdminPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/music"
-                element={
-                  <ProtectedRoute roles={["owner"]}>
-                    <MusicPlayerPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/blog/post-editor/:id"
-                element={
-                  <ProtectedRoute
-                    roles={[
-                      "admin",
-                      "owner",
-                      "author",
-                      "editor",
-                      "contributor",
-                    ]}
-                  >
-                    <BlogPostEditorPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/blog" element={<BlogPage />} />
-              <Route path="/blogresult" element={<BlogResultPage />} />
-              <Route path="/blog/:slug" element={<BlogPostPage />} />
-              <Route path="/change-password" element={<ChangePasswordPage />} />
-              <Route path="/change-phone" element={<ChangePhone />} />
-              <Route path="/checkout" element={<CheckoutPage />} />
-              <Route path="/favorites" element={<FavoritesPage />} />
-              <Route
-                path="/foods/:foodId/comments"
-                element={<FoodCommentsPage />}
-              />
-              <Route
-                path="/foods/popular"
-                element={<PopularFoodsBrowsePage />}
-              />
-              <Route
-                path="/foods/popular/:categoryId"
-                element={<PopularFoodsBrowsePage />}
-              />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/home" element={<HomePage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/not-found" element={<NotFoundPage />} />
-              <Route path="/orders" element={<Orders />} />
-              <Route path="/orders/bill/:id" element={<BillsPage />} />
-              <Route path="/comments" element={<MyCommentsPage />} />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute roles={["customer", "admin", "owner"]}>
-                    <ProfilePage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/profile/edit"
-                element={
-                  <ProtectedRoute roles={["customer", "admin", "owner"]}>
-                    <StandalonePageChrome>
-                      <UserProfileForm />
-                    </StandalonePageChrome>
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route
-                path="/register-restaurant"
-                element={
-                  <ProtectedRoute checkPendingOwner>
-                    <RegisterRestaurantPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/restaurant/:slug" element={<RestaurantPage />} />
-              <Route path="/restaurant/:slug/music" element={<MusicPage />} />
-              <Route path="/restaurants" element={<RestaurantsBrowsePage />} />
-              <Route
-                path="/restaurant-status"
-                element={
-                  <ProtectedRoute>
-                    <RestaurantStatusPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/subscriptions" element={<SubscriptionsPage />} />
-              <Route path="/unauthorized" element={<UnauthorizedPage />} />
-              {/* 404 Catch-All Route */}
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </PageWrapper>
-          <RestaurantSwitchConfirmModal />
-        </CartProvider>
-      </DrawerStateProvider>
+      <AdminNotificationProvider>
+        <DrawerStateProvider>
+          <CartProvider>
+            <ScrollToTop />
+            <PendingPaymentBanner />
+            <PageWrapper
+              hideMobileNav={hideMobileNav}
+              removePadding={removePadding}
+            >
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedRoute
+                      roles={[
+                        "admin",
+                        "owner",
+                        "author",
+                        "editor",
+                        "contributor",
+                      ]}
+                      checkPendingOwner
+                    >
+                      <AdminPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/music"
+                  element={
+                    <ProtectedRoute roles={["owner"]}>
+                      <MusicPlayerPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/blog/post-editor/:id"
+                  element={
+                    <ProtectedRoute
+                      roles={[
+                        "admin",
+                        "owner",
+                        "author",
+                        "editor",
+                        "contributor",
+                      ]}
+                    >
+                      <BlogPostEditorPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/blog" element={<BlogPage />} />
+                <Route path="/blogresult" element={<BlogResultPage />} />
+                <Route path="/blog/:slug" element={<BlogPostPage />} />
+                <Route
+                  path="/change-password"
+                  element={<ChangePasswordPage />}
+                />
+                <Route path="/change-phone" element={<ChangePhone />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/favorites" element={<FavoritesPage />} />
+                <Route
+                  path="/foods/:foodId/comments"
+                  element={<FoodCommentsPage />}
+                />
+                <Route
+                  path="/foods/popular"
+                  element={<PopularFoodsBrowsePage />}
+                />
+                <Route
+                  path="/foods/popular/:categoryId"
+                  element={<PopularFoodsBrowsePage />}
+                />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/home" element={<HomePage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/not-found" element={<NotFoundPage />} />
+                <Route path="/orders" element={<Orders />} />
+                <Route path="/orders/bill/:id" element={<BillsPage />} />
+                <Route path="/comments" element={<MyCommentsPage />} />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute roles={["customer", "admin", "owner"]}>
+                      <ProfilePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile/edit"
+                  element={
+                    <ProtectedRoute roles={["customer", "admin", "owner"]}>
+                      <StandalonePageChrome>
+                        <UserProfileForm />
+                      </StandalonePageChrome>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route
+                  path="/register-restaurant"
+                  element={
+                    <ProtectedRoute checkPendingOwner>
+                      <RegisterRestaurantPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/restaurant/:slug" element={<RestaurantPage />} />
+                <Route path="/restaurant/:slug/music" element={<MusicPage />} />
+                <Route
+                  path="/restaurants"
+                  element={<RestaurantsBrowsePage />}
+                />
+                <Route
+                  path="/restaurant-status"
+                  element={
+                    <ProtectedRoute>
+                      <RestaurantStatusPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/subscriptions" element={<SubscriptionsPage />} />
+                <Route path="/unauthorized" element={<UnauthorizedPage />} />
+                {/* 404 Catch-All Route */}
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </PageWrapper>
+            <RestaurantSwitchConfirmModal />
+          </CartProvider>
+        </DrawerStateProvider>
+      </AdminNotificationProvider>
     </>
   );
 }

@@ -13,12 +13,28 @@ export default function ToastStack({ toasts, onDismiss }) {
   return (
     <div className="gui-toast-stack" role="region" aria-label="اعلان‌ها">
       {toasts.map((t) => (
-        <div key={t.id} className={`gui-toast gui-toast--${t.type}`} role="status">
+        <div
+          key={t.id}
+          className={`gui-toast gui-toast--${t.type}`}
+          role="status"
+        >
           <i className={`gui-toast__icon ${ICONS[t.type] || ICONS.info}`} />
           <div className="gui-toast__body">
             {t.title && <div className="gui-toast__title">{t.title}</div>}
             {t.message && <div className="gui-toast__message">{t.message}</div>}
           </div>
+          {t.action && (
+            <button
+              type="button"
+              className="gui-toast__action"
+              onClick={() => {
+                t.action.onClick?.();
+                onDismiss(t.id);
+              }}
+            >
+              {t.action.label}
+            </button>
+          )}
           <button
             type="button"
             className="gui-toast__close"

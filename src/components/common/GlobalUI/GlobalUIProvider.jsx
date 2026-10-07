@@ -45,11 +45,11 @@ export function GlobalUIProvider({ children }) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  // notify({ type: 'success' | 'error' | 'warning' | 'info', message, title, duration })
+  // notify({ type, message, title, duration, action: { label, onClick } })
   const notify = useCallback(
-    ({ type = "info", title, message, duration = 4000 }) => {
+    ({ type = "info", title, message, duration = 4000, action }) => {
       const id = ++toastSeq;
-      setToasts((prev) => [...prev, { id, type, title, message }]);
+      setToasts((prev) => [...prev, { id, type, title, message, action }]);
       if (duration > 0) {
         setTimeout(() => dismissToast(id), duration);
       }

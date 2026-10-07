@@ -1,8 +1,4 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "../../context/AuthContext";
-import ownerRestaurantAxios from "../../api/ownerRestaurantAxios";
-import { useMusicSignalR } from "../../hooks/useMusicSignalR";
-import { useGlobalUI } from "../../components/common/GlobalUI";
+import { useMusicHubEvents } from "../../hooks/useMusicHubEvents";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 import MusicHeader from "../../components/music/MusicPlayerHeader";
@@ -32,45 +28,6 @@ import { getPlayerState } from "../../api/music";
 
 export default function MusicPlayerPage() {
   useDocumentTitle("پخش‌کننده موسیقی");
-  /* -------------------------------------------------------------------
-     STATE
-  ------------------------------------------------------------------- */
-  /* --- REAL-TIME PROPS --- */
-  const { user } = useAuth();
-  const { notify, alertModal, confirmModal } = useGlobalUI();
-  const [restaurantId, setRestaurantId] = useState(null);
-
-  //--restaurant context
-  useEffect(() => {
-    const loadRestaurantContext = async () => {
-      try {
-        const { data } = await ownerRestaurantAxios.get("/context");
-        setRestaurantId(data.restaurantId);
-      } catch (err) {
-        console.error("restaurant context error:", err);
-      }
-    };
-
-    if (user) {
-      loadRestaurantContext();
-    }
-  }, [user]);
-
-  //--SignalR
-  useMusicSignalR(restaurantId, "admin", {
-    onCreated: async () => {
-      await alertModal({
-        title: "درخواست جدید موسیقی",
-        message: "یک درخواست جدید موسیقی از طرف مشتری ثبت شده است.",
-        buttonText: "متوجه شدم",
-      });
-
-      await fetchTrackRequests();
-    },
-    onPlaybackChanged: async (playerDto) => {
-      await handlePlaybackChanged(playerDto);
-    },
-  });
 
   /* -------------------------------------------------------------------
      Music Player Hook Calls
@@ -213,6 +170,11 @@ export default function MusicPlayerPage() {
         await refreshPlaylist(selectedPlaylistId);
       }
     },
+  });
+
+  useMusicHubEvents({
+    onCreated: () => fetchTrackRequests(),
+    onPlaybackChanged: (playerDto) => handlePlaybackChanged(playerDto),
   });
 
   /* -------------------------------------------------------------------

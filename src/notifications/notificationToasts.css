@@ -1,0 +1,28 @@
+/* src/notifications/notificationToasts.css */
+.admin-toasts {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 9999;
+  display: grid;
+  gap: 8px;
+}
+.admin-toast {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 12px 14px;
+  min-width: 270px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+.admin-toast p {
+  margin: 4px 0 10px;
+  font-size: 14px;
+}
+.admin-toast__actions {
+  display: flex;
+  gap: 8px;
+}
+.admin-toast__primary {
+  font-weight: 600;
+}

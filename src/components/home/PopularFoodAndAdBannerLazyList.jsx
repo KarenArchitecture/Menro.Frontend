@@ -1,102 +1,80 @@
 // src/components/home/PopularFoodAndAdBannerLazyList.jsx
 import React, { useEffect, useMemo, useRef } from "react";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import {
   getPopularFoodByRandomCategory,
   getPopularFoodByRandomCategoryExcluding,
 } from "../../api/foods";
-import { publicSearch } from "../../api/search";
 import PopularFoodRow from "./PopularFoodRow";
 import AdBanner from "../common/AdBanner";
 import { FoodCardsSkeleton, BannerSkeleton } from "./HomeSkeletons";
 import StateMessage from "../common/StateMessage";
+import usePagedSearch from "../../hooks/usePagedSearch";
+import useInfiniteScroll from "../../hooks/useInfiniteScroll";
+import { normalizeFa } from "../../utils/normalizeFa";
+import { mapSearchFood } from "../../utils/searchMappers";
 
-const normalizeFa = (s = "") =>
-  String(s)
-    .toLowerCase()
-    .replace(/ي/g, "ی")
-    .replace(/ك/g, "ک")
-    .replace(/\s+/g, " ")
-    .trim();
+function SearchModeFoods({ q, categoryId, onSearchCount }) {
+  const {
+    items: foods,
+    isLoading,
+    isError,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    refetch,
+  } = usePagedSearch({
+    term: q,
+    type: "Food",
+    categoryId,
+    map: mapSearchFood,
+  });
 
-function normalizeTargetUrl(raw) {
-  const t = raw?.trim();
-  if (!t) return null;
-  if (/^https?:\/\//i.test(t)) return t;
-  if (t.startsWith("/")) return t;
-  return null;
-}
-
-function SearchModeFoods({ q, onSearchCount }) {
-  const searchQ = useQuery({
-    queryKey: ["foodSearchDb", q],
-    enabled: q.length >= 2,
-    queryFn: async () => {
-      const res = await publicSearch(q, 80);
-      const items = res?.items ?? [];
-
-      return items
-        .filter((x) => x?.type === "Food")
-        .map((x) => ({
-          id: x.id,
-          name: x.title,
-          imageUrl: x.imageUrl,
-          restaurantName: x.subtitle,
-          restaurantId: x.restaurantId,
-          restaurantSlug: x.restaurantSlug,
-          restaurantPath:
-            normalizeTargetUrl(x.targetUrl) ||
-            (x.restaurantSlug ? `/restaurant/${x.restaurantSlug}` : undefined),
-          rating: Number(x.rating) || 0,
-          voters: x.voters ?? 0,
-        }));
-    },
-    staleTime: 30_000,
-    retry: 1,
+  const sentinelRef = useInfiniteScroll({
+    hasNextPage: !!hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
   });
 
   useEffect(() => {
     if (!onSearchCount) return;
     if (q.length < 2) {
-      onSearchCount(0);
+      onSearchCount({ count: 0, hasMore: false });
       return;
     }
-    if (searchQ.isLoading || searchQ.isError) return;
-    onSearchCount((searchQ.data ?? []).length);
-  }, [
-    onSearchCount,
-    q.length,
-    searchQ.isLoading,
-    searchQ.isError,
-    searchQ.data,
-  ]);
+    if (isLoading || isError) return;
+    onSearchCount({ count: foods.length, hasMore: !!hasNextPage });
+  }, [onSearchCount, q.length, isLoading, isError, foods.length, hasNextPage]);
 
   if (q.length < 2) return null;
 
-  if (searchQ.isLoading) {
+  if (isLoading) {
     return <FoodCardsSkeleton showHeader={false} count={4} />;
   }
 
-  if (searchQ.isError) {
+  if (isError) {
     return (
       <StateMessage kind="error" title="خطا در جستجو">
         مشکلی در دریافت نتایج جستجو رخ داده است.
         <div className="state-message__action">
-          <button onClick={() => searchQ.refetch()}>دوباره تلاش کنید</button>
+          <button onClick={() => refetch()}>دوباره تلاش کنید</button>
         </div>
       </StateMessage>
     );
   }
 
-  const foods = searchQ.data ?? [];
   if (!foods.length) return null;
 
   return (
-    <PopularFoodRow
-      data={{ categoryTitle: "", foods }}
-      hideTitle
-      isSearchMode
-    />
+    <>
+      <PopularFoodRow data={{ categoryTitle: "", foods }} hideTitle isSearchMode />
+
+      {hasNextPage && (
+        <div ref={sentinelRef} style={{ height: 1 }} aria-hidden="true" />
+      )}
+
+      {isFetchingNextPage && <FoodCardsSkeleton showHeader={false} count={2} />}
+    </>
   );
 }
 
@@ -266,6 +244,7 @@ function NormalModeFeed({ showAds }) {
 
 export default function PopularFoodAndAdBannerLazyList({
   searchQuery = "",
+  categoryId = null,
   showAds = true,
   onSearchCount,
 }) {
@@ -277,7 +256,7 @@ export default function PopularFoodAndAdBannerLazyList({
   }, [isSearchMode, onSearchCount]);
 
   return isSearchMode ? (
-    <SearchModeFoods q={q} onSearchCount={onSearchCount} />
+    <SearchModeFoods q={q} categoryId={categoryId} onSearchCount={onSearchCount} />
   ) : (
     <NormalModeFeed showAds={showAds} />
   );

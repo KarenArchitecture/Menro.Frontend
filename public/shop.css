@@ -1270,7 +1270,7 @@ button.modal-top-action {
   flex-direction: row;
   align-items: center;
   gap: 1rem;
-  padding: 20px 30px 5px;
+  padding: 20px 30px 15px;
 }
 
 .section-label {
@@ -2491,7 +2491,7 @@ svg {
 }
 
 .combo-foods-header__title {
-  font-size: 1.6rem;
+  font-size: 1.3rem;
   font-weight: 800;
   color: #fff;
 }
@@ -2507,7 +2507,7 @@ svg {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 2.2rem;
-  padding: 1.6rem 2rem calc(88px + 2rem); /* clears the floating CheckoutBar */
+  padding: 2.5rem 2rem calc(88px + 2rem); /* clears the floating CheckoutBar */
   overflow-y: auto;
 }
 
@@ -2540,3 +2540,66 @@ svg {
 .menu-state--error {
   color: #ff6b6b;
 }
+
+
+/* pixel perfect fixes start */
+/* ===== Item modal – pixel-perfect pass ===== */
+
+.variant-list {
+  --modal-gutter: 30px; /* همون 30px فعلی؛ حاشیه‌ی یکسان از دو طرف */
+  --addon-text-muted: #999fa8; /* همون خاکستری آیکن‌های غیرفعال دسته‌بندی */
+  --addon-text-active: #fafaf4;
+}
+
+/* 1) امتیاز روبروی عنوان، توضیحات زیرش */
+.modal-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.modal-title-row .modal-title {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.modal-title-row .modal-rating {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* 2) ردیف variant، هدر مخلفات و لیست مخلفات: همه هم‌عرض */
+.variant-list .variant-row {
+  padding: 5px var(--modal-gutter);
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.variant-list .subsection-head {
+  width: auto; /* قبلاً 340px ثابت بود */
+  margin: 0 var(--modal-gutter);
+}
+
+.variant-list .addons-list {
+  padding: 5px var(--modal-gutter);
+}
+
+/* 3) مخلفات: فقط رنگ متن عوض بشه، نه بک‌گراند ردیف */
+.variant-list .addon-row,
+.variant-list .addon-row.checked {
+  background: transparent;
+}
+
+.variant-list .addon-name,
+.variant-list .addon-amount {
+  color: var(--addon-text-muted);
+  transition: color 0.2s;
+}
+
+.variant-list .addon-row.checked .addon-name,
+.variant-list .addon-row.checked .addon-amount {
+  color: var(--addon-text-active);
+}
+/* pixel perfect fixes end */

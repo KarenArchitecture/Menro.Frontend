@@ -10,12 +10,13 @@ export const getUserRecentOrders = (count = 8) =>
 
 // ✅ View All: cursor-based lazy loading
 // Backend: GET /api/user/orders/recent-foods/browse?take=6&cursor=...
-export const browseUserRecentOrders = ({ take = 6, cursor = null } = {}) =>
+export const browseUserRecentOrders = ({ take = 6, cursor = null, q = "" } = {}) =>
   userAxios
     .get("/orders/recent-foods/browse", {
       params: {
         take,
         cursor: cursor || undefined,
+        q: q || undefined,
       },
     })
     .then((r) => r.data);

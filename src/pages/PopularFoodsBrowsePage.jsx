@@ -1,13 +1,16 @@
 // src/pages/PopularFoodsBrowsePage.jsx
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useMemo, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useParams, useLocation } from "react-router-dom";
 
 import SectionHeader from "../components/common/SectionHeader";
 import StateMessage from "../components/common/StateMessage";
 import ShimmerRow from "../components/common/ShimmerRow";
+import BrowsePageLayout from "../components/common/BrowsePageLayout";
 import FoodCard from "../components/home/FoodCard";
-import useDocumentTitle from "../hooks/useDocumentTitle";
+import SearchResultsSection from "../components/home/SearchResultsSection";
+import useInfiniteScroll from "../hooks/useInfiniteScroll";
+import resolveFileUrl from "../utils/resolveFileUrl";
 
 import {
   getPopularFoodByRandomCategory,
@@ -15,20 +18,23 @@ import {
   browsePopularFoodsByCategory,
 } from "../api/foods";
 
-const TAKE = 6; // ✅ match Recent Orders exact page size
+const TAKE = 6;
 
 export default function PopularFoodsBrowsePage() {
-  const { categoryId } = useParams(); // ✅ optional
+  const { categoryId } = useParams(); // optional
   const location = useLocation();
   const categoryTitleFromState = location?.state?.categoryTitle;
-
+  const categoryIconFromState = location?.state?.svgIcon;
   const isCategoryMode = !!categoryId;
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const trimmedQuery = searchQuery.trim();
+  const isSearchActive = Boolean(trimmedQuery);
 
   const {
     data,
     isLoading,
     isError,
-    error,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -36,9 +42,9 @@ export default function PopularFoodsBrowsePage() {
   } = useInfiniteQuery({
     queryKey: ["popularFoodsBrowse", TAKE, categoryId ?? "all"],
     initialPageParam: isCategoryMode ? null : [],
+    enabled: !isSearchActive,
 
     queryFn: ({ pageParam }) => {
-      // ✅ Category view-all (real backend)
       if (isCategoryMode) {
         return browsePopularFoodsByCategory({
           categoryId,
@@ -46,20 +52,15 @@ export default function PopularFoodsBrowsePage() {
           cursor: pageParam, // string cursor or null
         });
       }
-
-      // ✅ Global browse (existing random-group logic)
       return !pageParam || pageParam.length === 0
         ? getPopularFoodByRandomCategory(TAKE)
         : getPopularFoodByRandomCategoryExcluding(pageParam, TAKE);
     },
 
     getNextPageParam: (lastPage, allPages) => {
-      // Category mode: PagedResultDto<HomeFoodCardDto>
       if (isCategoryMode) {
         return lastPage?.hasMore ? lastPage?.nextCursor : undefined;
       }
-
-      // Global mode: PopularFoodsDto blocks, backend may return null for 204
       if (!lastPage) return undefined;
       return allPages.map((p) => p?.categoryTitle).filter(Boolean);
     },
@@ -70,26 +71,13 @@ export default function PopularFoodsBrowsePage() {
   });
 
   const items = useMemo(() => {
-    if (isCategoryMode) {
-      // pages: { items, nextCursor, hasMore }
-      const flat = (data?.pages ?? []).flatMap((p) => p?.items ?? []);
-      const seen = new Set();
-      return flat.filter((x) => {
-        const id = x?.id ?? x?.foodId;
-        const key = id != null ? String(id) : `${x?.name}-${x?.restaurantId}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-    }
-
-    // global mode: pages are PopularFoodsDto, flatten foods
-    const flatFoods = (data?.pages ?? [])
-      .filter(Boolean)
-      .flatMap((p) => p?.foods ?? []);
+    const pages = (data?.pages ?? []).filter(Boolean);
+    const flat = isCategoryMode
+      ? pages.flatMap((p) => p?.items ?? [])
+      : pages.flatMap((p) => p?.foods ?? []);
 
     const seen = new Set();
-    return flatFoods.filter((x) => {
+    return flat.filter((x) => {
       const id = x?.id ?? x?.foodId;
       const key = id != null ? String(id) : `${x?.name}-${x?.restaurantId}`;
       if (seen.has(key)) return false;
@@ -98,80 +86,72 @@ export default function PopularFoodsBrowsePage() {
     });
   }, [data, isCategoryMode]);
 
-  const headerTitle = isCategoryMode
-    ? categoryTitleFromState
+  const headerTitle =
+    isCategoryMode && categoryTitleFromState
       ? `${categoryTitleFromState}‌های پرطرفدار`
-      : "محبوب‌ترین غذاها"
-    : "محبوب‌ترین غذاها";
+      : "محبوب‌ترین غذاها";
 
-  const header = <SectionHeader title={headerTitle} linkText="بازگشت" to="/" />;
+  const sentinelRef = useInfiniteScroll({
+    hasNextPage: !!hasNextPage && !isSearchActive,
+    isFetchingNextPage,
+    fetchNextPage,
+  });
 
-  // Infinite scroll sentinel (exact same config as RecentOrdersBrowsePage)
-  const loadMoreRef = useRef(null);
-  useEffect(() => {
-    if (!loadMoreRef.current) return;
+  const categoryIcon = categoryIconFromState ? (
+    <img
+      src={resolveFileUrl(categoryIconFromState)}
+      alt=""
+      className="popular-food-row__category-icon"
+      aria-hidden="true"
+    />
+  ) : null;
 
-    const el = loadMoreRef.current;
-    const obs = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      },
-      { root: null, rootMargin: "400px", threshold: 0 },
+  const header = <SectionHeader icon={categoryIcon} title={headerTitle} />;
+
+  let body;
+
+  if (isSearchActive) {
+    body = (
+      <SearchResultsSection
+        key={`${categoryId ?? "all"}-${trimmedQuery}`}
+        query={searchQuery}
+        categoryId={categoryId ?? null}
+      />
     );
-
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
-
-  if (isLoading) {
-    return (
-      <main className="content">
-        <section className="previous-orders">
-          {header}
-          <ShimmerRow height={220} style={{ margin: "16px 0" }} />
-        </section>
-      </main>
+  } else if (isLoading) {
+    body = (
+      <section className="previous-orders">
+        {header}
+        <ShimmerRow height={220} style={{ margin: "16px 0" }} />
+      </section>
     );
-  }
-
-  if (isError) {
-    return (
-      <main className="content">
-        <section className="previous-orders">
-          {header}
-          <StateMessage kind="error" title="خطا در دریافت غذاهای محبوب">
-            خطایی در دریافت غذاهای محبوب رخ داده است.
-            <div className="state-message__action">
-              <button onClick={() => refetch()}>دوباره تلاش کنید</button>
-            </div>
-          </StateMessage>
-        </section>
-      </main>
+  } else if (isError) {
+    body = (
+      <section className="previous-orders">
+        {header}
+        <StateMessage kind="error" title="خطا در دریافت غذاهای محبوب">
+          خطایی در دریافت غذاهای محبوب رخ داده است.
+          <div className="state-message__action">
+            <button onClick={() => refetch()}>دوباره تلاش کنید</button>
+          </div>
+        </StateMessage>
+      </section>
     );
-  }
-
-  if (items.length === 0) {
-    return (
-      <main className="content">
-        <section className="previous-orders">
-          {header}
-          <StateMessage kind="empty" title="موردی یافت نشد">
-            آیتمی برای نمایش وجود ندارد.
-          </StateMessage>
-        </section>
-      </main>
+  } else if (items.length === 0) {
+    body = (
+      <section className="previous-orders">
+        {header}
+        <StateMessage kind="empty" title="موردی یافت نشد">
+          آیتمی برای نمایش وجود ندارد.
+        </StateMessage>
+      </section>
     );
-  }
-
-  return (
-    <main className="content">
+  } else {
+    body = (
       <section className="previous-orders">
         {header}
 
-        {/* ✅ exact same layout classes as RecentOrdersBrowsePage */}
-        <div className="food-cards-container food-cards-container--search ">
+        <div className="food-cards-container food-cards-container--search">
           {items.map((item) => (
             <div
               key={item.id ?? item.foodId}
@@ -182,27 +162,20 @@ export default function PopularFoodsBrowsePage() {
           ))}
         </div>
 
-        {/* sentinel */}
-        <div ref={loadMoreRef} style={{ height: 1 }} />
+        {hasNextPage && (
+          <div ref={sentinelRef} style={{ height: 1 }} aria-hidden="true" />
+        )}
 
-        {/* loading indicator */}
         {isFetchingNextPage && (
           <ShimmerRow height={220} style={{ margin: "16px 0" }} />
         )}
-
-        {/* optional fallback button */}
-        {hasNextPage && !isFetchingNextPage && (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              margin: "16px 0",
-            }}
-          >
-            <button onClick={() => fetchNextPage()}>بارگذاری بیشتر</button>
-          </div>
-        )}
       </section>
-    </main>
+    );
+  }
+
+  return (
+    <BrowsePageLayout searchQuery={searchQuery} onSearchChange={setSearchQuery}>
+      {body}
+    </BrowsePageLayout>
   );
 }

@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-function SectionHeader({ icon, title, linkText = "مشاهده همه", to, state }) {
+function SectionHeader({ icon, title, meta, linkText = "مشاهده همه", to, state }) {
   return (
     <div className="res-title-box">
       <div className="res-title">
@@ -16,6 +16,8 @@ function SectionHeader({ icon, title, linkText = "مشاهده همه", to, stat
             <ChevronIcon />
           </Link>
         </div>
+      ) : meta ? (
+        <span className="res-title-meta">{meta}</span>
       ) : null}
     </div>
   );

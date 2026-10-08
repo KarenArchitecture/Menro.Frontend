@@ -1,12 +1,12 @@
 /* src/assets/css/comment-composer.css */
 .composer-box {
     background: #13171e;
-    border-radius: 16px;
+    border-radius: 1rem;
     padding: 14px;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    margin-top: 8px;
+    margin: 0.8rem 2.5rem 0;
 }
 
 .composer-textarea {
@@ -18,7 +18,7 @@
     outline: none;
     color: #fff;
     font-family: inherit;
-    font-size: 14px;
+    font-size: 1.2rem;
     line-height: 1.7;
 }
 
@@ -49,8 +49,8 @@
 }
 
 .composer-submit.disabled {
-    background-color: #2d2f38;
-    color: #7b8193;
+    background-color: #0C0F14;
+    color: #A5ADC0;
     cursor: not-allowed;
 }
 

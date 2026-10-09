@@ -2540,3 +2540,31 @@ svg {
 .menu-state--error {
   color: #ff6b6b;
 }
+
+
+/* ===== مودال «همون همیشگی» ===== */
+/* لایه‌ی این مودال باید زیر ItemDetailModal باشد (backdrop: 1200 / sheet: 1300)
+   تا با زدن روی کارت غذا، جزئیات غذا روی همین مودال باز شود.
+   CheckoutBar (2500) همچنان روی آن دیده می‌شود. */
+.combo-foods-backdrop.frequent-foods-backdrop {
+  z-index: 1149;
+}
+
+.combo-foods-modal.frequent-foods-modal {
+  z-index: 1150;
+}
+
+.frequent-foods-state {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding-bottom: calc(88px + 2rem);
+}
+
+/* باز شدن از پایین (مثل ItemDetailModal) به‌جای حالت از بالای مودال ترکیب‌ها */
+.combo-foods-modal.frequent-foods-modal {
+  transform: translateY(110%);
+}
+
+.combo-foods-modal.frequent-foods-modal.active {
+  transform: translateY(0);
+}

@@ -17,6 +17,7 @@ function ShopBanner({
   banner,
   onSearchSubmit,
   onSearchChange,
+  onReorderClick,
   searchValue = "",
 }) {
   const navigate = useNavigate();
@@ -127,7 +128,11 @@ function ShopBanner({
         />
 
         <div className="reorder-and-music">
-          <button className="reorder-and-music-btn">
+          <button
+            type="button"
+            className="reorder-and-music-btn"
+            onClick={onReorderClick}
+          >
             <span>همون همیشگی</span>
             <CircleIcon />
           </button>

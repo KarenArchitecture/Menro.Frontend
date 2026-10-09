@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import usePageStyles from "../hooks/usePageStyles";
 import useDocumentTitle from "../hooks/useDocumentTitle";
-
+import FrequentOrdersModal from "../components/shop/FrequentOrdersModal";
 import ShopBanner from "../components/shop/ShopBanner";
 import MenuList from "../components/shop/MenuList";
 import ItemDetailModal from "../components/shop/ItemDetailModal";
@@ -33,6 +33,7 @@ function RestaurantContent() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isNearPageBottom, setIsNearPageBottom] = useState(false);
+  const [frequentOpen, setFrequentOpen] = useState(false);
 
   const handleSelectItem = (item) => {
     setSelectedItem(item);
@@ -178,6 +179,7 @@ function RestaurantContent() {
           searchValue={searchQuery}
           onSearchChange={handleRestaurantSearch}
           onSearchSubmit={handleRestaurantSearch}
+          onReorderClick={() => setFrequentOpen(true)}
         />
       )}
 
@@ -237,6 +239,13 @@ function RestaurantContent() {
           onSelectComboFood={handleSelectItem}
         />
       )}
+
+      <FrequentOrdersModal
+        open={frequentOpen}
+        slug={slug}
+        onClose={() => setFrequentOpen(false)}
+        onSelectFood={handleSelectItem}
+      />
 
       <CheckoutBar
         count={cart.count}

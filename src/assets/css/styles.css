@@ -6,6 +6,13 @@
     --halo-pad: 10px;
     --halo-gap: 4px;
     --halo-shadow: 0 6px 12px rgba(0, 0, 0, 0.45);
+
+    --page-gutter: 2.5rem;      /* فاصله‌ی کناری صفحه تا کارت‌ها */
+    --card-gap: 1.6rem;         /* فاصله‌ی بین کارت‌ها */
+    --fc-ratio: 162 / 277;      /* نسبت کارت غذای فیگما */
+    --fc-pad: 9.26%;            /* 15px از 162px، فاصله‌ی عکس تا لبه‌ی کارت */
+    --fc-btn-w: 97%;            /* 128px از 132px، عرض دکمه */
+    --fc-btn-ratio: 128 / 36;   /* نسبت دکمه */
 }
 
 .card {
@@ -683,7 +690,7 @@
 .food-cards-container {
     display: flex;
     flex-wrap: nowrap;
-    gap: 1rem;
+    gap: 1.5rem;
     overflow-x: auto;
     padding: 0 2.5rem;
     scrollbar-width: none;
@@ -700,31 +707,30 @@
 }
 
 .food-card {
-    width: 147px;
-    min-width: 147px;
-    max-width: 147px;
-    height: 250px;
+    width: 162px;
+    min-width: 162px;
+    max-width: 162px;
+    height: 277px;
     flex: 0 0 147px;
-    padding: 1.2rem;
+    padding: 1.5rem 1.5rem 1.8rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     background: linear-gradient(to bottom, #262b33 0%, #161b20 100%);
     border-radius: 2.3rem;
-    gap: 0.5rem;
     overflow: hidden;
     box-sizing: border-box;
 }
 
 .food-card-image {
     position: relative;
-    width: 117px;
-    height: 117px;
+    width: 132px;
+    height: 132px;
     aspect-ratio: 1 / 1;
     border-radius: 1.2rem;
     overflow: hidden;
     flex-shrink: 0;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.8rem;
     background: linear-gradient(180deg, #171b21 0%, #101317 100%);
 }
 
@@ -759,14 +765,31 @@
     transform: translateY(-2px);
 }
 
+a.food-card-image {
+    cursor: pointer;
+}
+
+.food-card .food-price {
+    color: #fafaf4;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.food-card .food-price span {
+    color: #ff683c;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
 .food-info {
     align-self: center;
     width: auto;
-    margin-bottom: 1rem;
+    margin-bottom: 0.6rem;
 }
 
 .food-title {
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 1.7rem 0;
     font-size: 1.3rem;
     font-weight: 700;
     text-align: center;
@@ -789,9 +812,7 @@
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    gap: 1rem;
     flex-direction: column;
-    margin-top: 1rem;
 }
 
 .food-price-row p {
@@ -1175,9 +1196,9 @@
 .food-cards-container--search {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 1.6rem;
-    row-gap: 1.6rem;
-    padding: 0 2.5rem;       /* همان padding ردیف سرچ، تیتر و رستوران‌ها */
+    column-gap: var(--card-gap);
+    row-gap: var(--card-gap);
+    padding: 0 var(--page-gutter);
     overflow: visible;
     max-height: none;
 }
@@ -1228,10 +1249,10 @@
 .cards-container.cards-container--grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 1.6rem;
+    column-gap: var(--card-gap);
     row-gap: 3.6rem;
     overflow: visible;
-    padding: 0 2.5rem;
+    padding: 0 var(--page-gutter);
 }
 
 .cards-container--grid > * {

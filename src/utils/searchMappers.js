@@ -38,5 +38,6 @@ export function mapSearchFood(x) {
       (x.restaurantSlug ? `/restaurant/${x.restaurantSlug}` : undefined),
     rating: Number(x.rating) || 0,
     voters: x.voters ?? 0,
+    price: Number(x.price) || 0,
   };
 }

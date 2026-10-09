@@ -1,0 +1,67 @@
+/* ===== Search empty state (Figma) — ONLY used for empty search results ===== */
+.search-empty {
+    --se-img-w: 26rem;          /* عرض عکس سبد در فیگما (تخمینی) */
+    --se-accent: #ff683c;       /* رنگ «نتیجه‌ای» */
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    /* فضای عمودی: وسط محتوای بین هدر و نوار پایین */
+    min-height: 55vh;
+    padding: 2rem 2.5rem 4rem;
+}
+
+/* wrapper عکس + پرتو نور */
+.search-empty__visual {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--se-img-w);
+    max-width: 70vw;            /* در گوشی‌های کوچک از صفحه بیرون نزند */
+}
+
+/* پرتو نور نارنجی پشت سبد */
+.search-empty__visual::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 55%;
+    width: 150%;
+    aspect-ratio: 1 / 1;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(
+        circle,
+        rgba(255, 140, 40, 0.38) 0%,
+        rgba(255, 104, 60, 0.16) 35%,
+        rgba(255, 104, 60, 0) 68%
+    );
+    filter: blur(14px);
+    pointer-events: none;
+}
+
+.search-empty__img {
+    position: relative;         /* بالاتر از پرتو نور */
+    z-index: 1;
+    width: 100%;
+    height: auto;
+    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.search-empty__title {
+    margin: 0;
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1.5;
+    color: #fafaf4;
+}
+
+.search-empty__accent {
+    color: var(--se-accent);
+}

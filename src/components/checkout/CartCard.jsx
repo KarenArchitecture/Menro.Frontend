@@ -9,7 +9,7 @@ export default function CartCard({ item, onChangeQty }) {
   const [addonsModalOpen, setAddonsModalOpen] = useState(false);
 
   return (
-    <div className={`cart-card-wrap${item.hasAddons ? " cart-card-wrap--has-addons" : ""}`}>
+    <div className={`cart-card-wrap${item.hasAddons ? " has-extra" : ""}`}>
       <div className="cart-card">
         <div className="cart-header">
           <img src={item.img} alt={item.title} className="product-img" />
@@ -18,7 +18,9 @@ export default function CartCard({ item, onChangeQty }) {
               <h3 className="product-title">{item.title}</h3>
               <div className="rating-score">
                 <img src="/images/checkout-star.svg" alt="star rating" />
-                <strong>{toPersianDigits(Number(item.rating.score || 0).toFixed(1))}</strong>
+                <strong>
+                  {toPersianDigits(Number(item.rating.score || 0).toFixed(1))}
+                </strong>
                 <span>({toPersianDigits(formatIR(item.rating.count))})</span>
               </div>
             </div>
@@ -26,7 +28,12 @@ export default function CartCard({ item, onChangeQty }) {
         </div>
         <div className="option-group">
           {item.options.map((opt) => (
-            <OptionRow key={opt.id} itemId={item.id} option={opt} onChangeQty={onChangeQty} />
+            <OptionRow
+              key={opt.id}
+              itemId={item.id}
+              option={opt}
+              onChangeQty={onChangeQty}
+            />
           ))}
         </div>
       </div>
@@ -43,7 +50,10 @@ export default function CartCard({ item, onChangeQty }) {
         </button>
       )}
 
-      <AddonsEditModal open={addonsModalOpen} onClose={() => setAddonsModalOpen(false)} />
+      <AddonsEditModal
+        open={addonsModalOpen}
+        onClose={() => setAddonsModalOpen(false)}
+      />
     </div>
   );
 }

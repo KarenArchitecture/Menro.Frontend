@@ -34,7 +34,7 @@ function PreviousOrders() {
       icon={<ReceiptIcon />}
       title="سفارش‌های پیشین"
       linkText="مشاهده همه"
-      to={hasToken && hasMore ? "/orders" : undefined}
+      to={hasToken && items.length > 0 ? "/orders/recent" : undefined}
     />
   );
 
@@ -55,7 +55,7 @@ function PreviousOrders() {
           </p>
           <a className="unauth-cta__button" href="/login">
             <span>
-                ورود / عضویت
+              ورود / عضویت
             </span>
           </a>
         </div>

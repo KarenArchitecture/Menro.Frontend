@@ -28,7 +28,7 @@ const EMPTY_CART = {
   items: [],
 };
 
-const DEBOUNCE_MS = 350;
+const DEBOUNCE_MS = 250;
 
 function keyOf(foodId, variantId) {
   return `${foodId}:${variantId ?? "default"}`;
@@ -227,10 +227,19 @@ export function CartProvider({ children }) {
         return;
       }
       if (existing) {
+        const chosenAddons = ov.addons || [];
         map.set(key, {
           ...existing,
           quantity: ov.quantity,
-          addons: ov.addons,
+          addons: chosenAddons,
+          // keep the per-addon quantities (read by the addons modal) in sync
+          // with the local edit, so the picker updates instantly
+          availableAddons: (existing.availableAddons || []).map((a) => {
+            const chosen = chosenAddons.find(
+              (x) => x.foodAddonId === a.foodAddonId,
+            );
+            return { ...a, quantity: chosen ? chosen.quantity : 0 };
+          }),
           lineTotal:
             (existing.unitPrice || ov.meta.unitPrice || 0) * ov.quantity,
         });
@@ -302,25 +311,25 @@ export function CartProvider({ children }) {
         quantity: currentQty + 1,
         addons: defaultLine
           ? defaultLine.addons.map((a) => ({
-              foodAddonId: a.foodAddonId,
-              quantity: a.quantity,
-            }))
+            foodAddonId: a.foodAddonId,
+            quantity: a.quantity,
+          }))
           : [],
         meta: defaultLine
           ? {
-              foodName: defaultLine.foodName,
-              imageUrl: defaultLine.imageUrl,
-              variantName: defaultLine.variantName,
-              unitPrice: defaultLine.unitPrice,
-              isDefaultVariant: true,
-            }
+            foodName: defaultLine.foodName,
+            imageUrl: defaultLine.imageUrl,
+            variantName: defaultLine.variantName,
+            unitPrice: defaultLine.unitPrice,
+            isDefaultVariant: true,
+          }
           : {
-              foodName: food.name,
-              imageUrl: food.imageUrl,
-              variantName: "",
-              unitPrice: food.price,
-              isDefaultVariant: true,
-            },
+            foodName: food.name,
+            imageUrl: food.imageUrl,
+            variantName: "",
+            unitPrice: food.price,
+            isDefaultVariant: true,
+          },
       });
     },
     [getFoodItems, setItem],

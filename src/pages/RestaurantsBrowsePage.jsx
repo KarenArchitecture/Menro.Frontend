@@ -1,17 +1,25 @@
-import React, { useEffect, useMemo, useRef } from "react";
+// src/pages/RestaurantsBrowsePage.jsx
+import React, { useMemo, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import RestaurantCard from "../components/home/RestaurantCard";
 import ShimmerRow from "../components/common/ShimmerRow";
 import StateMessage from "../components/common/StateMessage";
-import PageHeader from "../components/common/PageHeader";
+import SectionHeader from "../components/common/SectionHeader";
+import BrowsePageLayout from "../components/common/BrowsePageLayout";
+import SearchEmptyState from "../components/home/SearchEmptyState";
+import SearchResultsIcon from "../components/icons/SearchResultsIcon";
 import { getRestaurantsPage } from "../api/restaurants";
+import usePagedSearch from "../hooks/usePagedSearch";
+import useInfiniteScroll from "../hooks/useInfiniteScroll";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import { normalizeFa } from "../utils/normalizeFa";
+import { mapSearchRestaurant } from "../utils/searchMappers";
 
 const RestaurantsIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M8.4002 6.58095C9.29741 4.97144 9.74601 4.16669 10.4167 4.16669C11.0874 4.16669 11.536 4.97144 12.4332 6.58095L12.6653 6.99735C12.9203 7.45472 13.0478 7.68341 13.2465 7.8343C13.4453 7.98519 13.6929 8.0412 14.188 8.15322L14.6387 8.25521C16.381 8.64941 17.2521 8.84652 17.4594 9.513C17.6666 10.1795 17.0727 10.8739 15.885 12.2629L15.5777 12.6222C15.2402 13.0169 15.0714 13.2143 14.9955 13.4584C14.9195 13.7025 14.9451 13.9658 14.9961 14.4925L15.0426 14.9719C15.2221 16.825 15.3119 17.7516 14.7693 18.1635C14.2267 18.5754 13.4111 18.1999 11.7798 17.4488L11.3577 17.2544C10.8942 17.041 10.6624 16.9343 10.4167 16.9343C10.171 16.9343 9.93924 17.041 9.47568 17.2544L9.05364 17.4488C7.42235 18.1999 6.60671 18.5754 6.0641 18.1635C5.5215 17.7516 5.61129 16.825 5.79086 14.9719L5.83732 14.4925C5.88835 13.9658 5.91387 13.7025 5.83794 13.4584C5.76202 13.2143 5.59326 13.0169 5.25573 12.6222L4.94844 12.2629C3.76068 10.8739 3.16679 10.1795 3.37405 9.513C3.5813 8.84652 4.45244 8.64941 6.19471 8.25521L6.64546 8.15322C7.14056 8.0412 7.38811 7.98519 7.58688 7.8343C7.78564 7.68341 7.91312 7.45472 8.16808 6.99735L8.4002 6.58095Z" fill="#FAFAF4"/>
-    <path d="M4.05606 2.08367C4.08106 1.99552 4.23753 1.99499 4.26311 2.08297C4.37995 2.48473 4.59659 3.07858 4.9242 3.40398C5.2518 3.72938 5.8471 3.94201 6.24964 4.05613C6.33779 4.08112 6.33832 4.23759 6.25034 4.26317C5.84858 4.38001 5.25473 4.59665 4.92933 4.92426C4.60394 5.25186 4.39131 5.84716 4.27719 6.2497C4.2522 6.33785 4.09573 6.33838 4.07014 6.2504C3.9533 5.84864 3.73666 5.25479 3.40905 4.9294C3.08145 4.604 2.48615 4.39137 2.08361 4.27725C1.99546 4.25226 1.99493 4.09579 2.08291 4.0702C2.48467 3.95336 3.07852 3.73672 3.40392 3.40912C3.72932 3.08151 3.94195 2.48621 4.05606 2.08367Z" fill="#FAFAF4"/>
-    <path fillRule="evenodd" clipRule="evenodd" d="M15.8333 2.70831C16.1785 2.70831 16.4583 2.98813 16.4583 3.33331V3.54165H16.6667C17.0118 3.54165 17.2917 3.82147 17.2917 4.16665C17.2917 4.51182 17.0118 4.79165 16.6667 4.79165H16.4583V4.99998C16.4583 5.34516 16.1785 5.62498 15.8333 5.62498C15.4882 5.62498 15.2083 5.34516 15.2083 4.99998V4.79165H15C14.6548 4.79165 14.375 4.51182 14.375 4.16665C14.375 3.82147 14.6548 3.54165 15 3.54165H15.2083V3.33331C15.2083 2.98814 15.4882 2.70831 15.8333 2.70831Z" fill="#FAFAF4"/>
+    <path d="M8.4002 6.58095C9.29741 4.97144 9.74601 4.16669 10.4167 4.16669C11.0874 4.16669 11.536 4.97144 12.4332 6.58095L12.6653 6.99735C12.9203 7.45472 13.0478 7.68341 13.2465 7.8343C13.4453 7.98519 13.6929 8.0412 14.188 8.15322L14.6387 8.25521C16.381 8.64941 17.2521 8.84652 17.4594 9.513C17.6666 10.1795 17.0727 10.8739 15.885 12.2629L15.5777 12.6222C15.2402 13.0169 15.0714 13.2143 14.9955 13.4584C14.9195 13.7025 14.9451 13.9658 14.9961 14.4925L15.0426 14.9719C15.2221 16.825 15.3119 17.7516 14.7693 18.1635C14.2267 18.5754 13.4111 18.1999 11.7798 17.4488L11.3577 17.2544C10.8942 17.041 10.6624 16.9343 10.4167 16.9343C10.171 16.9343 9.93924 17.041 9.47568 17.2544L9.05364 17.4488C7.42235 18.1999 6.60671 18.5754 6.0641 18.1635C5.5215 17.7516 5.61129 16.825 5.79086 14.9719L5.83732 14.4925C5.88835 13.9658 5.91387 13.7025 5.83794 13.4584C5.76202 13.2143 5.59326 13.0169 5.25573 12.6222L4.94844 12.2629C3.76068 10.8739 3.16679 10.1795 3.37405 9.513C3.5813 8.84652 4.45244 8.64941 6.19471 8.25521L6.64546 8.15322C7.14056 8.0412 7.38811 7.98519 7.58688 7.8343C7.78564 7.68341 7.91312 7.45472 8.16808 6.99735L8.4002 6.58095Z" fill="#FAFAF4" />
+    <path d="M4.05606 2.08367C4.08106 1.99552 4.23753 1.99499 4.26311 2.08297C4.37995 2.48473 4.59659 3.07858 4.9242 3.40398C5.2518 3.72938 5.8471 3.94201 6.24964 4.05613C6.33779 4.08112 6.33832 4.23759 6.25034 4.26317C5.84858 4.38001 5.25473 4.59665 4.92933 4.92426C4.60394 5.25186 4.39131 5.84716 4.27719 6.2497C4.2522 6.33785 4.09573 6.33838 4.07014 6.2504C3.9533 5.84864 3.73666 5.25479 3.40905 4.9294C3.08145 4.604 2.48615 4.39137 2.08361 4.27725C1.99546 4.25226 1.99493 4.09579 2.08291 4.0702C2.48467 3.95336 3.07852 3.73672 3.40392 3.40912C3.72932 3.08151 3.94195 2.48621 4.05606 2.08367Z" fill="#FAFAF4" />
+    <path fillRule="evenodd" clipRule="evenodd" d="M15.8333 2.70831C16.1785 2.70831 16.4583 2.98813 16.4583 3.33331V3.54165H16.6667C17.0118 3.54165 17.2917 3.82147 17.2917 4.16665C17.2917 4.51182 17.0118 4.79165 16.6667 4.79165H16.4583V4.99998C16.4583 5.34516 16.1785 5.62498 15.8333 5.62498C15.4882 5.62498 15.2083 5.34516 15.2083 4.99998V4.79165H15C14.6548 4.79165 14.375 4.51182 14.375 4.16665C14.375 3.82147 14.6548 3.54165 15 3.54165H15.2083V3.33331C15.2083 2.98814 15.4882 2.70831 15.8333 2.70831Z" fill="#FAFAF4" />
   </svg>
 );
 
@@ -19,73 +27,76 @@ export default function RestaurantsBrowsePage() {
   useDocumentTitle("جستجوی رستوران‌ها");
   const take = 8;
 
-  const {
-    data,
-    isLoading,
-    isError,
-    refetch,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useInfiniteQuery({
+  const [searchQuery, setSearchQuery] = useState("");
+  const q = useMemo(() => normalizeFa(searchQuery), [searchQuery]);
+  const isSearchMode = Boolean(q);
+
+  // حالت عادی
+  const browseQ = useInfiniteQuery({
     queryKey: ["restaurantsBrowse", take],
     queryFn: ({ pageParam }) =>
       getRestaurantsPage({ take, cursor: pageParam ?? null }),
     initialPageParam: null,
     getNextPageParam: (lastPage) =>
       lastPage?.hasMore ? lastPage?.nextCursor : undefined,
+    enabled: !isSearchMode,
     staleTime: 60_000,
     retry: 1,
   });
 
-  const items = useMemo(
-    () => (data?.pages ?? []).flatMap((p) => p.items ?? []),
-    [data],
+  const browseItems = useMemo(
+    () => (browseQ.data?.pages ?? []).flatMap((p) => p.items ?? []),
+    [browseQ.data],
   );
 
-  const sentinelRef = useRef(null);
+  // حالت جستجو
+  const searchQ = usePagedSearch({
+    term: q,
+    type: "Restaurant",
+    enabled: isSearchMode,
+    map: mapSearchRestaurant,
+  });
 
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
+  const active = isSearchMode ? searchQ : browseQ;
+  const items = isSearchMode ? searchQ.items : browseItems;
 
-    const io = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      },
-      { root: null, threshold: 0, rootMargin: "600px 0px" },
-    );
-
-    io.observe(el);
-    return () => io.disconnect();
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+  const sentinelRef = useInfiniteScroll({
+    hasNextPage: !!active.hasNextPage,
+    isFetchingNextPage: active.isFetchingNextPage,
+    fetchNextPage: active.fetchNextPage,
+  });
 
   return (
-    <div className="page-container">
-      <PageHeader icon={<RestaurantsIcon />} title="رستوران‌ها" />
+    <BrowsePageLayout searchQuery={searchQuery} onSearchChange={setSearchQuery}>
+      <section className="restaurants">
+        <SectionHeader
+          icon={isSearchMode ? <SearchResultsIcon /> : <RestaurantsIcon />}
+          title={isSearchMode ? "نتایج جستجو" : "رستوران‌ها"}
+        />
 
-      {isLoading && <ShimmerRow height={240} style={{ margin: "16px 0" }} />}
+        {active.isLoading && (
+          <ShimmerRow height={240} style={{ margin: "16px 0" }} />
+        )}
 
-      {!isLoading && isError && (
-        <StateMessage kind="error" title="خطا در دریافت رستوران‌ها">
-          خطایی در دریافت اطلاعات رستوران‌ها رخ داده است.
-          <div className="state-message__action">
-            <button onClick={() => refetch()}>دوباره تلاش کنید</button>
-          </div>
-        </StateMessage>
-      )}
+        {!active.isLoading && active.isError && (
+          <StateMessage kind="error" title="خطا در دریافت رستوران‌ها">
+            خطایی در دریافت اطلاعات رستوران‌ها رخ داده است.
+            <div className="state-message__action">
+              <button onClick={() => active.refetch()}>دوباره تلاش کنید</button>
+            </div>
+          </StateMessage>
+        )}
 
-      {!isLoading && !isError && !items.length && (
-        <StateMessage kind="empty" title="موردی یافت نشد">
-          رستورانی برای نمایش وجود ندارد.
-        </StateMessage>
-      )}
+        {!active.isLoading && !active.isError && !items.length &&
+          (isSearchMode ? (
+            <SearchEmptyState />
+          ) : (
+            <StateMessage kind="empty" title="موردی یافت نشد">
+              رستورانی برای نمایش وجود ندارد.
+            </StateMessage>
+          ))}
 
-      {!isLoading && !isError && items.length > 0 && (
-        <section className="restaurants">
+        {!active.isLoading && !active.isError && items.length > 0 && (
           <div className="cards-container cards-container--grid">
             {items.map((r) => (
               <div key={r.id} className="fade-in">
@@ -107,14 +118,16 @@ export default function RestaurantsBrowsePage() {
               </div>
             ))}
           </div>
+        )}
 
-          {isFetchingNextPage && (
-            <ShimmerRow height={240} style={{ margin: "16px 0" }} />
-          )}
+        {active.hasNextPage && (
+          <div ref={sentinelRef} style={{ height: 1 }} aria-hidden="true" />
+        )}
 
-          <div ref={sentinelRef} style={{ height: 1 }} />
-        </section>
-      )}
-    </div>
+        {active.isFetchingNextPage && (
+          <ShimmerRow height={240} style={{ margin: "16px 0" }} />
+        )}
+      </section>
+    </BrowsePageLayout>
   );
 }

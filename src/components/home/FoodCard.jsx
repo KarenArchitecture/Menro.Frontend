@@ -69,11 +69,19 @@ export default function FoodCard({ item, LinkComponent, onRestaurantClick }) {
   const href = buildRestaurantHref();
   const CTA = LinkComponent || (href ? Link : "button");
   const linkProps = href ? { to: href } : { type: "button", disabled: true };
+  const ImageTag = href ? (LinkComponent || Link) : "div";
+  const imageProps = href
+    ? {
+      to: href,
+      "aria-label": `مشاهده ${displayRestaurantName}`,
+      onClick: (e) => onRestaurantClick?.(item, href, e),
+    }
+    : {};
 
   return (
     <div className="food-card">
       {/* IMAGE */}
-      <div className="food-card-image">
+      <ImageTag className="food-card-image" {...imageProps}>
         <SmartImage
           src={imgSrc}
           fallback="/images/food/food-placeholder.png"
@@ -89,7 +97,7 @@ export default function FoodCard({ item, LinkComponent, onRestaurantClick }) {
             ({(voters ?? 0).toLocaleString("fa-IR")})
           </span>
         </div>
-      </div>
+      </ImageTag>
 
       {/* INFO */}
       <div className="food-info">
@@ -119,7 +127,7 @@ export default function FoodCard({ item, LinkComponent, onRestaurantClick }) {
           title={`مشاهده ${displayRestaurantName}`}
         >
           <span className="add-btn__text">{displayRestaurantName}</span>
-          
+
           <span aria-hidden>
             <svg width="5" height="8" viewBox="0 0 5 8" fill="none">
               <path

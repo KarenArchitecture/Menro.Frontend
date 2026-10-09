@@ -109,6 +109,7 @@
     font: inherit;
     font-size: 0.8rem;
     font-weight: 500;
+    margin-bottom: 0;
 }
 
 .menu-drawer__search input:focus,

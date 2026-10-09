@@ -84,14 +84,17 @@ function PopularFoodRow({
           title={computedTitle}
           linkText={linkText ?? "مشاهده همه"}
           to={viewAllTo}
-          state={{ categoryTitle: data?.categoryTitle, categoryId: data?.categoryId }}
+          state={{
+            categoryTitle: data?.categoryTitle,
+            categoryId: data?.categoryId,
+            svgIcon: data?.svgIcon,
+          }}
         />
       )}
 
       <div
-        className={`food-cards-container ${
-          isSearchMode ? "food-cards-container--search" : ""
-        }`}
+        className={`food-cards-container ${isSearchMode ? "food-cards-container--search" : ""
+          }`}
       >
         {data.foods.map((item) => (
           <div

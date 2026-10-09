@@ -95,7 +95,7 @@ export default function Orders() {
           onRate={handleRate}
         />
       ) : (
-        <GuestOrdersPrompt />
+        <OrdersAuthPrompt />
       )}
     </div>
   );

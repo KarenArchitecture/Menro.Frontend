@@ -1,22 +1,33 @@
-import React, { useEffect, useMemo, useRef } from "react";
+// src/pages/RecentOrdersBrowsePage.jsx
+import React, { useMemo, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 
 import SectionHeader from "../components/common/SectionHeader";
+import BrowsePageLayout from "../components/common/BrowsePageLayout";
 import ReceiptIcon from "../components/icons/ReceiptIcon";
+import SearchResultsIcon from "../components/icons/SearchResultsIcon";
 import FoodCard from "../components/home/FoodCard";
+import SearchEmptyState from "../components/home/SearchEmptyState";
 import StateMessage from "../components/common/StateMessage";
 import ShimmerRow from "../components/common/ShimmerRow";
 import { browseUserRecentOrders } from "../api/orders";
+import useInfiniteScroll from "../hooks/useInfiniteScroll";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import { normalizeFa } from "../utils/normalizeFa";
 
 const TAKE = 6;
 
 export default function RecentOrdersBrowsePage() {
   useDocumentTitle("تاریخچه سفارش‌ها");
+
   const token =
     localStorage.getItem("token") || localStorage.getItem("accessToken");
   const hasToken = !!token;
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const q = useMemo(() => normalizeFa(searchQuery), [searchQuery]);
+  const isSearchActive = Boolean(q);
 
   const {
     data,
@@ -28,11 +39,11 @@ export default function RecentOrdersBrowsePage() {
     isFetchingNextPage,
     refetch,
   } = useInfiniteQuery({
-    queryKey: ["userRecentOrdersBrowse", token, TAKE],
+    queryKey: ["userRecentOrdersBrowse", token, TAKE, q],
     enabled: hasToken,
-    initialPageParam: null, // cursor
+    initialPageParam: null,
     queryFn: ({ pageParam }) =>
-      browseUserRecentOrders({ take: TAKE, cursor: pageParam }),
+      browseUserRecentOrders({ take: TAKE, cursor: pageParam, q }),
     getNextPageParam: (lastPage) =>
       lastPage?.hasMore ? lastPage?.nextCursor : undefined,
     refetchOnMount: "always",
@@ -42,7 +53,6 @@ export default function RecentOrdersBrowsePage() {
 
   const items = useMemo(() => {
     const flat = (data?.pages ?? []).flatMap((p) => p?.items ?? []);
-    // optional: de-dupe by id (safe guard)
     const seen = new Set();
     return flat.filter((x) => {
       if (!x?.id) return true;
@@ -52,118 +62,73 @@ export default function RecentOrdersBrowsePage() {
     });
   }, [data]);
 
+  const sentinelRef = useInfiniteScroll({
+    hasNextPage: !!hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  });
+
   const header = (
     <SectionHeader
-      icon={<ReceiptIcon />}
-      title="سفارش‌های پیشین"
-      linkText="بازگشت"
-      to="/"
+      icon={isSearchActive ? <SearchResultsIcon /> : <ReceiptIcon />}
+      title={isSearchActive ? "نتایج جستجو" : "سفارش‌های پیشین"}
     />
   );
 
-  // Infinite scroll sentinel
-  const loadMoreRef = useRef(null);
-  useEffect(() => {
-    if (!loadMoreRef.current) return;
+  let body;
 
-    const el = loadMoreRef.current;
-    const obs = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      },
-      { root: null, rootMargin: "400px", threshold: 0 },
+  if (!hasToken || error?.response?.status === 401) {
+    body = (
+      <section className="previous-orders unauth-cta">
+        {header}
+        <div className="unauth-cta__inner">
+          <p className="unauth-cta__title">
+            لطفاً برای مشاهده این بخش به حساب کاربری خود وارد شوید
+          </p>
+          <Link className="unauth-cta__button" to="/login">
+            ورود / عضویت
+          </Link>
+        </div>
+      </section>
     );
-
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
-
-  if (!hasToken) {
-    return (
-      <main className="content">
-        <section className="previous-orders unauth-cta">
-          {header}
-          <div className="unauth-cta__inner">
-            <p className="unauth-cta__title">
-              لطفاً برای مشاهده این بخش به حساب کاربری خود وارد شوید
-            </p>
-            <Link className="unauth-cta__button" to="/login">
-              ورود / عضویت
-            </Link>
+  } else if (isLoading) {
+    body = (
+      <section className="previous-orders">
+        {header}
+        <ShimmerRow height={220} style={{ margin: "16px 0" }} />
+      </section>
+    );
+  } else if (isError) {
+    body = (
+      <section className="previous-orders">
+        {header}
+        <StateMessage kind="error" title="خطا در دریافت سفارش‌ها">
+          خطایی در دریافت سفارش‌های پیشین رخ داده است.
+          <div className="state-message__action">
+            <button onClick={() => refetch()}>دوباره تلاش کنید</button>
           </div>
-        </section>
-      </main>
+        </StateMessage>
+      </section>
     );
-  }
-
-  if (isLoading) {
-    return (
-      <main className="content">
-        <section className="previous-orders">
-          {header}
-          <ShimmerRow height={220} style={{ margin: "16px 0" }} />
-        </section>
-      </main>
-    );
-  }
-
-  if (isError) {
-    const status = error?.response?.status;
-
-    if (status === 401) {
-      return (
-        <main className="content">
-          <section className="previous-orders unauth-cta">
-            {header}
-            <div className="unauth-cta__inner">
-              <p className="unauth-cta__title">
-                لطفاً برای مشاهده این بخش به حساب کاربری خود وارد شوید
-              </p>
-              <Link className="unauth-cta__button" to="/login">
-                ورود / عضویت
-              </Link>
-            </div>
-          </section>
-        </main>
-      );
-    }
-
-    return (
-      <main className="content">
-        <section className="previous-orders">
-          {header}
-          <StateMessage kind="error" title="خطا در دریافت سفارش‌ها">
-            خطایی در دریافت سفارش‌های پیشین رخ داده است.
-            <div className="state-message__action">
-              <button onClick={() => refetch()}>دوباره تلاش کنید</button>
-            </div>
-          </StateMessage>
-        </section>
-      </main>
-    );
-  }
-
-  if (items.length === 0) {
-    return (
-      <main className="content">
-        <section className="previous-orders">
-          {header}
+  } else if (items.length === 0) {
+    body = (
+      <section className="previous-orders">
+        {header}
+        {isSearchActive ? (
+          <SearchEmptyState />
+        ) : (
           <StateMessage kind="empty" title="سفارشی یافت نشد">
             شما هنوز هیچ سفارشی ثبت نکرده‌اید.
           </StateMessage>
-        </section>
-      </main>
+        )}
+      </section>
     );
-  }
-
-  return (
-    <main className="content">
+  } else {
+    body = (
       <section className="previous-orders">
         {header}
 
-        <div className="food-cards-container food-cards-container--search ">
+        <div className="food-cards-container food-cards-container--search">
           {items.map((item) => (
             <div key={item.id} className="food-card-wrap--search">
               <FoodCard item={item} />
@@ -171,27 +136,20 @@ export default function RecentOrdersBrowsePage() {
           ))}
         </div>
 
-        {/* sentinel */}
-        <div ref={loadMoreRef} style={{ height: 1 }} />
+        {hasNextPage && (
+          <div ref={sentinelRef} style={{ height: 1 }} aria-hidden="true" />
+        )}
 
-        {/* loading indicator */}
         {isFetchingNextPage && (
           <ShimmerRow height={220} style={{ margin: "16px 0" }} />
         )}
-
-        {/* optional fallback button */}
-        {hasNextPage && !isFetchingNextPage && (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              margin: "16px 0",
-            }}
-          >
-            <button onClick={() => fetchNextPage()}>بارگذاری بیشتر</button>
-          </div>
-        )}
       </section>
-    </main>
+    );
+  }
+
+  return (
+    <BrowsePageLayout searchQuery={searchQuery} onSearchChange={setSearchQuery}>
+      {body}
+    </BrowsePageLayout>
   );
 }

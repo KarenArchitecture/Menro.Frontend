@@ -98,7 +98,8 @@ export default function App() {
 
   const hideMobileNav =
     pathname === "/" ||
-    NAV_HIDE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+    (NAV_HIDE_PREFIXES.some((prefix) => pathname.startsWith(prefix)) &&
+      !pathname.startsWith("/restaurants"));
 
   const removePadding = NO_PADDING_PREFIXES.some((prefix) =>
     pathname.startsWith(prefix),

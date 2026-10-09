@@ -268,8 +268,8 @@ function ItemDetailModal({ item, onClose, onSelectComboFood }) {
     item?.rating !== undefined && item?.rating !== null && item?.rating !== ""
       ? item.rating
       : item?.averageRating !== undefined &&
-          item?.averageRating !== null &&
-          item?.averageRating !== ""
+        item?.averageRating !== null &&
+        item?.averageRating !== ""
         ? item.averageRating
         : 4.5;
 
@@ -277,8 +277,8 @@ function ItemDetailModal({ item, onClose, onSelectComboFood }) {
     item?.voters !== undefined && item?.voters !== null && item?.voters !== ""
       ? item.voters
       : item?.votersCount !== undefined &&
-          item?.votersCount !== null &&
-          item?.votersCount !== ""
+        item?.votersCount !== null &&
+        item?.votersCount !== ""
         ? item.votersCount
         : 0;
 
@@ -338,16 +338,18 @@ function ItemDetailModal({ item, onClose, onSelectComboFood }) {
               />
 
               <div className="modal-info-panel">
-                <h2 className="modal-title">{item.name}</h2>
+                <div className="modal-title-row">
+                  <h2 className="modal-title">{item.name}</h2>
 
-                <div className="modal-rating">
-                  <StarIcon />
-                  <span className="modal-rating__value">
-                    {formatRating(modalRating)}
-                  </span>
-                  <span className="modal-rating__count">
-                    ({formatVoters(modalVoters)})
-                  </span>
+                  <div className="modal-rating">
+                    <StarIcon />
+                    <span className="modal-rating__value">
+                      {formatRating(modalRating)}
+                    </span>
+                    <span className="modal-rating__count">
+                      ({formatVoters(modalVoters)})
+                    </span>
+                  </div>
                 </div>
 
                 {item.ingredients && (

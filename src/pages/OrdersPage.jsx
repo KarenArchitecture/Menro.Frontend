@@ -13,6 +13,7 @@ import { getUserOrderHistory } from "../api/orders";
 import { rateRestaurant } from "../api/restaurantRating";
 import resolveFileUrl from "../utils/resolveFileUrl";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import { formatOrderDateTime } from "../utils/formatOrderDateTime";
 
 export default function Orders() {
   useDocumentTitle("سفارش‌های من");
@@ -38,8 +39,8 @@ export default function Orders() {
         restaurantId: o.restaurantId,
         restaurantSlug: o.restaurantSlug,
         restaurantName: o.restaurantName,
-        orderTypeTag: o.tableLabel ? o.tableLabel : "بیرون‌بر",
-        date: new Date(o.createdAt).toLocaleDateString("fa-IR"),
+        orderTypeTag: o.tableLabel ? null : "بیرون‌بر",
+        date: formatOrderDateTime(o.createdAt),
         logo: resolveFileUrl(
           o.restaurantLogoUrl,
           "/images/restaurant/logo-placeholder.png",

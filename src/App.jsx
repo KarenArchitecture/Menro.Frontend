@@ -35,7 +35,7 @@ import UserProfileForm from "./components/common/UserProfileForm";
 import FoodCommentsPage from "./pages/FoodCommentsPage";
 import MyCommentsPage from "./pages/MyCommentsPage";
 import ScrollToTop from "./components/common/ScrollToTop";
-import { markPendingCounterOrder } from "./utils/pendingPaymentStore"; // was "./components/common/PendingPaymentBanner"
+// import { markPendingCounterOrder } from "./utils/pendingPaymentStore"; // was "./components/common/PendingPaymentBanner"
 import PendingPaymentBanner from "./components/common/PendingPaymentBanner";
 
 import MobileNav from "./components/common/MobileNav";
@@ -193,6 +193,10 @@ export default function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/not-found" element={<NotFoundPage />} />
                 <Route path="/orders" element={<Orders />} />
+                <Route
+                  path="/orders/recent"
+                  element={<RecentOrdersBrowsePage />}
+                />
                 <Route path="/orders/bill/:id" element={<BillsPage />} />
                 <Route path="/comments" element={<MyCommentsPage />} />
                 <Route

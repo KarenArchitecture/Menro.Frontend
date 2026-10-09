@@ -636,15 +636,24 @@ h2 {
 .checkout-payment-notice {
   position: fixed;
   inset-inline: 0;
-  bottom: calc(var(--footer-h, 8.4rem));
+  bottom: var(--footer-live-h, var(--footer-h));
+  margin: 0;
+  padding: 2.4rem 1.6rem 1.2rem;
+  background: #13171e;
+  border-radius: 1.6rem 1.6rem 0 0;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.28);
   z-index: 999;
-  padding: 0.8rem 1.6rem;
-  background: #0c0f14;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.7;
+  color: #fff;
+  text-align: right;
+  transition: bottom 0.25s ease;
+}
+
+.checkout-payment-notice span {
   color: #ff683c;
-  font-size: 1.2rem;
-  font-weight: 700;
-  text-align: center;
 }
 
 /* invisible click catcher that closes the table selector */

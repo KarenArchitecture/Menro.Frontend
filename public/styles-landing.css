@@ -164,21 +164,25 @@ body {
 }
 
 .hero__title {
-  margin: 0;
-  color: var(--text);
-  font-size: 50px;
-  font-weight: 800;
-  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+ margin: 0;
+    color: #fff;
+    font-size: 45px;
+    font-weight: 800;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+    margin-right: 2rem;
+
 }
 
-.hero__title span {
+/* .hero__title span {
   color: #ff683c;
-}
+} */
 
 .hero__description {
-  margin: 0;
+  margin-right: 7rem;
+  letter-spacing: 5px;
   font-size: 40px;
   font-weight: 400;
+  margin-top: 0;
 }
 
 /* نوار جستجو */
@@ -1275,19 +1279,30 @@ body {
 }
 
 .stat-number {
-  font-size: 2rem;
-  font-weight: 900;
-  color: var(--accent);
+  font-size: 3rem;
+  font-weight: 700;
+  background: linear-gradient(
+    to bottom,
+    #FF8E6D 0%,
+    #FF8E6D 30%,
+    #FA8061 42%,
+    #F57655 50%,
+    #EF6A49 58%,
+    #E85E35 70%,
+    #E85E35 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   line-height: 1;
   text-shadow: 0 2px 8px rgba(255, 157, 16, 0.3);
 }
-
 .stat-text {
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--text);
   line-height: 1.3;
-  max-width: 200px;
+  max-width: 21rem;
 }
 
 @media (max-width: 1024px) {
@@ -1901,27 +1916,47 @@ body {
    order shows it winning) and moved the animation to a variant class
    below in case you want the auto-scroll behaviour back. */
 .plan-card__features {
-  overscroll-behavior: contain;
-  max-height: 300px;
-  overflow-y: auto;
-  padding-inline-end: 10px;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-gutter: stable both-edges;
-  direction: rtl;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  direction: rtl;
   margin: 0;
   padding: 0;
-  padding-inline-end: 10px;
   list-style: none;
+  overflow: visible;      /* wrapper does the clipping */
+  max-height: none;
   height: max-content;
-  min-height: max-content;
   flex-shrink: 0;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  margin-bottom: 7rem;
+}
+.plan-card__features--autoscroll {
+  animation: autoScrollFeatures 25s linear infinite;
+  will-change: transform;
+}
+
+@keyframes autoScrollFeatures {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plan-card__features--autoscroll { animation: none; }
+}
+
+/* Mobile shows the full list, so no marquee and no duplicate set */
+@media (max-width: 768px) {
+  .plan-card__features--autoscroll { animation: none; }
+  .plan-card__feature[aria-hidden="true"] { display: none; }
+  .plans-pin--mobile .plan-card__feature { padding-bottom: 0; }
+}
+/* Use padding instead of gap so translateY(-50%) lands exactly on the
+   start of the duplicated set. Otherwise you get a visible jump. */
+.plan-card__feature {
+  padding-bottom: 1.6rem;
+}
+
+.plan-card__features--autoscroll {
+  animation: autoScrollFeatures 25s linear infinite;
+  will-change: transform;
 }
 
 .plan-card__features::-webkit-scrollbar {
@@ -2332,6 +2367,46 @@ body {
   }
 }
 
+/* DIFFERENT BG */
+.plan-card {
+  /* Tuning knobs */
+  --glow: 20%;            /* glow strength at the top-left corner */
+  --glow-tail: 5%;        /* faint tail of the glow mid-card */
+  --base-gray: 22, 24, 29; /* #16181d, what the card fades into */
+
+  border: 1px solid color-mix(in srgb, var(--plan-accent, #394350) 22%, #2a2f38);
+}
+
+/* Muted image: still recolored, but no longer the dominant color */
+.plan-card[data-recolor="true"] .plan-card__bg {
+  filter: hue-rotate(var(--plan-hue, 0deg)) saturate(0.7) brightness(0.85);
+}
+
+/* Layer 1: accent glow from the top-left corner.
+   Layer 2: fade toward #16181d on the right and bottom. */
+.plan-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      75% 110% at 0% 0%,
+      color-mix(in srgb, var(--plan-accent, transparent) var(--glow), transparent) 0%,
+      color-mix(in srgb, var(--plan-accent, transparent) var(--glow-tail), transparent) 45%,
+      transparent 75%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(var(--base-gray), 0) 0%,
+      rgba(var(--base-gray), 0.6) 55%,
+      rgba(var(--base-gray), 0.9) 100%
+    );
+}
+.plans-pin--mobile .plans__mobile-stack {
+  filter: hue-rotate(var(--plan-hue, 0deg)) saturate(0.7) brightness(0.85);
+}
 /***************************************
  * 7) Burger panel (bp)
  **************************************/

@@ -8,25 +8,25 @@ export default function StatsSection() {
     {
       id: 1,
       icon: "/images/landing-stats-1.png",
-      number: "+1,700",
+      number: "1,700+",
       text: "رستوران ثبت شده",
     },
     {
       id: 2,
       icon: "/images/landing-stats-2.png",
-      number: "+69,000",
+      number: "69,000+",
       text: "مخاطب فعال",
     },
     {
       id: 3,
       icon: "/images/landing-stats-3.png",
-      number: "+1,000,000",
+      number: "1,000,000+",
       text: "سفارش های انجام شده",
     },
     {
       id: 4,
       icon: "/images/landing-stats-4.png",
-      number: "+12,000",
+      number: "12,000+",
       text: "اسکن منو",
     },
   ];

@@ -1,69 +1,111 @@
-import React, { useRef, useEffect, useState } from "react";
+// src/components/landing/StatsSection.jsx
+import React, { useRef, useEffect, useLayoutEffect, useState } from "react";
+
+/* ------------------------------------------------------------------ */
+/* Tuning                                                              */
+/* ------------------------------------------------------------------ */
+
+// Count-up length per number (ms), plus a small delay between numbers.
+// Longest total = COUNT_DURATION_MS + 3 * STAGGER_MS  ->  about 3.7s
+// Want it slower? Raise COUNT_DURATION_MS (e.g. 5000 for ~5s).
+const COUNT_DURATION_MS = 3500;
+const STAGGER_MS = 120;
+
+// How long each number takes to fade/slide in when the section is reached (ms).
+// The numbers are invisible until then, so no "+0" is ever sitting on the page.
+const REVEAL_MS = 700;
+
+// The animation starts once the stats row is inside the screen:
+// its top edge must be above this fraction of the viewport height
+// (0.85 = the row has risen into the top 85% of the screen).
+const START_AT_VIEWPORT = 0.85;
+
+// The row must stay in view this long (ms) before counting begins.
+// This ignores brief flickers (layout shifts while the page is loading).
+const CONFIRM_MS = 200;
+
+const STATS = [
+  {
+    id: 1,
+    icon: "/images/landing-stats-1.png",
+    number: "1,700+",
+    text: "رستوران ثبت شده",
+  },
+  {
+    id: 2,
+    icon: "/images/landing-stats-2.png",
+    number: "69,000+",
+    text: "مخاطب فعال",
+  },
+  {
+    id: 3,
+    icon: "/images/landing-stats-3.png",
+    number: "1,000,000+",
+    text: "سفارش های انجام شده",
+  },
+  {
+    id: 4,
+    icon: "/images/landing-stats-4.png",
+    number: "12,000+",
+    text: "اسکن منو",
+  },
+];
+
+/* ------------------------------------------------------------------ */
+/* Helpers                                                             */
+/* ------------------------------------------------------------------ */
+
+function parseToNumber(str) {
+  const persian = "۰۱۲۳۴۵۶۷۸۹";
+  const arabic = "٠١٢٣٤٥٦٧٨٩";
+  let out = "";
+  for (const ch of String(str)) {
+    const pi = persian.indexOf(ch);
+    const ai = arabic.indexOf(ch);
+    if (pi > -1) out += String(pi);
+    else if (ai > -1) out += String(ai);
+    else if (/\d/.test(ch)) out += ch;
+  }
+  return Number(out || 0);
+}
+
+function formatNumber(n) {
+  return new Intl.NumberFormat("en-US").format(n);
+}
+
+// True once the page (or the app's scroll container) has moved from the top.
+function hasScrolled() {
+  const container = document.querySelector(".app-shell__content");
+  return (
+    (window.scrollY || 0) > 0 ||
+    (document.documentElement.scrollTop || 0) > 0 ||
+    (container ? container.scrollTop > 0 : false)
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Component                                                           */
+/* ------------------------------------------------------------------ */
 
 export default function StatsSection() {
   const sectionRef = useRef(null);
+  const containerRef = useRef(null);
   const [startAnimation, setStartAnimation] = useState(false);
+  const [reducedMotion] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
 
-  const stats = [
-    {
-      id: 1,
-      icon: "/images/landing-stats-1.png",
-      number: "1,700+",
-      text: "رستوران ثبت شده",
-    },
-    {
-      id: 2,
-      icon: "/images/landing-stats-2.png",
-      number: "69,000+",
-      text: "مخاطب فعال",
-    },
-    {
-      id: 3,
-      icon: "/images/landing-stats-3.png",
-      number: "1,000,000+",
-      text: "سفارش های انجام شده",
-    },
-    {
-      id: 4,
-      icon: "/images/landing-stats-4.png",
-      number: "12,000+",
-      text: "اسکن منو",
-    },
-  ];
-
-  // 1. Intersection Observer: Detect when the section is in view
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setStartAnimation(true);
-          if (sectionRef.current) {
-            observer.unobserve(sectionRef.current);
-          }
-        }
-      },
-      { threshold: 0.2 }, // Trigger when 20% visible
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    return () => {
-      if (sectionRef.current) observer.unobserve(sectionRef.current);
-    };
-  }, []);
-
-  // 2. Prime the numbers immediately (so users don't see the final number before scrolling down)
-  useEffect(() => {
+  // 1. Prime the numbers to 0 before the first paint, so the final values
+  //    never flash on screen. Skipped for reduced motion (numbers stay final).
+  useLayoutEffect(() => {
     const section = sectionRef.current;
     if (!section || section.__primed) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     section.__primed = true;
 
-    const nums = section.querySelectorAll(".stat-number");
-
-    // Prime to 0 and stash target/+ position
-    nums.forEach((el) => {
+    section.querySelectorAll(".stat-number").forEach((el) => {
       const original = (el.textContent || "").trim();
       el.dataset.targetText = original;
       const plusStart = /^[+\uFF0B]/.test(original);
@@ -74,49 +116,115 @@ export default function StatsSection() {
     });
   }, []);
 
-  // 3. Count Animation: Runs ONLY when startAnimation is true
+  // 2. Decide WHEN to start: the stats row is really on screen and the
+  //    user has scrolled. Re-checked on every scroll / resize, so a brief
+  //    intersection while the page is still loading can't use it up.
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || startAnimation) return;
+
+    let timer = 0;
+    let raf = 0;
+
+    const isInView = () => {
+      const r = container.getBoundingClientRect();
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+      return r.top < vh * START_AT_VIEWPORT && r.bottom > vh * 0.1;
+    };
+
+    const check = () => {
+      raf = 0;
+
+      if (isInView() && hasScrolled()) {
+        if (!timer) {
+          timer = window.setTimeout(() => {
+            timer = 0;
+            if (isInView()) setStartAnimation(true);
+          }, CONFIRM_MS);
+        }
+      } else if (timer) {
+        window.clearTimeout(timer);
+        timer = 0;
+      }
+    };
+
+    const schedule = () => {
+      if (!raf) raf = requestAnimationFrame(check);
+    };
+
+    // capture: true also catches scrolling inside .app-shell__content
+    window.addEventListener("scroll", schedule, {
+      capture: true,
+      passive: true,
+    });
+    window.addEventListener("resize", schedule);
+    schedule();
+
+    return () => {
+      window.removeEventListener("scroll", schedule, { capture: true });
+      window.removeEventListener("resize", schedule);
+      if (raf) cancelAnimationFrame(raf);
+      if (timer) window.clearTimeout(timer);
+    };
+  }, [startAnimation]);
+
+  // 3. Count-up: runs once, only after startAnimation becomes true
   useEffect(() => {
     if (!startAnimation) return;
 
     const section = sectionRef.current;
-    if (!section || section.__counted) return;
-    section.__counted = true;
+    if (!section) return;
 
-    const nums = section.querySelectorAll(".stat-number");
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
 
-    // Count once
-    nums.forEach((el, i) => {
-      const targetText = el.dataset.targetText || "0";
+    const rafs = [];
+
+    section.querySelectorAll(".stat-number").forEach((el, i) => {
+      const targetText = el.dataset.targetText || (el.textContent || "").trim();
+      if (reduced) {
+        el.textContent = targetText;
+        return;
+      }
+
       const plusStart = el.dataset.plusStart === "1";
       const plusEnd = el.dataset.plusEnd === "1";
       const target = parseToNumber(targetText);
-
-      const duration = 10000; // ms
-      const delay = i * 80; // small stagger
-      const startAt = performance.now() + delay;
+      const startAt = performance.now() + i * STAGGER_MS;
 
       const tick = (now) => {
         if (!el.isConnected) return;
-        if (now < startAt) return requestAnimationFrame(tick);
 
-        const t = Math.min(1, (now - startAt) / duration);
-        const eased = 1 - Math.pow(1 - t, 2); // easeOutQuad
-        const value = Math.round(target * eased);
-        const pretty = formatNumber(value);
+        if (now < startAt) {
+          rafs[i] = requestAnimationFrame(tick);
+          return;
+        }
+
+        const t = Math.min(1, (now - startAt) / COUNT_DURATION_MS);
+        const eased = 1 - Math.pow(1 - t, 2); // easeOutQuad (steady, no long crawl at the end)
+        const pretty = formatNumber(Math.round(target * eased));
 
         el.textContent = plusStart
           ? `+${pretty}`
           : plusEnd
             ? `${pretty}+`
             : pretty;
-        if (t < 1) requestAnimationFrame(tick);
+
+        if (t < 1) {
+          rafs[i] = requestAnimationFrame(tick);
+        } else {
+          el.textContent = targetText; // exact original text at the end
+        }
       };
 
-      requestAnimationFrame(tick);
+      rafs[i] = requestAnimationFrame(tick);
     });
+
+    return () => rafs.forEach((id) => id && cancelAnimationFrame(id));
   }, [startAnimation]);
 
-  // === Cursor-repel on icons ===
+  // 4. Cursor-repel on icons (unchanged)
   useEffect(() => {
     const root = sectionRef.current;
     if (!root) return;
@@ -129,7 +237,7 @@ export default function StatsSection() {
     const icons = Array.from(root.querySelectorAll(ICON_SEL));
 
     const states = new Map(); // per icon: { tx, ty, targetX, targetY, raf, rect }
-    const maxShift = 40; // px — tweak strength here
+    const maxShift = 40; // px, tweak strength here
     const lerpAlpha = 0.18; // smoothing (0..1), lower = smoother
 
     function ensureState(el) {
@@ -156,7 +264,6 @@ export default function StatsSection() {
       const el = e.currentTarget;
       const st = ensureState(el);
 
-      // position inside the icon
       const r = st.rect;
       const x = e.clientX - r.left;
       const y = e.clientY - r.top;
@@ -184,19 +291,15 @@ export default function StatsSection() {
       const st = states.get(el);
       if (!st) return;
 
-      // lerp towards target
       st.tx += (st.targetX - st.tx) * lerpAlpha;
       st.ty += (st.targetY - st.ty) * lerpAlpha;
 
-      // snap small values to zero
       if (Math.abs(st.tx) < 0.05) st.tx = 0;
       if (Math.abs(st.ty) < 0.05) st.ty = 0;
 
-      // apply transform to the IMG (so layout box stays stable)
       const img = el.querySelector("img");
       if (img) img.style.transform = `translate(${st.tx}px, ${st.ty}px)`;
 
-      // continue animating while not at rest
       if (st.tx !== st.targetX || st.ty !== st.targetY) {
         st.raf = requestAnimationFrame(() => animate(el));
       } else {
@@ -204,15 +307,14 @@ export default function StatsSection() {
       }
     }
 
-    // attach listeners
     icons.forEach((el) => {
-      el.style.setProperty("perspective", "600px"); // harmless, future-proof if you add tilt
+      el.style.setProperty("perspective", "600px");
       el.addEventListener("pointerenter", onPointerEnter);
       el.addEventListener("pointermove", onPointerMove);
       el.addEventListener("pointerleave", onPointerLeave);
     });
 
-    // keep rects fresh on resize/scroll (optional)
+    // keep rects fresh on resize/scroll
     const ro = new ResizeObserver(() => {
       icons.forEach((el) => {
         const st = ensureState(el);
@@ -229,7 +331,6 @@ export default function StatsSection() {
     };
     window.addEventListener("scroll", onScroll, { passive: true });
 
-    // cleanup
     return () => {
       window.removeEventListener("scroll", onScroll);
       ro.disconnect();
@@ -244,38 +345,32 @@ export default function StatsSection() {
     };
   }, []);
 
-  // helpers
-  function parseToNumber(str) {
-    const persian = "۰۱۲۳۴۵۶۷۸۹";
-    const arabic = "٠١٢٣٤٥٦٧٨٩";
-    let out = "";
-    for (const ch of String(str)) {
-      const pi = persian.indexOf(ch);
-      const ai = arabic.indexOf(ch);
-      if (pi > -1) out += String(pi);
-      else if (ai > -1) out += String(ai);
-      else if (/\d/.test(ch)) out += ch;
-    }
-    return Number(out || 0);
-  }
-
-  function formatNumber(n) {
-    return new Intl.NumberFormat("en-US").format(n);
-  }
-
   return (
     <section className="stats-section" ref={sectionRef}>
-      <div className="stats-container">
-        {stats.map((stat) => (
+      <div className="stats-container" ref={containerRef}>
+        {STATS.map((stat, i) => {
+          const showNumber = startAnimation || reducedMotion;
+
+          return (
           <div key={stat.id} className="stat-item">
             <div className="stat-icon" data-shift="16">
               <img src={stat.icon} alt={`Stat ${stat.id}`} draggable="false" />
             </div>
 
-            {/* JITTER FIX: Wrapper to lock layout dimensions */}
+            {/* Wrapper locks layout width so the number doesn't jitter.
+                It stays invisible until the section is reached, then fades
+                in at the same moment its count starts. */}
             <div
               className="stat-number-wrapper"
-              style={{ display: "grid", justifyContent: "center" }}
+              style={{
+                display: "grid",
+                justifyContent: "center",
+                opacity: showNumber ? 1 : 0,
+                transform: showNumber ? "translateY(0)" : "translateY(14px)",
+                transition: reducedMotion
+                  ? "none"
+                  : `opacity ${REVEAL_MS}ms ease-out ${i * STAGGER_MS}ms, transform ${REVEAL_MS}ms ease-out ${i * STAGGER_MS}ms`,
+              }}
             >
               {/* Invisible placeholder takes up the exact final width */}
               <div
@@ -284,7 +379,7 @@ export default function StatsSection() {
               >
                 {stat.number}
               </div>
-              {/* Actual animating element laid perfectly on top */}
+              {/* Actual animating element laid on top */}
               <div
                 className="stat-number"
                 style={{
@@ -298,7 +393,8 @@ export default function StatsSection() {
 
             <div className="stat-text">{stat.text}</div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

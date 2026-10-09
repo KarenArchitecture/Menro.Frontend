@@ -13,6 +13,7 @@ import LandingRankIcon from "../icons/LandingRankIcon";
 import LandingRadarIcon from "../icons/LandingRadarIcon";
 import LandingPcIcon from "../icons/LandingPcIcon";
 import LandingWalletIcon from "../icons/LandingWalletIcon";
+import useScroller from "./UseScroller";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -28,25 +29,46 @@ const REASON_ICON_MAP = {
 const DEFAULT_TEXT =
   "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، و با استفاده از طراحان گرافیک است، چاپگرها و متون بلکه روزنامه لورم ایپسوم متن ساختگی";
 
-// Matches the site's accent orange already used elsewhere (e.g. .hero__title
-// span { color: #ff683c; } in hero.css) — used when the API doesn't supply
-// a ColorHex.
+// Matches the site's accent orange already used elsewhere — used when the API
+// doesn't supply a ColorHex.
 const DEFAULT_ACCENT_COLOR = "#ff683c";
 
-// LandingReasonResponse.Icon is a Font Awesome class string (e.g.
-// "fa-solid fa-cube"), and ColorHex is its color. Font Awesome must be
-// loaded globally for these classes to render anything — if you're seeing
-// blank space where an icon should be (no glyph, no fallback box), Font
-// Awesome likely isn't imported yet. Either add the CDN kit script to
-// index.html, or run `npm install @fortawesome/fontawesome-free` and add
-// `import "@fortawesome/fontawesome-free/css/all.min.css";` once near your
-// app's entry point (e.g. main.jsx) — importing it per-component would load
-// it repeatedly.
-// Matches the visual size the fallback SVG icons render at inside the
-// 30x30 .info-icon box (see info-card CSS). Font Awesome glyphs scale with
-// font-size, not their container, so without this they render tiny
-// (~1em/16px) — this brings them back up to the same standard size.
+// Font Awesome glyphs scale with font-size, not their container, so this
+// brings API-driven icons up to the same size as the fallback SVG icons.
+// (Font Awesome must be loaded globally for the API icon classes to render.)
 const REASON_ICON_FONT_SIZE = "1.8rem";
+
+/* ------------------------------------------------------------------ */
+/* Desktop parallax: one row per card. Tune the numbers here.          */
+/* ------------------------------------------------------------------ */
+//
+// Each card moves UP by an extra `travel` (in viewport heights) on top of the
+// normal page scroll, so it looks like it is rising on its own.
+//
+//   travel : how far it rises. Bigger = looks closer to the user, moves faster.
+//   from/to: WHEN it moves, as a fraction of the section's scroll
+//            (0 = section enters the screen, 1 = section has left).
+//            A later `from` makes a card hold back, then catch up.
+//   ease   : shape of the motion. "power2.inOut" drifts, speeds up, then eases
+//            out. "power1.out" starts quick and settles. "none" is constant.
+//
+// Keep cards that sit near each other at similar `travel` values, otherwise
+// they will run into each other on the way up.
+const CARD_MOTION = [
+  { sel: ".pos-a", travel: 0.3, from: 0.0, to: 0.9, ease: "power1.out" },
+  { sel: ".pos-b", travel: 0.7, from: 0.1, to: 1.0, ease: "power2.inOut" },
+  { sel: ".pos-c", travel: 0.5, from: 0.05, to: 0.95, ease: "power1.inOut" },
+  { sel: ".pos-d", travel: 0.65, from: 0.1, to: 1.0, ease: "power2.out" },
+  { sel: ".pos-e", travel: 0.65, from: 0.25, to: 1.0, ease: "power2.inOut" },
+  { sel: ".pos-f", travel: 0.2, from: 0.0, to: 0.8, ease: "none" },
+  { sel: ".pos-g", travel: 0.35, from: 0.15, to: 1.0, ease: "power1.out" },
+  { sel: ".pos-h", travel: 0.45, from: 0.05, to: 0.95, ease: "power2.inOut" },
+  { sel: ".pos-i", travel: 0.15, from: 0.0, to: 0.7, ease: "power1.out" },
+];
+
+// How "floaty" the cards feel. 0 = glued to the scrollbar,
+// higher = they trail behind the scroll a little longer.
+const PARALLAX_SMOOTHING = 1.2;
 
 function ReasonIcon({ iconClass, colorHex, FallbackComp }) {
   const color = colorHex || DEFAULT_ACCENT_COLOR;
@@ -71,12 +93,8 @@ function ReasonIcon({ iconClass, colorHex, FallbackComp }) {
 }
 
 // The layout (pos-a .. pos-i) is a fixed CSS grid. SalesBoostCard (pos-a),
-// CostReductionCard (pos-h) and the logo card (pos-i) are specialized,
-// non-editable UI (charts / brand mark), so they stay static — per the
-// LandingController comment, only simple text+icon "reason" content is
-// backed by the API. The remaining 6 slots below are filled, in order, from
-// getLandingReasons(). If fewer than 6 reasons come back, the missing slots
-// fall back to their original placeholder content.
+// CostReductionCard (pos-h) and the logo card (pos-i) are static UI. The
+// remaining 6 slots below are filled, in order, from getLandingReasons().
 const REASON_SLOTS = [
   {
     key: "b",
@@ -122,6 +140,8 @@ export default function WhyMenroSection({ reasons = null }) {
   const sectionRef = useRef(null);
   const titlesRef = useRef(null);
 
+  const scroller = useScroller();
+
   const cards = useMemo(
     () =>
       REASON_SLOTS.map((slot, idx) => {
@@ -131,13 +151,9 @@ export default function WhyMenroSection({ reasons = null }) {
         const description = data?.description ?? DEFAULT_TEXT;
 
         return {
-          // Stable per-slot key — must NOT change once `reasons` loads.
-          // GSAP's ScrollTrigger (set up once in the useLayoutEffect below)
-          // attaches scroll-driven transforms directly to these DOM nodes.
-          // If the key changed (e.g. to the API's data.id), React would
-          // unmount/remount a brand new element the moment real data
-          // arrives, losing those transforms entirely — which is what was
-          // causing cards to lose their scroll position and overlap.
+          // Stable per-slot key: must NOT change once `reasons` loads.
+          // GSAP attaches transforms directly to these DOM nodes; a changing
+          // key would remount them and lose those transforms.
           key: slot.key,
           className: slot.className,
           type: slot.type,
@@ -157,38 +173,31 @@ export default function WhyMenroSection({ reasons = null }) {
 
   useLayoutEffect(() => {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-    // Only abort if the user prefers reduced motion.
-    // We removed the isMobile check here so GSAP matchMedia can handle it.
     if (reducedMotion.matches) return;
 
     const section = sectionRef.current;
     const titles = titlesRef.current;
 
-    if (!section || !titles) return;
+    // Wait for the real scroller so every trigger below listens to the same one.
+    if (!section || !titles || !scroller) return;
 
-    // Use gsap.matchMedia() to manage responsive animations and cleanup
     const mm = gsap.matchMedia();
 
     // -------------------------
-    // DESKTOP ANIMATIONS (>= 769px)
+    // DESKTOP (>= 769px)
     // -------------------------
     mm.add("(min-width: 769px)", () => {
-      const cardEls = gsap.utils.toArray(".why-card");
-
-      // Original Desktop Title Animation
+      // Title rises through the screen
       gsap.fromTo(
         titles,
-        {
-          xPercent: -50,
-          yPercent: 70,
-        },
+        { xPercent: -50, yPercent: 70 },
         {
           xPercent: -50,
           yPercent: -270,
           ease: "none",
           scrollTrigger: {
             trigger: section,
+            scroller,
             start: "top bottom",
             end: "bottom top",
             scrub: true,
@@ -196,61 +205,62 @@ export default function WhyMenroSection({ reasons = null }) {
         },
       );
 
-      // Original Desktop Cards Animation
-      gsap.to(cardEls, {
-        yPercent: -200,
-        ease: "none",
+      // Cards: one timeline, each card with its own distance, delay and easing
+      const tl = gsap.timeline({
+        defaults: { ease: "none" },
         scrollTrigger: {
           trigger: section,
-          start: "top 80%",
+          scroller,
+          start: "top bottom",
           end: "bottom top",
-          scrub: true,
+          scrub: PARALLAX_SMOOTHING,
+          invalidateOnRefresh: true,
         },
       });
+
+      CARD_MOTION.forEach(({ sel, travel, from, to, ease }) => {
+        const el = section.querySelector(sel);
+        if (!el) return;
+
+        tl.to(
+          el,
+          {
+            y: () => -window.innerHeight * travel,
+            ease,
+            duration: to - from,
+          },
+          from,
+        );
+      });
+
+      // Make the timeline exactly 1 long so from/to map 1:1 to scroll progress
+      tl.set({}, {}, 1);
     });
 
     // -------------------------
-    // MOBILE ANIMATIONS (<= 768px)
+    // MOBILE (<= 768px)
     // -------------------------
-    // Mobile Animations (max-width: 768px)
     mm.add("(max-width: 768px)", () => {
-      // 1. Create a timeline and attach the ScrollTrigger to it
       const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: sectionRef.current,
-          scroller: ".app-shell__content",
+          trigger: section,
+          scroller,
           start: "top 50%",
           end: "bottom 20%",
           scrub: 1,
         },
       });
 
-      // 2. Move down continuously for the whole scroll duration
-      tl.to(
-        titlesRef.current,
-        {
-          y: "140vh",
-          ease: "none", // Keeps the speed consistent
-          duration: 1, // Represents 100% of the scroll distance
-        },
-        0,
-      ) // The '0' means start exactly at the beginning
-
-        // 3. Fade out ONLY at the end
-        .to(
-          titlesRef.current,
-          {
-            opacity: 0,
-            ease: "none",
-            duration: 0.3, // Takes up 30% of the scroll distance
-          },
-          0.7,
-        ); // The '0.7' means wait until the scroll is 70% complete before starting the fade
+      // Move down for the whole scroll, fade out only at the end
+      tl.to(titles, { y: "140vh", ease: "none", duration: 1 }, 0).to(
+        titles,
+        { opacity: 0, ease: "none", duration: 0.3 },
+        0.7,
+      );
     });
 
-    // Cleanup all matchMedia animations when the component unmounts
     return () => mm.revert();
-  }, []);
+  }, [scroller]);
 
   return (
     <section className="why-static" id="why-menro" ref={sectionRef}>

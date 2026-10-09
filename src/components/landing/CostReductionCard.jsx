@@ -1,11 +1,23 @@
 // components/cards/CostReductionCard.jsx
-import React, { useRef, useLayoutEffect, useEffect, useState } from "react";
+import React, { useRef, useLayoutEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import LandingCostReductionIcon from "../icons/LandingCostReductionIcon";
+import useScroller from "./UseScroller";
 
 gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
+
+// 0 = card's top edge touches the bottom of the viewport (just entering)
+// 1 = card's bottom edge touches the top of the viewport (fully gone)
+//
+// FINISH_AT is the point of that pass where the animation reaches 100%.
+// 1    -> finishes exactly as the card leaves the screen (what was asked).
+// 0.85 -> finishes a little earlier so people can see the final value.
+const FINISH_AT = 1;
+
+// How long the animation takes to catch up with the scroll position (seconds).
+const SMOOTHING = 0.45;
 
 export default function CostReductionCard({
   label = "کاهش هزینه نرم افزاری",
@@ -17,78 +29,105 @@ export default function CostReductionCard({
   const dotGroupRef = useRef(null);
   const valueRef = useRef(null);
 
-  // 1. Add state to hold the detected scroller
-  const [scroller, setScroller] = useState(null);
-
-  // 2. Detect the scroller safely after paint
-  useEffect(() => {
-    const detectScroller = () => {
-      let activeScroller = window;
-      const customContainer = document.querySelector(".app-shell__content");
-
-      if (customContainer) {
-        const styles = window.getComputedStyle(customContainer);
-        if (styles.overflowY === "auto" || styles.overflowY === "scroll") {
-          activeScroller = customContainer;
-        }
-      }
-      setScroller(activeScroller);
-    };
-
-    detectScroller();
-    window.addEventListener("resize", detectScroller);
-
-    return () => window.removeEventListener("resize", detectScroller);
-  }, []);
+  const scroller = useScroller();
 
   useLayoutEffect(() => {
     const card = cardRef.current;
     const path = pathRef.current;
     const dotGroup = dotGroupRef.current;
 
-    // 3. Wait until the scroller is identified
     if (!card || !path || !dotGroup || !scroller) return;
 
-    const len = path.getTotalLength();
+    // The section is never transformed, so it is a safe trigger. The card
+    // itself is NOT (the section moves it for the parallax), which is why its
+    // own position can't be used for the start/end markers.
+    const section = card.closest(".why-static") || card.parentElement;
 
-    // 4. Pass the detected scroller to ScrollTrigger
-    const st = {
-      trigger: card,
-      scroller: scroller,
-      start: "top 98%",
-      end: "top 30%",
-      scrub: true,
-    };
+    if (valueRef.current) valueRef.current.textContent = "+0%";
 
     const ctx = gsap.context(() => {
-      // Count number 0 -> value
+      // One paused timeline holds the whole animation: number + dot on path.
       const counter = { n: 0 };
-      gsap.to(counter, {
-        n: value,
-        ease: "none",
-        scrollTrigger: st,
-        onUpdate: () => {
-          if (valueRef.current)
-            valueRef.current.textContent = `+${Math.round(counter.n)}%`;
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "none" } });
+
+      tl.to(
+        counter,
+        {
+          n: value,
+          duration: 1,
+          onUpdate: () => {
+            if (valueRef.current) {
+              valueRef.current.textContent = `+${Math.round(counter.n)}%`;
+            }
+          },
         },
+        0,
+      );
+
+      tl.to(
+        dotGroup,
+        {
+          motionPath: {
+            path,
+            align: path,
+            alignOrigin: [0.5, 0.5],
+            start: 0,
+            end: 1,
+          },
+          duration: 1,
+          immediateRender: true, // park the dot at the path start right away
+        },
+        0,
+      );
+
+      const getViewport = () => {
+        if (scroller === window) return { top: 0, height: window.innerHeight };
+        const r = scroller.getBoundingClientRect();
+        return { top: r.top, height: r.height };
+      };
+
+      // Where is the card on screen RIGHT NOW (transforms included)?
+      const update = () => {
+        const vp = getViewport();
+        const rect = card.getBoundingClientRect();
+
+        const raw =
+          (vp.top + vp.height - rect.top) / (vp.height + rect.height);
+        const target = gsap.utils.clamp(0, 1, raw / FINISH_AT);
+
+        gsap.to(tl, {
+          progress: target,
+          duration: SMOOTHING,
+          ease: "power2.out",
+          overwrite: true,
+        });
+      };
+
+      ScrollTrigger.create({
+        trigger: section,
+        scroller,
+        start: "top bottom",
+        end: "bottom top",
+        onUpdate: update,
+        onToggle: update,
+        onRefresh: update,
       });
 
-      // Keep the dot glued to the path (no drift)
-      gsap.to(dotGroup, {
-        motionPath: {
-          path,
-          align: path,
-          alignOrigin: [0.5, 0.5], // center of the dot group
-          start: 0,
-          end: 1,
-        },
-        ease: "none",
-        scrollTrigger: st,
-      });
+      update();
+
+      // Stored so cleanup can kill the smoothing tween (created outside ctx).
+      card._costTl = tl;
     }, cardRef);
 
-    return () => ctx.revert();
-  }, [value, scroller]); // 5. Add scroller as a dependency
+    return () => {
+      if (card._costTl) {
+        gsap.killTweensOf(card._costTl);
+        card._costTl.kill();
+        card._costTl = null;
+      }
+      ctx.revert();
+    };
+  }, [value, scroller]);
 
   return (
     <div className={`why-card cost-reduction ${className}`} ref={cardRef}>

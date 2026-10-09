@@ -1,13 +1,42 @@
-/* public/styles-checkout.css */
+/* public/styles-checkout.css
+
+   Layout system
+   -------------
+   Design base: 390px. Minimum supported width: 360px (fluid down to 320px).
+   Side margin of rows is always 2.5rem (body 0.5rem + .checkout-cards 2rem).
+
+   --u is the "scale unit" for everything inside the cart card and footer:
+   10px at 390px, shrinks with the card width, never below 8.4px.
+   Use calc(var(--u) * N) instead of N rem for anything that must scale.
+
+   Sections
+   --------
+   1. Tokens, reset, base
+   2. Page layout and header
+   3. Cart card
+   4. Option row (name/price box + quantity controller)
+   5. Footer (price + pay button + table selector)
+   6. Payment bottom sheet
+   7. Order success modal
+*/
+
+
+/* =====================================================
+   1. Tokens, reset, base
+   ===================================================== */
 :root {
+    font-size: 62.5%;
+    /* 1rem = 10px */
+
     --bg: #0c0f14;
     --fg: #fff;
     --muted: #aaa;
     --primary: #d17842;
-    font-size: 62.5%;
-    --footer-pad-y: 1.6rem; /* 16px top/bottom */
+
+    --footer-pad-y: 1.6rem;
     --footer-safe: env(safe-area-inset-bottom, 0px);
     --footer-h: calc(5.2rem + (var(--footer-pad-y) * 2) + var(--footer-safe));
+
     --sheet-bg: #f3f6fc;
     --sheet-radius: 16px;
     --sheet-pad-x: 16px;
@@ -30,12 +59,12 @@ html {
 body {
     font-family: "Vazirmatn", sans-serif;
     margin: 0;
+    padding: 0.5rem;
     background-color: #0c0f14;
     color: white;
     direction: rtl;
     overflow-x: hidden;
     max-width: 100vw;
-    padding: 0.5rem;
 }
 
 h2 {
@@ -44,9 +73,18 @@ h2 {
     margin: 0;
 }
 
+
+/* =====================================================
+   2. Page layout and header
+   ===================================================== */
 .checkout-container {
-    margin: 0 auto;
-    margin-bottom: 7rem;
+    --u: clamp(8.4px, calc((100vw - 5rem) / 34), 10px);
+    --row-h: calc(var(--u) * 4.4);
+    /* name/price box and qty buttons: 44px at 390px */
+    --ctrl-w: calc(var(--u) * 4.1);
+    /* qty button / value width: 41px at 390px */
+
+    margin: 0 auto 7rem;
 }
 
 .checkout-header {
@@ -54,15 +92,14 @@ h2 {
     flex-direction: row-reverse;
     justify-content: space-between;
     align-items: center;
+    padding: 0 2.5rem 2.2rem;
+    margin-bottom: 2.5rem;
+    border-bottom: solid 1px #ffffff10;
     font-weight: bold;
     font-size: 1.2rem;
-    padding: 0 2.5rem 2.2rem;
-    border-bottom: solid 1px #ffffff10;
-    margin-bottom: 2.5rem;
 }
 
 .checkout-header i {
-    /* font-size: 1.2rem; */
     cursor: pointer;
 }
 
@@ -86,23 +123,24 @@ h2 {
 }
 
 .back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 3.4rem;
     height: 3.4rem;
     min-width: 3.4rem;
     background: #13171e !important;
     border: none;
     border-radius: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     cursor: pointer;
 }
 
+/* Rows are spaced with margin-bottom on .cart-card-wrap, not with gap. */
 .checkout-cards {
     display: flex;
-    align-items: center;
     flex-direction: column;
-    gap: 1.2rem;
+    align-items: center;
+    padding: 2rem;
 }
 
 .cart-items {
@@ -111,52 +149,61 @@ h2 {
     gap: 1.5rem;
 }
 
+
+/* =====================================================
+   3. Cart card
+   ===================================================== */
+
+/* Distance to the next row:
+   - no "با مخلفات" tab:  2.5rem
+   - with the tab:        tab height that sticks out + 2rem */
 .cart-card-wrap {
     position: relative;
-    margin-bottom: 4rem; /* space for the pill so next card doesn't overlap */
+    width: 100%;
+    max-width: 52rem;
+    margin-bottom: 2.5rem;
 }
 
-/* the card itself */
+.cart-card-wrap.has-extra {
+    margin-bottom: calc(var(--u) * 3.8 + 2rem);
+}
+
 .cart-card {
     position: relative;
-    background-image: linear-gradient(
-        135deg,
-        #1e232a 0%,
-        #1e232a 28%,
-        #2b3038 100%
-    );
-    width: 100%;
-    padding: 1.4rem; /* normal bottom padding now */
-    border-radius: 2.3rem;
+    z-index: 2;
+    /* above the tab where they overlap */
     display: flex;
     flex-direction: column;
-    gap: 1.3rem;
-    max-width: 300px;
-    overflow: hidden; /* IMPORTANT: hides the top of the pill */
+    gap: calc(var(--u) * 1.3);
+    width: 100%;
+    padding: calc(var(--u) * 1.4);
+    background-image: linear-gradient(135deg, #1e232a 0%, #1e232a 28%, #2b3038 100%);
+    border-radius: calc(var(--u) * 2.3);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-    z-index: 2; /* sits above the pill where they overlap */
+    overflow: hidden;
+    /* hides the top part of the tab */
 }
 
+/* "با مخلفات" tab under the card */
 .cart-card-extra {
     position: absolute;
     left: 50%;
-    bottom: -38px;
+    bottom: calc(var(--u) * -3.8);
     transform: translateX(-50%);
-    min-width: 19rem;
-    height: 6rem;
-    padding: 0 1.8rem;
-    border-radius: 20px;
-    background: #151b24;
+    z-index: 1;
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    font-size: 1.4rem;
-    font-weight: 600;
-    color: #e7edf7;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
-    z-index: 1;
-    padding-bottom: 10px;
     gap: 4px;
+    min-width: calc(var(--u) * 19);
+    height: calc(var(--u) * 6);
+    padding: 0 calc(var(--u) * 1.8) var(--u);
+    background: #151b24;
+    border-radius: calc(var(--u) * 2);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
+    color: #e7edf7;
+    font-size: calc(var(--u) * 1.4);
+    font-weight: 600;
 }
 
 .cart-card-extra img {
@@ -166,14 +213,23 @@ h2 {
 .cart-header {
     display: flex;
     align-items: flex-start;
-    gap: 1.2rem;
+    gap: calc(var(--u) * 1.2);
 }
 
 .cart-info {
     flex: 1;
     min-width: 0;
 }
-/* title + rating row */
+
+.product-img {
+    flex: 0 0 auto;
+    width: calc(var(--u) * 10);
+    height: calc(var(--u) * 10);
+    border-radius: calc(var(--u) * 1.6);
+    object-fit: cover;
+}
+
+/* title + rating */
 .product-title {
     font-size: 1.3rem;
     font-weight: 600;
@@ -184,88 +240,62 @@ h2 {
     flex-direction: column;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 0.8rem;
+    gap: calc(var(--u) * 0.8);
 }
 
 .product-title.rating h3.product-title {
     flex: 1 1 auto;
     min-width: 0;
     margin: 0;
-    font-size: 1.8rem;
+    font-size: calc(var(--u) * 1.8);
     font-weight: 800;
     color: #fff;
 
     /* 2-line clamp with … */
     display: -webkit-box;
-    -webkit-line-clamp: 2; /* max lines – change to 1 if you want 1 line */
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-/* Title on the right */
-.product-title.rating h3 {
-    font-size: 1.8rem;
-    font-weight: 800;
-    margin: 0;
-    color: #fff;
-}
-
-/* Rating block */
-.product-title.rating i {
-    color: #f89c0e;
-    margin-left: 0.3rem;
-    font-size: 0.7rem;
-}
-
-.product-title.rating strong {
-    font-weight: 600;
-    font-size: 1.3rem;
-}
-
-.product-title.rating span {
-    font-size: 1rem;
-    color: #aaa;
 }
 
 .rating-score {
     display: inline-flex;
     flex: 0 0 auto;
-    white-space: nowrap;
     flex-direction: row-reverse;
     align-items: center;
-
-    font-size: 1.4rem !important;
+    white-space: nowrap;
     color: #cfd6df;
+    font-size: calc(var(--u) * 1.4) !important;
 }
 
 .rating-score strong {
+    font-size: calc(var(--u) * 1.3);
+    font-weight: 600;
     color: #fafaf4;
-    font-weight: 800;
 }
+
 .rating-score span {
-    color: #97a0ab;
-    font-size: 1.2rem;
     padding-left: 3px;
+    font-size: var(--u);
+    color: #aaa;
 }
 
 .rating-score img {
     margin-bottom: 4px;
 }
-/* Description underneath */
+
 .product-subtext {
     margin: 0;
     font-size: 1.2rem;
-    color: #a9b1bc;
     line-height: 1.5;
+    color: #a9b1bc;
 }
 
-.product-img {
-    width: 10rem;
-    height: 10rem;
-    border-radius: 1.6rem;
-    object-fit: cover;
-}
 
+/* =====================================================
+   4. Option row (name/price box + quantity controller)
+   ===================================================== */
 .option-group {
     display: flex;
     flex-direction: column;
@@ -274,67 +304,89 @@ h2 {
 .option-row {
     display: flex;
     flex-direction: column;
-    grid-template-columns: 1fr auto;
     align-items: center;
-    padding-inline: 0.2rem;
-}
-
-.option-box {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 3.8rem;
-    padding: 0 0.16rem;
-    padding-inline: 1.6rem;
-    min-width: 12rem;
-    width: 135px;
-    min-width: 135px;
-    max-width: 135px;
-    /* max-width: 500px; */
-    background: #141921;
-
-    border-radius: 1.2rem;
-    color: #fff;
-    font-size: 1.4rem;
-    font-weight: 500;
-    line-height: 1;
-    white-space: nowrap;
-    /* overflow: hidden; */
-    text-overflow: ellipsis;
-}
-
-.option-title {
-    font-size: 1.2rem;
-    font-weight: 600;
-}
-
-.option-row .qty-option {
-    gap: 0.8rem;
+    padding-inline: calc(var(--u) * 0.2);
 }
 
 .qty-option {
     display: flex;
-    align-items: center;
     flex-direction: row-reverse;
+    align-items: center;
     justify-content: space-between;
-    min-width: 0;
+    gap: calc(var(--u) * 0.8);
     width: 100%;
-    margin-bottom: 1rem;
+    min-width: 0;
+}
+
+/* name + price box. Same height as the quantity buttons (--row-h). */
+.option-box {
+    display: inline-flex;
+    flex: 1 1 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(var(--u) * 1.2);
+    min-width: 0;
+    height: var(--row-h);
+    padding: 0 calc(var(--u) * 1.5);
+    background: #141921;
+    border-radius: calc(var(--u) * 1.2);
+    color: #fff;
+    font-size: calc(var(--u) * 1.4);
+    font-weight: 500;
+    line-height: 1.7;
+    /* tall enough so Persian descenders are not clipped */
+    white-space: nowrap;
+}
+
+.option-title {
+    min-width: 0;
+    overflow: hidden;
+    font-size: calc(var(--u) * 1.2);
+    font-weight: 600;
+    line-height: 1.7;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .price-option {
     display: flex;
     align-items: center;
-    padding: 0 0.8rem;
-    width: 100%;
     justify-content: space-between;
+    width: 100%;
+    padding: 0 0.8rem;
 }
 
-.weight {
-    font-size: 12px;
-    font-weight: 400;
-    color: #888;
-    margin-right: 0.4rem;
+.price {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    padding-right: 2rem;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #fafaf4;
+}
+
+.price span {
+    color: #d17842;
+    font-weight: bold;
+}
+
+.checkout-container .price span {
+    color: #ff683c;
+    /* currency accent */
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.option-box .price {
+    flex: 0 0 auto;
+    gap: calc(var(--u) * 0.4);
+    padding-right: 0;
+    font-size: var(--u);
+}
+
+.checkout-container .option-box .price span {
+    font-size: var(--u);
 }
 
 .price-row {
@@ -344,24 +396,33 @@ h2 {
     margin-top: 0.5rem;
 }
 
+.weight {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #97a0ab;
+}
+
+/* quantity controller: [+] [value] [−] */
 .qty-controller {
     display: inline-flex;
+    flex: 0 0 auto;
     align-items: center;
-    gap: 0.6rem;
+    gap: calc(var(--u) * 0.6);
 }
 
 .qty-btn {
-    width: 4rem;
-    height: 4rem;
-    border-radius: 0.8rem;
-    background-color: #ff683c;
-    color: #fff;
-    border: none;
-    font-size: 1.8rem;
-    font-weight: 800;
-    line-height: 1;
     display: grid;
     place-items: center;
+    width: var(--ctrl-w);
+    height: var(--row-h);
+    background-color: #ff683c;
+    border: none;
+    border-radius: calc(var(--u) * 0.8);
+    color: #fff;
+    font-size: calc(var(--u) * 1.8);
+    font-weight: 800;
+    line-height: 1;
     cursor: pointer;
     transition:
         transform 0.06s ease,
@@ -371,59 +432,315 @@ h2 {
 .qty-btn:active {
     transform: scale(0.96);
 }
+
 .qty-btn:focus-visible {
     outline: 2px solid rgba(209, 120, 66, 0.6);
     outline-offset: 2px;
 }
 
 .qty-value {
-    min-width: 4rem;
-    height: 4rem;
-    padding: 0 0.6rem;
-    border-radius: 0.7rem;
-    /* border: 1px solid #d17842; */
-    background: #fafaf4;
-    color: #000;
-    font-size: 1.6rem;
-    font-weight: 700;
     display: grid;
     place-items: center;
+    min-width: var(--ctrl-w);
+    height: var(--row-h);
+    padding: 0 calc(var(--u) * 0.6);
+    background: #fafaf4;
+    border-radius: calc(var(--u) * 0.7);
+    color: #000;
+    font-size: calc(var(--u) * 1.6);
+    font-weight: 700;
 }
 
-.price {
+
+/* =====================================================
+   5. Footer (price + pay button + table selector)
+   ===================================================== */
+.footer-spacer {
+    height: var(--footer-h);
+}
+
+/* extra room when the "previous invoices" row is shown inside the footer */
+.footer-spacer--with-pending {
+    height: calc(var(--footer-h) + 6.8rem);
+    /* approximate: adjust after testing */
+}
+
+.checkout-footer {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 1.2rem;
+    padding: var(--footer-pad-y) 1.6rem calc(var(--footer-pad-y) + var(--footer-safe));
+    background: #0c0f14;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 1.6rem 1.6rem 0 0;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.28);
+    transition: transform 0.35s ease;
+    will-change: transform;
+}
+
+.checkout-footer.is-picking-table {
+    background: #13171e;
+}
+
+/* "previous invoice numbers" row merged into the footer */
+.checkout-footer__pending-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.2rem;
+    min-height: 4rem;
+    padding: 0.8rem 1.6rem;
+    background: linear-gradient(180deg, #262b33, #161b20);
+    border-radius: 1.2rem;
+}
+
+.checkout-footer__pending-label {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #9eabb8;
+    white-space: nowrap;
+}
+
+.checkout-footer__pending-value {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #ff683c;
+    text-align: left;
+    overflow-wrap: break-word;
+}
+
+/* discount code (online payment only) */
+.discount-wrapper {
+    width: 100%;
+}
+
+.discount-input {
+    width: 100%;
+    height: 4.8rem;
+    padding: 0 1.6rem;
+    background: #0f141c;
+    border: 1px solid #262e37;
+    border-radius: 1.4rem;
+    color: #f5f7ff;
+    font-size: 1.4rem;
+    direction: rtl;
+    text-align: right;
+    outline: none;
+}
+
+.discount-input::placeholder {
+    color: #6f7a89;
+}
+
+.discount-input:focus-visible {
+    border-color: #d17842;
+}
+
+/* row: [button] [total] */
+.footer-main {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--u) * 3);
+}
+
+.footer-total {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+    min-width: 0;
+}
+
+.footer-total-label {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #9eabb8;
+}
+
+.footer-total-amount {
     display: inline-flex;
     align-items: baseline;
     gap: 0.4rem;
-    font-size: 1rem;
+    font-size: 1.6rem;
     font-weight: 800;
-    color: #fafaf4;
-    padding-right: 2rem;
+    color: #fff;
 }
 
-.checkout-container .price span {
-    color: #ff683c; /* currency accent */
-    font-weight: 800;
-    font-size: 1rem;
+.footer-total-amount .amount {
+    font-size: 1.3rem;
 }
 
-.price span {
-    color: #d17842;
-    font-weight: bold;
+.currency {
+    color: #ff683c;
+    font-size: 1.4rem;
 }
 
-.weight {
-    font-size: 1.2rem;
-    font-weight: 500;
-    color: #97a0ab;
-    margin: 0;
+/* The button shrinks before it can overlap the total. */
+.footer-action {
+    flex: 0 1 calc(var(--u) * 22);
+    min-width: 0;
 }
 
-/* Small Navigation Bar */
-.nav-toggle-wrapper {
+.pay-btn {
     width: 100%;
+    min-width: 0;
+    height: calc(var(--u) * 4.5);
+    padding: 0 calc(var(--u) * 0.8);
+    background-color: #ff683c;
+    border: none;
+    border-radius: 0.9rem;
+    color: #fff;
+    font-size: calc(var(--u) * 1.6);
+    font-weight: 700;
+    line-height: 1.2;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        transform 0.06s ease;
+}
+
+.pay-btn:disabled {
+    cursor: default;
+    transform: none;
+}
+
+.pay-btn:active {
+    transform: scale(0.98);
+}
+
+.pay-btn:focus-visible {
+    outline: 2px solid rgba(209, 120, 66, 0.6);
+    outline-offset: 2px;
+}
+
+/* same button while the table selector is open (long label, smaller font) */
+.checkout-footer.is-picking-table .pay-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(var(--u) * 1.4);
+}
+
+/* "payment happens at the counter" notice above the footer */
+.checkout-payment-notice {
+    position: fixed;
+    inset-inline: 0;
+    bottom: calc(var(--footer-h, 8.4rem));
+    z-index: 999;
+    padding: 0.8rem 1.6rem;
+    background: #0c0f14;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    color: #ff683c;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+/* invisible click catcher that closes the table selector */
+.table-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+    /* below the footer (1000) */
+    background: transparent;
+}
+
+/* table / take-out selector inside the footer */
+.table-selector-inline {
+    max-height: 0;
+    margin-top: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition:
+        max-height 0.25s ease,
+        opacity 0.25s ease,
+        margin-top 0.25s ease;
+}
+
+.table-selector-inline.is-open {
+    max-height: min(60vh, 420px);
+    margin-top: 1.6rem;
+    padding-bottom: 1.6rem;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    opacity: 1;
+}
+
+.table-total .amount {
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.table-title {
+    padding: 0.8rem 2.4rem;
+    background: #1c212a;
+    border-radius: 999px;
+    color: #fff;
+    font-size: 1.4rem;
+}
+
+.table-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    padding: 1rem 1.6rem;
+}
+
+.table-chip {
+    height: 6rem;
+    padding-block: 0.9rem;
+    background: #ff683c;
+    border: none;
+    border-radius: 1rem;
+    color: #fff;
+    font-size: 1.4rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.table-chip.is-active {
+    background: #ff3c00;
+}
+
+.table-chip.is-wide {
+    grid-column: 1 / -1;
+    height: 5rem;
+}
+
+
+/* =====================================================
+   6. Payment bottom sheet
+   ===================================================== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    background: rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.nav-toggle-wrapper {
     display: flex;
     justify-content: center;
-    margin-bottom: 6px; /* inside sheet header */
+    width: 100%;
+    margin-bottom: 6px;
     padding: 0;
 }
 
@@ -440,21 +757,21 @@ h2 {
     right: 0;
     bottom: 0;
     z-index: 1300;
+    padding: calc(var(--sheet-pad-y) + 8px) var(--sheet-pad-x) calc(12px + var(--sheet-safe));
+    background: #1a1d21;
+    border-radius: var(--sheet-radius) var(--sheet-radius) 0 0;
+    box-shadow: 0 -16px 40px rgba(0, 0, 0, 0.4);
+    color: #f0f0f0;
+    font-size: 1.6rem;
     transform: translateY(100%);
     transition: transform 0.35s ease;
     will-change: transform;
-    background: #1a1d21; /* dark gray / black bg */
-    border-radius: var(--sheet-radius) var(--sheet-radius) 0 0;
-    box-shadow: 0 -16px 40px rgba(0, 0, 0, 0.4);
-    padding: calc(var(--sheet-pad-y) + 8px) var(--sheet-pad-x)
-        calc(12px + var(--sheet-safe));
-    font-size: 1.6rem;
-    color: #f0f0f0; /* light text on dark bg */
 }
 
 .payment-modal.active {
     transform: translateY(0);
 }
+
 .checkout-modal-pay {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -464,40 +781,17 @@ h2 {
 }
 
 .checkout-modal-pay-btn {
-    height: 6rem;
     width: 100%;
+    height: 6rem;
+    padding: 0 20px;
+    background: #d17842;
     border: none;
     border-radius: 1.2rem;
-    background: #d17842;
     color: #fff;
-    font-weight: 600;
     font-size: 1.6rem;
-    padding: 0 20px;
+    font-weight: 600;
 }
 
-.pay-btn--inactive {
-    background-color: #1c212a; /* black pill */
-    color: #ffffff;
-    cursor: default;
-    box-shadow: none;
-}
-
-#root
-    > div
-    > div.checkout-footer.is-picking-table
-    > div.footer-main
-    > div.footer-action
-    > button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.4rem;
-}
-
-.pay-btn:disabled {
-    cursor: default;
-    transform: none;
-}
 .checkout-modal-price {
     display: flex;
     flex-direction: column;
@@ -505,12 +799,11 @@ h2 {
     line-height: 1.1;
 }
 
-/* the label "قیمت" */
 .checkout-modal-price .label {
+    margin-bottom: 4px;
     font-size: 1.2rem;
     font-weight: 600;
     color: #9eabb8;
-    margin-bottom: 4px;
 }
 
 .checkout-modal-total {
@@ -520,57 +813,35 @@ h2 {
     gap: 6px;
 }
 
+.checkout-modal-total span {
+    color: #ff683c;
+    font-weight: 800;
+}
+
 .checkout-modal-total-line {
     display: inline-flex;
     align-items: baseline;
     gap: 0.4rem;
 }
 
-.checkout-modal-total span {
-    color: #ff683c; /* currency */
-    font-weight: 800;
-}
-
 .checkout-total-label {
     font-size: 1.2rem;
     font-weight: 600;
-    color: #9eabb8; /* muted gray */
+    color: #9eabb8;
 }
 
 .checkout-total-amount {
-    font-weight: 800;
     font-size: 1.3rem;
+    font-weight: 800;
     color: #fff;
 }
 
-#root
-    > div
-    > div.checkout-footer
-    > div.footer-main
-    > div.footer-total
-    > div.footer-total-amount
-    > span.amount {
-    font-size: 1.3rem;
-}
-#root
-    > div
-    > div.checkout-footer.is-picking-table
-    > div.footer-main
-    > div.footer-total
-    > div.footer-total-amount
-    > span.currency {
-    font-size: 1.4rem;
-}
-#root > div > div.checkout-footer.is-picking-table {
-    background: #13171e;
-}
 .checkout-total-currency {
-    color: #ff683c; /* orange accent */
-    font-weight: 800;
     font-size: 1.4rem;
+    font-weight: 800;
+    color: #ff683c;
 }
 
-/* list */
 .payment-options {
     display: flex;
     flex-direction: column;
@@ -585,8 +856,8 @@ h2 {
     min-height: 64px;
     padding: 10px 12px;
     background: linear-gradient(to top, #161b20 0%, #262b33 100%);
-    color: #fff;
     border-radius: 12px;
+    color: #fff;
     cursor: pointer;
     transition:
         background 0.2s ease,
@@ -602,19 +873,19 @@ h2 {
 }
 
 .checkout-modal-bank-logo {
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
-    background: #fff;
     display: grid;
     place-items: center;
     flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+    background: #fff;
+    border-radius: 10px;
 }
 
 .bank-logo {
+    display: block;
     width: 40px;
     height: 40px;
-    display: block;
 }
 
 .checkout-modal-bank-detail {
@@ -633,368 +904,81 @@ h2 {
 .checkout-modal-bank-description {
     margin: 0;
     font-size: 1.2rem;
-    opacity: 0.9;
     color: #eef3ff;
+    opacity: 0.9;
 }
 
-/* Overlay Effect */
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease;
-    z-index: 1200;
-}
 
-.modal-overlay.active {
-    opacity: 1;
-    visibility: visible;
-}
-/* Checkout Footer */
-.footer-spacer {
-    height: var(--footer-h);
-}
-
-.checkout-footer {
-    position: fixed;
-    inset-inline: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--footer-pad-y) 1.6rem
-        calc(var(--footer-pad-y) + var(--footer-safe));
-    background: #0c0f14;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 1.6rem 1.6rem 0 0;
-    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.28);
-    z-index: 1000;
-    transition: transform 0.35s ease;
-    will-change: transform;
-}
-
-.footer-action {
-    flex: 0 0 auto;
-}
-
-/* Button */
-
-.pay-btn {
-    height: 4rem;
-    min-width: 17rem;
-    padding: 0 1.6rem;
-    background-color: #ff683c;
-    color: #fff;
-    font-size: 1.6rem;
-    font-weight: 700;
-    border: none;
-    border-radius: 0.9rem;
-    cursor: pointer;
-    transition:
-        background 0.2s ease,
-        transform 0.06s ease;
-}
-
-.footer-total {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.3rem;
-    min-width: 0;
-}
-
-.footer-total-label {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #9eabb8;
-    margin: 0;
-}
-
-.footer-total-amount {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 0.4rem;
-    font-size: 1.6rem;
-    font-weight: 800;
-    color: #fff;
-}
-
-.currency {
-    color: #ff683c;
-    font-size: 1.4rem;
-}
-
-.pay-btn:active {
-    transform: scale(0.98);
-}
-.pay-btn:focus-visible {
-    outline: 2px solid rgba(209, 120, 66, 0.6);
-    outline-offset: 2px;
-}
-
-@media (max-width: 360px) {
-    .checkout-footer {
-        flex-wrap: wrap;
-    }
-    .footer-action {
-        order: 2;
-        width: 30%;
-    }
-    .footer-total {
-        order: 1;
-        width: 30%;
-    }
-    .pay-btn {
-        width: 100%;
-    }
-}
-/* NEW */
-
-/* === Discount code field + new footer layout === */
-
-.checkout-footer {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
-    gap: 1.2rem; /* space between input and row */
-}
-
-.discount-wrapper {
-    width: 100%;
-}
-
-.discount-input {
-    width: 100%;
-    height: 4.8rem;
-    padding: 0 1.6rem;
-    border-radius: 1.4rem;
-    border: 1px solid #262e37;
-    background: #0f141c;
-    color: #f5f7ff;
-    font-size: 1.4rem;
-    outline: none;
-    direction: rtl;
-    text-align: right;
-}
-
-.discount-input::placeholder {
-    color: #6f7a89;
-}
-
-.discount-input:focus-visible {
-    border-color: #d17842;
-}
-
-/* row that holds price + button */
-.footer-main {
-    display: flex;
-    flex-direction: row-reverse;
-    align-items: center;
-    justify-content: center;
-    gap: 3rem;
-}
-
-#root
-    > div
-    > div.checkout-footer.is-picking-table
-    > div.footer-main
-    > div.footer-action
-    > button {
-    width: 22rem;
-    height: 4.5rem;
-}
-
-/* mobile tweaks – move wrap logic to footer-main */
-@media (max-width: 360px) {
-    .checkout-footer {
-        flex-wrap: nowrap; /* override old rule */
-    }
-
-    .footer-main {
-        flex-wrap: wrap;
-    }
-
-    .footer-action {
-        order: 2;
-        width: 30%;
-    }
-
-    .footer-total {
-        order: 1;
-        width: 30%;
-    }
-
-    .pay-btn {
-        width: 100%;
-    }
-}
-
-/* ============================
-   Table / Take-out selector
-   ============================ */
-:root {
-    /* height of black table-selector panel */
-    --table-selector-h: 22rem; /* tweak as you like */
-}
-
-/* Move whole footer up when table selector is open */
-.checkout-footer.footer-tables-open {
-    transform: translateY(calc(-1 * var(--table-selector-h)));
-}
-
-/* Invisible full-screen click catcher for closing bottom sheet */
-.table-overlay {
-    position: fixed;
-    inset: 0; /* full screen */
-    background: transparent;
-    z-index: 900; /* below the footer (footer is 1000) */
-}
-
-.table-selector-inline {
-    margin-top: 0;
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-    transition:
-        max-height 0.25s ease,
-        opacity 0.25s ease,
-        margin-top 0.25s ease;
-}
-
-.table-selector-inline.is-open {
-    margin-top: 1.6rem; /* space between button row and chips */
-    max-height: min(60vh, 420px); /* just needs to be > content height */
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 1.6rem;
-    opacity: 1;
-}
-
-.table-total .amount {
-    font-weight: 700;
-    font-size: 1.3rem;
-}
-
-.table-title {
-    background: #1c212a;
-    padding: 0.8rem 2.4rem;
-    border-radius: 999px;
-    color: #ffffff;
-    font-size: 1.4rem;
-}
-
-.table-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    padding: 1rem 1.6rem;
-}
-
-.table-chip {
-    border: none;
-    border-radius: 1rem;
-    padding-block: 0.9rem;
-    background: #ff683c;
-    color: #fff;
-    font-size: 1.4rem;
-    font-weight: 600;
-    cursor: pointer;
-    height: 6rem;
-}
-
-.table-chip.is-active {
-    background: #ff3c00;
-}
-
-.table-chip.is-wide {
-    grid-column: 1 / -1;
-    height: 5rem;
-}
-
-.checkout-footer .is-picking-table {
-    background: #13171e;
-}
-/* =========================
-   ORDER SUCCESS MODAL
-   ========================= */
-
+/* =====================================================
+   7. Order success modal
+   ===================================================== */
 .order-success-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.55);
+    z-index: 1400;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1400;
+    background: rgba(0, 0, 0, 0.55);
 }
 
 .order-success-modal {
     display: flex;
     flex-direction: column;
-    width: 100% - 3.2rem;
     max-height: min(80vh, 640px);
+    padding: 2.4rem 0 2rem;
     overflow: hidden;
     background: #141921;
     border-radius: 2.4rem;
-    padding: 2.4rem 0 2rem;
-    color: #fff;
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+    color: #fff;
     direction: rtl;
 }
 
-.order-success-modal__hero {
-    flex: 0 0 auto; /* icon/hero never shrinks or scrolls */
+/* hero, title, subtitle and bottom blocks never shrink; only the item list scrolls */
+.order-success-modal__hero,
+.order-success-modal__title,
+.order-success-modal__subtitle,
+.order-success-modal__summary,
+.order-success-modal__invoice-chip,
+.order-success-modal__cta {
+    flex: 0 0 auto;
 }
 
 .order-success-modal__body {
-    flex: 1 1 auto;
-    min-height: 0;
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
+    min-height: 0;
     overflow: hidden;
-}
-
-.order-success-modal__title,
-.order-success-modal__subtitle {
-    flex: 0 0 auto;
 }
 
 .order-success-modal__items {
     flex: 1 1 auto;
     min-height: 0;
-    overflow-y: auto;
     margin: 1rem 0;
     padding: 0 1rem;
-}
-
-.order-success-modal__summary,
-.order-success-modal__invoice-chip,
-.order-success-modal__cta {
-    flex: 0 0 auto; /* pinned at the bottom, never pushed off-screen */
+    overflow-y: auto;
 }
 
 .order-success-icon {
     display: block;
-    object-fit: contain;
-    margin: 0 auto 1.8rem;
     width: auto;
     height: auto;
+    margin: 0 auto 1.8rem;
+    object-fit: contain;
 }
 
 .order-success-title {
-    text-align: center;
-    font-size: 2rem;
     margin: 0 0 2rem;
+    font-size: 2rem;
+    text-align: center;
 }
 
 .order-success-title span {
     color: #ff683c;
 }
 
-/* items list */
 .order-success-items {
     display: flex;
     flex-direction: column;
@@ -1017,12 +1001,12 @@ h2 {
 }
 
 .item-title {
-    color: #ffffff;
+    color: #fff;
 }
 
 .item-sub {
-    color: #9eabb8;
     font-size: 1.2rem;
+    color: #9eabb8;
 }
 
 .order-success-row-right {
@@ -1036,15 +1020,14 @@ h2 {
     font-weight: 700;
 }
 
-/* discount + total */
 .order-success-summary {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    padding-top: 1.2rem;
-    margin-top: 0.4rem;
-    margin-bottom: 2rem;
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
+    margin-top: 0.4rem;
+    margin-bottom: 2rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
     font-size: 1.4rem;
 }
 
@@ -1059,75 +1042,21 @@ h2 {
 }
 
 .order-success-summary-row.total .label {
-    color: #ffffff;
+    color: #fff;
 }
 
 .order-success-summary-row.total .value {
     color: #ff683c;
 }
 
-/* CTA button */
 .order-success-cta {
     width: 100%;
     height: 4.4rem;
-    border-radius: 1.2rem;
-    border: none;
     background: #ff683c;
+    border: none;
+    border-radius: 1.2rem;
     color: #fff;
     font-size: 1.6rem;
     font-weight: 700;
     cursor: pointer;
-}
-
-.checkout-payment-notice {
-    position: fixed;
-    inset-inline: 0;
-    bottom: calc(var(--footer-h, 8.4rem));
-    background: #0c0f14;
-    color: #ff683c;
-    font-size: 1.2rem;
-    font-weight: 700;
-    text-align: center;
-    padding: 0.8rem 1.6rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-    z-index: 999;
-}
-
-.footer-spacer--with-pending {
-  /* ارتفاع تقریبی خود pending-orders-card--attached: تراز بزن اگه با
-     پدینگ/فونت واقعی رندرشده فرق داشت */
-  height: calc(var(--footer-h) + 7.2rem);
-}
-
-
-/* ردیف فاکتورهای completed-نشده، وقتی داخل خود checkout-footer ادغام شده */
-.checkout-footer__pending-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.2rem;
-  min-height: 4rem;
-  background: linear-gradient(180deg, #262B33, #161B20);
-  border-radius: 1.2rem;
-  padding: 0.8rem 1.6rem;
-}
-
-.checkout-footer__pending-label {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #9eabb8;
-  white-space: nowrap;
-}
-
-.checkout-footer__pending-value {
-  font-size: 1.3rem;
-  font-weight: 800;
-  color: #ff683c;
-  text-align: left;
-  overflow-wrap: break-word;
-}
-
-/* ارتفاع بیشتر برای اسپیسر، چون footer یه ردیف اضافه پیدا کرده */
-.footer-spacer--with-pending {
-  height: calc(var(--footer-h) + 6.8rem); /* عدد تقریبیه — بعد از تست تنظیمش کن */
 }

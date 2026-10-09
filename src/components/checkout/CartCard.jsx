@@ -9,7 +9,7 @@ export default function CartCard({ item, onChangeQty }) {
   const [addonsModalOpen, setAddonsModalOpen] = useState(false);
 
   return (
-    <div className="cart-card-wrap">
+    <div className={`cart-card-wrap${item.hasAddons ? " has-extra" : ""}`}>
       <div className="cart-card">
         <div className="cart-header">
           <img src={item.img} alt={item.title} className="product-img" />

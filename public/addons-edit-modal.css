@@ -1,215 +1,321 @@
-/* public/addons-edit-modal.css */
+/* public/addons-edit-modal.css
+
+   Design base: 390px. Minimum supported width: 360px (fluid down to 320px).
+   --u is the scale unit: 10px at 390px, shrinks with the card width,
+   never below 8.4px. Side margin of the content is always 2.5rem. */
+
+:root {
+    --aem-bg: #0c0f14;
+    --aem-surface: #141921;
+    --aem-surface-deep: #0e1318;
+    --aem-line: rgba(255, 255, 255, 0.06);
+    --aem-text: #fafaf4;
+    --aem-text-soft: #cfd6df;
+    --aem-text-dim: #6b7686; /* addon with quantity 0 */
+    --aem-accent: #ff683c;
+}
+
+
+/* =====================================================
+   Backdrop and modal shell
+   ===================================================== */
 .aem-backdrop {
     position: fixed;
     inset: 0;
-    background: #0c0f14;
+    z-index: 2600;
+    background: rgba(0, 0, 0, 0.45);
     opacity: 0;
     transition: opacity 0.25s ease;
-    z-index: 2600;
 }
+
 .aem-backdrop.active {
     opacity: 1;
 }
 
 .aem-modal {
+    --u: clamp(8.4px, calc((100vw - 5rem) / 34), 10px);
+
     position: fixed;
     inset-inline: 0;
     top: 0;
     bottom: 0;
-    height: 100dvh;
-    max-height: 100dvh;
-    background-color: #0c0f14;
     z-index: 2601;
     display: flex;
     flex-direction: column;
-    transform: translateY(-100%);
+    height: 100dvh;
+    max-height: 100dvh;
+    background-color: var(--aem-bg);
+    transform: translateY(100%);
     transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-.aem-modal.active {
-    transform: translateY(0%);
+    will-change: transform;
 }
 
+.aem-modal.active {
+    transform: translateY(0);
+}
+
+
+/* =====================================================
+   Header
+   ===================================================== */
 .aem-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    padding: 1.6rem 2rem 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 1.6rem 2.5rem 1rem;
+    border-bottom: 1px solid var(--aem-line);
 }
+
 .aem-back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 3.4rem;
     height: 3.4rem;
     min-width: 3.4rem;
     background: #13171e !important;
     border: none;
     border-radius: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     cursor: pointer;
 }
+
 .aem-title-group {
     display: flex;
     align-items: center;
     gap: 8px;
 }
+
 .aem-title {
-    font-size: 1.6rem;
-    font-weight: 800;
-    color: #fff;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--aem-text);
 }
 
+
+/* =====================================================
+   Body
+   ===================================================== */
 .aem-body {
-    overflow-y: auto;
-    padding: 1.6rem 2rem calc(88px + 1.6rem);
     flex: 1;
     min-height: 0;
+    padding: 2rem 2.5rem calc(88px + 1.6rem);
+    overflow-y: auto;
 }
+
 .aem-empty {
+    padding: 3rem 1rem;
+    color: var(--aem-text-soft);
+    font-size: 1.3rem;
     text-align: center;
     opacity: 0.7;
-    color: #cfd6df;
-    padding: 3rem 1rem;
-    font-size: 1.3rem;
 }
 
-.aem-food-group {
-    margin-bottom: 2.4rem;
+
+/* =====================================================
+   Food card (one per food)
+   ===================================================== */
+.aem-food-card {
+    width: 100%;
+    max-width: 52rem;
+    margin: 0 auto 2rem;
+    padding: calc(var(--u) * 1.4) calc(var(--u) * 1.6);
+    background: var(--aem-surface);
+    border-radius: calc(var(--u) * 1.6);
 }
+
 .aem-food-title {
-    font-size: 1.4rem;
+    margin: 0 0 calc(var(--u) * 1.2);
+    padding-bottom: calc(var(--u) * 1.2);
+    border-bottom: 1px solid var(--aem-line);
+    color: var(--aem-text);
+    font-size: calc(var(--u) * 1.6);
     font-weight: 800;
-    color: #fff;
-    margin-bottom: 1rem;
-    padding: 0 0.4rem;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
 }
 
-.aem-variant-block {
-    background: #141921;
-    border-radius: 1.4rem;
-    padding: 1.2rem 1.6rem;
-    margin-bottom: 1.4rem;
+
+/* =====================================================
+   Variant section (one per variant, divided by a thin line)
+   ===================================================== */
+.aem-variant-block + .aem-variant-block {
+    margin-top: calc(var(--u) * 1.6);
+    padding-top: calc(var(--u) * 1.6);
+    border-top: 1px solid var(--aem-line);
 }
+
 .aem-variant-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 0.6rem;
+    gap: calc(var(--u) * 1.2);
 }
+
 .aem-variant-name {
+    flex: 1 1 0;
+    min-width: 0;
+    color: var(--aem-text);
+    font-size: calc(var(--u) * 1.3);
     font-weight: 700;
-    font-size: 1.3rem;
-    color: #fff;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
 }
+
 .aem-variant-price {
+    flex: 0 0 auto;
+    color: var(--aem-text);
+    font-size: calc(var(--u) * 1.1);
     font-weight: 700;
-    font-size: 1.1rem;
-    color: #fafaf4;
+    line-height: 1.6;
+    white-space: nowrap;
 }
+
 .aem-variant-price .currency {
-    color: #ff683c;
     margin-right: 0.3rem;
+    color: var(--aem-accent);
 }
+
 .aem-variant-qty {
-    background: #0e1318;
-    color: #fafaf4;
-    padding: 0.4rem 1.2rem;
-    border-radius: 0.8rem;
+    flex: 0 0 auto;
+    padding: calc(var(--u) * 0.4) calc(var(--u) * 1.2);
+    background: var(--aem-surface-deep);
+    border-radius: calc(var(--u) * 0.8);
+    color: var(--aem-text);
+    font-size: calc(var(--u) * 1.2);
     font-weight: 800;
-    font-size: 1.2rem;
+    line-height: 1.5;
 }
 
 .aem-addons-head {
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    font-size: 1.1rem;
+    margin: calc(var(--u) * 1.2) 0 calc(var(--u) * 0.8);
+    color: var(--aem-text-soft);
+    font-size: calc(var(--u) * 1.1);
     font-weight: 700;
-    color: #cfd6df;
-    margin: 1rem 0 0.6rem;
+    line-height: 1.6;
 }
+
+
+/* =====================================================
+   Addon rows
+   Quantity 0  -> dim gray text
+   Quantity >0 -> white text (.checked). The row background never changes.
+   ===================================================== */
 .aem-addons-list {
-    list-style: none;
+    display: grid;
+    gap: var(--u);
     margin: 0;
     padding: 0;
-    display: grid;
-    gap: 1rem;
+    list-style: none;
 }
+
 .aem-addon-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.6rem 0.4rem;
-    border-radius: 0.8rem;
+    gap: var(--u);
 }
-.aem-addon-row.checked {
-    background: rgba(255, 106, 61, 0.08);
-}
+
 .aem-addon-name {
-    font-size: 1.2rem;
+    flex: 1 1 0;
+    min-width: 0;
+    color: var(--aem-text-dim);
+    font-size: calc(var(--u) * 1.2);
     font-weight: 600;
-    color: #e7eaee;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    transition: color 0.2s;
 }
+
 .aem-addon-price-amount {
     display: flex;
+    flex: 0 0 auto;
     align-items: center;
-    gap: 1rem;
+    gap: var(--u);
 }
+
 .aem-addon-price {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    font-size: 1rem;
+    color: var(--aem-text-dim);
+    font-size: var(--u);
     font-weight: 700;
-    color: #fafaf4;
-}
-.aem-addon-price .currency {
-    color: #ff683c;
+    line-height: 1.6;
+    white-space: nowrap;
+    transition: color 0.2s;
 }
 
+.aem-addon-price .currency {
+    color: var(--aem-text-dim);
+    transition: color 0.2s;
+}
+
+.aem-addon-row.checked .aem-addon-name,
+.aem-addon-row.checked .aem-addon-price {
+    color: var(--aem-text);
+}
+
+.aem-addon-row.checked .aem-addon-price .currency {
+    color: var(--aem-accent);
+}
+
+
+/* =====================================================
+   0..10 quantity picker
+   ===================================================== */
 .aem-qty-scroll {
     display: flex;
+    flex: 0 0 auto;
     align-items: center;
-    width: 110px;
-    height: 38px;
+    width: calc(var(--u) * 11.4);
+    height: calc(var(--u) * 3.8);
     background: #11161c;
-    border-radius: 10px;
+    border-radius: var(--u);
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     scroll-behavior: smooth;
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
 .aem-qty-scroll::-webkit-scrollbar {
     display: none;
 }
+
 .aem-qty-item {
-    flex: 0 0 38px;
-    height: 100%;
     display: flex;
-    justify-content: center;
+    flex: 0 0 calc(var(--u) * 3.8);
     align-items: center;
-    scroll-snap-align: center;
-    color: #4a5568;
-    font-weight: 700;
-    font-size: 14px;
-    cursor: pointer;
+    justify-content: center;
+    height: 100%;
     background: transparent;
     border: none;
+    color: #4a5568;
+    font-size: calc(var(--u) * 1.4);
+    font-weight: 700;
+    cursor: pointer;
+    scroll-snap-align: center;
     transition:
         background-color 0.2s,
         color 0.2s;
 }
+
+.aem-qty-item.active-0,
+.aem-qty-item.active-n {
+    border-radius: var(--u);
+}
+
 .aem-qty-item.active-0 {
     background: #f3f5f7;
     color: #0b1015;
-    border-radius: 10px;
 }
+
 .aem-qty-item.active-n {
-    background: #ff6a3d;
-    color: #fff;
-    border-radius: 10px;
+    background: var(--aem-accent);
+    color: var(--aem-text);
 }

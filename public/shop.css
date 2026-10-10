@@ -1,21 +1,76 @@
-/* public/shop.css */
+/* public/shop.css  (restaurant / shop page)
+
+   Users are on phones and tablets only. Layout is mobile-first (base 390px),
+   with one tablet block at the very end.
+
+   Contents
+   --------
+    1. Tokens, reset, base
+    2. Banner ................ ShopBanner
+    3. Category bar .......... FoodCategoryList
+    4. Menu sections ......... MenuList
+    5. Menu card ............. MenuItem
+    6. Bottom sheet (shared) . ItemDetailModal, ComboFoodsModal, FrequentOrdersModal
+    7. Item detail modal ..... ItemDetailModal
+    8. Combos / "همون همیشگی" modals
+    9. Checkout bar .......... CheckoutBar
+   10. Bottom navigation
+   11. Tablet (>= 768px)
+*/
+
+
+/* =====================================================
+   1. Tokens, reset, base
+   ===================================================== */
 :root {
-  --app-header-height: 88px;
+  --app-header-height: 88px; /* not used in this file */
+  --checkout-bar-h: 9.6rem;
+  --checkout-h: 0px; /* space reserved for the checkout bar (0 when hidden) */
 }
 
+body.has-checkout {
+  --checkout-h: var(--checkout-bar-h);
+}
+
+/* KNOWN ISSUE: font-size: 62.5% on * compounds on every nesting level, so any
+   element without its own font-size ends up tiny. It was probably meant for
+   html only. Left as is so nothing changes visually; see the notes. */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   font-size: 62.5%;
-  user-select: none; /* Standard */
-  -webkit-user-select: none; /* Safari */
-  -ms-user-select: none; /* IE10+/Edge */
+  -webkit-user-select: none;
+  user-select: none;
 }
+
+/* iOS Safari cannot type into inputs that have user-select: none */
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 html,
 body {
   overscroll-behavior-x: contain;
 }
+
+body {
+  width: 100%;
+  background-color: #0c0f14;
+  color: #fff;
+  overflow-x: hidden;
+  overflow-y: visible;
+}
+
+/* set on <body> while any modal is open */
+.modal-open {
+  overflow: hidden !important;
+  height: 100%;
+}
+
+/* nothing around the sticky category bar may clip it */
 .res-menu-wrapper,
 .res-menu,
 section.banner,
@@ -25,123 +80,82 @@ footer,
   overflow: visible;
 }
 
-body {
-  background-color: #0c0f14;
-  color: #fff;
-  width: 100%;
-  overflow-x: hidden;
-  overflow-y: visible;
-}
-/* === Pill Header === */
-/* === Reusable Pill Header === */
-.app-header {
-  display: none;
+/* shared icon-button reset */
+.circle-button,
+.cart-icon-circle,
+.icon-btn {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.sheet-body.modal-content {
-  width: 100% !important;
+.icon-btn:focus {
+  outline: none;
 }
-/* ========== Banner ========== */
+
+.icon-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 2px;
+  border-radius: 15px;
+}
+
+.icon-btn::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+
+.star-icon {
+  width: 14px;
+  height: 14px;
+}
+
+
+/* =====================================================
+   2. Banner (ShopBanner)
+   ===================================================== */
 .banner {
   position: relative;
-  overflow: hidden;
-  color: #fff;
   padding: 2.5rem;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  color: #fff;
 }
 
 .banner::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
   z-index: 0;
+  background: rgba(0, 0, 0, 0.5);
 }
 
+/* keeps all banner content above the dark overlay */
 .banner * {
   position: relative;
   z-index: 1;
 }
 
-.shop-cart-btn {
-  position: relative;
-}
-
-.shop-cart-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  position: absolute;
-
-  right: -0.2rem;
-  bottom: 0.1rem;
-
-  min-width: 1.72rem;
-  height: 1.25rem;
-
-  padding: 0.1rem 0.45rem 0;
-
-  border-radius: 1.9rem;
-
-  background: #ef5254;
-  color: #fff;
-
-  font-size: 1rem;
-  font-weight: 700;
-  line-height: 1;
-}
-
 .navbar {
   display: flex;
-  gap: 1rem;
   align-items: center;
   justify-content: space-between;
-}
-
-.nav-right {
-  display: flex;
-  justify-self: flex-start;
   gap: 1rem;
-  align-items: center;
 }
 
+.nav-right,
 .nav-mid {
   display: flex;
-  justify-self: center;
   align-items: center;
   gap: 1rem;
-}
-
-.restaurant-title {
-  text-align: left;
-  font-weight: 800;
-  padding-top: 5px;
-}
-
-.rate {
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.rate-voters-num {
-  font-size: 0.8rem;
-  font-weight: 400;
 }
 
 .nav-left {
   display: flex;
-  justify-self: flex-end;
   align-items: center;
-}
-
-.rating * {
-  color: #fafaf4;
-}
-
-.rating svg {
 }
 
 .banner .icon-btn {
@@ -154,25 +168,6 @@ body {
   height: auto;
 }
 
-.shop-icon-wrapper .icon-btn {
-  height: 3.4rem !important;
-  width: 3.4rem !important;
-}
-
-.circle-button,
-.cart-icon-circle,
-.icon-btn,
-button.circle-button,
-button.cart-icon-circle,
-button.icon-btn {
-  -webkit-appearance: none;
-  appearance: none;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  -webkit-tap-highlight-color: transparent;
-}
-
 .shop-icon-wrapper {
   display: flex;
   align-items: center;
@@ -183,20 +178,75 @@ button.icon-btn {
   border-radius: 1rem;
 }
 
-.icon-btn:focus {
-  outline: none;
-}
-.icon-btn:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.6);
-  outline-offset: 2px;
-  border-radius: 15px;
+.shop-icon-wrapper .icon-btn {
+  width: 3.4rem !important;
+  height: 3.4rem !important;
 }
 
-.icon-btn::-moz-focus-inner {
-  border: 0;
-  padding: 0;
+/* cart button + badge */
+.shop-cart-btn {
+  position: relative;
 }
 
+.shop-cart-badge {
+  position: absolute; /* must stay below ".banner *" to win */
+  right: -0.2rem;
+  bottom: 0.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.72rem;
+  height: 1.25rem;
+  padding: 0.1rem 0.45rem 0;
+  background: #ef5254;
+  border-radius: 1.9rem;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* restaurant name + rating */
+.restaurant-title {
+  padding-top: 5px;
+  font-weight: 800;
+  text-align: left;
+}
+
+.restaurant-name {
+  display: flex;
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1.5;
+  text-align: right;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  color: #bbb;
+  font-size: 0.85rem;
+}
+
+.rating * {
+  color: #fafaf4;
+}
+
+.rate {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.rate-voters-num {
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+/* search + shortcut buttons */
 .banner-content {
   direction: rtl;
   display: flex;
@@ -208,48 +258,50 @@ button.icon-btn {
   padding-top: 2.5rem;
 }
 
-.restaurant-name {
-  display: flex;
-  justify-self: start !important;
-  flex-wrap: nowrap;
-  text-align: center;
-  margin: 0;
-  font-weight: 800;
-  line-height: 1.5;
-  font-size: 2rem;
-  font-weight: 900;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-  text-align: right;
+.search-bar--hero {
+  width: 100% !important;
+  background: #0c0f14;
 }
 
-/* music + search row (like screenshot) */
+.search-bar--hero input {
+  background: #0c0f14;
+  color: #a5adc0;
+}
+
+.search-bar--hero input::placeholder {
+  color: #8b93a7;
+}
+
+.search-bar--hero .search-icon {
+  width: 18px;
+  height: 18px;
+  opacity: 0.9;
+}
+
 .reorder-and-music {
-  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 25px;
+  width: 100%;
 }
 
-/* gradient music button (left) */
 .reorder-and-music-btn {
-  width: 165px;
-  flex: 0 0 46%;
-  height: 42px;
-  border: 0;
-  border-radius: 10px;
-  padding: 0 14px;
   display: flex;
-  align-items: center;
+  flex: 0 0 46%;
   flex-direction: row-reverse;
+  align-items: center;
   justify-content: center;
   gap: 5px;
-  white-space: nowrap;
-  font-size: 9px;
-  font-weight: 700;
+  height: 42px;
+  padding: 0 14px;
   background: linear-gradient(180deg, #262b33, #161b20);
+  border: 0;
+  border-radius: 10px;
   color: #fff;
+  white-space: nowrap;
 }
+
 .reorder-and-music-btn span {
   font-size: 9px;
   font-weight: 700;
@@ -260,198 +312,124 @@ button.icon-btn {
   height: 10px;
 }
 
-/* search (right) – generic styles for your <SearchBar /> wrapper */
-.search-bar--hero {
-  background: #0c0f14;
-  width: 100% !important;
-}
-.search-bar--hero input {
-  color: #a5adc0;
-  background: #0c0f14;
-}
-.search-bar--hero input::placeholder {
-  color: #8b93a7;
-}
-.search-bar--hero .search-icon {
-  width: 18px;
-  height: 18px;
-  opacity: 0.9;
-}
 
-/* Optional: on very narrow phones, stack them */
-@media (max-width: 320px) {
-  .search-and-music {
-    flex-direction: column;
-  }
-  .music-request,
-  .search-bar--hero {
-    flex: 1 1 auto;
-    width: 100%;
-  }
-}
+/* =====================================================
+   3. Category bar (FoodCategoryList)
+   ===================================================== */
 
-/* CATAGORY */
+/* the vertical sidebar is not used on phones/tablets */
 .category-sidebar-vertical {
   display: none;
 }
 
 .category-wrap {
-  position: -webkit-sticky; /* Safari */
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: #0c0f14; /* same color so it looks seamless */
-  border-bottom: solid 1px #ffffff10;
+  background: #0c0f14;
   border-top: solid 1px #ffffff10;
+  border-bottom: solid 1px #ffffff10;
 }
 
 .category-bar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 1rem 2.5rem;
+  background-color: #0c0f14;
   overflow-x: auto;
   scrollbar-width: none;
-  padding: 1rem 2.5rem 1rem;
-  gap: 2rem;
-  background-color: #0c0f14;
 }
+
 .category-bar::-webkit-scrollbar {
   display: none;
 }
-/* ---------- BASE BUTTON ---------- */
+
 .category-btn {
-  background: transparent;
-  border: none;
-  color: #ccc;
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  padding: 0.45rem 1.2rem;
+  background: transparent;
+  border: none;
+  border-radius: 1.6rem;
+  color: #ccc;
   cursor: pointer;
   white-space: nowrap;
-  padding: 0.45rem 1.2rem;
-  border-radius: 1.6rem;
   transition: all 0.25s ease;
 }
 
-/* Icon size */
 .category-btn svg {
   width: 1.6rem;
   height: 1.6rem;
   flex-shrink: 0;
 }
 
-/* Text */
 .category-btn span {
+  color: #a5adc0;
   font-size: 1.4rem;
   font-weight: 600;
-  color: #a5adc0;
 }
 
-/* Hover (inactive only) */
-.category-btn:hover:not(.active),
-.category-btn:focus:not(.active) {
-  color: #ffffffcc;
+.category-icon {
+  display: flex;
+  align-items: center;
 }
 
-/* ---------- ACTIVE STATE (FIGMA STYLE) ---------- */
+/* active: orange pill, white icon and text */
 .category-btn.active {
-  background: #ff7a32; /* orange pill */
-  color: #fff; /* white text */
-  padding: 0.45rem 1.2rem; /* little more horizontal space */
-  border-radius: 1.6rem;
+  background: #ff7a32;
+  color: #fff;
   box-shadow: 0 0 12px rgba(255, 122, 50, 0.45);
 }
 
-/* remove underline completely */
-.category-btn.active::after {
-  display: none !important;
-}
-
-/* white icon for active */
 .category-btn.active svg path {
-  fill: #ffffff !important;
-  stroke: #ffffff !important;
+  fill: #fff !important;
+  stroke: #fff !important;
 }
 
-/* ensure active text is white */
 .category-btn.active span {
   color: #fff;
 }
 
+
+/* =====================================================
+   4. Menu sections (MenuList)
+   ===================================================== */
 .res-menu-wrapper {
   display: flex;
   flex-direction: column;
-  width: 100% !important;
-  overflow: visible;
-  transition: padding-bottom 0.25s ease;
-}
-
-.checkout-safe-spacer {
-  height: 110px;
-  transition: height 0.25s ease;
-}
-
-@media (max-width: 768px) {
-  .checkout-safe-spacer {
-    height: 8rem;
-  }
-
-  .checkout-bar {
-    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
-  }
-
-  .checkout-bar__inner {
-    min-height: 68px;
-    border-radius: 16px;
-    padding: 12px 14px;
-    gap: 12px;
-  }
-
-  .checkout-bar__total-num {
-    font-size: 16px;
-  }
-
-  .checkout-bar__cta {
-    min-height: 40px;
-    padding: 0 14px;
-    font-size: 13px;
-  }
-}
-
-/* Horizontal scroll mode */
-.res-menu-wrapper.horizontal-scroll {
-  display: flex;
-  overflow: visible;
-  flex-wrap: nowrap;
-  scroll-snap-type: x mandatory;
-}
-
-.res-menu-wrapper.horizontal-scroll > * {
-  flex: 0 0 auto;
-  scroll-snap-align: start;
-  overflow-x: auto;
-}
-
-.res-menu-wrapper.vertical-scroll {
-  display: block;
-  overflow: visible;
+  width: 100%;
 }
 
 .res-menu {
-  width: 100%;
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
+/* empty space at the page bottom so the checkout bar never covers food */
+.checkout-safe-spacer {
+  height: 8rem;
+  transition: height 0.25s ease;
+}
+
+/* section header: icon + title + "see all" button */
 .menu_nav {
-  font-size: 1rem;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0 1.4rem;
-  margin-bottom: 0.2rem;
+  justify-content: space-between;
   gap: 0.3rem;
+  margin: 1.6rem 0 1.8rem;
+  padding: 0 2.5rem;
   background-color: #0c0f14;
+  font-size: 1rem;
+}
+
+.menu_nav--focused {
+  justify-content: center;
+  margin-bottom: 1.25rem;
 }
 
 .menu_nav-title-holder {
@@ -474,44 +452,74 @@ button.icon-btn {
 }
 
 .menu_nav-icon {
-  width: 18px;
-  height: 18px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 18px;
+  height: 18px;
   transition: all 0.35s ease;
 }
 
 .menu_nav-icon svg {
+  display: block;
   width: 18px;
   height: 18px;
-  display: block;
   transition: all 0.35s ease;
 }
 
-.category-icon {
-  display: flex;
-  align-items: center;
+.menu_nav--focused .menu_nav-icon,
+.menu_nav--focused .menu_nav-icon svg {
+  width: 24px;
+  height: 24px;
 }
 
-.menu_nav p {
+.menu_nav-title {
   display: flex;
-  gap: 0.5rem;
   align-items: center;
+  gap: 0.5rem;
+  margin: 0;
   font-size: 1.5rem;
   font-weight: 900;
+  transition: all 0.35s ease;
 }
 
-.menu_nav a {
-  font-size: 1rem;
-  font-weight: 500;
-  color: #fff;
-  text-decoration: none;
+.menu_nav--focused .menu_nav-title {
+  font-size: 1.55rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.menu_nav-btn {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
+  gap: 0.4rem;
+  width: 8.5rem;
+  height: 2.8rem;
+  padding: 0.4rem 1.2rem;
+  background: #1e232a;
+  border: none;
+  border-radius: 0.7rem;
+  color: #fafaf4;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    opacity 0.25s ease,
+    transform 0.25s ease;
 }
 
+.menu_nav-btn:hover {
+  background: #2b3139;
+}
+
+.menu_nav-btn .arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* food list: horizontal row (all categories) or 2-column grid (one category) */
 .food_items {
   display: flex;
   flex-direction: row;
@@ -519,134 +527,82 @@ button.icon-btn {
   padding: 0 2rem;
   overflow: visible;
   scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
   cursor: grab;
 }
 
-.menu-card__ratingValue {
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.menu-card__ratingCount {
-  font-size: 0.9rem;
-}
-
-/* make the very end “peek” a bit out of view */
-
-.food_items.horizontal-scroll .seeall-card {
-  /* same footprint as a menu card */
-  flex: 0 0 auto;
-  width: 15rem;
-  height: 25rem;
-  border-radius: 2rem;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-
-  background: #1a1f26;
-  color: #fff;
-  border: 0;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-}
-
-/* nice internal look */
-.seeall-arrow {
-  font-size: 24px;
-  line-height: 1;
-  opacity: 0.9;
-  margin-bottom: 10px;
-}
-.seeall-text {
-  font-weight: 700;
-  font-size: 1.5rem;
-  letter-spacing: 0.2px;
-}
-
-/* hover/press */
-.seeall-card:hover {
-  filter: brightness(1.06);
-}
-.seeall-card:active {
-  transform: translateY(1px);
-}
-
-/* desktop — adjust sizes to your card grid */
-@media (min-width: 768px) {
-  .food_items.horizontal-scroll .seeall-card {
-    width: 220px;
-    height: 300px;
-    margin-inline-end: -60px;
-  }
-}
-
-/* Default horizontal */
-.food_items.horizontal-scroll {
-  display: flex;
-  flex-direction: row;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
-  margin-left: -35px;
-}
-
-/* در حالت عمودی، دو کارت در هر ردیف */
-.food_items.vertical-scroll {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* دو ستون مساوی */
-  gap: 2.2rem; /* همون فاصله قبلی */
-  overflow-y: auto; /* اسکرول عمودی */
-  overflow-x: hidden; /* اسکرول افقی غیر فعال */
-  padding-bottom: 2rem;
-}
-
-.food_items.vertical-scroll .menu-card {
-  height: 27rem;
-}
-
-.food_items.vertical-scroll .item {
-  width: auto;
-}
-
-/* Hide scrollbar*/
 .food_items::-webkit-scrollbar {
   display: none;
 }
 
+.food_items.horizontal-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  margin-left: -35px;
+}
+
+.food_items.vertical-scroll {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2.2rem;
+  padding-bottom: 2rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* card sizes inside the 2-column grid */
 .food_items.vertical-scroll .menu-card {
-  display: flex;
-  flex-direction: column;
-  border-radius: 20px;
-  overflow: hidden;
-  height: 270px;
   width: 162px;
-  margin: 0 auto;
+  height: 27rem;
 }
 
 .food_items.vertical-scroll .menu-card__media {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1/1; /* ensures square image */
-  overflow: hidden;
   padding: 1.7rem 1.7rem 0.6rem;
 }
-.food_items.vertical-scroll .menu-card__img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  border-radius: 1.7rem;
-}
+
 .food_items.vertical-scroll .menu-card__footer {
-  display: flex;
-  align-items: center;
   justify-content: space-between;
 }
 
-/* action row under the vertical grid */
+/* last card of a horizontal row: "see all" */
+.food_items.horizontal-scroll .seeall-card {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 15rem;
+  height: 25rem;
+  background: #1a1f26;
+  border: 0;
+  border-radius: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  color: #fff;
+  cursor: pointer;
+}
+
+.seeall-card:hover {
+  filter: brightness(1.06);
+}
+
+.seeall-card:active {
+  transform: translateY(1px);
+}
+
+.seeall-arrow {
+  margin-bottom: 10px;
+  font-size: 24px;
+  line-height: 1;
+  opacity: 0.9;
+}
+
+.seeall-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+/* previous / next category pills under the grid */
 .vertical-actions {
   display: flex;
   align-items: center;
@@ -667,30 +623,25 @@ button.icon-btn {
 }
 
 .vaction-pill {
-  flex: 1 1 0;
-  min-width: 0;
-  height: 4.2rem;
-  background: #1f242b;
-  color: #fafaf4;
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 10px;
-  padding: 0 1.2rem;
-  font-weight: 700;
-  font-size: 1.4rem;
   display: inline-flex;
+  flex: 1 1 0;
   align-items: center;
   justify-content: center;
+  min-width: 0;
+  height: 4.2rem;
+  padding: 0 1.2rem;
+  background: #1f242b;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
-  cursor: pointer;
+  color: #fafaf4;
+  font-size: 1.4rem;
+  font-weight: 700;
   white-space: nowrap;
+  cursor: pointer;
   transition:
     transform 0.15s ease,
     filter 0.15s ease;
-}
-
-.vaction-pill span {
-  font-size: 12px;
-  font-weight: 700;
 }
 
 .vaction-pill:hover {
@@ -712,19 +663,26 @@ button.icon-btn {
   gap: 0.4rem;
 }
 
+.vaction-pill__label {
+  color: #fafaf4;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
 .vaction-pill .category-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   width: 1.8rem;
   height: 1.8rem;
-  flex-shrink: 0;
 }
 
 .vaction-pill .category-icon svg {
+  display: block;
   width: 1.8rem;
   height: 1.8rem;
-  display: block;
 }
 
 .vaction-pill__arrow {
@@ -743,170 +701,88 @@ button.icon-btn {
   transform-origin: center;
 }
 
-.vaction-pill__label {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #fafaf4;
-  line-height: 1;
+/* generic empty / error text */
+.menu-state {
+  padding: 4rem 2rem;
+  color: #a5adc0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  text-align: center;
 }
 
-/* ========== Menu Card ========== */
+.menu-state--error {
+  color: #ff6b6b;
+}
+
+
+/* =====================================================
+   5. Menu card (MenuItem)
+   ===================================================== */
 .menu-card {
   display: flex;
   flex-direction: column;
+  min-width: 15rem;
+  height: 25rem;
+  margin: 0 auto;
   background: linear-gradient(135deg, #262b33 0%, #161b20 100%);
   border-radius: 2rem;
-  overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  height: 25rem;
-  min-width: 15rem;
-  margin: 0 auto;
+  overflow: hidden;
 }
 
-/* image block */
 .menu-card__media {
   position: relative;
   width: 100%;
-  aspect-ratio: 1/1; /* ensures square image */
-  overflow: hidden;
+  aspect-ratio: 1 / 1;
   padding: 1.5rem 1.5rem 0.5rem;
+  overflow: hidden;
 }
 
 .menu-card__img {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  display: block;
   border-radius: 1.7rem;
+  object-fit: cover;
 }
 
-/* star overlay bottom-left */
 .menu-card__rating {
   position: absolute;
   bottom: 2.5rem;
   left: 50%;
-  transform: translateX(-50%);
+  z-index: 2;
   display: inline-flex;
+  flex-direction: row-reverse;
   align-items: center;
   justify-content: center;
-  flex-direction: row-reverse;
   gap: 0.4rem;
   padding: 0;
+  transform: translateX(-50%);
+  color: #fff;
   font-size: 1.3rem;
   font-weight: 600;
-  color: #fff;
   white-space: nowrap;
-  z-index: 2;
 }
 
 .menu-card__rating svg {
-  margin-bottom: 0.1rem;
   margin-right: -0.4rem;
+  margin-bottom: 0.1rem;
 }
 
-/* Menu Nav */
-.menu_nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 1.6rem 0 1.8rem;
-  padding: 0 2.5rem;
-}
-
-.menu_nav-title {
-  font-size: 1.3rem;
+.menu-card__ratingValue {
+  font-size: 1rem;
   font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0;
-  transition: all 0.35s ease;
 }
 
-.menu_nav-btn {
-  font-weight: 600;
-  background: #1e232a;
-  color: #fafaf4;
-  border: none;
-  border-radius: 0.7rem;
-  padding: 0.4rem 1.2rem;
+.menu-card__ratingCount {
   font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  cursor: pointer;
-  transition: background 0.2s ease;
-  width: 8.5rem;
-  height: 2.8rem;
-  transition:
-    opacity 0.25s ease,
-    transform 0.25s ease;
 }
 
-.menu_nav-btn .arrow {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.menu_nav--focused {
-  justify-content: center;
-  margin-bottom: 1.25rem;
-}
-
-.menu_nav--focused .menu_nav-title-holder {
-  gap: 0.75rem;
-}
-
-.menu_nav--focused .menu_nav-icon {
-  width: 24px;
-  height: 24px;
-}
-
-.menu_nav--focused .menu_nav-icon svg {
-  width: 24px;
-  height: 24px;
-}
-
-.menu_nav--focused .menu_nav-title {
-  font-size: 1.55rem;
-  font-weight: 800;
-  text-align: center;
-}
-
-.menu_nav-btn:hover {
-  background: #2b3139;
-}
-
-.arrow {
-  display: flex;
-  align-items: center;
-}
-
-/* body */
 .menu-card__body {
-  padding: 0 1.2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.menu-card__title {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin: 0;
-}
-
-.menu-card--vertical .menu-card__price {
-  margin-top: 1.5rem;
-}
-
-.menu-card--vertical .menu-card__footer {
-  margin-top: 0.6rem;
+  padding: 0 1.2rem;
 }
 
 .menu-card__title,
@@ -916,27 +792,21 @@ button.icon-btn {
   text-align: center;
 }
 
-/* footer (price + add btn) */
-.menu-card__footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 0.5rem;
+.menu-card__title {
+  margin: 0;
+  overflow: hidden;
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .menu-card__price {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 1.2rem;
-  margin-bottom: 0;
-}
-
-.menu-card__currency {
-  font-size: 11px;
-  margin-right: 2px;
-  font-weight: 700;
-  color: #ff683c;
+  margin: 1.2rem 0 0;
 }
 
 .menu-card__priceNumber {
@@ -945,21 +815,45 @@ button.icon-btn {
   font-weight: 600;
 }
 
-.menu-card__addBtn {
-  background: #ff6b35;
-  color: #fff;
-  font-size: 18px;
+.menu-card__currency {
+  margin-right: 2px;
+  color: #ff683c;
+  font-size: 11px;
   font-weight: 700;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  border-radius: 10px;
-  width: 117px;
-  height: 28px;
-  line-height: 1;
+}
+
+.menu-card__footer {
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0.5rem 0 0;
+}
+
+/* vertical (grid) variant: a bit more air */
+.menu-card--vertical .menu-card__price {
+  margin-top: 1.5rem;
+}
+
+.menu-card--vertical .menu-card__footer {
+  margin-top: 0.6rem;
+}
+
+/* add button */
+.menu-card__addBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 117px;
+  height: 28px;
+  background: #ff6b35;
+  border: none;
+  border-radius: 10px;
+  outline: none;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
   transition: background 0.2s ease;
 }
 
@@ -967,50 +861,7 @@ button.icon-btn {
   background: #e65d2d;
 }
 
-.menu-card__footer {
-  display: flex;
-  justify-content: center;
-  margin-top: 0.5rem;
-  margin-bottom: 0;
-}
-
-.menu-card__qty {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.menu-card__qtyBtn {
-  background-color: #ff623d; /* orange */
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  width: 35px;
-  height: 28px;
-  font-size: 20px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.menu-card__qtyDisplay {
-  background-color: #fff;
-  color: #111;
-  width: 35px;
-  height: 28px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 13px;
-}
-
-.menu-card__qtyNum {
-  min-width: 28px;
-  text-align: center;
-  font-weight: 800;
-}
-
+/* quantity control: [-] [n] [+] */
 .menu-card__qtyGroup {
   display: flex;
   align-items: center;
@@ -1018,63 +869,83 @@ button.icon-btn {
   gap: 8px;
 }
 
-/* === Modal Backdrop === */
-
-/* Backdrop UNDER checkout */
-
-.modal-hero-img {
-  width: 100%;
-  height: 38vh; /* adjust to taste */
-  object-fit: cover;
-  display: block;
-  background-repeat: no-repeat;
-  transition: opacity 220ms ease;
-  opacity: 0;
-  background-color: #101317;
+.menu-card__qtyBtn {
+  width: 35px;
+  height: 28px;
+  background-color: #ff623d;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
 }
 
-.modal-hero-img.is-ready {
-  opacity: 1;
+.menu-card__qtyDisplay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 35px;
+  height: 28px;
+  background-color: #fff;
+  border-radius: 10px;
+  color: #111;
+  font-size: 13px;
+  font-weight: 800;
 }
 
-.modal-open {
-  overflow: hidden !important;
-  height: 100%;
-}
 
+/* =====================================================
+   6. Bottom sheet (shared by every modal on this page)
+   Layers: backdrop 1200 < sheet 1300 < combos 2400 < checkout bar 2500
+   ===================================================== */
 .modal-backdrop {
   position: fixed;
   inset: 0;
+  z-index: 1200;
   background: #0c0f14;
   opacity: 0;
   transition: opacity 0.25s ease;
-  z-index: 1200; /* < checkout */
 }
+
 .modal-backdrop.active {
   opacity: 1;
 }
 
-/* Bottom sheet UNDER checkout (no drag) */
 .bottom-modal {
   position: fixed;
-  left: 0;
-  right: 0;
+  inset-inline: 0;
   bottom: 0;
-  width: 100%;
-  margin: 0;
-  box-sizing: border-box;
   z-index: 1300;
   display: flex;
   flex-direction: column;
+  width: 100%;
   max-height: 100dvh;
   transform: translateY(110%);
   transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
 .bottom-modal.active {
-  transform: translateY(0%);
+  transform: translateY(0);
 }
 
+/* the only part of a sheet that scrolls */
+.sheet-body {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  /* keep content clear of the checkout bar when it is visible */
+  padding-bottom: calc(var(--checkout-h) + max(12px, env(safe-area-inset-bottom)));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+
+/* =====================================================
+   7. Item detail modal (ItemDetailModal)
+   ===================================================== */
+
+/* ---------- hero image ---------- */
 .modal-img-wrap {
   position: relative;
   border-top-left-radius: 20px;
@@ -1082,6 +953,34 @@ button.icon-btn {
   overflow: hidden;
 }
 
+/* dark gradient behind the top buttons */
+.modal-img-wrap::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: 2;
+  height: 56px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0));
+  pointer-events: none;
+}
+
+.modal-hero-img {
+  display: block;
+  width: 100%;
+  height: 38vh;
+  background-color: #101317;
+  background-repeat: no-repeat;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.modal-hero-img.is-ready {
+  opacity: 1;
+}
+
+/* ---------- top buttons (back / comments / favorite) ---------- */
 .img-topbar {
   position: absolute;
   inset: 16px 16px auto 16px;
@@ -1100,21 +999,20 @@ button.icon-btn {
   pointer-events: auto;
 }
 
-.modal-top-action,
-button.modal-top-action {
+.modal-top-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 3.4rem;
   height: 3.4rem;
   min-width: 3.4rem;
   min-height: 3.4rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   padding: 0;
+  background: #0c0f14 !important;
   border: none;
   border-radius: 1rem;
-  background: #0c0f14 !important;
-  color: #fafaf4;
   box-shadow: none;
+  color: #fafaf4;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition:
@@ -1138,36 +1036,20 @@ button.modal-top-action {
   outline-offset: 2px;
 }
 
-.img-topbar .shop-icon-wrapper {
-  background-color: rgba(12, 15, 20, 0.7);
-  backdrop-filter: saturate(110%) blur(2px);
-  border-radius: 10px;
-}
-
-.modal-img-wrap::before {
-  content: "";
-  position: absolute;
-  inset-inline: 0;
-  top: 0;
-  height: 56px;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0));
-  z-index: 2;
-  pointer-events: none;
-}
-
+/* ---------- title / rating / ingredients panel ---------- */
 .modal-info-panel {
   position: absolute;
   inset-inline: 0;
   bottom: 0;
-  padding: 2.8rem 2.5rem;
-  color: #fff;
   z-index: 2;
+  padding: 2.8rem 2.5rem;
   background: #00000070;
   border-top-left-radius: 3.4rem;
   border-top-right-radius: 3.4rem;
+  color: #fff;
 }
 
-.modal-info-top {
+.modal-title-row {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -1180,91 +1062,31 @@ button.modal-top-action {
 }
 
 .modal-subtitle {
+  color: #fafaf4;
   font-size: 12px;
   font-weight: 400;
-  color: #fafaf4;
-}
-
-.modal-open {
-  overflow: hidden !important;
-  height: 100%;
 }
 
 .modal-rating {
   display: flex;
+  flex-direction: row-reverse;
   align-items: center;
   gap: 0.4rem;
-  flex-direction: row-reverse;
 }
 
-.modal-rating span:first-of-type {
+.modal-rating__value {
   font-size: 1.6rem;
   font-weight: 700;
   line-height: 1;
 }
 
-.modal-rating span:last-of-type {
+.modal-rating__count {
   font-size: 1.2rem;
   font-weight: 400;
   line-height: 1;
 }
 
-.modal-rating-count {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.modal-reviews {
-  font-size: 12px;
-  font-weight: 400;
-}
-
-.sheet-body {
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-}
-.modal-backdrop {
-  z-index: 1200;
-}
-.bottom-modal {
-  z-index: 1300;
-}
-.checkout-bar {
-  z-index: 2500 !important;
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-}
-
-/* Scrollable content body */
-.sheet-body {
-  overflow-y: auto;
-  overscroll-behavior: contain; /* اسکرول به صفحه‌ی پشت پاس نده */
-  -webkit-overflow-scrolling: touch;
-  flex: 1;
-  min-height: 0;
-  padding-bottom: calc(
-    88px + 16px
-  ); /* اگر ارتفاع checkout فرق داره اینو هماهنگ کن */
-}
-
-/* Keep hero from eating all height */
-.sheet-body {
-  overflow-y: auto;
-  overscroll-behavior: contain; /* اسکرول به صفحه‌ی پشت پاس نده */
-  -webkit-overflow-scrolling: touch;
-  flex: 1;
-  min-height: 0;
-  padding-bottom: calc(
-    88px + 16px
-  ); /* اگر ارتفاع checkout فرق داره اینو هماهنگ کن */
-}
-
-/* Variant row / dropdown / qty — as sent earlier */
-
+/* ---------- variants ("نوع") ---------- */
 .section-head {
   display: flex;
   flex-direction: row;
@@ -1282,279 +1104,186 @@ button.modal-top-action {
   display: flex;
   flex-direction: column;
   gap: 14px;
-
   background-color: #0c0f14;
 }
 
-.variant-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 5px 30px;
-  flex-direction: row-reverse;
-}
-
-.variant-wrap {
-  position: relative;
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.variant-pill {
-  flex: 1 1 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 16px;
-  border: 0;
-  background: #11161c;
-  color: #e7eaee;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-  width: 165px;
-  height: 44px;
-  border-radius: 10px;
-}
-
-.variant-price {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  font-size: 10px;
-  font-weight: 700;
-}
-.variant-price .amount {
-  font-weight: 700;
-  font-size: 10px;
-}
-.variant-price .currency {
-  font-weight: 700;
-  font-size: 10px;
-  color: #ff683c;
-}
-.variant-name {
-  font-weight: 700;
-  font-size: 12px;
-}
-.variant-menu {
-  position: absolute;
-  inset-inline: 0;
-  top: calc(100% + 8px);
-  z-index: 20;
-  background: #0e1318;
-  border-radius: 14px;
-  padding: 6px;
-  box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.45),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-  max-height: 320px;
-  overflow: auto;
-}
-
-.variant-option {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px;
-  border: 0;
-  border-radius: 12px;
-  background: transparent;
-  color: #e7eaee;
-  cursor: pointer;
-}
-.variant-option.active {
-  background: #121820;
-}
-
-/* کنترل تعداد */
-.qty-group {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-.qty-btn {
-  width: 50px;
-  height: 44px;
-  padding: 0 14px;
-  border: 0;
-  border-radius: 10px;
-  background: #ff6a3d;
-  color: #fff;
-  font-size: 20px;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(255, 106, 61, 0.3);
-}
-.qty-display {
-  width: 50px;
-  height: 44px;
-  padding: 0 12px;
-  border-radius: 10px;
-  background: #f3f5f7;
-  color: #0b1015;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-}
-
-/* group each variant with its own addons block */
 .variant-block {
   display: block;
   margin-bottom: 16px;
 }
 
-/* subsection header (مخلفات) */
+.variant-row {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 30px;
+}
+
+.variant-pill {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 165px;
+  height: 44px;
+  padding: 12px 16px;
+  background: #11161c;
+  border: 0;
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  color: #e7eaee;
+}
+
+.variant-name {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.variant-price {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.variant-currency {
+  color: #ff683c;
+  font-size: 1rem;
+  font-weight: 800;
+  opacity: 0.85;
+}
+
+/* variant quantity: [+] [n] [-] */
+.qty-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.qty-btn {
+  width: 50px;
+  height: 44px;
+  padding: 0 14px;
+  background: #ff6a3d;
+  border: 0;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(255, 106, 61, 0.3);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.qty-display {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 44px;
+  padding: 0 12px;
+  background: #f3f5f7;
+  border-radius: 10px;
+  color: #0b1015;
+  font-weight: 800;
+}
+
+/* ---------- addons ("مخلفات") ---------- */
 .modal-subsection {
   margin-top: 10px;
 }
+
 .subsection-head {
-  width: 340px;
-  height: 44px;
-  margin: auto;
-  background: #11161c;
-  color: #e7eaee;
-  border-radius: 14px;
-  padding: 10px 14px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: calc(100% - 5rem); /* 2.5rem on both sides, 340px at 390px */
+  height: 44px;
+  margin: auto;
+  padding: 10px 14px;
+  background: #11161c;
+  border-radius: 14px;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-}
-.subsection-title {
-  font-weight: 800;
-  font-size: 1rem;
-  letter-spacing: 0.2px;
+  color: #e7eaee;
 }
 
-/* list */
 .addons-list {
-  list-style: none;
-  margin: 10px 0 0;
-  padding: 5px 30px;
   display: grid;
   gap: 12px;
+  margin: 10px 0 0;
+  padding: 5px 30px;
+  list-style: none;
 }
+
 .addon-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: transparent;
   padding: 6px 4px;
   border-radius: 10px;
 }
-.addon-row.checked {
-  background: rgba(255, 106, 61, 0.08);
+
+/* variant is not in the cart yet, so its addons can't be changed */
+.addon-row--locked {
+  opacity: 0.45;
 }
+
 .addon-price-amount {
   display: flex;
   gap: 1rem;
 }
-.addon-price input {
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: #0e1318;
-  cursor: pointer;
-}
-.addon-control input:checked {
-  background: #ff6a3d;
-  border-color: #ff6a3d;
-  box-shadow: 0 0 0 2px rgba(255, 106, 61, 0.25) inset;
-}
-.addon-name {
-  font-size: 12px;
-  font-weight: 600;
-  color: #e7eaee;
-}
 
 .addon-price {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
   display: flex;
   align-items: center;
+  gap: 6px;
 }
+
+/* quantity 0 -> dim gray text; quantity above 0 -> white text (no background) */
+.addon-name {
+  color: #6b7686;
+  font-size: 12px;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
 .addon-amount {
-  color: #fafaf4;
+  color: #6b7686;
   font-size: 10px;
   font-weight: 700;
+  transition: color 0.2s;
 }
+
 .addon-currency {
-  color: #ff683c;
-  opacity: 0.9;
+  color: #6b7686;
   font-size: 10px;
   font-weight: 700;
+  transition: color 0.2s;
 }
 
-/* keep variant row look you have */
-.variant-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+.addon-row.checked .addon-name,
+.addon-row.checked .addon-amount {
+  color: #fafaf4;
 }
-.variant-pill {
-  flex: 1 1 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 16px;
-  border: 0;
-  border-radius: 16px;
-  background: #11161c;
-  color: #e7eaee;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-}
-.variant-name {
-  font-weight: 800;
-}
-.variant-price {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-}
-.variant-price {
-  font-weight: 800;
-}
-.variant-currency {
-  opacity: 0.85;
+
+.addon-row.checked .addon-currency {
   color: #ff683c;
-  font-weight: 800;
-  font-size: 1rem;
 }
 
-/* qty controls already defined in your CSS; keep them */
-
-/* مودال و بک‌دراپ همچنان پشت Checkout می‌مونن (z-indexها همین‌طور بمونه) */
-.modal-backdrop {
-  z-index: 1200;
-}
-.bottom-modal {
-  z-index: 1300;
-}
-.checkout-bar {
-  z-index: 2000;
-}
-
-/* Horizontal Scrollable Qty Picker */
+/* 0..10 horizontal picker */
 .addon-qty-scroll {
   display: flex;
   align-items: center;
-  width: 110px; /* Adjust based on exact design preference */
+  width: 110px;
   height: 38px;
-  background: #11161c; /* Match variant dark background */
+  background: #11161c;
   border-radius: 10px;
   overflow-x: auto;
-  scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
-  /* Hide scrollbars */
+  scroll-snap-type: x mandatory;
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
@@ -1564,903 +1293,58 @@ button.modal-top-action {
 }
 
 .addon-qty-item {
-  flex: 0 0 38px; /* Square buttons */
-  height: 100%;
   display: flex;
-  justify-content: center;
+  flex: 0 0 38px;
   align-items: center;
-  scroll-snap-align: center;
-  color: #4a5568; /* Faded gray for unselected */
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
+  justify-content: center;
+  height: 100%;
   background: transparent;
   border: none;
+  color: #4a5568;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  scroll-snap-align: center;
   transition:
     background-color 0.2s,
     color 0.2s;
 }
 
-/* Highlight for '0' */
+.addon-qty-item.active-0,
+.addon-qty-item.active-n {
+  border-radius: 10px;
+}
+
 .addon-qty-item.active-0 {
   background: #f3f5f7;
   color: #0b1015;
-  border-radius: 10px;
 }
 
-/* Highlight for numbers > 0 */
 .addon-qty-item.active-n {
   background: #ff6a3d;
   color: #fff;
-  border-radius: 10px;
 }
 
-/* Bottom Navigation */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 5rem;
-  background-color: #13171e;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  padding: 0 1rem;
-  z-index: 9999;
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
-  transition: transform 0.3s ease;
-  transform: translateY(0); /* پیش‌فرض نمایش داده شود */
-}
 
-.nav-toggle-wrapper {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 20px;
-  background-color: transparent;
-  z-index: 10000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.nav-toggle-bar {
-  width: 12rem;
-  height: 5px;
-  background-color: white;
-  border-radius: 3px;
-  cursor: pointer;
-  opacity: 0.8;
-}
-
-.nav-toggle-bar::before {
-  content: "";
-  width: 50px;
-  height: 4px;
-  background-color: white;
-  border-radius: 2px;
-  opacity: 0.6;
-}
-
-.nav-item {
-  position: relative;
-  color: #ccc;
-  text-decoration: none;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-}
-
-.nav-icon {
-  font-size: 15px;
-  margin-bottom: 2px;
-}
-
-.nav-label {
-  font-size: 15px;
-  font-weight: bold;
-}
-
-.nav-item.active {
-  color: #f89c0e;
-}
-
-.cart-item {
-  position: relative;
-}
-
-.badge {
-  display: none;
-  position: absolute;
-  top: 10px;
-  right: -18px;
-  background-color: #f33;
-  color: #fff;
-  font-size: 0.7rem;
-  font-weight: bold;
-  padding: 2px 6px;
-  border-radius: 1rem;
-  min-width: 16px;
-  text-align: center;
-}
-
-.badge.show {
-  display: inline-block;
-}
-
-@media (min-width: 768px) {
-  .banner {
-    position: relative;
-    color: #fff;
-    width: 100%;
-    overflow: hidden;
-    padding: 96px 0 24px;
-  }
-
-  .banner::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    /* background-image: var(--banner-fallback, url("/images/top-banner.png")); */
-    background-size: cover;
-    background-position: center;
-    filter: brightness(0.55) blur(2px);
-    z-index: 0;
-  }
-
-  .banner * {
-    z-index: 1;
-  }
-
-  .banner__container {
-    max-width: 1280px;
-    margin-inline: auto;
-    padding-inline: 24px;
-  }
-
-  .banner-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    gap: 16px;
-  }
-
-  .restaurant-title {
-    margin: 0;
-    text-align: center;
-  }
-
-  .restaurant-name {
-    font-weight: 800;
-    line-height: 1.1;
-    font-size: clamp(36px, 5vw, 64px);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-    margin: 0;
-    text-align: right;
-  }
-
-  .restaurant-description {
-    font-weight: 600;
-    font-size: clamp(18px, 2.6vw, 32px);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    margin: 4px 0 0 0;
-    text-align: right;
-  }
-
-  .search-and-music {
-    display: flex;
-    gap: 16px;
-    width: 100%;
-    max-width: 800px;
-  }
-
-  .music-request {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    background: linear-gradient(to left, #c06733, #b95945);
-    color: #fff;
-    border: none;
-    flex: 0 0 200px;
-    height: 64px;
-    padding: 0 18px;
-    border-radius: 24px;
-    font-weight: 800;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-
-  .music-request span {
-    font-size: 20px;
-  }
-
-  .music-icon {
-    width: 24px;
-    height: 24px;
-  }
-}
-
-@media (min-width: 1024px) {
-  html,
-  body {
-    overflow-x: clip;
-    overflow-y: visible; /* keep a clear runway for sticky */
-  }
-
-  header {
-    padding: 0 2.4rem;
-    height: 10rem;
-  }
-
-  .cart-icon-small {
-    display: none;
-  }
-
-  .cart-icon-large {
-    display: block;
-  }
-
-  .navbar {
-    display: none;
-  }
-
-  .nav-item span {
-    font-size: 3rem;
-  }
-
-  .desktop-nav {
-    display: flex;
-    align-items: center;
-  }
-
-  .menu_nav {
-    width: 100vw;
-    justify-content: space-between;
-    padding-left: 20rem;
-  }
-
-  .menu_nav p {
-    font-size: 2.5rem;
-  }
-
-  .menu_nav a {
-    font-size: 2rem;
-    font-weight: 500;
-  }
-
-  .menro {
-    display: block;
-    font-size: 4rem;
-    color: #f89c0e;
-    font-weight: 800;
-    text-decoration: none;
-  }
-  .bottom-nav {
-    display: none;
-  }
-
-  .bottom-nav .nav-item {
-    color: #ccc;
-    font-size: 1rem;
-    font-weight: 500;
-    gap: 0.5rem;
-  }
-  .bottom-nav .nav-icon {
-    display: none;
-  }
-
-  .bottom-nav .nav-item.active {
-    color: #f89c0e;
-  }
-
-  .nav-toggle-wrapper {
-    display: none;
-  }
-
-  .banner {
-    margin-bottom: 2.5rem;
-  }
-
-  .user-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .restaurant-name {
-    font-size: 70px;
-  }
-
-  .restaurant-description {
-    font-size: 45px;
-  }
-
-  .search-and-music {
-    width: 80%;
-  }
-
-  .search-bar {
-    width: 60%;
-    height: 6rem;
-  }
-
-  .search-bar input::placeholder {
-    font-size: 1.3rem;
-  }
-
-  .search-input {
-    font-size: 2.5rem;
-    font-weight: 500;
-    padding-right: 2rem;
-  }
-  .search-icon {
-    width: 5.2rem;
-    height: 5.2rem;
-    margin-left: 2rem;
-  }
-
-  .music-request {
-    height: 6rem;
-    width: 40%;
-    flex: 1 1 0;
-    border-radius: 1rem;
-    padding: 1 2rem;
-  }
-
-  .music-request span {
-    font-size: 2rem;
-    font-weight: 700;
-    padding-right: 2rem;
-  }
-
-  /* .music-request {
-    display: none !important;
-    height: 50px;
-    width: 50px;
-  } */
-
-  .music-icon {
-    width: 2rem;
-    height: 2rem;
-  }
-
-  .category-bar {
-    display: none !important;
-  }
-
-  /* .category-sidebar-vertical {
-        position: -webkit-sticky;
-        position: sticky;
-        top: 2rem;
-        display: flex;
-        flex-direction: column;
-        align-self: flex-start;
-        height: 100%;
-        margin: 0 2.5rem 2.5rem 2.5rem;
-        background-color: #13171e;
-        align-items: center;
-        padding: 1.5rem;
-        border-radius: 10px;
-    }
-
-    .sidebar-btn {
-        display: flex;
-        align-items: center;
-        width: 100%;
-        padding: 0.75rem 1rem;
-        cursor: pointer;
-        flex-direction: column;
-        background: transparent;
-        gap: 0.5rem;
-        border: none;
-        border-radius: 0.75rem;
-        color: #ccc;
-        justify-content: flex-start;
-        font-size: 1.2rem;
-        transition: background 0.2s, color 0.2s;
-    }
-
-    .sidebar-catagory-title {
-        font-size: 0.9rem;
-        font-weight: 600;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .category-sidebar-vertical .sidebar-btn.active .sidebar-catagory-title {
-        color: #d17842;
-        font-weight: bold;
-    }
-
-    .sidebar-btn span {
-        font-size: 0.9rem;
-        font-weight: 600;
-    }
-
-    .sidebar-btn.active {
-        color: #d17842;
-    }
-
-    .sidebar-btn.active svg {
-        fill: #d17842;
-    } */
-
-  /* .res-menu {
-        width: auto;
-    }
-
-    /* container of vertical category list */
-  .category-sidebar-vertical {
-    display: flex !important;
-    flex-direction: column;
-    background: #0c0f14;
-    padding: 1.5rem 1rem;
-    border-radius: 1.8rem;
-    gap: 1.2rem;
-    width: 180px; /* match Figma */
-  }
-
-  /* hide horizontal bar on desktop */
-  .category-wrap {
-    display: none !important;
-  }
-
-  /* desktop base */
-  .category-sidebar-vertical .category-btn {
-    background: transparent !important; /* remove pill */
-    box-shadow: none !important;
-    padding: 0.6rem 0.4rem;
-    justify-content: flex-start;
-    width: 100%;
-    border-radius: 0.8rem;
-    transition: all 0.25s ease;
-    color: #bfc5cf;
-  }
-
-  /* icon consistent color */
-  .category-sidebar-vertical .category-btn svg path {
-    fill: #bfc5cf !important;
-    stroke: #bfc5cf !important;
-  }
-
-  /* hover */
-  .category-sidebar-vertical .category-btn:hover {
-    color: #ffffffcc;
-  }
-  .category-sidebar-vertical .category-btn:hover svg path {
-    fill: #ffffffcc !important;
-    stroke: #ffffffcc !important;
-  }
-
-  /* ---------- ACTIVE CATEGORY (DESKTOP) ---------- */
-  .category-sidebar-vertical .category-btn.active {
-    background: transparent !important; /* no pill */
-    color: #ff7a32 !important; /* brand color */
-    font-weight: 700;
-  }
-
-  .category-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center !important;
-    justify-content: center;
-  }
-
-  .category-icon {
-    width: 43px !important;
-    height: 43px !important;
-  }
-  .category-btn span {
-    align-self: center;
-    justify-self: center;
-  }
-
-  .category-btn.active span {
-    color: #ff7a32;
-  }
-
-  .category-sidebar-vertical .category-btn svg {
-    width: 43px;
-    height: 43px;
-  }
-
-  .category-sidebar-vertical .category-btn.active svg path {
-    fill: #ff7a32 !important;
-    stroke: #ff7a32 !important;
-  }
-
-  /* remove underline if mobile CSS added it */
-  .category-sidebar-vertical .category-btn.active::after {
-    display: none !important;
-  }
-
-  .food_items {
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-padding: 0 1rem;
-    -webkit-overflow-scrolling: touch;
-  }
-  .food_items {
-    max-width: 100%;
-    display: flex;
-    overflow-x: auto;
-    gap: 1rem;
-    padding: 1rem;
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-  }
-  */ .res-menu-wrapper {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
-  }
-
-  .res-menu > section:last-child .food_items {
-    padding-bottom: 1rem;
-  }
-
-  .item {
-    padding: 2rem 1.8rem 3.5rem;
-  }
-
-  .item-image {
-    height: 19.7rem;
-    width: 19.7rem;
-    margin-bottom: 0.8rem;
-  }
-
-  .item-name {
-    font-size: 2.5rem;
-    font-weight: 600;
-  }
-
-  .item-description {
-    font-size: 1.2rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .add-btn {
-    width: 4.5rem;
-    height: 4.5rem;
-  }
-
-  .item-price {
-    font-size: 1.6rem;
-    font-weight: 600;
-  }
-
-  .category-icon {
-    width: 3.8rem;
-    height: 3.8rem;
-  }
-
-  /* 1) Hide it off-screen when NOT active */
-  .bottom-modal {
-    position: fixed;
-    top: -100%; /* push it above the viewport */
-    left: 50%;
-    height: 24.4rem;
-    transform: translateX(-50%);
-    width: 17rem;
-    max-width: 480px;
-    max-height: 80vh;
-    opacity: 0; /* fully transparent */
-    pointer-events: none; /* ignore clicks */
-    transition:
-      top 0.35s ease,
-      opacity 0.35s ease;
-  }
-
-  /* 2) When .active is toggled on, bring it into the center */
-  .bottom-modal.active {
-    top: 50%; /* center vertically */
-    transform: translate(-50%, -50%);
-    opacity: 1; /* fade in */
-    pointer-events: auto; /* allow interaction */
-    border-radius: 1rem;
-    overflow: hidden;
-    backdrop-filter: blur(20px);
-    background: rgba(28, 28, 28, 0.95);
-  }
-
-  /* inner scrolling */
-  .bottom-modal .modal-content {
-    max-height: 80vh;
-    overflow-y: auto;
-    width: 100%;
-  }
-
-  /* shrink hero */
-  .modal-hero {
-    height: 180px;
-  }
-  .modal-hero-img {
-    height: 100%;
-  }
-  .modal-info-panel {
-    padding: 0.5rem;
-  }
-
-  .modal-category {
-    width: 8rem;
-  }
-
-  .modal-icon {
-    width: 3.5rem;
-    height: 3.5rem;
-    font-size: 0.6rem;
-  }
-  /* tighten footer button */
-  .add-to-cart-btn {
-    width: 100%;
-    height: 3rem;
-    font-size: 1rem;
-    border-radius: 0.75rem;
-    font-size: 0.8rem;
-  }
-  .size-options {
-    gap: 1.5rem;
-  }
-}
-
-/* Rating row (star icon + numeric rating + (count)) */
-.rating-chip {
-  position: absolute;
-  left: 3.5rem;
-  bottom: 0;
-  color: #fff;
-  border-radius: 999px;
-  padding: 0.25rem 0.45rem;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.85rem;
-  z-index: 1;
-  flex-direction: row-reverse;
-}
-
-.rating-chip svg {
-  width: 14px;
-  height: 14px;
-  color: #d17842;
-  margin-bottom: 5px;
-}
-.rating-chip .score {
-  font-weight: 700;
-}
-.rating-chip .voters {
-  opacity: 0.85;
-  font-size: 0.8rem;
-}
-
-.rating {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-  font-size: 0.85rem;
-  color: #bbb;
-}
-
-.star-icon {
-  width: 14px;
-  height: 14px;
-}
-
-/* --- Checkout bar fixed over bottom nav --- */
-.checkout-bar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 2000;
-  background: #0f1318;
-  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
-
-  /* safe-area for iOS */
-  padding-bottom: max(12px, env(safe-area-inset-bottom));
-}
-
-.checkout-bar__inner {
-  max-width: 1100px; /* optional container */
-  margin: 0 auto;
-  display: flex;
-  flex-direction: row-reverse;
-  align-items: center;
-  gap: 16px;
-  padding: 7px 14px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
-  pointer-events: auto;
-}
-
-.checkout-bar__meta {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  color: #aeaeae;
-  font-weight: 400;
-  font-size: 12px;
-}
-
-.checkout-bar__count {
-  opacity: 0.9;
-  font-size: 1.2rem;
-}
-
-.checkout-bar__total {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-}
-
-.checkout-bar__total-num {
-  font-weight: 700;
-  font-size: 1.3rem;
-  color: #fafaf4;
-}
-
-.checkout-bar__total-currency {
-  font-weight: 700;
-  font-size: 1.3rem;
-  opacity: 0.9;
-  color: #ff683c;
-}
-
-.checkout-bar__cta {
-  margin-inline-start: auto;
-  border: none;
-  border-radius: 10px;
-  width: 22rem;
-  height: 4.4rem;
-  padding: 0 2.4rem;
-  background: #ff683c;
-  color: #fff;
-  font-weight: 700;
-  font-size: 1.5;
-  cursor: pointer;
-  transition: filter 0.15s ease;
-}
-
-.checkout-bar__cta:active,
-.checkout-bar__cta:hover {
-  filter: brightness(0.95);
-}
-
-@media (max-width: 480px) {
-  .checkout-bar__inner {
-    gap: 12px;
-  }
-  .checkout-bar__cta {
-    flex: 1;
-    text-align: center;
-  }
-}
-/* Checkout height variable: 0 when hidden, real height when visible */
-:root {
-  --checkout-h: 0px;
-}
-body.has-checkout {
-  --checkout-h: 72px;
-} /* <- set to your CheckoutBar height */
-
-/* Backdrop and modal are under the checkout bar */
-.modal-backdrop {
-  z-index: 1200;
-}
-.bottom-modal {
-  z-index: 1300;
-}
-.checkout-bar {
-  z-index: 2000;
-  height: 9.6rem;
-} /* you already have this */
-
-/* Stick the sheet to the bottom and slide it in */
-.bottom-modal {
-  position: fixed;
-  inset-inline: 0;
-  bottom: 0;
-  max-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  transform: translateY(110%);
-  transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-.bottom-modal.active {
-  transform: translateY(0);
-}
-
-/* Only the body scrolls. Always reserve room for checkout if present. */
-.sheet-body {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  /* keep content visible behind (or clear of) the checkout */
-  padding-bottom: calc(
-    var(--checkout-h) + max(12px, env(safe-area-inset-bottom))
-  );
-}
-
-/* (Optional) ensure hero doesn’t consume all height */
-.modal-hero .modal-hero-img {
-  height: 38vh; /* adjust as you like */
-  object-fit: cover;
-  width: 100%;
-  display: block;
-}
-
-/* base look for addon checkbox */
-.addons-list input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  appearance: none; /* we’ll fully control the look */
-  -webkit-appearance: none;
-  /* border-radius: 999px; circle like your design */
-  border: 2px solid #888; /* default border */
-  background: transparent;
-  position: relative;
-}
-
-/* when addon is selected */
-.addons-list input[type="checkbox"]:checked {
-  border-color: #ff8a2b; /* your orange */
-  background: #ff8a2b;
-}
-
-/* white check mark inside the circle */
-.addons-list input[type="checkbox"]:checked::after {
-  content: "✔";
-  position: absolute;
-  top: 60%;
-  left: 50%;
-  transform: translate(-50%, -58%);
-  font-size: 11px;
-  color: #fff; /* or #fff / whatever fits */
-}
-
-svg {
-  animation: debugSvgFreeze 10s linear forwards !important;
-}
-
-@keyframes debugSvgFreeze {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 1;
-  }
+/* =====================================================
+   8. Combos and "همون همیشگی" modals
+   Both are full-screen sheets that sit above the item modal / checkout bar rules.
+   ===================================================== */
+.combo-foods-backdrop {
+  z-index: 2399;
 }
 
 .combo-foods-modal {
-  position: fixed;
-  inset-inline: 0;
-  top: 0;
-  bottom: 0;
-  height: 100dvh;
-  max-height: 100dvh;
-  border-radius: 0;
-  background-color: #0c0f14;
+  inset-block: 0;
   z-index: 2400;
+  height: 100dvh;
+  background-color: #0c0f14;
+  /* combos open from the top */
   transform: translateY(-100%);
-  transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
 .combo-foods-modal.active {
-  transform: translateY(0%);
-}
-
-.combo-foods-backdrop {
-  z-index: 2399;
+  transform: translateY(0);
 }
 
 .combo-foods-header {
@@ -2478,8 +1362,8 @@ svg {
   justify-content: center;
   gap: 8px;
   padding: 0.6rem 1.2rem;
-  border-radius: 1rem;
   background-color: #13171e !important;
+  border-radius: 1rem;
   color: #fff;
   font-size: 1.2rem;
   font-weight: 600;
@@ -2490,24 +1374,29 @@ svg {
   height: auto;
 }
 
-.combo-foods-header__title {
-  font-size: 1.3rem;
-  font-weight: 800;
-  color: #fff;
-}
-
 .combo-foods-header__back {
   width: 3.4rem;
   height: 3.4rem;
-  background: #13171e !important;
-  border-radius: 1rem;
+}
+
+.combo-foods-header__title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.combo-foods-header__title {
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 800;
 }
 
 .combo-foods-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 2.2rem;
-  padding: 2.5rem 2rem calc(88px + 2rem); /* clears the floating CheckoutBar */
+  /* bottom padding clears the floating checkout bar */
+  padding: 2.5rem 2rem calc(var(--checkout-bar-h) + 2rem);
   overflow-y: auto;
 }
 
@@ -2519,51 +1408,238 @@ svg {
   margin-bottom: 17px;
 }
 
-.combo-foods-header__title-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.addon-row--locked {
-  opacity: 0.45;
-}
-
-.menu-state {
-  text-align: center;
-  padding: 4rem 2rem;
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #a5adc0;
-}
-
-.menu-state--error {
-  color: #ff6b6b;
-}
-
-/* ===== مودال «همون همیشگی» ===== */
-/* لایه‌ی این مودال باید زیر ItemDetailModal باشد (backdrop: 1200 / sheet: 1300)
-   تا با زدن روی کارت غذا، جزئیات غذا روی همین مودال باز شود.
-   CheckoutBar (2500) همچنان روی آن دیده می‌شود. */
+/* "همون همیشگی": must stay UNDER the item modal (1300) so tapping a food opens
+   its details on top, and it opens from the bottom like the item modal */
 .combo-foods-backdrop.frequent-foods-backdrop {
   z-index: 1149;
 }
 
 .combo-foods-modal.frequent-foods-modal {
   z-index: 1150;
-}
-
-.frequent-foods-state {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  padding-bottom: calc(88px + 2rem);
-}
-
-/* باز شدن از پایین (مثل ItemDetailModal) به‌جای حالت از بالای مودال ترکیب‌ها */
-.combo-foods-modal.frequent-foods-modal {
   transform: translateY(110%);
 }
 
 .combo-foods-modal.frequent-foods-modal.active {
   transform: translateY(0);
+}
+
+.frequent-foods-state {
+  flex: 1 1 auto;
+  padding-bottom: calc(var(--checkout-bar-h) + 2rem);
+  overflow-y: auto;
+}
+
+
+/* =====================================================
+   9. Checkout bar (CheckoutBar)
+   ===================================================== */
+.checkout-bar {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 2500;
+  height: var(--checkout-bar-h);
+  padding: 10px 12px max(12px, env(safe-area-inset-bottom));
+  background: #0f1318;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
+  pointer-events: none; /* only the inner box is clickable */
+}
+
+.checkout-bar__inner {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 16px;
+  max-width: 1100px;
+  min-height: 68px;
+  margin: 0 auto;
+  padding: 7px 14px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  pointer-events: auto;
+}
+
+.checkout-bar__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #aeaeae;
+}
+
+.checkout-bar__count {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+.checkout-bar__total {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.checkout-bar__total-num {
+  color: #fafaf4;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.checkout-bar__total-currency {
+  color: #ff683c;
+  font-size: 1.3rem;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+.checkout-bar__cta {
+  width: 22rem;
+  height: 4.4rem;
+  margin-inline-start: auto;
+  padding: 0 2.4rem;
+  background: #ff683c;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.checkout-bar__cta:hover,
+.checkout-bar__cta:active {
+  filter: brightness(0.95);
+}
+
+@media (max-width: 480px) {
+  .checkout-bar__inner {
+    gap: 12px;
+  }
+
+  .checkout-bar__cta {
+    flex: 1;
+    text-align: center;
+  }
+}
+
+
+/* =====================================================
+   10. Bottom navigation
+   ===================================================== */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  width: 100%;
+  height: 5rem;
+  padding: 0 1rem;
+  background-color: #13171e;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
+  transform: translateY(0);
+  transition: transform 0.3s ease;
+}
+
+.nav-toggle-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 20px;
+  background-color: transparent;
+}
+
+.nav-toggle-bar {
+  width: 12rem;
+  height: 5px;
+  background-color: #fff;
+  border-radius: 3px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.nav-item {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  color: #ccc;
+  text-decoration: none;
+}
+
+.nav-item.active {
+  color: #f89c0e;
+}
+
+.nav-icon {
+  margin-bottom: 2px;
+  font-size: 15px;
+}
+
+.nav-label {
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.cart-item {
+  position: relative;
+}
+
+.badge {
+  position: absolute;
+  top: 10px;
+  right: -18px;
+  display: none;
+  min-width: 16px;
+  padding: 2px 6px;
+  background-color: #f33;
+  border-radius: 1rem;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.badge.show {
+  display: inline-block;
+}
+
+
+/* =====================================================
+   11. Tablet (>= 768px)
+   ===================================================== */
+@media (min-width: 768px) {
+  .banner {
+    /* the side padding used to be 0 here, which pushed the buttons to the screen edge */
+    padding: 96px 2.5rem 24px;
+  }
+
+  .banner-content {
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    text-align: center;
+  }
+
+  .restaurant-title {
+    margin: 0;
+    text-align: center;
+  }
+
+  .restaurant-name {
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 800;
+    line-height: 1.1;
+  }
+
+  .checkout-safe-spacer {
+    height: 110px;
+  }
 }

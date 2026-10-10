@@ -1,1284 +1,1250 @@
+/* public/styles.css  (global styles: home page + shared components)
+
+   Base design width: 390px, mobile first. Side gutter of every row: 2.5rem.
+
+   Home Page Contents
+   --------
+    1. Tokens
+    2. Header ................ Header
+    3. Section header ........ SectionHeader
+    4. Carousel .............. Carousel
+    5. Restaurant cards ...... RestaurantCard, RestaurantList
+    6. Banner ad ............. AdBanner
+    7. Previous orders CTA ... PreviousOrders (logged out)
+    8. Food cards ............ FoodCard, PopularFoodRow
+    9. Search results grid ... SearchResultsSection
+   10. Combos entry button ... RestaurantCombosButton
+
+   Other Things
+    A. Legacy food-card pieces
+    B. Quantity controls
+    C. 16px font-size rule (item modal)
+    D. Spinner, resend button, pulse animation
+    E. Desktop block (>= 1024px)
+*/
+
+
+/* =====================================================
+   1. Tokens
+   ===================================================== */
 :root {
-    --section-gap-sm: 1.2rem;
-    --section-gap: 3.2rem;
-    --section-gap-lg: 4rem;
-    --badge-size: 52px;
-    --halo-pad: 10px;
-    --halo-gap: 4px;
-    --halo-shadow: 0 6px 12px rgba(0, 0, 0, 0.45);
+  --page-gutter: 2.5rem; /* screen edge to cards */
+  --card-gap: 1.6rem; /* gap between cards in grids */
 
-    --page-gutter: 2.5rem;      /* فاصله‌ی کناری صفحه تا کارت‌ها */
-    --card-gap: 1.6rem;         /* فاصله‌ی بین کارت‌ها */
-    --fc-ratio: 162 / 277;      /* نسبت کارت غذای فیگما */
-    --fc-pad: 9.26%;            /* 15px از 162px، فاصله‌ی عکس تا لبه‌ی کارت */
-    --fc-btn-w: 97%;            /* 128px از 132px، عرض دکمه */
-    --fc-btn-ratio: 128 / 36;   /* نسبت دکمه */
+  --badge-size: 52px; /* restaurant logo badge */
+
+  /* food card proportions from Figma (162 x 277) */
+  --fc-ratio: 162 / 277;
+  --fc-pad: 9.26%; /* 15px of 162px: image to card edge */
+  --fc-btn-w: 97%; /* 128px of 132px */
+  --fc-btn-ratio: 128 / 36;
+
+  /* not referenced in this file; kept in case another stylesheet uses them */
+  --section-gap-sm: 1.2rem;
+  --section-gap: 3.2rem;
+  --section-gap-lg: 4rem;
+  --halo-pad: 10px;
+  --halo-gap: 4px;
+  --halo-shadow: 0 6px 12px rgba(0, 0, 0, 0.45);
+  --badge-overlay: 35px;
 }
 
-.card {
-    --card-bg: #0c0f14;
-}
 
-/* Header */
+/* =====================================================
+   2. Header
+   ===================================================== */
 .header {
-    /* margin-bottom: 2rem; */
-    margin-top: 2.5rem;
-    margin-bottom: 2.8rem;
-    padding: 0 2.5rem;
+  margin-top: 2.5rem;
+  margin-bottom: 2.8rem;
+  padding: 0 var(--page-gutter);
 }
 
 .header--sticky {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    margin: 0;
-    padding: 2.5rem 2.5rem 1.4rem;
-    background: #0b0f14; /* رنگ پس‌زمینه واقعی صفحه‌ات رو بذار */
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin: 0;
+  padding: 2.5rem var(--page-gutter) 1.4rem;
+  background: #0b0f14; /* should match the real page background */
 }
 
 .header__bar {
-    display: flex;
-    flex-direction: row-reverse;
-    align-items: center;
-    gap: 12px;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 12px;
 }
 
 .header__search {
-    flex: 1;
+  flex: 1;
 }
 
-/* button */
 .header__hamburger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    width: 37px;            /* هم‌عرض آیکون همبرگر */
-    height: 38px;
-    border: none;
-    background: transparent;
-    padding: 0;
-    border-radius: 12px;
-    cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 37px; /* same width as the hamburger icon */
+  height: 38px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
 }
 
 .header__hamburger img {
-    width: 37px;
-    height: 38px;
-    display: block;
+  display: block;
+  width: 37px;
+  height: 38px;
 }
 
-/* دکمه‌ی back: آیکون باریک‌تره، پس به لبه‌ی راست دکمه می‌چسبه
-   تا فاصله‌اش تا لبه‌ی صفحه همون بمونه که الان درسته */
+/* the back icon is narrower: stick it to the right edge so its distance
+   from the screen edge stays the same */
 .header__hamburger[aria-label="بازگشت"] {
-    justify-content: flex-start;
+  justify-content: flex-start;
 }
 
 .icon-button img {
-    width: 22px;
-    height: 22px;
-    display: block;
+  display: block;
+  width: 22px;
+  height: 22px;
 }
 
 .search-bar {
-    background-color: #11161d;
-}
-
-.search-bar input::placeholder {
-    color: #a5adc0;
-    font-size: 1rem;
+  background-color: #11161d;
 }
 
 .search-bar input {
-    font-size: 1.2rem;
-    background-color: #11161d;
-    padding: 0 !important;
-    margin: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: #11161d;
+  font-size: 1.2rem;
 }
 
-/* ===== Main Content Area ===== */
-/* ===== Carousel (layout + visuals only) ===== */
-.carousel {
-    --page-bg: #0c0f14;
-    --card-bg: #0f0f0f;
-    --dock-bg: #0c0f14;
-    --card-radius: 1.5rem;
-    --dock-radius: 1rem;
-    --dock-cut-size: 0.8rem;
-
-    position: relative;
-    width: 100%;
-    padding: 0 2.5rem;
-    margin-bottom: 2.8rem;
+.search-bar input::placeholder {
+  color: #a5adc0;
+  font-size: 1rem;
 }
 
-/* Card */
-.carousel-container {
-    position: relative;
-    overflow: hidden;
-    border-radius: var(--card-radius);
-    background: var(--card-bg);
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
-    /* aspect-ratio: 21 / 9; */
-    aspect-ratio: 34 / 15;
-}
 
-@media (min-width: 640px) {
-    .carousel-container {
-        aspect-ratio: 20 / 8;
-    }
-}
-
-@media (min-width: 1024px) {
-    .carousel-container {
-        aspect-ratio: 24 / 8;
-    }
-}
-
-/* Slides */
-.carousel-slider {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    transition: transform 0.5s ease-in-out;
-    direction: rtl;
-}
-
-.carousel-slide {
-    flex: 0 0 100%;
-    min-width: 100%;
-    height: 100%;
-}
-
-.carousel-slide img {
-    display: block;
-    width: 100%;
-    height: 100% !important;
-    object-fit: cover;
-}
-
-/* ===== Figma-style indicators dock ===== */
-.indicators-container {
-    position: absolute;
-    right: 2.5rem;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.3rem;
-    padding: 0.4rem;
-    background: var(--dock-bg);
-    border-top-left-radius: var(--dock-radius);
-    border-bottom-right-radius: var(--card-radius);
-    z-index: 5;
-    isolation: isolate;
-}
-
-/* vertical curved cut above the dock */
-.indicators-container::before {
-    content: "";
-    position: absolute;
-    right: -0.1rem;
-    top: calc(-0.9 * var(--dock-cut-size));
-    width: var(--dock-cut-size);
-    height: var(--dock-cut-size);
-    background: radial-gradient(circle at top left,
-            transparent 0,
-            transparent calc(var(--dock-cut-size) - 0.1rem),
-            var(--dock-bg) var(--dock-cut-size));
-    pointer-events: none;
-}
-
-/* horizontal curved cut on the left side of the dock */
-.indicators-container::after {
-    content: "";
-    position: absolute;
-    left: calc(-0.9 * var(--dock-cut-size));
-    bottom: -0.1rem;
-    width: var(--dock-cut-size);
-    height: var(--dock-cut-size);
-    background: radial-gradient(circle at top left,
-            transparent 0,
-            transparent calc(var(--dock-cut-size) - 0.1rem),
-            var(--dock-bg) var(--dock-cut-size));
-    pointer-events: none;
-}
-
-/* dots */
-.indicator {
-    position: relative;
-    z-index: 2;
-    width: 0.6rem;
-    height: 0.6rem;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    border-radius: 9999px;
-    overflow: hidden;
-    background: rgba(255, 255, 255, 0.18);
-
-    transition:
-        width 0.25s ease,
-        height 0.25s ease,
-        background 0.25s ease,
-        opacity 0.25s ease,
-        box-shadow 0.25s ease;
-}
-
-.indicator:hover {
-    opacity: 0.9;
-}
-
-.indicator.active {
-    width: 2.1rem;
-    height: 0.6rem;
-    border-radius: 9rem;
-    background: rgba(255, 255, 255, 0.18);
-    box-shadow: 0 0 1.2rem rgba(255, 104, 60, 0.35);
-}
-
-.indicator.active::before {
-    content: "";
-    position: absolute;
-    inset-block: 0;
-    left: 0;
-    width: 0%;
-    border-radius: inherit;
-    background: #ff683c;
-    box-shadow:
-        0 0 0.8rem rgba(255, 104, 60, 0.7),
-        0 0 1.4rem rgba(255, 104, 60, 0.35);
-    animation: carouselIndicatorProgress 3000ms linear forwards;
-}
-
-.carousel--dragging .indicator.active::before {
-    animation-play-state: paused;
-}
-
-@keyframes carouselIndicatorProgress {
-    from {
-        width: 0%;
-    }
-
-    to {
-        width: 100%;
-    }
-}
-
-/* restaurants */
-
+/* =====================================================
+   3. Section header (SectionHeader)
+   ===================================================== */
 .restaurants {
-    margin-bottom: 2.8rem;
+  margin-bottom: 2.8rem;
 }
 
 .res-title-box {
-    padding: 0.5rem 2.5rem;
-    margin-bottom: 1.8rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.8rem;
+  padding: 0.5rem var(--page-gutter);
 }
 
-.section-title {
-    margin: 0;
-    display: flex;
-    align-items: center;
-    font-size: 1.3rem;
-    font-weight: 800;
-}
-
-.res-title-meta {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #97a0ab;
+.cards-container + .res-title-box {
+  margin-top: 1.2rem;
 }
 
 .res-title {
-    display: flex;
-    gap: 0.8rem;
-    align-items: center;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.res-title-meta {
+  color: #97a0ab;
+  font-size: 1.2rem;
+  font-weight: 600;
 }
 
 .res-more-box {
-    background: #1e232a;
-    padding: 0.6rem 1.2rem;
-    border-radius: 0.7rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.2rem;
+  background: #1e232a;
+  border-radius: 0.7rem;
 }
 
 .res-more-link {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-    color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #fff;
+  text-decoration: none;
 }
 
 .res-more-link span {
-    display: flex;
-    align-items: center;
-    font-size: 1rem;
-    font-weight: 500;
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  font-weight: 500;
 }
 
-.res-more-link svg {}
 
-/* ===== Cards Container ===== */
+/* =====================================================
+   4. Carousel
+   ===================================================== */
+.carousel {
+  --page-bg: #0c0f14;
+  --card-bg: #0f0f0f;
+  --dock-bg: #0c0f14;
+  --card-radius: 1.5rem;
+  --dock-radius: 1rem;
+  --dock-cut-size: 0.8rem;
+
+  position: relative;
+  width: 100%;
+  margin-bottom: 2.8rem;
+  padding: 0 var(--page-gutter);
+}
+
+.carousel-container {
+  position: relative;
+  aspect-ratio: 34 / 15;
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .carousel-container {
+    aspect-ratio: 20 / 8;
+  }
+}
+
+@media (min-width: 1024px) {
+  .carousel-container {
+    aspect-ratio: 24 / 8;
+  }
+}
+
+.carousel-slider {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  direction: rtl;
+  transition: transform 0.5s ease-in-out;
+}
+
+.carousel-slide {
+  flex: 0 0 100%;
+  min-width: 100%;
+  height: 100%;
+}
+
+.carousel-slide img {
+  display: block;
+  width: 100%;
+  height: 100% !important; /* beats the inline 380px height in Carousel.jsx */
+  object-fit: cover;
+}
+
+/* dots dock (Figma style) */
+.indicators-container {
+  position: absolute;
+  right: var(--page-gutter);
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.4rem;
+  background: var(--dock-bg);
+  border-top-left-radius: var(--dock-radius);
+  border-bottom-right-radius: var(--card-radius);
+  isolation: isolate;
+}
+
+/* curved cut above the dock */
+.indicators-container::before {
+  content: "";
+  position: absolute;
+  right: -0.1rem;
+  top: calc(-0.9 * var(--dock-cut-size));
+  width: var(--dock-cut-size);
+  height: var(--dock-cut-size);
+  background: radial-gradient(
+    circle at top left,
+    transparent 0,
+    transparent calc(var(--dock-cut-size) - 0.1rem),
+    var(--dock-bg) var(--dock-cut-size)
+  );
+  pointer-events: none;
+}
+
+/* curved cut on the left of the dock */
+.indicators-container::after {
+  content: "";
+  position: absolute;
+  left: calc(-0.9 * var(--dock-cut-size));
+  bottom: -0.1rem;
+  width: var(--dock-cut-size);
+  height: var(--dock-cut-size);
+  background: radial-gradient(
+    circle at top left,
+    transparent 0,
+    transparent calc(var(--dock-cut-size) - 0.1rem),
+    var(--dock-bg) var(--dock-cut-size)
+  );
+  pointer-events: none;
+}
+
+.indicator {
+  position: relative;
+  z-index: 2;
+  width: 0.6rem;
+  height: 0.6rem;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.18);
+  border: none;
+  border-radius: 9999px;
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    width 0.25s ease,
+    height 0.25s ease,
+    background 0.25s ease,
+    opacity 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.indicator:hover {
+  opacity: 0.9;
+}
+
+.indicator.active {
+  width: 2.1rem;
+  box-shadow: 0 0 1.2rem rgba(255, 104, 60, 0.35);
+}
+
+/* orange progress bar inside the active dot (3s = autoplay interval) */
+.indicator.active::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 0%;
+  background: #ff683c;
+  border-radius: inherit;
+  box-shadow:
+    0 0 0.8rem rgba(255, 104, 60, 0.7),
+    0 0 1.4rem rgba(255, 104, 60, 0.35);
+  animation: carouselIndicatorProgress 3000ms linear forwards;
+}
+
+.carousel--dragging .indicator.active::before {
+  animation-play-state: paused;
+}
+
+@keyframes carouselIndicatorProgress {
+  from {
+    width: 0%;
+  }
+
+  to {
+    width: 100%;
+  }
+}
+
+
+/* =====================================================
+   5. Restaurant cards (RestaurantCard, RestaurantList)
+   ===================================================== */
+
+/* horizontal row */
 .cards-container {
-    padding: 0 2.5rem;
-    margin-bottom: 2.8rem;
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 1.5rem;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    touch-action: pan-x pan-y;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 1.5rem;
+  margin-bottom: 2.8rem;
+  padding: 0 var(--page-gutter);
+  overflow-x: auto;
+  scrollbar-width: none;
+  touch-action: pan-x pan-y;
 }
 
 .cards-container::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
-.cards-container+.res-title-box,
-.wide-carousel-cards+.res-title-box {
-    margin-top: 1.2rem;
+/* "view all" page: 2-column grid with the same gutter as search results */
+.cards-container.cards-container--grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--card-gap);
+  row-gap: 3.6rem;
+  padding: 0 var(--page-gutter);
+  overflow: visible;
+}
+
+.cards-container--grid > * {
+  min-width: 0;
+}
+
+/* infinite-scroll trigger at the end of the horizontal row */
+.cards-sentinel {
+  flex: 0 0 1px;
+  height: 1px;
 }
 
 .card {
-    position: relative;
-    background-color: #0c0f14;
-    border-radius: 1.6rem;
-    color: #fff;
-    width: 162.5px;
-    flex: 0 0 162.5px;
-    --card-bg: #0c0f14;
+  --card-bg: #0c0f14;
+
+  position: relative;
+  flex: 0 0 162.5px;
+  width: 162.5px;
+  background-color: #0c0f14;
+  border-radius: 1.6rem;
+  color: #fff;
+}
+
+.cards-container--grid .card {
+  flex: none;
+  width: 100%;
+  min-width: 0;
 }
 
 .card-img-container {
-    width: 162.5px;
-    height: 242px;
-    position: relative;
-    margin-bottom: 0.6rem;
-    display: block;
-    overflow: visible;
-    border-radius: 15px;
+  position: relative;
+  display: block;
+  width: 162.5px;
+  height: 242px;
+  margin-bottom: 0.6rem;
+  border-radius: 15px;
+  overflow: visible;
+}
+
+/* Figma image ratio (162.5 x 242) */
+.cards-container--grid .card-img-container {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 162.5 / 242;
 }
 
 .card-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    position: relative;
-    z-index: 1;
-    border-radius: inherit;
-    -webkit-user-drag: none;
-    user-select: none;
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+  -webkit-user-drag: none;
+  user-select: none;
 }
 
-/* image dark overlay */
+/* dark gradient at the bottom of the image */
 .card-img-container::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    pointer-events: none;
-    border-radius: inherit;
-
-    background: linear-gradient(to bottom,
-            rgba(0, 0, 0, 0) 50%,
-            rgba(0, 0, 0, 0.8) 100%);
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 50%,
+    rgba(0, 0, 0, 0.8) 100%
+  );
+  border-radius: inherit;
+  pointer-events: none;
 }
 
+/* round logo half over the image bottom edge */
 .logo-container {
-    position: absolute;
-    right: -2rem;
-    bottom: 0;
-    transform: translate(-50%, 50%);
-    width: var(--badge-size);
-    height: var(--badge-size);
-    z-index: 5;
-    pointer-events: none;
+  position: absolute;
+  right: -2rem;
+  bottom: 0;
+  z-index: 5;
+  width: var(--badge-size);
+  height: var(--badge-size);
+  transform: translate(-50%, 50%);
+  pointer-events: none;
 }
 
 .logo-container::before {
-    content: "";
-    position: absolute;
-    inset: -0.6rem;
-    z-index: 1;
-    border-radius: 50%;
-    box-shadow: 0 0.8rem 1.8rem rgba(0, 0, 0, 0.35);
-    pointer-events: none;
-    background: #0c0f14;
+  content: "";
+  position: absolute;
+  inset: -0.6rem;
+  z-index: 1;
+  background: #0c0f14;
+  border-radius: 50%;
+  box-shadow: 0 0.8rem 1.8rem rgba(0, 0, 0, 0.35);
+  pointer-events: none;
 }
 
 .restaurant-badge {
-    position: relative;
-    z-index: 2;
-    width: 100%;
-    height: 100%;
-    margin-right: 0;
-    border-radius: 50%;
-    object-fit: cover;
-    pointer-events: none;
-    -webkit-user-drag: none;
-    user-select: none;
-    display: block;
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin-right: 0;
+  border-radius: 50%;
+  object-fit: cover;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
 }
 
 .discount-bubble {
-    position: absolute;
-    top: 1.5rem;
-    right: 0;
-    width: auto;
-    background-color: #fff;
-    color: #000;
-    font-size: 1rem;
-    padding: 0.3rem 0.6rem;
-    border: 1px solid #000;
-    border-radius: 2.4rem 0 0 2.4rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    white-space: nowrap;
-    display: inline-block;
-    z-index: 5;
+  position: absolute;
+  top: 1.5rem;
+  right: 0;
+  z-index: 5;
+  display: inline-block;
+  width: auto;
+  padding: 0.3rem 0.6rem;
+  background-color: #fff;
+  border: 1px solid #000;
+  border-radius: 2.4rem 0 0 2.4rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  color: #000;
+  font-size: 1rem;
+  white-space: nowrap;
 }
 
 .discount_num {
-    color: #da2f2f;
-    font-size: 1rem;
+  color: #da2f2f;
+  font-size: 1rem;
 }
 
 .card-body {
-    width: 100%;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
 }
 
-/* single orange pill */
+/* opening hours + open/closed status */
 .time-badge {
-    display: flex;
-    align-self: end !important;
-    justify-content: space-between;
-    /* little space between time and status */
-    background-color: #1e232a;
-    color: #fafaf4;
-    /* default text color (time stays white) */
-    padding: 0.2rem 0.5rem;
-    border-radius: 0.6rem;
-    font-size: 0.8rem;
-    font-weight: 500;
-    width: calc(100% - 6.5rem);
-}
-
-/* time is always white (inherits from .time-badge) */
-.time-badge__time {
-    color: #fafaf4;
-}
-
-/* status color toggles */
-.time-badge__status.open {
-    color: #70fd9a;
-
-    font-size: 0.8rem;
-}
-
-/* green */
-.time-badge__status.closed {
-    color: #dc2626;
-}
-
-/* red */
-
-:root {
-    --badge-overlay: 35px;
+  display: flex;
+  justify-content: space-between;
+  align-self: end !important;
+  width: calc(100% - 6.5rem);
+  padding: 0.2rem 0.5rem;
+  background-color: #1e232a;
+  border-radius: 0.6rem;
+  color: #fafaf4;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
 .time-badge span {
-    text-align: center;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    color: #fff;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.time-badge__status.open {
+  color: #70fd9a;
+  font-size: 0.8rem;
+}
+
+.time-badge__status.closed {
+  color: #dc2626;
 }
 
 .restaurant-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cards-container--grid .restaurant-header {
+  gap: 0.4rem;
 }
 
 .restaurant-name {
-    font-size: 1.3rem;
-    font-weight: 600;
-    margin: 0;
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.cards-container--grid .restaurant-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .rating {
-    display: flex;
-    flex-direction: row-reverse;
-    align-items: center;
-    gap: 0.3rem;
-    color: #bbb;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  color: #bbb;
+  font-size: 0.85rem;
 }
 
 .rate {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #fafaf4;
+  color: #fafaf4;
+  font-size: 1.1rem;
+  font-weight: 600;
 }
 
 .rate-voters-num {
-    font-size: 0.9rem;
-    color: #aeaeae;
+  color: #aeaeae;
+  font-size: 0.9rem;
 }
 
 .restaurant-description {
-    margin-top: -1rem;
+  margin-top: -1rem;
 }
 
 .restaurant-description p {
-    font-size: 1rem;
-    margin: 0;
-    color: #aeaeae;
+  margin: 0;
+  color: #aeaeae;
+  font-size: 1rem;
 }
 
-.logo-container,
-.logo-container::before,
-.restaurant-badge,
-.card-img-container::after {
-    pointer-events: none;
-}
 
-/* Single banner */
+/* =====================================================
+   6. Banner ad (AdBanner)
+   ===================================================== */
 .single-banner {
-    padding: 0 2.5rem;
-    display: block;
-    overflow: hidden;
-}
-
-.single-banner {
-    margin-bottom: 2.8rem !important;
+  display: block;
+  padding: 0 var(--page-gutter);
+  margin-bottom: 2.8rem !important;
+  overflow: hidden;
 }
 
 .banner-content {
-    position: relative;
-    width: 100%;
+  position: relative;
+  width: 100%;
 }
 
 .single-banner-img {
-    display: block;
-    width: 100%;
-    object-fit: cover;
-    object-position: center;
-    border-radius: 2rem;
+  display: block;
+  width: 100%;
+  border-radius: 2rem;
+  object-fit: cover;
+  object-position: center;
 }
 
-/* black overlay */
 .banner-overlay {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 2rem;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 2rem;
 }
 
-/* text on top */
 .banner-text {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 0.8rem;
-    pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  pointer-events: none;
 }
 
 .banner-title {
-    padding-top: 10%;
-    margin: 0;
-    font-weight: 800;
-    line-height: 1.1;
-    font-size: 2rem;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  margin: 0;
+  padding-top: 10%;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.1;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
 }
 
 .banner-sub {
-    margin: 0;
-    font-weight: 600;
-    line-height: 1.3;
-    font-size: 1.3rem;
-    opacity: 0.95;
-
-    display: inline-flex;
-    align-items: center;
-    gap: 0.7rem;
-    direction: rtl;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 0;
+  direction: rtl;
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1.3;
+  opacity: 0.95;
 }
 
 .banner-sub svg {
-    transform: scaleX(-1);
-    flex-shrink: 0;
+  flex-shrink: 0;
+  transform: scaleX(-1);
 }
 
 .banner-link {
-    display: block;
-    width: 100%;
-    height: 100%;
-    text-decoration: none;
-    color: inherit;
+  display: block;
+  width: 100%;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
 }
 
-/* e.g., in your main css */
 
+/* =====================================================
+   7. Previous orders: logged-out call to action
+   ===================================================== */
 .previous-orders.unauth-cta {
-    width: 100%;
-    margin-bottom: 2.8rem;
+  width: 100%;
+  margin-bottom: 2.8rem;
 }
 
 .unauth-cta__inner {
-    background:
-        linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.35)),
-        url("/images/ad-banner-1.jpg") center/cover no-repeat;
-    border-radius: 16px;
-    padding: 2.8rem 2.5rem;
-    text-align: center;
+  padding: 2.8rem 2.5rem;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.35)),
+    url("/images/ad-banner-1.jpg") center / cover no-repeat;
+  border-radius: 16px;
+  text-align: center;
 }
 
 .unauth-cta__title {
-    font-size: 1.4rem;
-    margin: 2rem 0;
-    font-weight: 600;
+  margin: 2rem 0;
+  font-size: 1.4rem;
+  font-weight: 600;
 }
 
 .unauth-cta__button {
-    display: inline-block;
-    padding: 1rem 2rem;
-    background: #ff683c;
-    border-radius: 1rem;
-    font-size: 1.2rem;
-    font-weight: 600;
+  display: inline-block;
+  padding: 1rem 2rem;
+  background: #ff683c;
+  border-radius: 1rem;
+  font-size: 1.2rem;
+  font-weight: 600;
 }
 
 .unauth-cta__button span {
-    display: inline-block;
-    transform: translateY(-2px);
+  display: inline-block;
+  transform: translateY(-2px);
 }
 
-@keyframes pulse {
-    0% {
-        opacity: 0.6;
-    }
 
-    50% {
-        opacity: 1;
-    }
-
-    100% {
-        opacity: 0.6;
-    }
-}
-
-/* ===== Popular foods Section ===== */
-
-/* Cards Container */
-.food-cards-container {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 1.5rem;
-    overflow-x: auto;
-    padding: 0 2.5rem;
-    scrollbar-width: none;
-    touch-action: pan-x pan-y;
-    margin-bottom: 2.8rem;
-}
-
-.food-cards-container::-webkit-scrollbar {
-    display: none;
-}
-
+/* =====================================================
+   8. Food cards (FoodCard, PopularFoodRow)
+   ===================================================== */
 .popular-food-row {
-    margin: 0 0 2.8rem 0;
-}
-
-.food-card {
-    width: 162px;
-    min-width: 162px;
-    max-width: 162px;
-    height: 277px;
-    flex: 0 0 147px;
-    padding: 1.5rem 1.5rem 1.8rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: linear-gradient(to bottom, #262b33 0%, #161b20 100%);
-    border-radius: 2.3rem;
-    overflow: hidden;
-    box-sizing: border-box;
-}
-
-.food-card-image {
-    position: relative;
-    width: 132px;
-    height: 132px;
-    aspect-ratio: 1 / 1;
-    border-radius: 1.2rem;
-    overflow: hidden;
-    flex-shrink: 0;
-    margin-bottom: 0.8rem;
-    background: linear-gradient(180deg, #171b21 0%, #101317 100%);
-}
-
-.food-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.food-card-image::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-    border-radius: inherit;
-
-    background: linear-gradient(to bottom,
-            rgba(0, 0, 0, 0) 50%,
-            rgba(0, 0, 0, 0.3) 100%);
+  margin: 0 0 2.8rem;
 }
 
 .popular-food-row__category-icon {
-    width: 2rem;
-    height: 2rem;
-    object-fit: contain;
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
 }
 
-.food-card .add-btn__text {
-    display: inline-block;
-    transform: translateY(-2px);
+/* horizontal row */
+.food-cards-container {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 1.5rem;
+  margin-bottom: 2.8rem;
+  padding: 0 var(--page-gutter);
+  overflow-x: auto;
+  scrollbar-width: none;
+  touch-action: pan-x pan-y;
+}
+
+.food-cards-container::-webkit-scrollbar {
+  display: none;
+}
+
+.food-card {
+  display: flex;
+  flex: 0 0 162px;
+  flex-direction: column;
+  align-items: center;
+  width: 162px;
+  height: 277px;
+  padding: 1.5rem 1.5rem 1.8rem;
+  background: linear-gradient(to bottom, #262b33 0%, #161b20 100%);
+  border-radius: 2.3rem;
+  overflow: hidden;
+}
+
+.food-card-image {
+  position: relative;
+  flex-shrink: 0;
+  width: 132px;
+  height: 132px;
+  margin-bottom: 0.8rem;
+  background: linear-gradient(180deg, #171b21 0%, #101317 100%);
+  border-radius: 1.2rem;
+  overflow: hidden;
 }
 
 a.food-card-image {
-    cursor: pointer;
+  cursor: pointer;
 }
 
-.food-card .food-price {
-    color: #fafaf4;
-    font-size: 1.1rem;
-    font-weight: 700;
-    text-align: center;
+.food-card-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 50%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+  border-radius: inherit;
+  pointer-events: none;
 }
 
-.food-card .food-price span {
-    color: #ff683c;
-    font-size: 1.1rem;
-    font-weight: 700;
+.food-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* rating on the image */
+.rating-chip {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  z-index: 2;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.45rem;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+.rating-chip .score {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.rating-chip .voters {
+  font-size: 0.9rem;
+  opacity: 0.85;
 }
 
 .food-info {
-    align-self: center;
-    width: auto;
-    margin-bottom: 0.6rem;
+  align-self: center;
+  width: auto;
+  margin-bottom: 0.6rem;
 }
 
 .food-title {
-    margin: 0 0 1.7rem 0;
-    font-size: 1.3rem;
-    font-weight: 700;
-    text-align: center;
-    display: -webkit-box;
-    line-clamp: 2;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.food-subtitle {
-    margin: 0;
-    font-size: 0.8rem;
-    color: #ffffff;
-    text-align: right;
-}
-
-.food-price-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    flex-direction: column;
-}
-
-.food-price-row p {
-    font-size: 13px;
-    font-weight: 600;
+  display: -webkit-box;
+  margin: 0 0 1.7rem;
+  overflow: hidden;
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-align: center;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .food-price {
-    margin: 0;
-    color: #d17842;
+  margin: 0;
+  color: #d17842;
 }
 
 .food-price span {
-    font-size: 13px;
-    font-weight: 700;
-    color: #fff;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
 }
 
+.food-card .food-price {
+  color: #fafaf4;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.food-card .food-price span {
+  color: #ff683c;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.food-price-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* button with the restaurant name */
 .food-card .add-btn {
-    cursor: pointer;
-    margin-bottom: 0;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    background-color: #ff683c;
-    border: none;
-    border-radius: 1rem;
-    width: 12rem;
-    max-width: 160px;
-    height: 3.6rem;
-    font-size: 1rem;
-    font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 12rem;
+  max-width: 160px;
+  height: 3.6rem;
+  margin-bottom: 0;
+  background-color: #ff683c;
+  border: none;
+  border-radius: 1rem;
+  font-size: 1rem;
+  font-weight: 800;
+  text-align: center;
+  cursor: pointer;
 }
 
-.qty-controls {
-    display: flex;
-    flex-direction: row-reverse;
-    /* RTL: + on right, – on left */
-    align-items: center;
-    gap: 8px;
+.food-card .add-btn__text {
+  display: inline-block;
+  transform: translateY(-2px);
 }
+
+
+/* =====================================================
+   9. Search results grid (food cards in 2 columns)
+   ===================================================== */
+.food-cards-container--search {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--card-gap);
+  row-gap: var(--card-gap);
+  max-height: none;
+  padding: 0 var(--page-gutter);
+  overflow: visible;
+}
+
+.food-card-wrap--search {
+  width: 100%;
+  min-width: 0;
+}
+
+/* card width comes from the grid column; height follows the Figma ratio */
+.food-cards-container--search .food-card {
+  flex: none;
+  width: 100%;
+  height: auto;
+  aspect-ratio: var(--fc-ratio);
+  padding: var(--fc-pad);
+}
+
+/* image: always square and full inner width */
+.food-cards-container--search .food-card-image {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+}
+
+/* button: width and ratio from Figma */
+.food-cards-container--search .food-card .add-btn {
+  width: var(--fc-btn-w);
+  max-width: none;
+  height: auto;
+  aspect-ratio: var(--fc-btn-ratio);
+}
+
+
+/* =====================================================
+   10. Combos entry button (RestaurantCombosButton)
+   ===================================================== */
+.combos-entry-card {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 80%;
+  height: 73px;
+  margin: 16px auto;
+  padding: 18px 22px;
+  background: linear-gradient(158.84deg, #262b33 4%, #161b20 91.93%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  outline: none;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.combos-entry-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55);
+}
+
+.combos-entry-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+}
+
+.combos-entry-icon img {
+  width: 27px;
+}
+
+.combos-entry-text {
+  flex: 1;
+  text-align: right;
+}
+
+.combos-entry-title {
+  color: #fafaf4;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.combos-entry-subtitle {
+  color: #a5adc0;
+  font-size: 1.1rem;
+}
+
+
+/* =====================================================
+   AWAITING CONFIRMATION
+   Everything below is kept exactly as it was. Nothing in the home page files
+   uses it, but other pages or components might. See the numbered list.
+   ===================================================== */
+
+/* ---------- A. Legacy food-card pieces ---------- */
+
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.3rem;
+  border-radius: 1rem;
+}
+
+/* ---------- B. Quantity controls ---------- */
 
 .qty-btn {
-    background-color: #d17842;
-    color: #fff;
-    border: none;
-    width: 35px;
-    height: 28px;
-    border-radius: 10px;
-    font-size: 1.5rem;
-    font-weight: 800;
-    cursor: pointer;
-    line-height: 1;
+  width: 35px;
+  height: 28px;
+  background-color: #d17842;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
 }
 
 .qty-display {
-    min-width: 35px;
-    height: 28px;
-    padding: 0 10px;
-    background: #fff;
-    color: #0c0f14;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 35px;
+  height: 28px;
+  padding: 0 10px;
+  background: #fff;
+  border-radius: 10px;
+  color: #0c0f14;
+  font-size: 13px;
+  font-weight: 800;
 }
 
+/* ---------- C. 16px font-size for item-modal pieces ---------- */
 .addon-row,
 .addon-price,
 .modal-rating,
 .variant-pill,
 .subsection-head {
-    font-size: 16px;
+  font-size: 16px;
 }
 
-.food-card-footer {
-    width: 100%;
-    text-align: center;
-    margin-top: auto;
-    border: none;
-}
-
-.food-restaurant-name {
-    width: 125%;
-    margin-right: -1.4rem;
-    padding: 1rem 1.4rem;
-    font-size: 1.3rem;
-    font-weight: 600;
-    background-color: #0c0f14;
-    text-align: right;
-    display: block;
-}
-
-.wrapper {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-radius: 1rem;
-    gap: 0.3rem;
-}
-
-.food-restaurant-type {
-    text-align: right;
-    font-size: 1rem;
-    font-weight: 500;
-}
-
-/* Rating row (star icon + numeric rating + (count)) */
-.rating-chip {
-    position: absolute;
-    left: 50%;
-    bottom: 8px;
-    transform: translateX(-50%);
-    color: #fff;
-    border-radius: 999px;
-    padding: 0.25rem 0.45rem;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.85rem;
-    z-index: 2;
-    flex-direction: row-reverse;
-}
-
-.rating-chip .score {
-    font-size: 1.1rem;
-    font-weight: 700;
-}
-
-.rating-chip .voters {
-    opacity: 0.85;
-    font-size: 0.9rem;
-}
-
-.rating {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.25rem;
-    font-size: 0.85rem;
-    color: #bbb;
-}
-
-/* === Loading Spinner === */
+/* ---------- D. Spinner, resend button, pulse animation ---------- */
 .spinner-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 150px;
-    /* Give it some space */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
 }
 
 .loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid #f3f3f3;
-    /* Light grey */
-    border-top: 5px solid #d17842;
-    /* Your theme's orange color */
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #d17842;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .resend-btn {
-    margin-top: 10px;
-    background: none;
-    border: none;
-    color: #007bff;
-    cursor: pointer;
-    font-size: 0.9rem;
+  margin-top: 10px;
+  background: none;
+  border: none;
+  color: #007bff;
+  font-size: 0.9rem;
+  cursor: pointer;
 }
 
 .resend-btn.disabled {
-    color: #aaa;
-    cursor: not-allowed;
+  color: #aaa;
+  cursor: not-allowed;
 }
 
-/* View All */
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
 
-@keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
+  50% {
+    opacity: 1;
+  }
 
-    100% {
-        transform: rotate(360deg);
-    }
+  100% {
+    opacity: 0.6;
+  }
 }
 
-/* **************************************** */
-/* Responsive */
-/* **************************************** */
 
+/* ---------- E. Desktop block (>= 1024px) ---------- */
 @media (min-width: 1024px) {
-    body {
-        padding: 1rem;
-    }
+  body {
+    padding: 1rem;
+  }
 
-    header {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-evenly;
-        align-items: center;
-        gap: 1rem;
-        padding: 1rem 2rem;
-    }
+  header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    gap: 1rem;
+    padding: 1rem 2rem;
+  }
 
-    .desktop-nav {
-        display: flex;
-        margin-top: 2rem;
-        align-items: center;
-    }
-
-    .menro {
-        font-size: 2rem;
-        color: #f89c0e;
-        font-weight: 800;
-        text-decoration: none;
-    }
-
-    .mobile-nav {
-        display: none;
-    }
-
-    .mobile-nav .nav-item {
-        color: #fafaf4;
-        font-size: 1rem;
-        font-weight: 500;
-        gap: 0.5rem;
-    }
-
-    .mobile-nav .nav-icon {
-        display: none;
-    }
-
-    .mobile-nav .nav-item.active {
-        color: #f89c0e;
-    }
-
-    .nav-toggle-wrapper {
-        display: none !important;
-    }
-
-    .banner-slider {
-        max-width: none;
-        width: 100%;
-        margin: 1rem 0;
-        overflow: hidden;
-        height: 20rem;
-        border-radius: 1rem;
-    }
-
-    .banner-dots-wrapper {
-        margin: 0.5rem 0 2rem;
-        text-align: center;
-        width: 100vw;
-    }
-
-    .banner-dots {
-        display: inline-flex;
-        justify-content: center;
-        gap: 1rem;
-    }
-
-    .search-input {
-        font-size: 15px;
-        width: 872px;
-        height: 55px;
-        padding-right: 1rem;
-        border-radius: 80px;
-    }
-
-    .search-button {
-        position: absolute;
-        right: 25rem;
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 0;
-    }
-
-    .user-header {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-    }
-
-    .content {
-        padding-top: 1rem;
-    }
-
-    .cards-container {
-        gap: 0;
-    }
-
-    .card {
-        margin: 1rem;
-    }
-
-    .single-banner {
-        width: 100%;
-        max-width: none;
-        margin-bottom: 2.8rem;
-        box-sizing: border-box;
-        border-radius: 1rem;
-        overflow: hidden;
-    }
-
-    .single-banner-img {
-        display: block;
-        width: 100%;
-        height: 20rem;
-        object-fit: cover;
-        border-radius: 1rem;
-        margin: 0;
-    }
-}
-
-.combos-entry-card {
-    width: 80%;
+  .desktop-nav {
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 18px 22px;
-    margin: 16px auto;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    cursor: pointer;
-    outline: none;
-    gap: 16px;
-    transition:
-        transform 0.15s ease,
-        box-shadow 0.15s ease,
-        border-color 0.15s ease,
-        background 0.15s ease;
-    flex-direction: row-reverse;
-    background: linear-gradient(158.84deg, #262b33 4%, #161b20 91.93%);
-    height: 73px;
-}
+    margin-top: 2rem;
+  }
 
-.combos-entry-card:hover {
-    transform: translateY(-1px);
-    border-color: rgba(255, 255, 255, 0.16);
-    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55);
-}
-
-.combos-entry-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.combos-entry-icon img {
-    width: 27px;
-}
-
-.combos-entry-text {
-    flex: 1;
-    text-align: right;
-}
-
-.combos-entry-title {
-    font-size: 1.4rem;
+  .menro {
+    color: #f89c0e;
+    font-size: 2rem;
     font-weight: 800;
-    color: #fafaf4;
-}
+    text-decoration: none;
+  }
 
-.combos-entry-subtitle {
-    font-size: 1.1rem;
-    color: #a5adc0;
-}
-
-/* ===== Search results layout (ONLY in search mode) ===== */
-.food-cards-container--search {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: var(--card-gap);
-    row-gap: var(--card-gap);
-    padding: 0 var(--page-gutter);
-    overflow: visible;
-    max-height: none;
-}
-
-.food-cards-container--search::-webkit-scrollbar {
+  .mobile-nav {
     display: none;
-}
+  }
 
-.food-card-wrap--search {
-    width: 100%;
-    min-width: 0;
-}
+  .mobile-nav .nav-item {
+    gap: 0.5rem;
+    color: #fafaf4;
+    font-size: 1rem;
+    font-weight: 500;
+  }
 
-/* کارت: عرض از ستون گرید، نسبت فیگما (162 × 277) */
-.food-cards-container--search .food-card {
+  .mobile-nav .nav-icon {
+    display: none;
+  }
+
+  .mobile-nav .nav-item.active {
+    color: #f89c0e;
+  }
+
+  .nav-toggle-wrapper {
+    display: none !important;
+  }
+
+  .banner-slider {
     width: 100%;
-    min-width: 0;
     max-width: none;
-    height: auto;
-    aspect-ratio: 162 / 277;
-    flex: none;
-    padding: 9.26%;          /* 15/162 از عرض کارت */
-    box-sizing: border-box;
-}
-
-/* عکس: همیشه مربع و پر عرض داخلی کارت (132/162 در فیگما) */
-.food-cards-container--search .food-card-image {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 1 / 1;
-}
-
-/* دکمه: 128/132 از عرض داخلی، نسبت 128:36 */
-.food-cards-container--search .food-card .add-btn {
-    width: 97%;
-    max-width: none;
-    height: auto;
-    aspect-ratio: 128 / 36;
-}
-
-/* sentinel اسکرول بی‌نهایت داخل ردیف افقی رستوران‌ها */
-.cards-sentinel {
-    flex: 0 0 1px;
-    height: 1px;
-}
-
-/* ===== «مشاهده همه» رستوران‌ها: ۲ ستون، با همون فاصله‌ی کناری نتایج جستجو ===== */
-.cards-container.cards-container--grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: var(--card-gap);
-    row-gap: 3.6rem;
-    overflow: visible;
-    padding: 0 var(--page-gutter);
-}
-
-.cards-container--grid > * {
-    min-width: 0;
-}
-
-.cards-container--grid .card {
-    width: 100%;
-    min-width: 0;
-    flex: none;
-}
-
-/* نسبت عکس فیگما (162.5 × 242) */
-.cards-container--grid .card-img-container {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 162.5 / 242;
-}
-
-.cards-container--grid .restaurant-header {
-    gap: 0.4rem;
-}
-
-.cards-container--grid .restaurant-name {
-    min-width: 0;
+    height: 20rem;
+    margin: 1rem 0;
+    border-radius: 1rem;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  }
+
+  .banner-dots-wrapper {
+    width: 100vw;
+    margin: 0.5rem 0 2rem;
+    text-align: center;
+  }
+
+  .banner-dots {
+    display: inline-flex;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .search-input {
+    width: 872px;
+    height: 55px;
+    padding-right: 1rem;
+    border-radius: 80px;
+    font-size: 15px;
+  }
+
+  .search-button {
+    position: absolute;
+    right: 25rem;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  .user-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .content {
+    padding-top: 1rem;
+  }
+
+  .cards-container {
+    gap: 0;
+  }
+
+  .card {
+    margin: 1rem;
+  }
+
+  .single-banner {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    margin-bottom: 2.8rem;
+    border-radius: 1rem;
+    overflow: hidden;
+  }
+
+  .single-banner-img {
+    display: block;
+    width: 100%;
+    height: 20rem;
+    margin: 0;
+    border-radius: 1rem;
+    object-fit: cover;
+  }
 }

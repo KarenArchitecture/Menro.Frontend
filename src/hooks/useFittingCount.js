@@ -1,9 +1,11 @@
 // src/hooks/useFittingCount.js
 import { useLayoutEffect, useState } from "react";
 
-const px = (cs, name, fallback) => {
-  const v = parseFloat(cs.getPropertyValue(name));
-  return Number.isFinite(v) ? v : fallback;
+// مقدار یک CSS variable را به px تبدیل می‌کند (هم px و هم rem پشتیبانی می‌شود)
+const toPx = (raw, fallback, rootSize) => {
+  const value = parseFloat(raw);
+  if (!Number.isFinite(value)) return fallback;
+  return String(raw).trim().endsWith("rem") ? value * rootSize : value;
 };
 
 // اندازه‌ها را از CSS variable های خود المنت می‌خواند (--thumb, --gap, --tail-min)
@@ -17,22 +19,25 @@ export default function useFittingCount(ref, { total, tailOptional = false }) {
 
     const measure = () => {
       const cs = getComputedStyle(el);
-      const thumb = px(cs, "--thumb", 52);
-      const gap = px(cs, "--gap", 8);
-      const tail = px(cs, "--tail-min", 112);
-      const w = el.clientWidth;
+      const rootSize =
+        parseFloat(getComputedStyle(document.documentElement).fontSize) || 10;
 
-      const fitAll = Math.floor((w + gap) / (thumb + gap));
-      const fitWithTail = Math.floor((w - tail) / (thumb + gap));
+      const thumb = toPx(cs.getPropertyValue("--thumb"), 56, rootSize);
+      const gap = toPx(cs.getPropertyValue("--gap"), 10, rootSize);
+      const tail = toPx(cs.getPropertyValue("--tail-min"), 114, rootSize);
+      const width = el.clientWidth;
+
+      const fitAll = Math.floor((width + gap) / (thumb + gap));
+      const fitWithTail = Math.floor((width - tail) / (thumb + gap));
       const n = tailOptional && total <= fitAll ? total : fitWithTail;
 
       setCount(Math.max(1, Math.min(n, total)));
     };
 
     measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
   }, [ref, total, tailOptional]);
 
   return count;

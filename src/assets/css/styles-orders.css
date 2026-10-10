@@ -1,36 +1,118 @@
-/* src/assets/css/styles-orders.css */
+/* src/assets/css/styles-orders.css
+   صفحه‌ی سفارش‌ها (/orders)
 
-.continue-shopping-container {
-    background-color: #1b2026;
-    /* Matches the dark background in the image */
-    /* border-radius: 24px; */
-    padding: 2.5rem;
+   فهرست:
+   1) اجزای مشترک          → ردیف تصاویر، تصویر آیتم، بج تعداد
+   2) سبد خرید             → ContinueShopping.jsx
+   3) تاریخچه‌ی سفارش‌ها    → PreviousOrderCard.jsx
+   4) پیام ورود به حساب     → OrdersAuthPrompt.jsx
+
+   مبنای واحدها: 1rem = 10px
+   مبنای طراحی: 390px (فیگما). برای عرض‌های کوچک‌تر/بزرگ‌تر فقط
+   متغیرهای --thumb و --gap و محدودیت عرض محتوا تنظیم می‌شوند. */
+
+
+/* =========================================================
+   1) اجزای مشترک
+   ========================================================= */
+
+/* ردیف تصاویر آیتم‌ها (هم در سبد، هم در کارت سفارش).
+   هوک useFittingCount همین متغیرها را می‌خواند و تعداد تصاویر
+   قابل‌جا را حساب می‌کند. */
+.cs-images-row,
+.po-images-row {
+    --thumb: 5.6rem;
+    --gap: 1rem;
+
+    display: flex;
+    align-items: stretch;
+    gap: var(--gap);
     width: 100%;
-    max-width: 480px;
-    /* Suitable for mobile layout */
-    margin: 0 auto;
-    color: white;
-    box-sizing: border-box;
 }
 
-/* --- Header --- */
+/* موبایل‌های خیلی کوچک (≈360px و کمتر) */
+@media (max-width: 374px) {
+
+    .cs-images-row,
+    .po-images-row {
+        --thumb: 4.8rem;
+        --gap: 0.8rem;
+    }
+}
+
+.cs-image-wrapper,
+.po-image-wrapper {
+    position: relative;
+    flex: none;
+    width: var(--thumb);
+    aspect-ratio: 1 / 1;
+}
+
+.cs-item-image,
+.po-item-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0.8rem;
+}
+
+/* بج تعداد: گوشه‌ی پایین-راست تصویر (در RTL، inline-start یعنی راست) */
+.cs-badge,
+.po-badge {
+    position: absolute;
+    bottom: -0.6rem;
+    inset-inline-start: -0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border: 0.2rem solid #17181e;
+    /* حلقه‌ی هم‌رنگ پس‌زمینه برای اثر cutout */
+    border-radius: 50%;
+    background-color: #ff4c5e;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.po-badge {
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   2) سبد خرید (ContinueShopping)
+   ========================================================= */
+
+/* پس‌زمینه تمام‌عرض است؛ محتوا در تبلت حداکثر 43rem و وسط‌چین می‌ماند */
+.continue-shopping-container {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 2.5rem max(2.5rem, calc((100% - 43rem) / 2));
+    background-color: #1b2026;
+    color: #fff;
+}
+
+/* --- هدر --- */
 .cs-header {
     display: flex;
     align-items: center;
     gap: 1.5rem;
-    /* margin-bottom: 28px; */
 }
 
 .cs-logo-wrapper {
-    width: 72px;
-    height: 72px;
+    flex: none;
+    width: 7.2rem;
+    height: 7.2rem;
+    overflow: hidden;
     border-radius: 50%;
     background-color: #2d2f38;
-    overflow: hidden;
-    flex-shrink: 0;
 }
 
 .cs-logo {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -39,140 +121,91 @@
 .cs-header-text {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0.8rem;
+    min-width: 0;
 }
 
 .cs-title {
+    margin: 0;
     color: #00e676;
-    /* Vibrant green */
     font-size: 1.6rem;
     font-weight: 600;
-    margin: 0;
+    overflow-wrap: anywhere;
 }
 
 .cs-date {
-    color: #9ca3af;
-    font-size: 0.9rem;
+    color: #a5adc0;
+    font-size: 1.2rem;
+    font-weight: 600;
 }
 
-/* --- Images Row --- */
+/* --- ردیف تصاویر --- */
 .cs-images-row {
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    /* Stretches the +N box to match image height dynamically */
-    gap: 1rem;
-    /* Hardcoded from --cs-image-gap */
-    /* padding: 10px 0; */
-    width: 100%;
-    margin: 1rem 0 0;
-}
-
-.cs-images-row::-webkit-scrollbar {
-    display: none;
-}
-
-.cs-image-wrapper {
-    position: relative;
-    width: 56px;
-    /* Hardcoded from --cs-image-size */
-    aspect-ratio: 1 / 1;
-    /* Keeps images square when squished */
-    min-width: 0;
-    /* Lets Flexbox squeeze this element */
-}
-
-.cs-item-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 8px;
-}
-
-.cs-badge {
-    position: absolute;
-    bottom: -6px;
-    right: -6px;
-    background-color: #ff4c5e;
-    /* Red badge */
-    color: white;
-    font-size: 13px;
-    font-weight: bold;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    border: 2px solid #17181e;
-    /* Matches background to create cutout effect */
+    --tail-min: 12.4rem;
+    /* حداقل عرض باکس +n */
+    margin-top: 1rem;
 }
 
 .cs-more-items {
-    width: 124px;
-    /* Hardcoded: (56px * 2) + 12px gap */
-    min-width: 0;
-    /* Lets Flexbox squeeze this element */
-    background-color: #0C0F14;
-    /* Black box */
-    color: #FAFAF4;
-    /* White text inside */
-    border-radius: 8px;
+    flex: 1;
+    min-width: var(--tail-min);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
-    font-weight: bold;
+    direction: ltr;
+    border-radius: 0.8rem;
+    background-color: #0c0f14;
+    color: #fafaf4;
+    font-size: 1.5rem;
+    font-weight: 700;
 }
 
-/* --- Total Section --- */
+/* --- مجموع --- */
 .cs-total-section {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     margin: 1.5rem 1rem;
-    padding: 0 4px;
+    padding: 0 0.4rem;
 }
 
 .cs-total-label {
-    font-weight: 700;
     font-size: 1.3rem;
+    font-weight: 700;
 }
 
 .cs-total-value {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 0.8rem;
 }
 
 .cs-price {
-    font-weight: 800;
-    font-size: 1.15rem;
-    font-weight: 700;
     font-size: 1.3rem;
+    font-weight: 700;
 }
 
 .cs-currency {
     color: #ff623d;
-    font-weight: 700;
     font-size: 1.3rem;
+    font-weight: 700;
 }
 
-/* --- Actions --- */
+/* --- دکمه‌ها (کلاس cs-btn در OrdersAuthPrompt هم استفاده می‌شود) --- */
 .cs-actions {
     display: flex;
-    gap: 16px;
+    gap: 1.6rem;
 }
 
 .cs-btn {
     flex: 1;
-    padding: 16px;
+    padding: 1.6rem;
     border: none;
     border-radius: 1rem;
-    font-weight: 800;
-    font-size: 1.1rem;
-    cursor: pointer;
     font-family: inherit;
+    font-size: 1.5rem;
+    font-weight: 700;
+    cursor: pointer;
     transition: opacity 0.2s;
 }
 
@@ -181,54 +214,41 @@
 }
 
 .cs-btn-delete {
-    background-color: #FAFAF4;
-    color: #13171E;
-    font-size: 1.5rem;
-    font-weight: 700;
+    background-color: #fafaf4;
+    color: #13171e;
 }
 
 .cs-btn-continue {
     background-color: #ff623d;
-    /* Orange */
-    color: #FAFAF4;
-    font-size: 1.5rem;
-    font-weight: 700;
+    color: #fafaf4;
 }
 
-/* --- Small Screen Adjustments --- */
-@media (max-width: 400px) {
-    .cs-badge {
-        width: 22px;
-        height: 22px;
-        font-size: 1rem;
-        bottom: -4px;
-        right: -4px;
-    }
 
-    .cs-more-items {
-        font-size: 1.5rem;
-        font-weight: 700;
-    }
+/* =========================================================
+   3) تاریخچه‌ی سفارش‌ها (PreviousOrderCard)
+   ========================================================= */
+
+/* --- لیست کارت‌ها --- */
+.po-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem;
 }
 
-/* =========================================
-   PREVIOUS ORDER CARD (po-)
-   ========================================= */
-
+/* --- کارت --- */
 .po-container {
-    /* Replace the solid background-color with this linear gradient */
-    background: linear-gradient(180deg, #262b33 0%, #161b20 100%);
-
-    border-radius: 2rem;
-    padding: 1.5rem;
-    width: 100%;
-    max-width: 480px;
-    margin: 0 auto;
-    color: white;
     box-sizing: border-box;
+    width: 100%;
+    max-width: 48rem;
+    margin: 0 auto;
+    padding: 1.5rem;
+    border-radius: 2rem;
+    background: linear-gradient(180deg, #262b33 0%, #161b20 100%);
+    color: #fff;
 }
 
-/* --- Header --- */
+/* --- هدر --- */
 .po-header {
     display: flex;
     align-items: center;
@@ -236,15 +256,16 @@
 }
 
 .po-logo-wrapper {
-    width: 72px;
-    height: 72px;
+    flex: none;
+    width: 7.2rem;
+    height: 7.2rem;
+    overflow: hidden;
     border-radius: 50%;
     background-color: #2d2f38;
-    overflow: hidden;
-    flex-shrink: 0;
 }
 
 .po-logo {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -254,90 +275,55 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    min-width: 0;
 }
 
 .po-title {
-    color: #FAFAF4;
-    font-size: 1.6rem;
-    font-weight: 700;
-    margin: 0;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 0.8rem;
+    margin: 0;
+    color: #fafaf4;
+    font-size: 1.6rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
 }
 
 .po-tag {
-    color: #FF683C;
-    /* Orange take-out tag */
+    color: #ff683c;
     font-size: 1.3rem;
     font-weight: 600;
 }
 
 .po-date {
-    color: #A5ADC0;
+    color: #a5adc0;
     font-size: 1.2rem;
     font-weight: 600;
 }
 
-/* --- Images Row --- */
+/* --- ردیف تصاویر + دکمه‌ی مشاهده فاکتور --- */
 .po-images-row {
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    gap: 1rem;
-    padding: 1.3rem 0 0;
-    width: 100%;
-    /* margin-bottom: 16px; */
+    --tail-min: 11.4rem;
+    /* حداقل عرض دکمه‌ی مشاهده فاکتور */
+    padding-top: 1.3rem;
 }
 
-.po-image-wrapper {
-    position: relative;
-    width: 56px;
-    aspect-ratio: 1 / 1;
-    min-width: 0;
-}
-
-.po-item-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 8px;
-}
-
-.po-badge {
-    position: absolute;
-    bottom: -6px;
-    right: -6px;
-    background-color: #ff4c5e;
-    color: white;
-    font-size: 13px;
-    font-weight: bold;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    border: 2px solid #17181e;
-}
-
-/* View Bill Button */
 .po-view-bill-btn {
-    flex-grow: 1;
-    /* Stretches to fill remaining space */
-    background-color: #0d0d12;
-    /* Very dark box */
-    border: none;
-    border-radius: 12px;
+    flex: 1;
+    min-width: var(--tail-min);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 16px;
+    gap: 0.6rem;
+    padding: 0 0.8rem;
+    border: none;
+    border-radius: 1.2rem;
+    background-color: #141921;
     color: #fafaf4;
     font-family: inherit;
+    white-space: nowrap;
     cursor: pointer;
     transition: opacity 0.2s;
-    width: 15rem;
 }
 
 .po-view-bill-btn:active {
@@ -345,39 +331,40 @@
 }
 
 .po-view-bill-count {
-    font-weight: bold;
+    direction: ltr;
     font-size: 1.1rem;
+    font-weight: 700;
 }
 
 .po-view-bill-text {
-    font-size: 1.1rem !important;
+    font-size: 1.1rem;
     font-weight: 600;
 }
 
-/* --- Total Section --- */
+/* --- مجموع --- */
 .po-total-section {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin: 2rem 0 1.5rem 0;
-    padding: 0 4px;
+    justify-content: space-between;
+    margin: 2rem 0 1.5rem;
+    padding: 0 0.4rem;
 }
 
 .po-total-label {
-    color: #FAFAF4;
-    font-weight: 700;
+    color: #fafaf4;
     font-size: 1.3rem;
+    font-weight: 700;
 }
 
 .po-total-value {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 0.8rem;
 }
 
 .po-price {
-    font-weight: 800;
     font-size: 1.3rem;
+    font-weight: 800;
 }
 
 .po-currency {
@@ -386,51 +373,50 @@
     font-weight: 800;
 }
 
-/* --- Actions / Ratings --- */
-.po-rate-btn {
+/* --- امتیازدهی --- */
+.po-rate-btn,
+.po-rated-box {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     width: 100%;
-    padding: 16px 20px;
+    padding: 1.2rem 1.6rem;
     border: none;
     border-radius: 1rem;
-    font-weight: 800;
-    font-size: 1.1rem;
-    cursor: pointer;
     font-family: inherit;
+    cursor: pointer;
     transition: opacity 0.2s;
-    background-color: #ff623d;
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
 }
 
-.po-rate-btn:active {
+.po-rate-btn:active,
+.po-rated-box:active {
     opacity: 0.8;
 }
 
+.po-rate-btn {
+    background-color: #ff623d;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 800;
+}
+
 .po-rated-box {
-    width: 100%;
-    padding: 1.3rem 2rem;
-    background-color: #0C0F14;
-    border: none;
-    border-radius: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-sizing: border-box;
+    background-color: #0c0f14;
+    color: #fafaf4;
 }
 
 .po-rated-text {
-    color: #FAFAF4;
-    font-weight: 800;
+    color: #fafaf4;
     font-size: 1.3rem;
+    font-weight: 800;
 }
 
+/* ستاره‌ها همیشه چپ‌به‌راست رندر شوند */
 .po-stars {
     display: flex;
-    gap: 4px;
+    gap: 0.4rem;
     direction: ltr;
-    /* Keeps stars rendering Left-to-Right naturally */
 }
 
 .po-star-filled {
@@ -443,38 +429,22 @@
     font-size: 1.1rem;
 }
 
-/* --- Small Screen Adjustments --- */
-@media (max-width: 400px) {
-    .po-badge {
-        width: 22px;
-        height: 22px;
-        font-size: 1rem;
-        font-weight: 800;
-        bottom: -4px;
-        right: -4px;
-    }
 
-    .po-view-bill-text {
-        font-size: 0.85rem;
-    }
-
-    .po-rate-btn,
-    .po-rated-box {
-        padding: 12px 16px;
-        font-size: 1rem;
-    }
-}
-
+/* =========================================================
+   4) پیام ورود به حساب (OrdersAuthPrompt)
+   ========================================================= */
 
 .orders-auth-prompt {
-    max-width: 420px;
-    margin: 2.5rem 2.5rem;
+    box-sizing: border-box;
+    width: calc(100% - 5rem);
+    max-width: 42rem;
+    margin: 2.5rem auto;
     padding: 2.5rem 2rem 2rem;
-    background: linear-gradient(180deg, #1c2128 0%, #15181d 100%);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 1.6rem;
+    background: linear-gradient(180deg, #1c2128 0%, #15181d 100%);
+    color: #fafaf4;
     text-align: center;
-    color: #FAFAF4;
 }
 
 .orders-auth-prompt--compact {
@@ -483,12 +453,12 @@
 
 .orders-auth-prompt__icon-wrap {
     position: relative;
-    width: 84px;
-    height: 84px;
-    margin: 0 auto 1.4rem;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 8.4rem;
+    height: 8.4rem;
+    margin: 0 auto 1.4rem;
 }
 
 .orders-auth-prompt__icon-glow {
@@ -503,33 +473,33 @@
 
 .orders-auth-prompt__icon-circle {
     position: relative;
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: rgba(255, 104, 60, 0.12);
-    border: 1px solid rgba(255, 104, 60, 0.35);
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 6.4rem;
+    height: 6.4rem;
+    border: 1px solid rgba(255, 104, 60, 0.35);
+    border-radius: 50%;
+    background: rgba(255, 104, 60, 0.12);
 }
 
 .orders-auth-prompt__icon {
-    width: 28px;
-    height: 28px;
+    width: 2.8rem;
+    height: 2.8rem;
     color: #ff683c;
 }
 
 .orders-auth-prompt__title {
+    margin-bottom: 0.6rem;
     font-size: 1.15rem;
     font-weight: 700;
-    margin-bottom: 0.6rem;
 }
 
 .orders-auth-prompt__text {
-    font-size: 0.95rem;
-    color: #9ca3af;
-    line-height: 1.8;
     margin-bottom: 1.6rem;
+    color: #9ca3af;
+    font-size: 0.95rem;
+    line-height: 1.8;
 }
 
 .orders-auth-prompt__btn {

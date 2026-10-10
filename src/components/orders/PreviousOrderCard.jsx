@@ -1,7 +1,13 @@
 // src/components/orders/PreviousOrderCard.jsx
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import RatingModal from "../common/RatingModal";
+import SafeImage from "../common/SafeImage";
+import useFittingCount from "../../hooks/useFittingCount";
+import { toPersianDigits } from "../../utils/persianNumbers";
+
+const LOGO_FALLBACK = "/images/restaurant/logo-placeholder.png";
+const FOOD_FALLBACK = "/images/food/food-placeholder.png";
 
 const PreviousOrderCard = ({ order, currentRating = null, onRate }) => {
   const {
@@ -16,30 +22,31 @@ const PreviousOrderCard = ({ order, currentRating = null, onRate }) => {
   } = order;
 
   const navigate = useNavigate();
+  const rowRef = useRef(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const maxVisible = 3;
-  const visibleItems = items.slice(0, maxVisible);
-  const remainingCount =
-    items.length > maxVisible ? items.length - maxVisible : 0;
+  // تعداد تصاویری که کنار دکمه‌ی «مشاهده فاکتور» جا می‌شوند؛ بقیه به‌صورت +n
+  const fitCount = useFittingCount(rowRef, { total: items.length });
+  const visibleItems = items.slice(0, fitCount);
+  const remainingCount = items.length - visibleItems.length;
 
-  const handleViewBillClick = () => {
-    navigate(`/orders/bill/${id}`);
-  };
+  const hasRated = currentRating !== null && currentRating !== undefined;
 
-  // 🔧 دیگه رای رو داخل کارت ذخیره نمی‌کنیم — فقط به بالادستی (OrdersPage)
-  // اطلاع می‌دیم که چه امتیازی برای این رستوران ثبت شده
+  // رای داخل کارت ذخیره نمی‌شود؛ فقط به OrdersPage اطلاع می‌دهیم
   const handleRateSubmit = (selectedRating) => {
     onRate?.(restaurantId, selectedRating);
   };
-
-  const hasRated = currentRating !== null && currentRating !== undefined;
 
   return (
     <div dir="rtl" className="po-container">
       <div className="po-header">
         <div className="po-logo-wrapper">
-          <img src={logo} alt={restaurantName} className="po-logo" />
+          <SafeImage
+            src={logo}
+            fallback={LOGO_FALLBACK}
+            alt={restaurantName}
+            className="po-logo"
+          />
         </div>
         <div className="po-header-text">
           <h2 className="po-title">
@@ -50,17 +57,28 @@ const PreviousOrderCard = ({ order, currentRating = null, onRate }) => {
         </div>
       </div>
 
-      <div className="po-images-row">
+      <div className="po-images-row" ref={rowRef}>
         {visibleItems.map((item) => (
           <div key={item.id} className="po-image-wrapper">
-            <img src={item.image} alt="Order Item" className="po-item-image" />
-            <span className="po-badge">{item.quantity}</span>
+            <SafeImage
+              src={item.image}
+              fallback={FOOD_FALLBACK}
+              alt=""
+              className="po-item-image"
+            />
+            <span className="po-badge">{toPersianDigits(item.quantity)}</span>
           </div>
         ))}
 
-        <button className="po-view-bill-btn" onClick={handleViewBillClick}>
+        <button
+          type="button"
+          className="po-view-bill-btn"
+          onClick={() => navigate(`/orders/bill/${id}`)}
+        >
           {remainingCount > 0 && (
-            <span className="po-view-bill-count">+{remainingCount}</span>
+            <span className="po-view-bill-count">
+              +{toPersianDigits(remainingCount)}
+            </span>
           )}
           <span className="po-view-bill-text">مشاهده فاکتور</span>
         </button>
@@ -69,21 +87,25 @@ const PreviousOrderCard = ({ order, currentRating = null, onRate }) => {
       <div className="po-total-section">
         <span className="po-total-label">مجموع سفارش</span>
         <div className="po-total-value">
-          <span className="po-price">{totalPrice.toLocaleString()}</span>
+          <span className="po-price">{totalPrice.toLocaleString("fa-IR")}</span>
           <span className="po-currency">تومان</span>
         </div>
       </div>
 
       {!hasRated ? (
-        <button className="po-rate-btn" onClick={() => setIsModalOpen(true)}>
+        <button
+          type="button"
+          className="po-rate-btn"
+          onClick={() => setIsModalOpen(true)}
+        >
           <span>به {restaurantName} امتیاز دهید</span>
           <span>ثبت امتیاز</span>
         </button>
       ) : (
-        // 🔧 حالا قابل کلیک هست تا کاربر بتونه هر وقت خواست رایش رو اصلاح کنه
+        // قابل کلیک است تا کاربر هر وقت خواست رایش را اصلاح کند
         <button
           type="button"
-          className="po-rated-box po-rated-box--editable"
+          className="po-rated-box"
           onClick={() => setIsModalOpen(true)}
         >
           <span className="po-rated-text">امتیاز شما به {restaurantName}</span>
@@ -115,15 +137,9 @@ const PreviousOrderCard = ({ order, currentRating = null, onRate }) => {
 
 export function PreviousOrdersList({ orders, ratingsByRestaurant = {}, onRate }) {
   if (!orders?.length) return null;
+
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "20px",
-        padding: "2rem",
-      }}
-    >
+    <div className="po-list">
       {orders.map((order) => (
         <PreviousOrderCard
           key={order.id}

@@ -67,7 +67,7 @@
 }
 .bpe__restaurant-card-remove:hover {
   background: rgba(220, 38, 38, 0.85);
-  color: #fff;
+  color: #fafaf4;
 }
 
 /* Circular logo overlapping the banner's bottom-right corner. */
@@ -174,7 +174,7 @@
 }
 .bpe__restaurant-card-action--danger:hover:not(:disabled) {
   background: rgba(220, 38, 38, 0.85);
-  color: #fff;
+  color: #fafaf4;
 }
 
 .bpe__restaurant-card-refresh-error {

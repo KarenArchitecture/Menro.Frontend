@@ -8,7 +8,7 @@ const SWATCHES = [
     id: "theme-orange",
     value: "orange",
     label: "تم نارنجی تیره",
-    palette: ["#1e1e1e", "#ff683c", "#ffffff"],
+    palette: ["#1e1e1e", "#ff683c", "#fafaf4"],
     checked: true,
   },
   {

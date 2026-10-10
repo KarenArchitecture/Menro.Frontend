@@ -37,7 +37,7 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  color: #fff;
+  color: #fafaf4;
   flex-direction: row-reverse;
   padding: 10px;
   border-radius: 50%;
@@ -173,7 +173,7 @@
 }
 
 .player-btn--ghost:hover {
-  color: #fff;
+  color: #fafaf4;
   background: rgba(255, 255, 255, 0.06);
 }
 
@@ -267,7 +267,7 @@
   width: 13px;
   height: 13px;
   border-radius: 50%;
-  background: #fff;
+  background: #fafaf4;
   border: 2px solid var(--mh-accent);
   margin-top: -3.5px;
   box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
@@ -277,7 +277,7 @@
   width: 13px;
   height: 13px;
   border-radius: 50%;
-  background: #fff;
+  background: #fafaf4;
   border: 2px solid var(--mh-accent);
   box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
 }
@@ -368,7 +368,7 @@
 }
 
 .mh-tab:hover {
-  color: #fff;
+  color: #fafaf4;
   border-color: rgba(255, 255, 255, 0.2);
 }
 
@@ -555,7 +555,7 @@
 }
 
 .mh-reorder button:hover:not(:disabled) {
-  color: #fff;
+  color: #fafaf4;
 }
 
 .mh-reorder button:disabled {
@@ -596,7 +596,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: #fafaf4;
   font-size: 14px;
   background: rgba(0, 0, 0, 0.3);
   opacity: 0;
@@ -629,7 +629,7 @@
   padding: 0 4px;
   border-radius: 9px;
   background: rgba(0, 0, 0, 0.65);
-  color: #fff;
+  color: #fafaf4;
   font-size: 11px;
   line-height: 18px;
   text-align: center;
@@ -702,7 +702,7 @@
 
 .mh-icon-btn:hover {
   background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  color: #fafaf4;
 }
 
 .mh-icon-btn.is-danger:hover {
@@ -923,7 +923,7 @@
 
 .mh-modal__title {
   margin: 0 0 16px 0;
-  color: #fff;
+  color: #fafaf4;
   font-size: 1.05rem;
   display: flex;
   align-items: center;
@@ -995,7 +995,7 @@
   width: 13px;
   height: 13px;
   border-radius: 50%;
-  background: #fff;
+  background: #fafaf4;
   border: 2px solid var(--mh-accent);
   margin-top: -3.5px;
 }

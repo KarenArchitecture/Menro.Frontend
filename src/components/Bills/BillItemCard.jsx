@@ -3,18 +3,18 @@ import React from "react";
 const toPersianNum = (num) =>
   Number(num).toLocaleString("fa-IR").replace(/٫/g, ".");
 
-const CheckIcon = ({ size = 16, strokeWidth = 2.5 }) => (
+const CheckIcon = () => (
   <svg
-    width={size}
-    height={size}
-    viewBox="0 0 12 12"
+    width="8"
+    height="6"
+    viewBox="0 0 8 6"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
     <path
-      d="M10 3L4.5 8.5L2 6"
-      stroke="white"
-      strokeWidth={strokeWidth}
+      d="M0.75 3.44L2.36 5.05L6.66 0.75"
+      stroke="#FAFAF4"
+      strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
@@ -69,7 +69,7 @@ export default function BillItemCard({ item }) {
 
             {/* Sub-items (Addons) */}
             {variant.addons?.map((addon) => (
-              <div key={addon.id} className="bill-row addon-row">
+              <div key={addon.id} className="bill-row bill-addon-row">
                 <div className="addon-name-wrapper">
                   <span className="bill-row__name">{addon.name}</span>
                 </div>
@@ -87,7 +87,7 @@ export default function BillItemCard({ item }) {
                   )}
                   {/* Styled entirely via CSS now */}
                   <div className="addon-check-icon">
-                    <CheckIcon size={14} strokeWidth={2.5} />
+                    <CheckIcon />
                   </div>
                 </div>
               </div>

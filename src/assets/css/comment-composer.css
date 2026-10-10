@@ -16,7 +16,7 @@
     background: transparent;
     border: none;
     outline: none;
-    color: #fff;
+    color: #fafaf4;
     font-family: inherit;
     font-size: 1.2rem;
     line-height: 1.7;
@@ -44,7 +44,7 @@
 
 .composer-submit.active {
     background-color: #ff623d;
-    color: #fff;
+    color: #fafaf4;
     cursor: pointer;
 }
 

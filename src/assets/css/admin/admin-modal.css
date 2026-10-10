@@ -127,7 +127,7 @@
 
 .admin-modal__header .btn-icon:hover {
   background: rgba(255, 255, 255, 0.06);
-  color: #fff;
+  color: #fafaf4;
   transform: rotate(90deg);
 }
 

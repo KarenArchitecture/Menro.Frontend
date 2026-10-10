@@ -59,7 +59,7 @@ body {
 body {
   width: 100%;
   background-color: #0c0f14;
-  color: #fff;
+  color: #fafaf4;
   overflow-x: hidden;
   overflow-y: visible;
 }
@@ -122,7 +122,7 @@ footer,
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  color: #fff;
+  color: #fafaf4;
 }
 
 .banner::before {
@@ -200,7 +200,7 @@ footer,
   padding: 0.1rem 0.45rem 0;
   background: #ef5254;
   border-radius: 1.9rem;
-  color: #fff;
+  color: #fafaf4;
   font-size: 1rem;
   font-weight: 700;
   line-height: 1;
@@ -298,7 +298,7 @@ footer,
   background: linear-gradient(180deg, #262b33, #161b20);
   border: 0;
   border-radius: 10px;
-  color: #fff;
+  color: #fafaf4;
   white-space: nowrap;
 }
 
@@ -327,8 +327,8 @@ footer,
   top: 0;
   z-index: 1000;
   background: #0c0f14;
-  border-top: solid 1px #ffffff10;
-  border-bottom: solid 1px #ffffff10;
+  border-top: solid 1px #fafaf410;
+  border-bottom: solid 1px #fafaf410;
 }
 
 .category-bar {
@@ -380,17 +380,17 @@ footer,
 /* active: orange pill, white icon and text */
 .category-btn.active {
   background: #ff7a32;
-  color: #fff;
+  color: #fafaf4;
   box-shadow: 0 0 12px rgba(255, 122, 50, 0.45);
 }
 
 .category-btn.active svg path {
-  fill: #fff !important;
-  stroke: #fff !important;
+  fill: #fafaf4 !important;
+  stroke: #fafaf4 !important;
 }
 
 .category-btn.active span {
-  color: #fff;
+  color: #fafaf4;
 }
 
 
@@ -577,7 +577,7 @@ footer,
   border: 0;
   border-radius: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  color: #fff;
+  color: #fafaf4;
   cursor: pointer;
 }
 
@@ -758,7 +758,7 @@ footer,
   gap: 0.4rem;
   padding: 0;
   transform: translateX(-50%);
-  color: #fff;
+  color: #fafaf4;
   font-size: 1.3rem;
   font-weight: 600;
   white-space: nowrap;
@@ -795,7 +795,7 @@ footer,
 .menu-card__title {
   margin: 0;
   overflow: hidden;
-  color: #fff;
+  color: #fafaf4;
   font-size: 1.3rem;
   font-weight: 600;
   text-overflow: ellipsis;
@@ -849,7 +849,7 @@ footer,
   border: none;
   border-radius: 10px;
   outline: none;
-  color: #fff;
+  color: #fafaf4;
   font-size: 18px;
   font-weight: 700;
   line-height: 1;
@@ -875,7 +875,7 @@ footer,
   background-color: #ff623d;
   border: none;
   border-radius: 10px;
-  color: #fff;
+  color: #fafaf4;
   font-size: 20px;
   line-height: 1;
   cursor: pointer;
@@ -887,7 +887,7 @@ footer,
   justify-content: center;
   width: 35px;
   height: 28px;
-  background-color: #fff;
+  background-color: #fafaf4;
   border-radius: 10px;
   color: #111;
   font-size: 13px;
@@ -1046,7 +1046,7 @@ footer,
   background: #00000070;
   border-top-left-radius: 3.4rem;
   border-top-right-radius: 3.4rem;
-  color: #fff;
+  color: #fafaf4;
 }
 
 .modal-title-row {
@@ -1172,7 +1172,7 @@ footer,
   border: 0;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(255, 106, 61, 0.3);
-  color: #fff;
+  color: #fafaf4;
   font-size: 20px;
   font-weight: 800;
   cursor: pointer;
@@ -1322,7 +1322,7 @@ footer,
 
 .addon-qty-item.active-n {
   background: #ff6a3d;
-  color: #fff;
+  color: #fafaf4;
 }
 
 
@@ -1364,7 +1364,7 @@ footer,
   padding: 0.6rem 1.2rem;
   background-color: #13171e !important;
   border-radius: 1rem;
-  color: #fff;
+  color: #fafaf4;
   font-size: 1.2rem;
   font-weight: 600;
 }
@@ -1386,7 +1386,7 @@ footer,
 }
 
 .combo-foods-header__title {
-  color: #fff;
+  color: #fafaf4;
   font-size: 1.3rem;
   font-weight: 800;
 }
@@ -1498,7 +1498,7 @@ footer,
   background: #ff683c;
   border: none;
   border-radius: 10px;
-  color: #fff;
+  color: #fafaf4;
   font-size: 1.3rem;
   font-weight: 700;
   cursor: pointer;
@@ -1558,7 +1558,7 @@ footer,
 .nav-toggle-bar {
   width: 12rem;
   height: 5px;
-  background-color: #fff;
+  background-color: #fafaf4;
   border-radius: 3px;
   cursor: pointer;
   opacity: 0.8;
@@ -1601,7 +1601,7 @@ footer,
   padding: 2px 6px;
   background-color: #f33;
   border-radius: 1rem;
-  color: #fff;
+  color: #fafaf4;
   font-size: 0.7rem;
   font-weight: bold;
   text-align: center;

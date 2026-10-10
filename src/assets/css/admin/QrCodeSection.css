@@ -57,7 +57,7 @@
   justify-content: center;
   width: 100%;
   aspect-ratio: 1 / 1;
-  background: #fff;
+  background: #fafaf4;
   border-radius: 10px;
   overflow: hidden;
 }
@@ -227,7 +227,7 @@
 .qrc-btn--primary {
   background: var(--primary-color, #ff683c);
   border-color: var(--primary-color, #ff683c);
-  color: #fff;
+  color: #fafaf4;
 }
 
 .qrc-btn--primary:hover:not(:disabled) {
@@ -364,7 +364,7 @@
   width: 100%;
   height: auto;
   border-radius: 6px;
-  background: #fff;
+  background: #fafaf4;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
 }
 

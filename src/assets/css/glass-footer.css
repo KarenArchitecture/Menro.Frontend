@@ -25,7 +25,7 @@
     backdrop-filter: blur(60px);
     -webkit-backdrop-filter: blur(60px);
     box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
-    color: #fff;
+    color: #fafaf4;
     overflow: visible;
     padding: 2.8rem 3.2rem 4rem;
     display: flex;
@@ -170,8 +170,8 @@
 .footer-glass__chevron {
     width: 10px;
     height: 10px;
-    border-right: 2px solid #fff;
-    border-bottom: 2px solid #fff;
+    border-right: 2px solid #fafaf4;
+    border-bottom: 2px solid #fafaf4;
     transform: rotate(225deg);
 }
 
@@ -287,7 +287,7 @@
         align-items: center;
         justify-content: center;
 
-        color: #ffffff;
+        color: #fafaf4;
         font-size: 1.25rem;
         font-weight: 700;
         line-height: 1.4;
@@ -527,7 +527,7 @@
 .footer-glass__chevron {
     width: 10px;
     height: 10px;
-    border-right: 2px solid #fff;
-    border-bottom: 2px solid #fff;
+    border-right: 2px solid #fafaf4;
+    border-bottom: 2px solid #fafaf4;
     transform: rotate(225deg);
 }

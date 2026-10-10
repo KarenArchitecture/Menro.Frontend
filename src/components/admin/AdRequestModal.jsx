@@ -47,9 +47,8 @@ export default function AdRequestModal({
   const normalizedUnit =
     request.adType === "banner" && rawUnit === "روز" ? "بازدید" : rawUnit;
 
-  const reservedLabel = `${
-    request.reservedAmount?.toLocaleString("fa-IR") || 0
-  } ${normalizedUnit}`;
+  const reservedLabel = `${request.reservedAmount?.toLocaleString("fa-IR") || 0
+    } ${normalizedUnit}`;
 
   // ❌ Old (kept): used unit as-is
   /*
@@ -263,7 +262,7 @@ export default function AdRequestModal({
                   borderRadius: 8,
                   border: "1px solid rgba(248,113,113,0.6)",
                   background: "rgba(0,0,0,0.45)",
-                  color: "#fff",
+                  color: "#fafaf4",
                   fontSize: 14,
                 }}
               />

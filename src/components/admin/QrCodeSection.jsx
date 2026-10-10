@@ -62,7 +62,7 @@ function buildQr({ data, size, color, dotStyle, logoUrl }) {
       type: dotStyle === "rounded" ? "extra-rounded" : "square",
     },
     cornersDotOptions: { color },
-    backgroundOptions: { color: "#ffffff" },
+    backgroundOptions: { color: "#fafaf4" },
     imageOptions: { crossOrigin: "anonymous", margin: 6, imageSize: 0.24 },
   });
 }
@@ -133,7 +133,7 @@ function drawCard({
   canvas.height = H;
   const ctx = canvas.getContext("2d");
 
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = "#fafaf4";
   ctx.fillRect(0, 0, W, H);
 
   // قاب

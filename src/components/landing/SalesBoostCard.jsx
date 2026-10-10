@@ -71,7 +71,7 @@ export default function SalesBoostCard({
             cy="90"
             r="82"
             fill="none"
-            stroke="#fff"
+            stroke="#fafaf4"
             strokeWidth="8"
             strokeLinecap="round"
           />

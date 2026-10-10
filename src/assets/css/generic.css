@@ -240,7 +240,7 @@ ul {
   padding: 30px 20px;
   text-align: center;
   position: relative;
-  color: #fff;
+  color: #fafaf4;
   border: 1px solid #333;
 }
 
@@ -313,7 +313,7 @@ ul {
   border-radius: 26px;
   border: 1px solid #2d2f36;
   text-align: center;
-  color: #fff;
+  color: #fafaf4;
   animation: scaleIn 0.18s ease;
   position: relative;
 }
@@ -364,7 +364,7 @@ ul {
   padding: 14px;
   border-radius: 14px;
   background: #ff7a59;
-  color: #fff;
+  color: #fafaf4;
   border: none;
   font-size: 16px;
   font-weight: bold;
@@ -383,7 +383,7 @@ ul {
   background: #2d333b;
   border: none;
   border-radius: 50%;
-  color: #fff;
+  color: #fafaf4;
   font-size: 20px;
   cursor: pointer;
   display: flex;
@@ -453,7 +453,7 @@ ul {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: #fff;
+  color: #fafaf4;
   text-decoration: none;
   font-weight: 500;
 }
@@ -544,7 +544,7 @@ ul {
   position: relative;
   align-items: center;
   justify-content: space-between;
-  background-color: #ffffff;
+  background-color: #fafaf4;
   border-radius: 16px;
   padding: 4px 12 4px 25px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
@@ -600,7 +600,7 @@ ul {
   width: 23px;
   height: 23px;
   background-color: #f33;
-  color: #fff;
+  color: #fafaf4;
   font-size: 10px;
   font-weight: bold;
   border-radius: 50%;
@@ -725,7 +725,7 @@ ul {
 }
 .auth-btn--danger {
   background: #dc3545;
-  color: #fff;
+  color: #fafaf4;
 }
 
 /* Interactions */
@@ -807,7 +807,7 @@ ul {
   border-color: #e2e8f0;
 }
 .state-empty {
-  background: #fff9eb;
+  background: #fafaf49eb;
   color: #92400e;
   border-color: #fde68a;
 }
@@ -824,7 +824,7 @@ ul {
   padding: 0.6rem 1rem;
   border-radius: 10px;
   background: #f89c0e;
-  color: #fff;
+  color: #fafaf4;
   font-weight: 700;
   font-size: 0.95rem;
 }

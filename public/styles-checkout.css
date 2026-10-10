@@ -28,7 +28,7 @@
   /* 1rem = 10px */
 
   --bg: #0c0f14;
-  --fg: #fff;
+  --fg: #fafaf4;
   --muted: #aaa;
   --primary: #d17842;
 
@@ -92,7 +92,7 @@ h2 {
   align-items: center;
   padding: 0 2.5rem 2.2rem;
   margin-bottom: 2.5rem;
-  border-bottom: solid 1px #ffffff10;
+  border-bottom: solid 1px #fafaf410;
   font-weight: bold;
   font-size: 1.2rem;
 }
@@ -138,7 +138,7 @@ h2 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem;
+  padding: 2rem 2.5rem;
 }
 
 .cart-items {
@@ -174,12 +174,10 @@ h2 {
   gap: calc(var(--u) * 1.3);
   width: 100%;
   padding: calc(var(--u) * 1.4);
-  background-image: linear-gradient(
-    135deg,
-    #1e232a 0%,
-    #1e232a 28%,
-    #2b3038 100%
-  );
+  background-image: linear-gradient(135deg,
+      #1e232a 0%,
+      #1e232a 28%,
+      #2b3038 100%);
   border-radius: calc(var(--u) * 2.3);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   overflow: hidden;
@@ -251,7 +249,7 @@ h2 {
   margin: 0;
   font-size: calc(var(--u) * 1.8);
   font-weight: 800;
-  color: #fff;
+  color: #fafaf4;
 
   /* 2-line clamp with … */
   display: -webkit-box;
@@ -331,7 +329,7 @@ h2 {
   padding: 0 calc(var(--u) * 1.5);
   background: #141921;
   border-radius: calc(var(--u) * 1.2);
-  color: #fff;
+  color: #fafaf4;
   font-size: calc(var(--u) * 1.4);
   font-weight: 500;
   line-height: 1.7;
@@ -420,7 +418,7 @@ h2 {
   background-color: #ff683c;
   border: none;
   border-radius: calc(var(--u) * 0.8);
-  color: #fff;
+  color: #fafaf4;
   font-size: calc(var(--u) * 1.8);
   font-weight: 800;
   line-height: 1;
@@ -475,18 +473,21 @@ h2 {
   align-items: stretch;
   justify-content: flex-start;
   gap: 1.2rem;
-  padding: var(--footer-pad-y) 1.6rem
-    calc(var(--footer-pad-y) + var(--footer-safe));
-  background: #0c0f14;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 1.6rem 1.6rem 0 0;
+  padding: var(--footer-pad-y) 2.7rem calc(var(--footer-pad-y) + var(--footer-safe));
+  background: #13171E;
+  border-top: 1px solid #1B2026;
   box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.28);
   transition: transform 0.35s ease;
   will-change: transform;
 }
 
+.checkout-footer.has-notice {
+  border: none;
+  box-shadow: none;
+}
+
 .checkout-footer.is-picking-table {
-  background: #13171e;
+  background: #1B2026;
 }
 
 /* "previous invoice numbers" row merged into the footer */
@@ -564,26 +565,28 @@ h2 {
 .footer-total-label {
   margin: 0;
   font-size: 1.2rem;
-  font-weight: 600;
-  color: #9eabb8;
+  font-weight: 400;
+  color: #AEAEAE;
 }
 
 .footer-total-amount {
   display: inline-flex;
   align-items: baseline;
   gap: 0.4rem;
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fafaf4;
 }
 
 .footer-total-amount .amount {
   font-size: 1.3rem;
+  font-weight: 700;
 }
 
 .currency {
   color: #ff683c;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
+  font-weight: 700;
 }
 
 /* The button shrinks before it can overlap the total. */
@@ -597,10 +600,9 @@ h2 {
   min-width: 0;
   height: calc(var(--u) * 4.5);
   padding: 0 calc(var(--u) * 0.8);
-  background-color: #ff683c;
   border: none;
   border-radius: 0.9rem;
-  color: #fff;
+  color: #fafaf4;
   font-size: calc(var(--u) * 1.6);
   font-weight: 700;
   line-height: 1.2;
@@ -608,6 +610,15 @@ h2 {
   transition:
     background 0.2s ease,
     transform 0.06s ease;
+}
+
+.pay-btn--inactive {
+  background-color: #0c0f14;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.pay-btn--ready {
+  background-color: #ff683c;
 }
 
 .pay-btn:disabled {
@@ -638,22 +649,23 @@ h2 {
   inset-inline: 0;
   bottom: var(--footer-live-h, var(--footer-h));
   margin: 0;
-  padding: 2.4rem 1.6rem 1.2rem;
-  background: #13171e;
+  padding: 2.5rem 2.7rem 1rem;
+  background: #13171E;
   border-radius: 1.6rem 1.6rem 0 0;
   box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.28);
   z-index: 999;
 
   font-size: 2rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.7;
-  color: #fff;
+  color: #fafaf4;
   text-align: right;
   transition: bottom 0.25s ease;
 }
 
 .checkout-payment-notice span {
   color: #ff683c;
+  text-align: justify;
 }
 
 /* invisible click catcher that closes the table selector */
@@ -695,7 +707,7 @@ h2 {
   padding: 0.8rem 2.4rem;
   background: #1c212a;
   border-radius: 999px;
-  color: #fff;
+  color: #fafaf4;
   font-size: 1.4rem;
 }
 
@@ -703,7 +715,7 @@ h2 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
-  padding: 1rem 1.6rem;
+  padding: 1rem 0;
 }
 
 .table-chip {
@@ -712,7 +724,7 @@ h2 {
   background: #ff683c;
   border: none;
   border-radius: 1rem;
-  color: #fff;
+  color: #fafaf4;
   font-size: 1.4rem;
   font-weight: 600;
   cursor: pointer;
@@ -766,8 +778,7 @@ h2 {
   right: 0;
   bottom: 0;
   z-index: 1300;
-  padding: calc(var(--sheet-pad-y) + 8px) var(--sheet-pad-x)
-    calc(12px + var(--sheet-safe));
+  padding: calc(var(--sheet-pad-y) + 8px) var(--sheet-pad-x) calc(12px + var(--sheet-safe));
   background: #1a1d21;
   border-radius: var(--sheet-radius) var(--sheet-radius) 0 0;
   box-shadow: 0 -16px 40px rgba(0, 0, 0, 0.4);
@@ -797,7 +808,7 @@ h2 {
   background: #d17842;
   border: none;
   border-radius: 1.2rem;
-  color: #fff;
+  color: #fafaf4;
   font-size: 1.6rem;
   font-weight: 600;
 }
@@ -843,7 +854,7 @@ h2 {
 .checkout-total-amount {
   font-size: 1.3rem;
   font-weight: 800;
-  color: #fff;
+  color: #fafaf4;
 }
 
 .checkout-total-currency {
@@ -867,7 +878,7 @@ h2 {
   padding: 10px 12px;
   background: linear-gradient(to top, #161b20 0%, #262b33 100%);
   border-radius: 12px;
-  color: #fff;
+  color: #fafaf4;
   cursor: pointer;
   transition:
     background 0.2s ease,
@@ -888,7 +899,7 @@ h2 {
   flex: 0 0 48px;
   width: 48px;
   height: 48px;
-  background: #fff;
+  background: #fafaf4;
   border-radius: 10px;
 }
 
@@ -908,7 +919,7 @@ h2 {
   margin: 0;
   font-size: 1.6rem;
   font-weight: 800;
-  color: #fff;
+  color: #fafaf4;
 }
 
 .checkout-modal-bank-description {
@@ -940,7 +951,7 @@ h2 {
   background: #141921;
   border-radius: 2.4rem;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
-  color: #fff;
+  color: #fafaf4;
   direction: rtl;
 }
 
@@ -1010,7 +1021,7 @@ h2 {
 }
 
 .item-title {
-  color: #fff;
+  color: #fafaf4;
 }
 
 .item-sub {
@@ -1051,7 +1062,7 @@ h2 {
 }
 
 .order-success-summary-row.total .label {
-  color: #fff;
+  color: #fafaf4;
 }
 
 .order-success-summary-row.total .value {
@@ -1064,7 +1075,7 @@ h2 {
   background: #ff683c;
   border: none;
   border-radius: 1.2rem;
-  color: #fff;
+  color: #fafaf4;
   font-size: 1.6rem;
   font-weight: 700;
   cursor: pointer;

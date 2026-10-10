@@ -241,7 +241,7 @@
 
 .gui-btn--danger {
   background: var(--gui-danger);
-  color: #fff;
+  color: #fafaf4;
 }
 .gui-btn--danger:hover {
   filter: brightness(1.1);

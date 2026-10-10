@@ -5,7 +5,7 @@
    Palette pulled from generic.css (project theme):
    - surfaces:  #0c0f14 (page), #13171e (panel), #141921 (inputs), #1a1f25 (secondary)
    - borders:   #2f363f
-   - text:      #ffffff (primary), #9aa3af (muted), #52555a (placeholder)
+   - text:      #fafaf4 (primary), #9aa3af (muted), #52555a (placeholder)
    - accent:    #ff7a59 (brand accent), dark text #12161c on top of it for contrast
    - error:     #fecaca on #3b0f12 (matches .ui-alert--error)
 */
@@ -27,7 +27,7 @@
   direction: rtl;
   font-family: inherit;
   background: #13171e;
-  color: #fff;
+  color: #fafaf4;
   border: 1px solid #2f363f;
   border-radius: 16px;
   padding: 28px;
@@ -109,7 +109,7 @@
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.55);
-  color: #fff;
+  color: #fafaf4;
   font-size: 0.75rem;
   display: flex;
   align-items: center;
@@ -183,7 +183,7 @@
 .upf-field input {
   background: #141921;
   border: 1px solid #2f363f;
-  color: #fff;
+  color: #fafaf4;
   border-radius: 10px;
   padding: 11px 14px;
   font-size: 0.95rem;

@@ -66,14 +66,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 2.2rem;
+    min-width: 2.2rem;
+    padding: 0 0.8rem;
     height: 2.2rem;
-    border: 0.2rem solid #17181e;
-    /* حلقه‌ی هم‌رنگ پس‌زمینه برای اثر cutout */
-    border-radius: 50%;
+    border-radius: 999px;
+    white-space: nowrap;
     background-color: #ff4c5e;
-    color: #fff;
-    font-size: 1rem;
+    color: #fafaf4;
+    font-size: 1.1rem;
     font-weight: 700;
 }
 
@@ -92,7 +92,7 @@
     width: 100%;
     padding: 2.5rem max(2.5rem, calc((100% - 43rem) / 2));
     background-color: #1b2026;
-    color: #fff;
+    color: #fafaf4;
 }
 
 /* --- هدر --- */
@@ -233,7 +233,7 @@
     display: flex;
     flex-direction: column;
     gap: 2rem;
-    padding: 2rem;
+    padding: 2rem 2.5rem;
 }
 
 /* --- کارت --- */
@@ -245,7 +245,7 @@
     padding: 1.5rem;
     border-radius: 2rem;
     background: linear-gradient(180deg, #262b33 0%, #161b20 100%);
-    color: #fff;
+    color: #fafaf4;
 }
 
 /* --- هدر --- */
@@ -314,7 +314,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.6rem;
+    gap: 1.1rem;
     padding: 0 0.8rem;
     border: none;
     border-radius: 1.2rem;
@@ -396,7 +396,7 @@
 
 .po-rate-btn {
     background-color: #ff623d;
-    color: #fff;
+    color: #fafaf4;
     font-size: 1rem;
     font-weight: 800;
 }

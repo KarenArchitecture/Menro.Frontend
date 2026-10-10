@@ -45,7 +45,7 @@
     overflow: hidden;
     border-radius: 2.4rem;
     background: #141921;
-    color: #fff;
+    color: #fafaf4;
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
     transform: translateY(18px) scale(0.985);
     transition:
@@ -259,7 +259,7 @@
 }
 
 .order-success-modal__summaryRow.total .label {
-    color: #ffffff;
+    color: #fafaf4;
 }
 
 .order-success-modal__summaryRow.total .value {
@@ -272,7 +272,7 @@
     border-radius: 1.2rem;
     border: none;
     background: #ff683c;
-    color: #fff;
+    color: #fafaf4;
     font-size: 1.6rem;
     font-weight: 700;
     cursor: pointer;
@@ -338,7 +338,7 @@
     border: none;
     border-radius: 1.2rem;
     background: #141921;
-    color: #fff;
+    color: #fafaf4;
     display: flex;
     align-items: center;
     justify-content: space-between;

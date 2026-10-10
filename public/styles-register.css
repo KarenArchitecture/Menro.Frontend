@@ -48,7 +48,7 @@ body {
 }
 
 .tab.active {
-  color: #ffffff;
+  color: #fafaf4;
   border-bottom: 3px solid #ff683c;
 }
 
@@ -114,7 +114,7 @@ button {
   padding: 15px;
   margin-top: 15px;
   background-color: #ff683c;
-  color: #ffffff;
+  color: #fafaf4;
   border: none;
   border-radius: 8px;
   font-size: 16px;

@@ -197,7 +197,7 @@ export default function CommentModal({
                     borderRadius: 8,
                     border: "1px solid rgba(245,158,11,0.6)",
                     background: "rgba(0,0,0,0.45)",
-                    color: "#fff",
+                    color: "#fafaf4",
                     fontSize: 14,
                   }}
                 />
@@ -224,7 +224,7 @@ export default function CommentModal({
                     borderRadius: 8,
                     border: "1px solid rgba(248,113,113,0.6)",
                     background: "rgba(0,0,0,0.45)",
-                    color: "#fff",
+                    color: "#fafaf4",
                     fontSize: 14,
                   }}
                 />

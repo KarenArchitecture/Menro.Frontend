@@ -373,7 +373,7 @@
 }
 .bpe__cover-btn--remove {
   background: rgba(220, 38, 38, 0.85);
-  color: #fff;
+  color: #fafaf4;
 }
 .bpe__cover-btn--remove:hover {
   background: #dc2626;
@@ -436,7 +436,7 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #fff;
+  background: #fafaf4;
   transition: transform 0.15s ease;
 }
 .bpe__switch input:checked + .bpe__switch-track {

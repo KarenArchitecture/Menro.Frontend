@@ -226,7 +226,7 @@ export default function CheckoutFooter({
             <div className="footer-action">
               <button
                 className={
-                  "pay-btn" + (payDisabled ? " pay-btn--inactive" : "")
+                  "pay-btn " + (isChoosingTable ? "pay-btn--inactive" : "pay-btn--ready")
                 }
                 onClick={handlePayClick}
                 disabled={payDisabled}

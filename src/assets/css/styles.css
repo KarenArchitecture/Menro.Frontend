@@ -180,7 +180,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #fff;
+  color: #fafaf4;
   text-decoration: none;
 }
 
@@ -408,7 +408,7 @@
   width: 162.5px;
   background-color: #0c0f14;
   border-radius: 1.6rem;
-  color: #fff;
+  color: #fafaf4;
 }
 
 .cards-container--grid .card {
@@ -506,7 +506,7 @@
   display: inline-block;
   width: auto;
   padding: 0.3rem 0.6rem;
-  background-color: #fff;
+  background-color: #fafaf4;
   border: 1px solid #000;
   border-radius: 2.4rem 0 0 2.4rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -544,7 +544,7 @@
 
 .time-badge span {
   border-radius: 6px;
-  color: #fff;
+  color: #fafaf4;
   font-size: 0.9rem;
   text-align: center;
 }
@@ -820,7 +820,7 @@ a.food-card-image {
   padding: 0.25rem 0.45rem;
   transform: translateX(-50%);
   border-radius: 999px;
-  color: #fff;
+  color: #fafaf4;
   font-size: 0.85rem;
 }
 
@@ -858,7 +858,7 @@ a.food-card-image {
 }
 
 .food-price span {
-  color: #fff;
+  color: #fafaf4;
   font-size: 13px;
   font-weight: 700;
 }
@@ -1037,7 +1037,7 @@ a.food-card-image {
   background-color: #d17842;
   border: none;
   border-radius: 10px;
-  color: #fff;
+  color: #fafaf4;
   font-size: 1.5rem;
   font-weight: 800;
   line-height: 1;
@@ -1051,7 +1051,7 @@ a.food-card-image {
   min-width: 35px;
   height: 28px;
   padding: 0 10px;
-  background: #fff;
+  background: #fafaf4;
   border-radius: 10px;
   color: #0c0f14;
   font-size: 13px;

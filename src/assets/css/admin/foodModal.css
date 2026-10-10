@@ -32,7 +32,7 @@
 #food-modal .discount-toggle:has(input:checked) {
   border-color: #ff683c;
   background: rgba(245, 166, 35, 0.08);
-  color: #fff;
+  color: #fafaf4;
 }
 
 #food-modal .radio-label input[type="radio"],

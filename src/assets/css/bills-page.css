@@ -4,7 +4,7 @@
 .bp-container {
     background-color: #0f1014; /* Standard dark background */
     min-height: 100vh;
-    color: #ffffff;
+    color: #fafaf4;
     font-family:
         system-ui,
         -apple-system,
@@ -30,7 +30,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #ffffff;
+    color: #fafaf4;
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
@@ -54,14 +54,14 @@
 }
 
 .bp-receipt-icon {
-    color: #ffffff;
+    color: #fafaf4;
 }
 
 .bp-title {
     font-size: 18px;
     font-weight: 700;
     margin: 0;
-    color: #ffffff;
+    color: #fafaf4;
 }
 
 .bp-order-badge {

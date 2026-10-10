@@ -44,7 +44,7 @@ export function ModalProvider({ children }) {
             <h4
               style={{
                 margin: "0 0 16px 0",
-                color: "#fff",
+                color: "#fafaf4",
               }}
             >
               {modal.title}
@@ -75,7 +75,7 @@ export function ModalProvider({ children }) {
                 }}
                 style={{
                   background: "#4caf50",
-                  color: "#fff",
+                  color: "#fafaf4",
                   border: "none",
                 }}
               >

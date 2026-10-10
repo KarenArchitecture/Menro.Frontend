@@ -237,7 +237,7 @@ ul {
 
 .nav-item a:hover {
   background-color: #252525;
-  color: #ffffff;
+  color: #fafaf4;
 }
 
 .nav-item.active a {
@@ -473,7 +473,7 @@ ul {
   border: 1px solid #2a313a;
   border-radius: 10px;
   background: #151a22;
-  color: #fff;
+  color: #fafaf4;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -499,7 +499,7 @@ ul {
 
 .admin-subscribe-btn:hover {
   background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  color: #fafaf4;
 }
 
 /* --- Hamburger / آیکن جستجوی موبایل --- */
@@ -649,7 +649,7 @@ ul {
   border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.05);
-  color: var(--text, #fff);
+  color: var(--text, #fafaf4);
   font-family: inherit;
   font-weight: 700;
   white-space: nowrap;
@@ -809,7 +809,7 @@ textarea {
   border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
   border-radius: 10px;
   background: rgba(0, 0, 0, 0.2);
-  color: var(--text, #fff);
+  color: var(--text, #fafaf4);
 }
 
 .input-group-inline button {
@@ -841,7 +841,7 @@ textarea {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.06);
-  color: #fff;
+  color: #fafaf4;
 }
 
 
@@ -1001,7 +1001,7 @@ table td {
   padding: 2px 8px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
-  color: var(--text, #fff);
+  color: var(--text, #fafaf4);
   font-size: 11px;
   line-height: 1.6;
 }
@@ -1285,7 +1285,7 @@ table td {
 
 .delete-icon-btn:hover {
   background: #ff4d4d;
-  color: #fff;
+  color: #fafaf4;
 }
 
 
@@ -1561,7 +1561,7 @@ table td {
 
 .order-bar__title {
   overflow: hidden;
-  color: #fff;
+  color: #fafaf4;
   font-weight: 800;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -2055,24 +2055,24 @@ table td {
   gap: 4px;
   border: 1px solid #fafafa;
   background: #000;
-  color: #fff;
+  color: #fafaf4;
 }
 
 #custom-category-name {
   margin-bottom: 0;
-  border: 1px solid #fff;
+  border: 1px solid #fafaf4;
   border-radius: 10rem;
   background: #1e1e1e;
-  color: #fff;
+  color: #fafaf4;
 }
 
 #edit-name {
   height: 3rem;
   padding-right: 1rem;
-  border: 1px solid #fff;
+  border: 1px solid #fafaf4;
   border-radius: 10rem;
   background: #1e1e1e;
-  color: #fff;
+  color: #fafaf4;
 }
 
 
@@ -2170,7 +2170,7 @@ table td {
   gap: 4px;
   border: 1px solid #fafafa;
   background: #000;
-  color: #fff;
+  color: #fafaf4;
 }
 
 /* --- ویرایشگر دسته‌های پیش‌فرض --- */
@@ -2204,7 +2204,7 @@ table td {
   border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
   border-radius: 10px;
   background: rgba(0, 0, 0, 0.2);
-  color: var(--text, #fff);
+  color: var(--text, #fafaf4);
 }
 
 /* --- آیکن‌های سفارشی --- */
@@ -2244,7 +2244,7 @@ table td {
 .custom-icon-row .name {
   flex: 1 1 auto;
   overflow: hidden;
-  color: var(--text, #fff);
+  color: var(--text, #fafaf4);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -2730,7 +2730,7 @@ table td {
 
 #ads-settings-view .config-step h4 {
   margin-bottom: 3rem;
-  color: #fff;
+  color: #fafaf4;
   font-size: 1.5rem;
   font-weight: 600;
 }
@@ -2751,7 +2751,7 @@ table td {
 #ads-settings-view .input-group label {
   display: block;
   margin-bottom: 6px;
-  color: #fff;
+  color: #fafaf4;
   font-size: 1rem;
 }
 

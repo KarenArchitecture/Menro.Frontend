@@ -6,7 +6,7 @@
 
 .blog-page-wrapper {
   /* background-color: #111214; Dark theme background */
-  color: #ffffff;
+  color: #fafaf4;
   font-family: inherit;
   min-height: 100vh;
   position: relative;
@@ -72,7 +72,7 @@
   flex: 1;
   background: transparent;
   border: none;
-  color: #fff;
+  color: #fafaf4;
   font-size: 1rem;
   outline: none;
   padding: 15px 10px;
@@ -86,7 +86,7 @@
 .search-btn {
   background: transparent;
   border: none;
-  color: #fff;
+  color: #fafaf4;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -267,7 +267,7 @@
   margin: 0;
   font-size: 15px;
   font-weight: 600;
-  color: #ffffff;
+  color: #fafaf4;
 }
 
 .category-text p {
@@ -328,13 +328,13 @@
 
 /* Hover effect for unselected buttons (optional but recommended) */
 .feed-nav-btn:hover {
-  color: #ffffff;
+  color: #fafaf4;
 }
 
 /* Active state for the selected category */
 .feed-nav-btn.active {
   background-color: #ff6b35; /* Adjust to match your exact orange */
-  color: #ffffff;
+  color: #fafaf4;
 }
 .blog-feed-scroll-area::-webkit-scrollbar {
   display: none;
@@ -386,7 +386,7 @@
 .blog-feed-pagination__btn {
   padding: 12px 24px;
   background-color: #0c0f14;
-  color: #ffffff;
+  color: #fafaf4;
   border: 1px solid #444;
   border-radius: 10px;
   font-size: 15px;
@@ -444,7 +444,7 @@
 }
 
 .sidebar-tags-title {
-  color: #ffffff;
+  color: #fafaf4;
   font-size: 18px;
   font-weight: bold;
   margin-bottom: 20px;
@@ -672,7 +672,7 @@
 
   .category-text h3 {
     margin: 0;
-    color: #ffffff;
+    color: #fafaf4;
     font-size: 0.9rem;
     font-weight: bold;
     line-height: 1.2;
@@ -833,7 +833,7 @@
 
   .mobile-blog-banner__eyebrow {
     margin: 0 0 8px;
-    color: #ffffff;
+    color: #fafaf4;
     font-size: 14px;
     font-weight: 800;
     line-height: 1.2;
@@ -841,7 +841,7 @@
 
   .mobile-blog-banner__title {
     margin: 0 0 8px;
-    color: #ffffff;
+    color: #fafaf4;
     font-size: 22px;
     font-weight: 900;
     line-height: 1.25;
@@ -864,7 +864,7 @@
     border-radius: 999px;
     border: 0;
     background: #ffb100;
-    color: #fff;
+    color: #fafaf4;
     font-size: 28px;
     font-weight: 800;
     display: grid;
@@ -880,7 +880,7 @@
   .mobile-blog-tags__title {
     margin: 0 0 18px;
     text-align: right;
-    color: #ffffff;
+    color: #fafaf4;
     font-size: 22px;
     font-weight: 900;
     line-height: 1.2;
@@ -921,7 +921,7 @@
     height: 42px;
     border-radius: 999px;
     background: #171c23;
-    color: #ffffff;
+    color: #fafaf4;
     display: grid;
     place-items: center;
     font-size: 18px;
@@ -930,7 +930,7 @@
   }
 
   .mobile-blog-tags__name {
-    color: #ffffff;
+    color: #fafaf4;
     font-size: 14px;
     font-weight: 700;
 
@@ -953,7 +953,7 @@
 
   .mobile-tags-banner__head {
     padding: 16px 16px 0;
-    color: #ffffff;
+    color: #fafaf4;
     font-size: 18px;
     font-weight: 900;
     text-align: right;
@@ -1059,7 +1059,7 @@
   font-size: 2rem;
   font-weight: 700;
   background: none;
-  color: #fff;
+  color: #fafaf4;
 }
 
 /* FINAL FIXES */

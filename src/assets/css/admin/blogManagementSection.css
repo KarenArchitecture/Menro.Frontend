@@ -402,7 +402,7 @@ ul {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   padding: 8px 10px;
-  color: #fff;
+  color: #fafaf4;
 }
 
 #blog-management-view .form-error {
@@ -417,7 +417,7 @@ ul {
   padding: 0 12px;
   border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
   background: rgba(255, 255, 255, 0.05);
-  color: var(--text, #fff);
+  color: var(--text, #fafaf4);
 }
 #blog-management-view .btn:hover {
   background: rgba(255, 255, 255, 0.08);
@@ -476,7 +476,7 @@ ul {
 }
 #blog-management-view .custom-icon-row .name {
   flex: 1 1 auto;
-  color: var(--text, #fff);
+  color: var(--text, #fafaf4);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -619,7 +619,7 @@ ul {
 }
 #blog-management-view .blog-mgmt__cat-name strong {
   display: block;
-  color: var(--text, #fff);
+  color: var(--text, #fafaf4);
   word-break: break-word;
 }
 #blog-management-view .blog-mgmt__cat-subtitle {

@@ -64,7 +64,7 @@ export default function BillsPage() {
 
   const items = bill.items.map((it, idx) => ({
     id: idx,
-    title: it.name,
+    title: it.foodName,
     image: resolveFileUrl(it.imageUrl, "/images/food/food-placeholder.png"),
     rating: Number(it.rating || 0).toFixed(1),
     reviews: it.voters ?? 0,
@@ -72,7 +72,7 @@ export default function BillsPage() {
     variants: [
       {
         id: `v-${idx}`,
-        name: it.name,
+        name: it.variantName || it.foodName,
         quantity: it.quantity,
         price: it.unitPrice,
         addons: it.addons.map((a, ai) => ({
@@ -122,11 +122,11 @@ export default function BillsPage() {
             <h2 className="bills-header-title">
               فاکتور خرید - {bill.restaurantName}
             </h2>
+            <span className="bills-header-badge">
+              {orderTypeLabel} — {" "}
+              {toPersianDigits(bill.invoiceNumber || "—")}
+            </span>
           </div>
-          <span className="bills-header-badge">
-            {orderTypeLabel} — فاکتور{" "}
-            {toPersianDigits(bill.invoiceNumber || "—")}
-          </span>
           <span className="bills-header-date">{dateLabel}</span>
         </div>
       </div>

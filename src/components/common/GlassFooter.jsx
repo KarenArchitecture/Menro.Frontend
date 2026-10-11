@@ -10,9 +10,13 @@ import "../../assets/css/glass-footer.css";
 /** فال‌بک برای زمانی که API در دسترس نیست یا هنوز چیزی برایش تعریف نشده. */
 const DEFAULT_FOOTER_LINKS = [
   { id: "home", title: "وب اپ", href: "/home" },
+  { id: "home", title: "درباره‌ما", href: "/home" },
   { id: "subscriptions", title: "اشتراک‌ها", href: "/subscriptions" },
-  { id: "blog", title: "بلاگ", href: "/blog" },
-  { id: "restaurants", title: "رستوران ها", href: "/restaurants" },
+  { id: "home", title: " مقالات", href: "/blog" },
+  { id: "home", title: " سوالات متداول", href: "/home" },
+
+  { id: "blog", title: " ارتباط با ما", href: "" },
+  { id: "restaurants", title: " نقشه", href: "/restaurants" },
 ];
 
 /** سوشال‌ها فعلاً در مدل بک‌اند (SiteLink) وجود ندارند، پس ثابت می‌مانند. */

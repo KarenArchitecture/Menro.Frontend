@@ -5,6 +5,7 @@ import StarIcon from "../icons/StarIcon";
 import ShoppingBagIcon from "../icons/ShoppingBagIcon";
 import MusicIcon from "../icons/MusicIcon";
 import CircleIcon from "../icons/CircleIcon";
+import { useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toPersianDigits } from "../../utils/persianNumbers";
 import resolveFileUrl from "../../utils/resolveFileUrl";
@@ -37,6 +38,38 @@ function ShopBanner({
     "shop-banner",
   );
 
+  const bannerRef = useRef(null);
+
+  useEffect(() => {
+    const el = bannerRef.current;
+    if (!el) return;
+
+    const nav = el.querySelector(".navbar");
+    let raf = 0;
+
+    const update = () => {
+      raf = 0;
+      const range = Math.max(el.offsetHeight - (nav?.offsetHeight ?? 0), 1);
+      const scrolled = -el.getBoundingClientRect().top;
+      const p = Math.min(Math.max(scrolled / range, 0), 1);
+      el.style.setProperty("--banner-progress", p.toFixed(3));
+    };
+
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+
+    update();
+    document.addEventListener("scroll", onScroll, { passive: true, capture: true });
+    window.addEventListener("resize", onScroll);
+
+    return () => {
+      document.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [banner]);
+
   if (!banner) {
     return (
       <div className="text-center py-6 text-red-500">
@@ -61,6 +94,7 @@ function ShopBanner({
 
   return (
     <section
+      ref={bannerRef}
       className="banner"
       style={{ backgroundImage: `url(${bannerUrl})` }}
     >

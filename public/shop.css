@@ -24,6 +24,7 @@
    ===================================================== */
 :root {
   --app-header-height: 88px; /* not used in this file */
+  --shop-navbar-h: 8.4rem; /* height of the fixed banner navbar */
   --checkout-bar-h: 9.6rem;
   --checkout-h: 0px; /* space reserved for the checkout bar (0 when hidden) */
 }
@@ -118,7 +119,7 @@ footer,
    ===================================================== */
 .banner {
   position: relative;
-  padding: 2.5rem;
+  padding: var(--shop-navbar-h) 2.5rem 2.5rem;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -133,6 +134,17 @@ footer,
   background: rgba(0, 0, 0, 0.5);
 }
 
+/* cover that fades to #0c0f14 while scrolling (--banner-progress is set by ShopBanner.jsx) */
+.banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: #0c0f14;
+  opacity: var(--banner-progress, 0);
+  pointer-events: none;
+}
+
 /* keeps all banner content above the dark overlay */
 .banner * {
   position: relative;
@@ -140,10 +152,27 @@ footer,
 }
 
 .navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  height: var(--shop-navbar-h);
+  padding: 2.5rem;
+}
+
+/* navbar background: transparent at the top, #0c0f14 when scrolled */
+.navbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #0c0f14;
+  opacity: var(--banner-progress, 0);
 }
 
 .nav-right,
@@ -255,7 +284,7 @@ footer,
   justify-content: flex-end;
   gap: 1rem;
   height: 100%;
-  padding-top: 2.5rem;
+  padding-top: 0;
 }
 
 .search-bar--hero {
@@ -324,7 +353,7 @@ footer,
 
 .category-wrap {
   position: sticky;
-  top: 0;
+  top: var(--shop-navbar-h);
   z-index: 1000;
   background: #0c0f14;
   border-top: solid 1px #fafaf410;

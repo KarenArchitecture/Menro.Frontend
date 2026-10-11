@@ -56,8 +56,9 @@ function RestaurantContent() {
       const topAnchor = document.getElementById("shop-menu-top");
 
       if (topAnchor) {
+        const navH = document.querySelector(".navbar")?.offsetHeight ?? 0;
         const y =
-          topAnchor.getBoundingClientRect().top + window.pageYOffset - 12;
+          topAnchor.getBoundingClientRect().top + window.pageYOffset - navH - 12;
 
         window.scrollTo({
           top: y,

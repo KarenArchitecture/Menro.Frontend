@@ -47,6 +47,7 @@ import {
 import { CartProvider } from "./components/shop/CartContext";
 import RestaurantSwitchConfirmModal from "./components/shop/RestaurantSwitchConfirmModal";
 import { AdminNotificationProvider } from "./notifications/AdminNotificationProvider";
+import RestaurantInfoPage from "./pages/RestaurantInfoPage";
 
 // --- Page wrapper for 3D depth animation ---
 // (defined ONCE, at module scope, outside App)
@@ -228,6 +229,7 @@ export default function App() {
                 />
                 <Route path="/restaurant/:slug" element={<RestaurantPage />} />
                 <Route path="/restaurant/:slug/music" element={<MusicPage />} />
+                <Route path="/restaurant/:slug/info" element={<RestaurantInfoPage />} />
                 <Route
                   path="/restaurants"
                   element={<RestaurantsBrowsePage />}

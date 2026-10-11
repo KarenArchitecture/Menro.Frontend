@@ -111,7 +111,12 @@ function ShopBanner({
           </div>
 
           <div className="shop-icon-wrapper">
-            <button className="icon-btn" aria-label="Map">
+            <button
+              type="button"
+              className="icon-btn"
+              aria-label="Info"
+              onClick={() => navigate(`/restaurant/${banner.slug}/info`)}
+            >
               <MapIcon />
             </button>
           </div>

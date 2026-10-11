@@ -1,0 +1,467 @@
+/* src/assets/css/restaurant-info.css  (restaurant info page)
+
+   Mobile-first (design base 390px). Everything is in rem (1rem = 10px,
+   set in generic.css) except hairline borders. Class prefix: rinfo-
+
+   Contents
+   --------
+   1. Tokens + base
+   2. Hero (banner image, back / cart)
+   3. Name card (logo notch, name, rating, hours)
+   4. Map
+   5. About text
+   6. Social row
+   7. Bottom bar
+*/
+
+
+/* =====================================================
+   1. Tokens + base
+   ===================================================== */
+:root {
+  --rinfo-bg: #0c0f14;
+  --rinfo-text: #fafaf4;
+  --rinfo-accent: #ff683c;
+  --rinfo-muted: #a5adc0;
+
+  --rinfo-card-bg: #13171e;
+  --rinfo-card-border: #1e2228;
+  --rinfo-box-top: #262b33;
+  --rinfo-box-bottom: #161b20;
+  --rinfo-box-border: #2b3037;
+
+  --rinfo-side: 2.5rem;
+  /* space from the left / right screen edge */
+  --rinfo-max-w: 56rem;
+  /* content column cap on tablets */
+
+  --rinfo-hero-h: 16.2rem;
+  --rinfo-card-overlap: 6.6rem;
+  /* how far the card climbs over the hero */
+  --rinfo-logo: 7rem;
+  --rinfo-logo-lift: 1.1rem;
+  /* logo center sits this far above the card top */
+  --rinfo-notch-gap: 0.5rem;
+  /* gap between logo and the card cut-out */
+}
+
+/* The app shell adds padding-bottom (var(--app-shell-pb, 9rem)) under every page
+   for the mobile nav. This page has no mobile nav, so cancel it - only while
+   this page is rendered (the selector can't match anywhere else). */
+.app-shell__content:has(.rinfo) {
+  padding-bottom: 0;
+}
+
+.rinfo {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--rinfo-bg);
+  color: var(--rinfo-text);
+  direction: rtl;
+}
+
+/* neutralise any compounding font-size from other pages' "*" rules;
+   every text element below sets its own rem size */
+.rinfo * {
+  box-sizing: border-box;
+  font-size: inherit;
+}
+
+.rinfo button {
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+
+/* =====================================================
+   2. Hero
+   ===================================================== */
+.rinfo-hero {
+  position: relative;
+  height: var(--rinfo-hero-h);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.rinfo-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* same position / size as the buttons in ShopBanner */
+.rinfo-nav {
+  position: absolute;
+  top: 2.5rem;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: var(--rinfo-max-w);
+  margin: 0 auto;
+  padding: 0 var(--rinfo-side);
+}
+
+.rinfo-nav-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  background: var(--rinfo-bg);
+  border-radius: 1rem;
+}
+
+.rinfo-icon-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.rinfo-icon-btn:focus {
+  outline: none;
+}
+
+.rinfo-icon-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 2px;
+  border-radius: 1.5rem;
+}
+
+.rinfo-icon-btn>svg {
+  width: auto;
+  height: auto;
+}
+
+.rinfo-cart-badge {
+  position: absolute;
+  right: -0.2rem;
+  bottom: 0.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.72rem;
+  height: 1.25rem;
+  padding: 0.1rem 0.45rem 0;
+  background: #ef5254;
+  border-radius: 1.9rem;
+  color: var(--rinfo-text);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+
+/* =====================================================
+   3. Body + name card
+   ===================================================== */
+.rinfo-body {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+  max-width: var(--rinfo-max-w);
+  margin: calc(var(--rinfo-card-overlap) * -1) auto 0;
+  padding: 0 var(--rinfo-side) 2.5rem;
+}
+
+.rinfo-card {
+  position: relative;
+  padding: 3.4rem 1.5rem 1.6rem;
+}
+
+/* card background + border; a circle is cut out around the logo */
+.rinfo-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--rinfo-card-bg);
+  border: 1px solid var(--rinfo-card-border);
+  border-radius: 2rem;
+  -webkit-mask-image: radial-gradient(circle at 50% calc(var(--rinfo-logo-lift) * -1),
+      transparent calc(var(--rinfo-logo) / 2 + var(--rinfo-notch-gap)),
+      #000 calc(var(--rinfo-logo) / 2 + var(--rinfo-notch-gap) + 0.5px));
+  mask-image: radial-gradient(circle at 50% calc(var(--rinfo-logo-lift) * -1),
+      transparent calc(var(--rinfo-logo) / 2 + var(--rinfo-notch-gap)),
+      #000 calc(var(--rinfo-logo) / 2 + var(--rinfo-notch-gap) + 0.5px));
+}
+
+/* thin ring that follows the cut-out; clipped so it only shows inside the card */
+.rinfo-card__clip {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  border-radius: 2rem;
+  pointer-events: none;
+}
+
+.rinfo-card__clip::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: calc((var(--rinfo-logo) / 2 + var(--rinfo-notch-gap) + var(--rinfo-logo-lift)) * -1);
+  width: calc(var(--rinfo-logo) + var(--rinfo-notch-gap) * 2);
+  height: calc(var(--rinfo-logo) + var(--rinfo-notch-gap) * 2);
+  border: 1px solid var(--rinfo-card-border);
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+
+.rinfo-logo {
+  position: absolute;
+  left: 50%;
+  top: calc((var(--rinfo-logo) / 2 + var(--rinfo-logo-lift)) * -1);
+  z-index: 3;
+  width: var(--rinfo-logo);
+  height: var(--rinfo-logo);
+  overflow: hidden;
+  background: #333;
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+
+.rinfo-logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rinfo-title {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  height: 3.2rem;
+  margin-bottom: 1.6rem;
+}
+
+.rinfo-name {
+  margin: 0;
+  font-size: 2.4rem;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.rinfo-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.rinfo-rating svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.rinfo-rating__rate {
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.rinfo-rating__voters {
+  color: var(--rinfo-muted);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+/* shared look of the two gradient chips (hours + address) */
+.rinfo-hours,
+.rinfo-map__address {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 4.1rem;
+  padding: 0 1.2rem;
+  background: linear-gradient(180deg,
+      var(--rinfo-box-top),
+      var(--rinfo-box-bottom));
+  border: 1px solid var(--rinfo-box-border);
+  border-radius: 1.2rem;
+}
+
+.rinfo-hours {
+  position: relative;
+  z-index: 2;
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.rinfo-hours svg,
+.rinfo-map__address svg {
+  flex-shrink: 0;
+}
+
+
+/* =====================================================
+   4. Map  (340 x 194 in the design -> same ratio on every width)
+   ===================================================== */
+.rinfo-map {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 340 / 194;
+  margin: 2.6rem 0 0;
+  padding: 0;
+  overflow: hidden;
+  background: #e6e9ec;
+  border: none;
+  border-radius: 2rem;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.rinfo-map__art,
+.rinfo-map__img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* tip of the pin sits at ~42.5% of the map height, like in the design */
+.rinfo-map__pin {
+  position: absolute;
+  left: 50%;
+  top: 42.5%;
+  transform: translate(-50%, -100%);
+  filter: drop-shadow(0 0.2rem 0.3rem rgba(0, 0, 0, 0.25));
+}
+
+.rinfo-map__address {
+  position: absolute;
+  left: 1.5rem;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  color: var(--rinfo-text);
+  font-size: 1.1rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.rinfo-map__address-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* =====================================================
+   5. About
+   ===================================================== */
+.rinfo-about {
+  margin: 2.5rem 0 0;
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 2;
+  text-align: justify;
+}
+
+.rinfo-about__icon {
+  display: inline-block;
+  margin-inline-end: 0.5rem;
+  vertical-align: middle;
+}
+
+
+/* =====================================================
+   6. Social row  (horizontal scroll, scrollbar hidden)
+   ===================================================== */
+.rinfo-socials {
+  display: flex;
+  gap: 1.6rem;
+  /* minimum gap after the description (padding-top, as in Figma);
+     "auto" pushes the row down when the page content is short */
+  margin: auto calc(var(--rinfo-side) * -1) 0;
+  padding: 13.6rem var(--rinfo-side) 0;
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.rinfo-socials::-webkit-scrollbar {
+  display: none;
+}
+
+.rinfo-socials__item {
+  flex: 0 0 auto;
+}
+
+.rinfo-socials__link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 6.4rem;
+  height: 6.4rem;
+  background: linear-gradient(180deg,
+      var(--rinfo-box-top),
+      var(--rinfo-box-bottom));
+  border-radius: 1.2rem;
+  -webkit-tap-highlight-color: transparent;
+}
+
+
+/* =====================================================
+   7. Bottom bar
+   ===================================================== */
+.rinfo-bar {
+  background: var(--rinfo-card-bg);
+  border-top: 1px solid var(--rinfo-card-border);
+}
+
+.rinfo-bar__inner {
+  max-width: var(--rinfo-max-w);
+  margin: 0 auto;
+  padding: 2.4rem var(--rinfo-side) calc(2.4rem + env(safe-area-inset-bottom, 0px));
+}
+
+.rinfo-enter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 4.4rem;
+  padding: 0;
+  background: var(--rinfo-accent);
+  border: none;
+  border-radius: 1.2rem;
+  color: var(--rinfo-text);
+  font-size: 1.4rem;
+  font-weight: 800;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { toPersianDigits } from "../../utils/persianNumbers";
@@ -75,6 +75,51 @@ function ProgressRing({ durationMs, resetKey }) {
         strokeDashoffset={circumference}
       />
     </svg>
+  );
+}
+
+// اسم طولانی: به‌جای ناقص نمایش داده شدن، بی‌نهایت از چپ به راست می‌لغزد
+function MarqueeText({ text, className }) {
+  const wrapRef = useRef(null);
+  const innerRef = useRef(null);
+  const [distance, setDistance] = useState(0);
+
+  useLayoutEffect(() => {
+    const wrap = wrapRef.current;
+    const inner = innerRef.current;
+    if (!wrap || !inner) return;
+
+    const measure = () => {
+      const diff = inner.offsetWidth - wrap.clientWidth;
+      setDistance(diff > 1 ? diff : 0);
+    };
+
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(wrap);
+    return () => ro.disconnect();
+  }, [text]);
+
+  const isScrolling = distance > 0;
+  const duration = Math.max(4, distance / 40 / 0.76); // سرعت ≈ ۴۰ پیکسل بر ثانیه
+
+  return (
+    <span ref={wrapRef} className={className} title={text}>
+      <span
+        ref={innerRef}
+        className={`order-success-modal__itemNameInner${isScrolling ? " is-scrolling" : ""}`}
+        style={
+          isScrolling
+            ? {
+              "--marquee-distance": `${distance}px`,
+              "--marquee-duration": `${duration}s`,
+            }
+            : undefined
+        }
+      >
+        {text}
+      </span>
+    </span>
   );
 }
 
@@ -204,17 +249,17 @@ export default function OrderSuccessModal({
               {items.map((item) => (
                 <div key={item.id} className="order-success-modal__row">
                   <div className="order-success-modal__itemTitle">
-                    <span className="order-success-modal__itemName" title={item.name}>
-                      {item.name}
-                    </span>
+                    <MarqueeText text={item.name} className="order-success-modal__itemName" />
                     {item.hasAddons && (
                       <span className="order-success-modal__addonsTag">با مخلفات</span>
                     )}
                   </div>
                   <div className="order-success-modal__rowRight">
+                    {item.quantity > 1 && (
+                      <span className="order-success-modal__qty">x{toPersianDigits(item.quantity)}</span>
+                    )}
                     <span className="order-success-modal__price">{formatPrice(item.unitPrice)}</span>
                     <span className="order-success-modal__currency">تومان</span>
-                    <span className="order-success-modal__qty">×{toPersianDigits(item.quantity)}</span>
                   </div>
                 </div>
               ))}

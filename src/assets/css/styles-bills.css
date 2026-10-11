@@ -1,15 +1,45 @@
-/* src/assets/css/styles-bills.css */
+/* src/assets/css/styles-bills.css
+   Bill (invoice) page and its item card.
 
-/* Page Layout Hierarchy */
+   Contents
+   --------
+   1. Page layout
+   2. Page header
+   3. Page footer
+   4. Bill card — container & header
+   5. Bill card — item rows (variants & addons)
+   6. Bill card — total
+   7. Shared: currency
+*/
+
+
+/* ==========================================================================
+   1. Page layout
+   ========================================================================== */
+
+/* The body never scrolls; only .bills-scroll-area does. */
 .bills-page-container {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    background-color: #121418; /* Standard app background */
-    overflow: hidden; /* Prevent full body scroll, handle inside scroll area */
+    background-color: #121418;
+    overflow: hidden;
 }
 
-/* --- Updated Header Styles --- */
+.bills-scroll-area {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px 16px 100px; /* bottom padding clears the fixed footer (10rem) */
+    overflow-y: auto;
+}
+
+
+/* ==========================================================================
+   2. Page header
+   ========================================================================== */
+
 .bills-header {
     height: 8.5rem;
     display: flex;
@@ -18,115 +48,110 @@
     gap: 16px;
     padding: 2.5rem;
     background-color: #121418;
+    border-bottom: 1px solid #1b2026;
     flex-shrink: 0;
     z-index: 10;
-    border-bottom: 1px solid #1b2026;
 }
 
 .bills-back-btn {
-    background-color: #1a1d24; /* Dark rounded rectangle matching screenshot */
-    border: none;
-    cursor: pointer;
+    width: 44px;
+    height: 44px;
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
+    border: none;
     border-radius: 14px;
-    padding: 0;
+    background-color: #1a1d24;
+    cursor: pointer;
     flex-shrink: 0;
 }
 
 .bills-header-info {
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    flex: 1;
-    min-width: 0;
 }
 
 .bills-header-title-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
     max-width: 100%;
     min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .bills-header-title {
+    min-width: 0;
+    margin: 0;
+    color: #fafaf4;
     font-size: 1.6rem;
     font-weight: 600;
-    color: #fafaf4;
-    margin: 0;
-    min-width: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
+/* Order type + invoice number, in the orange accent. */
 .bills-header-badge {
+    margin-right: 4px;
+    color: #ff623d;
     font-size: 1.3rem;
     font-weight: 800;
-    color: #ff623d; /* Orange accent */
-    margin-right: 4px; /* Space between title and badge */
-    flex-shrink: 0;
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .bills-header-date {
+    color: #a5adc0;
     font-size: 1.2rem;
-    color: #A5ADC0; /* Subdued gray text */
     font-weight: 600;
 }
 
-.bills-scroll-area {
-    flex-grow: 1; /* Takes up remaining space */
-    overflow-y: auto; /* Handles its own scrolling */
-    padding: 16px 16px 100px 16px; /* 100px bottom padding to clear the fixed footer */
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
+
+/* ==========================================================================
+   3. Page footer
+   ========================================================================== */
 
 .bills-footer {
-    height: 10rem;
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    background-color: #13171e;
+    z-index: 100;
+    height: 10rem;
     padding: 20px 36px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    /* border-top: 1px solid #333742; */
-    z-index: 100;
+    justify-content: space-between;
+    background-color: #13171e;
 }
 
-.bills-footer-label {
-    color: #fafaf4;
-    font-weight: 700;
-    font-size: 1.5rem;
-}
-
+.bills-footer-label,
 .bills-footer-total {
     color: #fafaf4;
-    font-weight: 700;
     font-size: 1.5rem;
+    font-weight: 700;
 }
-/* --- Card Container --- */
+
+
+/* ==========================================================================
+   4. Bill card — container & header
+   ========================================================================== */
+
 .bill-card {
-    background: linear-gradient(135deg, #262b33 0%, #161b20 100%);
-    border-radius: 20px;
-    padding: 16px;
     margin-bottom: 16px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
     gap: 16px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #262b33 0%, #161b20 100%);
     color: #fafaf4;
 }
 
-/* --- Header Layout --- */
 .bill-card__header {
     display: flex;
     align-items: flex-start;
@@ -154,25 +179,32 @@
 }
 
 .bill-card__title {
+    margin: 0;
+    color: #fafaf4;
     font-size: 1.5rem;
     font-weight: 600;
     line-height: 1.5;
-    margin: 0;
-    color: #fafaf4;
 }
 
+/* Reverses the RTL order so the star icon ends up on the left of the score. */
 .bill-card__rating {
+    margin-top: 4px;
     display: flex;
+    flex-direction: row-reverse;
     align-items: center;
     gap: 4px;
-    margin-top: 4px;
     flex-shrink: 0;
-    flex-direction: row-reverse; /* Align rating to the right */
+}
+
+.star-icon {
+    width: 20px;
+    height: 20px;
+    margin-bottom: 1px;
 }
 
 .rating-score {
-    font-weight: 700;
     font-size: 1.2rem;
+    font-weight: 700;
 }
 
 .rating-count {
@@ -180,49 +212,42 @@
     font-size: 1rem;
 }
 
-/* --- Items List (Variants & Addons) --- */
+
+/* ==========================================================================
+   5. Bill card — item rows (variants & addons)
+   ========================================================================== */
+
 .bill-card__items {
     display: flex;
     flex-direction: column;
-    gap: 1rem; /* Spacing between rows */
+    gap: 1rem;
 }
 
 .bill-row {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
 }
 
-/* Main Category (Dark Background) */
+/* Variant: dark filled row. */
 .variant-row {
-    background-color: #141921;
     padding: 14px 16px;
     border-radius: 12px;
-    font-weight: 700;
+    background-color: #141921;
     font-size: 1rem;
+    font-weight: 700;
 }
 
-/* Addons (Transparent Background on Gradient) */
+/* Addon: transparent row sitting on the card gradient. */
 .bill-addon-row {
     padding: 0 16px;
-    font-weight: 500;
     font-size: 1rem;
+    font-weight: 500;
 }
 
 .addon-name-wrapper {
     display: flex;
     align-items: center;
-    gap: 12px;
-}
-
-.addon-check {
-    background-color: #141921;
-    border-radius: 6px;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .bill-row__name {
@@ -230,17 +255,17 @@
     font-weight: 700;
 }
 
-/* Quantity and Price Formatting */
+/* Quantity ("x۱۵") and price, e.g. "x۱۵  ۲۴۰,۰۰۰ تومان". */
 .bill-row__details {
     display: flex;
     align-items: center;
-    gap: 16px; /* Spacing between 'x15' and '240,000' */
+    gap: 16px;
 }
 
 .bill-row__qty {
+    color: #fafaf4;
     font-size: 1rem;
     font-weight: 600;
-    color: #fafaf4;
 }
 
 .bill-row__price {
@@ -250,40 +275,46 @@
     font-weight: 700;
 }
 
-.bill-currency {
-    color: #ff623d; /* Match the screenshot orange */
-    font-size: inherit;
-    font-weight: 700;
+/* Check mark at the end of every addon row. */
+.addon-check-icon {
+    width: 1.6rem;
+    height: 1.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    background-color: #141921;
 }
 
-/* --- Total Section --- */
+
+/* ==========================================================================
+   6. Bill card — total
+   ========================================================================== */
+
 .bill-card__total {
-    background-color: #141921;
     padding: 14px 16px;
-    border-radius: 12px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    font-weight: 700;
+    justify-content: space-between;
+    border-radius: 12px;
+    background-color: #141921;
     font-size: 1.2rem;
+    font-weight: 700;
 }
 
 .total-label {
     font-size: 1.2rem;
     font-weight: 700;
 }
-.addon-check-icon {
-    background-color: #141921;
-    border-radius: 0.5rem;
-    width: 1.6rem;
-    height: 1.6rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
 
-.star-icon {
-    width: 20px;
-    height: 20px;
-    margin-bottom: 1px;
+
+/* ==========================================================================
+   7. Shared: currency
+   ========================================================================== */
+
+/* Used in the item rows, the card total and the page footer. */
+.bill-currency {
+    color: #ff623d;
+    font-size: inherit;
+    font-weight: 700;
 }

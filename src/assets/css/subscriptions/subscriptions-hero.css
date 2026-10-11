@@ -1,4 +1,4 @@
-/* src/assets/css/subscriptions-hero.css */
+/* src/assets/css/subscriptions/subscriptions-hero.css */
 
 .sub-hero {
   max-width: 720px;
@@ -30,167 +30,214 @@
   font-weight: 500;
 }
 
+/* ---------- Toggle: option · switch · option (no surrounding box) ---------- */
 .sub-hero__toggle-row {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-top: 1rem;
-  flex-direction: row-reverse;
+  justify-content: center;
+  width: 100%;
+  margin-top: 1.25rem;
 }
 
-/* ---------- Pill with the two labels + switch ---------- */
-.sub-hero__toggle-labels {
-  position: relative;
+.sub-hero__toggle {
+  position: relative; /* anchor for the discount hint */
   display: flex;
-  flex-direction: row-reverse; /* first DOM child (یک‌ماهه) ends up on the left */
   align-items: center;
-  gap: 0.9rem;
-  background: var(--sub-surface);
-  border: 1px solid var(--sub-border);
-  border-radius: 999px;
-  padding: 0.5rem 1.1rem;
-  transition: border-color 0.25s ease;
+  gap: 1.15rem;
+  direction: ltr; /* physical order: monthly | switch | yearly */
   isolation: isolate;
-}
-
-/* "lamp" glow blobs — one per side, toggled by state class */
-.sub-hero__toggle-labels::before,
-.sub-hero__toggle-labels::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  transform: translateY(-50%);
-  background: radial-gradient(
-    circle,
-    rgba(255, 104, 60, 0.55) 0%,
-    rgba(255, 104, 60, 0) 72%
-  );
-  opacity: 0;
-  transition: opacity 0.25s ease;
-  pointer-events: none;
-  z-index: -1;
-}
-
-/* right blob = یک‌ساله side */
-.sub-hero__toggle-labels::before {
-  right: -14px;
-}
-/* left blob = یک‌ماهه side */
-.sub-hero__toggle-labels::after {
-  left: -14px;
-}
-
-.sub-hero__toggle-labels.glow-yearly {
-  border-color: rgba(255, 104, 60, 0.55);
-  box-shadow: 4px 0 18px -4px rgba(255, 104, 60, 0.35);
-}
-.sub-hero__toggle-labels.glow-yearly::before {
-  opacity: 1;
-}
-
-.sub-hero__toggle-labels.glow-monthly {
-  border-color: rgba(255, 104, 60, 0.55);
-  box-shadow: -4px 0 18px -4px rgba(255, 104, 60, 0.35);
-}
-.sub-hero__toggle-labels.glow-monthly::after {
-  opacity: 1;
 }
 
 .sub-hero__toggle-label {
   position: relative;
-  font-size: 0.95rem;
+  z-index: 2; /* stays crisp above the switch's glow */
+  font-size: 1.05rem;
   font-weight: 600;
   color: var(--sub-muted);
-  transition: color 0.15s ease;
+  user-select: none;
+  transition: color 0.2s ease;
 }
 
 .sub-hero__toggle-label.is-active {
   color: #fff;
+  font-weight: 800;
 }
 
 /* ---------- Switch ---------- */
 .sub-hero__switch {
   position: relative;
-  width: 46px;
-  height: 26px;
-  border-radius: 999px;
-  border: none;
-  cursor: pointer;
-  background: rgba(255, 255, 255, 0.12);
-  transition: background 0.2s ease;
   flex-shrink: 0;
+  width: 80px;
+  height: 36px;
+  padding: 0;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: #131418;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
 }
 
-.sub-hero__switch.is-yearly {
-  background: rgba(255, 104, 60, 0.28);
+.sub-hero__switch:focus-visible {
+  outline: 2px solid rgba(255, 104, 60, 0.65);
+  outline-offset: 5px;
+}
+
+/* One "lamp" per side. Each carries: an inner hue, a border ring and an outer
+   sun-like glow. Only the side the thumb sits on is visible. */
+.sub-hero__switch-lit {
+  position: absolute;
+  inset: -1.5px; /* cover the border box */
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+
+  /* inner hue: strongest at the lit end, gone by the middle of the switch */
+  background: linear-gradient(
+    var(--lit-dir),
+    rgba(255, 104, 60, 0.34) 0%,
+    rgba(255, 104, 60, 0.12) 26%,
+    rgba(255, 104, 60, 0) 52%
+  );
+}
+
+.sub-hero__switch-lit--left {
+  --lit-dir: to right;
+}
+.sub-hero__switch-lit--right {
+  --lit-dir: to left;
+}
+
+.sub-hero__switch.is-monthly .sub-hero__switch-lit--left,
+.sub-hero__switch.is-yearly .sub-hero__switch-lit--right {
+  opacity: 1;
+}
+
+/* border ring: lit at the far end, fading out by the midpoint */
+.sub-hero__switch-lit::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: linear-gradient(
+    var(--lit-dir),
+    #ff683c 0%,
+    rgba(255, 104, 60, 0.65) 18%,
+    rgba(255, 104, 60, 0) 50%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+/* outer glow that lights up the immediate surroundings */
+.sub-hero__switch-lit::after {
+  content: "";
+  position: absolute;
+  top: -28px;
+  bottom: -28px;
+  width: 132px;
+  pointer-events: none;
+}
+
+.sub-hero__switch-lit--left::after {
+  left: -46px;
+  background: radial-gradient(
+    ellipse closest-side at 46% 50%,
+    rgba(255, 104, 60, 0.5) 0%,
+    rgba(255, 104, 60, 0.22) 38%,
+    rgba(255, 104, 60, 0.07) 68%,
+    rgba(255, 104, 60, 0) 100%
+  );
+}
+
+.sub-hero__switch-lit--right::after {
+  right: -46px;
+  background: radial-gradient(
+    ellipse closest-side at 54% 50%,
+    rgba(255, 104, 60, 0.5) 0%,
+    rgba(255, 104, 60, 0.22) 38%,
+    rgba(255, 104, 60, 0.07) 68%,
+    rgba(255, 104, 60, 0) 100%
+  );
 }
 
 .sub-hero__switch-thumb {
   position: absolute;
-  top: 3px;
-  width: 20px;
-  height: 20px;
+  z-index: 2;
+  top: 4px;
+  left: 4px;
+  width: 25px;
+  height: 25px;
   border-radius: 50%;
-  background: #fff;
-  transition:
-    right 0.2s ease,
-    left 0.2s ease,
-    background 0.2s ease,
-    box-shadow 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  background: radial-gradient(circle at 35% 30%, #ff9a73, #ff683c 62%);
+  box-shadow:
+    0 0 0 3px rgba(255, 104, 60, 0.16),
+    0 4px 14px rgba(255, 104, 60, 0.6);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* 77px inner width − 25px thumb − 4px gap on each side = 44px of travel */
 .sub-hero__switch.is-yearly .sub-hero__switch-thumb {
-  right: 3px;
-  left: auto;
-  background: #ff683c;
-  box-shadow: 0 2px 10px rgba(255, 104, 60, 0.55);
+  transform: translateX(44px);
 }
 
-.sub-hero__switch.is-monthly .sub-hero__switch-thumb {
-  left: 3px;
-  right: auto;
-  background: #fff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-}
-
-/* ---------- Discount hint (svg placeholder, sits next to the switch) ---------- */
+/* ---------- Discount hint: arrow (svg) + slogan ---------- */
 .sub-hero__discount-hint {
+  position: absolute;
+  left: calc(100% + 1.25rem); /* right side of the options */
+  bottom: 50%; /* arrow tip lines up with the options' vertical center */
   display: flex;
-  flex-direction: row-reverse;
-  align-items: flex-start;
-  margin-top: -18px;
+  align-items: flex-end;
+  gap: 0.6rem;
+  white-space: nowrap;
 }
 
 .sub-hero__discount-arrow {
   display: block;
-  width: 80px;
-  height: 80px;
-  transform: scaleX(
-    -1
-  ); /* remove if your provided svg is already oriented correctly */
+  width: 84px;
+  height: auto;
+  /* the arrow should point LEFT, towards the options. If your svg points
+     right, set --sub-arrow-flip: -1 on .sub-hero__discount-hint */
+  transform: scaleX(var(--sub-arrow-flip, 1));
 }
 
 .sub-hero__discount-badge {
-  margin-top: -6px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--sub-accent);
-  white-space: nowrap;
+  direction: rtl;
+  margin-bottom: -1.7rem; /* sits slightly below the arrow line, to its right */
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--sub-muted);
 }
 
 @media (max-width: 640px) {
-  .sub-hero__toggle-row {
-    flex-direction: column;
+  .sub-hero__toggle {
+    flex-wrap: wrap;
+    justify-content: center;
   }
   .sub-hero__discount-hint {
-    margin-top: 0.4rem;
-    align-items: center;
+    position: static;
+    width: 100%;
+    justify-content: center;
   }
   .sub-hero__discount-arrow {
     display: none;
+  }
+  .sub-hero__discount-badge {
+    margin-bottom: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sub-hero__switch-lit,
+  .sub-hero__switch-thumb,
+  .sub-hero__toggle-label {
+    transition: none;
   }
 }

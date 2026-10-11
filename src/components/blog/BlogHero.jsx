@@ -1,9 +1,32 @@
-import React from "react";
+// src/components/blog/BlogHero.jsx
+import React, { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "../common/SearchBar";
+import ParticleField from "./ParticleField";
+import useHeroPointer from "./useHeroPointer";
+import useKineticFloaters from "./useKineticFloaters";
+
+// Dark gradient from the CodePen (bottom -> top)
+const HERO_BG = "linear-gradient(0deg, #191d1e 50%, #283139 100%)";
+
+// The floating food images. Each keeps its own CSS class for position/size
+// (img-fries, img-burger, ...), and they all share the `floating-img` class,
+// which is what the physics hook looks for.
+const FLOATERS = [
+  { src: "/images/blog-pics/blog-fries.svg", alt: "Fries", cls: "img-fries" },
+  { src: "/images/blog-pics/blog-burger.svg", alt: "Burger", cls: "img-burger" },
+  { src: "/images/blog-pics/blog-ramen.svg", alt: "Ramen", cls: "img-ramen" },
+  { src: "/images/blog-pics/blog-sushi.svg", alt: "Sushi", cls: "img-sushi" },
+  { src: "/images/blog-pics/blog-pizza.svg", alt: "Pizza", cls: "img-pizza" },
+  { src: "/images/blog-pics/blog-soda.svg", alt: "Soda", cls: "img-soda" },
+];
 
 const BlogHero = ({ hero }) => {
   const navigate = useNavigate();
+
+  const sectionRef = useRef(null);
+  const pointerRef = useHeroPointer(sectionRef);
+  useKineticFloaters(sectionRef, pointerRef);
 
   const handleSearch = (term) => {
     if (!term) return;
@@ -11,37 +34,27 @@ const BlogHero = ({ hero }) => {
   };
 
   return (
-    <section className="blog-hero-section">
-      <img
-        src="/images/blog-pics/blog-fries.svg"
-        alt="Fries"
-        className="floating-img img-fries"
-      />
-      <img
-        src="/images/blog-pics/blog-burger.svg"
-        alt="Burger"
-        className="floating-img img-burger"
-      />
-      <img
-        src="/images/blog-pics/blog-ramen.svg"
-        alt="Ramen"
-        className="floating-img img-ramen"
-      />
-      <img
-        src="/images/blog-pics/blog-sushi.svg"
-        alt="Sushi"
-        className="floating-img img-sushi"
-      />
-      <img
-        src="/images/blog-pics/blog-pizza.svg"
-        alt="Pizza"
-        className="floating-img img-pizza"
-      />
-      <img
-        src="/images/blog-pics/blog-soda.svg"
-        alt="Soda"
-        className="floating-img img-soda"
-      />
+    <section
+      ref={sectionRef}
+      className="blog-hero-section"
+      style={{
+        // the particle canvas fills this section and sits behind everything
+        position: "relative",
+        isolation: "isolate",
+        background: HERO_BG,
+      }}
+    >
+      <ParticleField pointerRef={pointerRef} />
+
+      {FLOATERS.map((f) => (
+        <img
+          key={f.cls}
+          src={f.src}
+          alt={f.alt}
+          className={`floating-img ${f.cls}`}
+          draggable={false}
+        />
+      ))}
 
       <div className="blog-hero-content">
         <h1 className="hero-title">

@@ -1,7 +1,9 @@
 /***************************************
  * 1) Tokens & Reset
  **************************************/
-
+.app-shell__content {
+  padding-bottom: 0 !important;
+}
 :root {
   --bg: #0f0f10;
   --bg-hero: #0b0f13;
@@ -162,19 +164,25 @@ body {
 }
 
 .hero__title {
-  color: var(--text);
-  font-size: 50px;
-  font-weight: 800;
-  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+ margin: 0;
+    color: #fff;
+    font-size: 45px;
+    font-weight: 800;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+    margin-right: 2rem;
+
 }
 
-.hero__title span {
+/* .hero__title span {
   color: #ff683c;
-}
+} */
 
 .hero__description {
+  margin-right: 7rem;
+  letter-spacing: 5px;
   font-size: 40px;
   font-weight: 400;
+  margin-top: 0;
 }
 
 /* نوار جستجو */
@@ -184,7 +192,7 @@ body {
 }
 
 .hero .search-bar {
-  width: 100% !important;
+  width: 170% !important;
   height: 6rem;
   padding: 0 0.9rem;
   border-radius: 22px;
@@ -199,7 +207,9 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
     0 10px 24px rgba(0, 0, 0, 0.25);
 }
-
+.hero__search {
+  margin-left: 16rem;
+}
 .hero .search-bar input {
   flex: 1 1 auto;
   height: 100%;
@@ -520,8 +530,8 @@ body {
 
 /* Placement approximations to match the mock */
 .pos-a {
-  top: 29rem;
-  right: 13rem;
+  top: 19rem;
+  right: 7rem;
 }
 
 .pos-b {
@@ -557,10 +567,10 @@ body {
 }
 
 .pos-f {
-  top: 22rem;
-  left: 20rem;
-  width: 12rem;
-  height: 12rem;
+  top: 34rem;
+  left: 51rem;
+  width: 10rem;
+  height: 10rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -583,10 +593,10 @@ body {
 }
 
 .pos-i {
-  left: 15rem;
-  top: 92rem;
-  width: 12rem;
-  height: 12rem;
+  left: 5rem;
+  top: 45rem;
+  width: 10rem;
+  height: 10rem;
   background: linear-gradient(246.95deg, #111b2f 0.52%, #111b2f 98.07%);
 }
 
@@ -597,7 +607,7 @@ body {
 }
 
 .why-menro-logo-icon {
-  width: 7rem;
+  width: 3.7rem;
   height: auto;
   display: block;
   object-fit: contain;
@@ -660,8 +670,8 @@ body {
 
 /* --- Sales Boost Card --- */
 .sales-boost {
-  width: 320px;
-  height: 320px;
+  width: 18rem;
+  height: 18rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1084,6 +1094,7 @@ body {
     font-weight: 800;
     color: #fafaf4;
     width: 100%;
+    font-size: 4rem !important;
   }
 
   .bp__glow {
@@ -1181,8 +1192,8 @@ body {
 
 /* general info cards */
 .info-card {
-  width: 310px;
-  height: 310px;
+  width: 22rem;
+  height: 19rem;
 }
 
 .info-card__header {
@@ -1204,13 +1215,14 @@ body {
 }
 
 .info-desc {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 500;
   color: #999fa8;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0 0.2rem 0 0;
+  margin: 0;
 }
 
 /***************************************
@@ -1246,8 +1258,8 @@ body {
   visibility: hidden;
 }
 .stat-icon {
-  width: 120px;
-  height: 120px;
+  width: 12rem;
+  height: 12rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1267,19 +1279,30 @@ body {
 }
 
 .stat-number {
-  font-size: 2rem;
-  font-weight: 900;
-  color: var(--accent);
+  font-size: 3rem;
+  font-weight: 700;
+  background: linear-gradient(
+    to bottom,
+    #FF8E6D 0%,
+    #FF8E6D 30%,
+    #FA8061 42%,
+    #F57655 50%,
+    #EF6A49 58%,
+    #E85E35 70%,
+    #E85E35 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   line-height: 1;
   text-shadow: 0 2px 8px rgba(255, 157, 16, 0.3);
 }
-
 .stat-text {
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--text);
   line-height: 1.3;
-  max-width: 200px;
+  max-width: 21rem;
 }
 
 @media (max-width: 1024px) {
@@ -1345,8 +1368,8 @@ body {
 
 @media (max-width: 480px) {
   .stat-icon {
-    width: 8rem;
-    height: 8rem;
+    width: 10rem;
+    height: 10rem;
   }
 
   .stat-item {
@@ -1370,11 +1393,11 @@ body {
   }
 
   .stat-number {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
 
   .stat-text {
-    font-size: 1.55rem;
+    font-size: 1.6rem;
   }
 }
 
@@ -1569,8 +1592,8 @@ body {
   .install-banner__phone--back {
     width: clamp(22rem, 52vw, 29rem);
     right: auto;
-    left: 14%;
-    top: 2.4rem;
+    left: 12%;
+    top: 4.6rem;
     opacity: 0.7;
     filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.4));
     z-index: 3;
@@ -1578,8 +1601,8 @@ body {
 
   .install-banner__phone--front {
     width: clamp(27rem, 64vw, 36rem);
-    right: 6%;
-    top: -0.4rem;
+    right: 9%;
+    top: 2.6rem;
     z-index: 4;
   }
 
@@ -1893,27 +1916,47 @@ body {
    order shows it winning) and moved the animation to a variant class
    below in case you want the auto-scroll behaviour back. */
 .plan-card__features {
-  overscroll-behavior: contain;
-  max-height: 300px;
-  overflow-y: auto;
-  padding-inline-end: 10px;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-gutter: stable both-edges;
-  direction: rtl;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  direction: rtl;
   margin: 0;
   padding: 0;
-  padding-inline-end: 10px;
   list-style: none;
+  overflow: visible;      /* wrapper does the clipping */
+  max-height: none;
   height: max-content;
-  min-height: max-content;
   flex-shrink: 0;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  margin-bottom: 7rem;
+}
+.plan-card__features--autoscroll {
+  animation: autoScrollFeatures 25s linear infinite;
+  will-change: transform;
+}
+
+@keyframes autoScrollFeatures {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plan-card__features--autoscroll { animation: none; }
+}
+
+/* Mobile shows the full list, so no marquee and no duplicate set */
+@media (max-width: 768px) {
+  .plan-card__features--autoscroll { animation: none; }
+  .plan-card__feature[aria-hidden="true"] { display: none; }
+  .plans-pin--mobile .plan-card__feature { padding-bottom: 0; }
+}
+/* Use padding instead of gap so translateY(-50%) lands exactly on the
+   start of the duplicated set. Otherwise you get a visible jump. */
+.plan-card__feature {
+  padding-bottom: 1.6rem;
+}
+
+.plan-card__features--autoscroll {
+  animation: autoScrollFeatures 25s linear infinite;
+  will-change: transform;
 }
 
 .plan-card__features::-webkit-scrollbar {
@@ -2324,6 +2367,46 @@ body {
   }
 }
 
+/* DIFFERENT BG */
+.plan-card {
+  /* Tuning knobs */
+  --glow: 20%;            /* glow strength at the top-left corner */
+  --glow-tail: 5%;        /* faint tail of the glow mid-card */
+  --base-gray: 22, 24, 29; /* #16181d, what the card fades into */
+
+  border: 1px solid color-mix(in srgb, var(--plan-accent, #394350) 22%, #2a2f38);
+}
+
+/* Muted image: still recolored, but no longer the dominant color */
+.plan-card[data-recolor="true"] .plan-card__bg {
+  filter: hue-rotate(var(--plan-hue, 0deg)) saturate(0.7) brightness(0.85);
+}
+
+/* Layer 1: accent glow from the top-left corner.
+   Layer 2: fade toward #16181d on the right and bottom. */
+.plan-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      75% 110% at 0% 0%,
+      color-mix(in srgb, var(--plan-accent, transparent) var(--glow), transparent) 0%,
+      color-mix(in srgb, var(--plan-accent, transparent) var(--glow-tail), transparent) 45%,
+      transparent 75%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(var(--base-gray), 0) 0%,
+      rgba(var(--base-gray), 0.6) 55%,
+      rgba(var(--base-gray), 0.9) 100%
+    );
+}
+.plans-pin--mobile .plans__mobile-stack {
+  filter: hue-rotate(var(--plan-hue, 0deg)) saturate(0.7) brightness(0.85);
+}
 /***************************************
  * 7) Burger panel (bp)
  **************************************/
@@ -3397,5 +3480,5 @@ body {
 
 /* FINAL FIXES */
 .footer-bg {
-  margin-bottom: 10rem;
+  margin-bottom: 0 !important;
 }

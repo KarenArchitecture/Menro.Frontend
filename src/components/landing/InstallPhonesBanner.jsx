@@ -18,10 +18,9 @@ export default function InstallPhonesBanner({
   const frontRef = useRef(null);
   const desktopContentRef = useRef(null);
 
-  // 1. Add state to hold the detected scroller
+  // The element that actually scrolls (window or .app-shell__content)
   const [scroller, setScroller] = useState(null);
 
-  // 2. Detect the scroller safely after paint
   useEffect(() => {
     const detectScroller = () => {
       let activeScroller = window;
@@ -43,8 +42,58 @@ export default function InstallPhonesBanner({
   }, []);
 
   useLayoutEffect(() => {
-    // 3. Wait until section exists AND the scroller has been successfully identified
     if (!sectionRef.current || !scroller) return;
+
+    /**
+     * Two separate ScrollTriggers, because "when to play" and "when to reset"
+     * are different moments:
+     *
+     *  PLAY  : fires when the section reaches `playStart` (e.g. top at 25% of
+     *          the viewport). It never resets anything.
+     *
+     *  RESET : covers the whole time any part of the section is on screen
+     *          ("top bottom" -> "bottom top"). It only resets when the
+     *          section has left the viewport completely, in either direction.
+     *
+     * The `played` flag stops the timeline from restarting while the user
+     * scrolls around inside the section (or back and forth over the play line).
+     */
+    const bindPlayAndReset = (tl, sectionEl, { id, playStart }) => {
+      let played = false;
+
+      const play = () => {
+        if (played) return;
+        played = true;
+        tl.play(0);
+      };
+
+      const reset = () => {
+        played = false;
+        tl.pause(0);
+      };
+
+      ScrollTrigger.create({
+        id: `${id}Play`,
+        trigger: sectionEl,
+        scroller,
+        start: playStart,
+        end: "bottom top",
+        onEnter: play,
+        onEnterBack: play,
+        invalidateOnRefresh: true,
+      });
+
+      ScrollTrigger.create({
+        id: `${id}Reset`,
+        trigger: sectionEl,
+        scroller,
+        start: "top bottom", // first pixel of the section enters the viewport
+        end: "bottom top", // last pixel of the section leaves the viewport
+        onLeave: reset,
+        onLeaveBack: reset,
+        invalidateOnRefresh: true,
+      });
+    };
 
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia();
@@ -106,10 +155,8 @@ export default function InstallPhonesBanner({
 
         const tl = gsap.timeline({ paused: true });
 
-        // Set static 3D properties once
         gsap.set([backEl, frontEl], { transformPerspective: 1000, z: 0.01 });
 
-        // Use fromTo for absolute state control
         tl.fromTo(
           words,
           { autoAlpha: 0, y: 20, willChange: "opacity, transform" },
@@ -166,17 +213,9 @@ export default function InstallPhonesBanner({
         // Force elements to their start states immediately
         tl.pause(0);
 
-        ScrollTrigger.create({
+        bindPlayAndReset(tl, sectionEl, {
           id: "installPhonesDesktop",
-          trigger: sectionEl,
-          scroller: scroller,
-          start: "top 25%", // Widened start threshold
-          end: "bottom 5%", // Narrowed end threshold
-          onEnter: () => tl.play(0),
-          onEnterBack: () => tl.play(0),
-          onLeave: () => tl.pause(0), // Reset safely out of view
-          onLeaveBack: () => tl.pause(0), // Reset safely out of view
-          invalidateOnRefresh: true,
+          playStart: "top 25%",
         });
       });
 
@@ -199,7 +238,6 @@ export default function InstallPhonesBanner({
 
         const tl = gsap.timeline({ paused: true });
 
-        // Set static 3D properties once
         gsap.set([backEl, frontEl], { transformPerspective: 1000, z: 0.01 });
 
         tl.fromTo(
@@ -243,17 +281,9 @@ export default function InstallPhonesBanner({
         // Force elements to their start states immediately
         tl.pause(0);
 
-        ScrollTrigger.create({
+        bindPlayAndReset(tl, sectionEl, {
           id: "installPhonesMobile",
-          trigger: sectionEl,
-          scroller: scroller,
-          start: "top 65%",
-          end: "bottom 25%",
-          onEnter: () => tl.play(0),
-          onEnterBack: () => tl.play(0),
-          onLeave: () => tl.pause(0),
-          onLeaveBack: () => tl.pause(0),
-          invalidateOnRefresh: true,
+          playStart: "top 65%",
         });
       });
     }, sectionRef);

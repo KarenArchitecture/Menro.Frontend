@@ -534,3 +534,138 @@
 .restaurant-profile-remove-btn:hover {
   background: color-mix(in srgb, var(--auth-error) 12%, transparent);
 }
+
+/* ===== Location picker ===== */
+.location-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.location-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.location-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--primary-color);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.location-btn:hover:not(:disabled) {
+  background: rgba(245, 158, 11, 0.22);
+}
+
+.location-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.location-btn--danger {
+  background: transparent;
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.location-btn--danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.location-coords {
+  margin-inline-start: auto;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.6));
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.location-map-wrapper {
+  position: relative;
+  isolation: isolate; /* z-indexهای Leaflet بیرون نشت نکنن */
+}
+
+.location-map {
+  height: 360px;
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  direction: ltr;
+  background: #1a1d24;
+  cursor: crosshair;
+}
+
+.location-map-hint {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  color: #fff;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+}
+
+.location-pin {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-size: 34px;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.5));
+}
+
+.location-pin i {
+  display: block;
+  line-height: 1;
+}
+
+.location-error {
+  font-size: 0.82rem;
+  color: #ef4444;
+}
+
+.location-help {
+  font-size: 0.78rem;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.55));
+}
+
+.social-grid {
+  margin-top: 4px;
+}
+
+.social-grid .input-group label i {
+  margin-inline-end: 4px;
+  color: var(--primary-color);
+}
+
+@media (max-width: 900px) {
+  .location-map {
+    height: 300px;
+  }
+  .location-coords {
+    margin-inline-start: 0;
+  }
+}

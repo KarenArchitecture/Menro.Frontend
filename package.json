@@ -27,6 +27,7 @@
     "jspdf": "^4.2.1",
     "jszip": "^3.10.2",
     "jwt-decode": "^4.0.0",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.553.0",
     "motion": "^12.23.24",
     "qr-code-styling": "^1.9.2",

@@ -9,6 +9,24 @@ const DEMO_FEATURES = [
   "امکان شماره ۱",
 ];
 
+function CheckCircle() {
+  return (
+    <svg
+      className="sub-demo__check"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="M7.5 12.5l3 3 6-6.5" />
+    </svg>
+  );
+}
+
 export default function SubscriptionsDemoBanner({
   features = DEMO_FEATURES,
   note = "بهترین گزینه برای شروع و بررسی تمام ماژول‌های منرو",
@@ -48,35 +66,34 @@ export default function SubscriptionsDemoBanner({
       <ul className="sub-demo__features">
         {features.map((f, i) => (
           <li key={i}>
-            <i className="fas fa-check-circle" aria-hidden="true" />
             <span>{f}</span>
+            <CheckCircle />
           </li>
         ))}
       </ul>
 
       <form className="sub-demo__form" onSubmit={handleSubmit}>
-        <div className="sub-demo__field">
-          <i
-            className="fas fa-mobile-alt sub-demo__field-icon"
-            aria-hidden="true"
-          />
+        <label className="sub-demo__field">
+          <span className="sub-demo__field-tag">شماره همراه...</span>
           <input
             type="tel"
-            placeholder="شماره همراه..."
+            dir="ltr"
+            placeholder="۰۹..."
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
           />
-        </div>
+        </label>
 
-        <div className="sub-demo__field sub-demo__field--tagged">
+        <label className="sub-demo__field">
           <span className="sub-demo__field-tag">توضیحات</span>
           <input
             type="text"
+            dir="rtl"
             placeholder="نام مجموعه..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />
-        </div>
+        </label>
 
         <button type="submit" className="sub-demo__submit">
           {submitted ? "ثبت شد ✓" : "درخواست دمو"}

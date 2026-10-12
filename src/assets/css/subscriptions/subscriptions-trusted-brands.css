@@ -100,3 +100,39 @@
     animation: none;
   }
 }
+.sub-brands__marquee {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100vw;
+  margin: 0 calc(50% - 50vw);
+  pointer-events: none;
+  user-select: none;
+  direction: ltr;            /* NEW: marquee never inherits RTL */
+}
+
+.sub-brands__row {
+  overflow: hidden;
+  width: 100%;
+  direction: ltr;            /* NEW: track anchors to the left edge */
+}
+
+.sub-brands__row-track {
+  display: flex;
+  width: max-content;
+  /* gap: 1rem;  REMOVED, see tile margin below */
+  will-change: transform;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.sub-brands__tile {
+  flex: 0 0 auto;
+  width: 120px;
+  height: 120px;
+  margin-right: 1rem;        /* NEW: replaces gap so both halves are identical width */
+  border-radius: var(--sub-radius-md);
+  background: var(--sub-surface);
+  border: 1px solid var(--sub-border);
+  overflow: hidden;
+}

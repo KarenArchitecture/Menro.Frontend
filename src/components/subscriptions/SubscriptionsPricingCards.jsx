@@ -1,18 +1,17 @@
 // src/components/subscriptions/SubscriptionsPricingCards.jsx
-import React from "react";
+import React, { useState } from "react";
 import "../../assets/css/subscriptions/subscriptions-pricing-cards.css";
 
-// NOTE: placeholder plan data mirroring the design mock. Swap numbers /
-// feature copy / bgImage for real content whenever it's ready.
-// `scrollFeatures: true` marks plans whose feature list is long enough to
-// exceed the card's fixed height — those get the auto-scrolling marquee.
+// Same line-mesh used by InstallPhonesBanner (rotated in CSS for tall cards).
+const MESH_SRC = "/images/common/blog-hero-pattern.png";
+
 const DEFAULT_PLANS = [
   {
     id: "pro",
     theme: "green",
     name: "حرفه‌ای",
+    subtitle: "شروعی قدرتمند برای رستوران‌هایی که به فکر آینده‌اند",
     monthlyPrice: 549,
-    bgImage: "/assets/images/plan-bg-green.png",
     ctaLabel: "شروع حرفه‌ای",
     scrollFeatures: true,
     features: [
@@ -33,7 +32,6 @@ const DEFAULT_PLANS = [
     name: "پیشرفته",
     subtitle: "شروعی قدرتمند برای رستوران‌هایی که به فکر آینده‌اند",
     monthlyPrice: 259,
-    bgImage: "/assets/images/plan-bg-purple.png",
     popular: true,
     ctaLabel: "شروع با امکانات",
     scrollFeatures: true,
@@ -56,7 +54,6 @@ const DEFAULT_PLANS = [
     name: "پایه",
     subtitle: "شروعی قدرتمند برای رستوران‌هایی که به فکر آینده‌اند",
     monthlyPrice: 199,
-    bgImage: "/assets/images/plan-bg-orange.png",
     ctaLabel: "شروع کار",
     scrollFeatures: false,
     features: [
@@ -69,18 +66,15 @@ const DEFAULT_PLANS = [
   },
 ];
 
-// Placeholder math: yearly billing shows ~40% off the monthly price,
-// matching the badge in SubscriptionsHero. Replace with real pricing logic
-// once it's available.
 function getDisplayPrice(monthlyPrice, billingCycle) {
   return billingCycle === "yearly"
     ? Math.round(monthlyPrice * 0.6)
     : monthlyPrice;
 }
 
-function FeatureItem({ feature, index }) {
+function FeatureItem({ feature }) {
   return (
-    <li key={index}>
+    <li>
       <i className="fas fa-check-circle" aria-hidden="true" />
       <span>{feature}</span>
     </li>
@@ -90,34 +84,50 @@ function FeatureItem({ feature, index }) {
 export default function SubscriptionsPricingCards({
   billingCycle = "yearly",
   plans = DEFAULT_PLANS,
+  selectedPlanId,
+  bgSrc = MESH_SRC, // default mesh for every card; a plan can override with plan.bgImage
 }) {
+  const [selectedId, setSelectedId] = useState(
+    selectedPlanId ?? plans.find((p) => p.popular)?.id,
+  );
+
   return (
     <section className="sub-plans">
       {plans.map((plan) => {
         const price = getDisplayPrice(plan.monthlyPrice, billingCycle);
         const shouldScroll = Boolean(plan.scrollFeatures);
-
-        // rough pacing: ~1.6s per feature line, duplicated list scrolls
-        // through exactly one copy (-50%) before looping seamlessly
         const scrollDuration = `${(plan.features.length * 1.6).toFixed(1)}s`;
+        const isSelected = plan.id === selectedId;
 
         return (
           <div
             key={plan.id}
-            className={`sub-plan-card sub-plan-card--${plan.theme} ${
-              plan.popular ? "sub-plan-card--popular" : ""
-            }`}
-            style={{ "--sub-card-bg": `url(${plan.bgImage})` }}
+            className={[
+              "sub-plan-card",
+              `sub-plan-card--${plan.theme}`,
+              plan.popular && "sub-plan-card--popular",
+              isSelected && "sub-plan-card--selected",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            onClick={() => setSelectedId(plan.id)}
           >
+            <img
+              className="sub-plan-card__mesh"
+              src={plan.bgImage ?? bgSrc}
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              decoding="async"
+            />
+
             <h3 className="sub-plan-card__name">{plan.name}</h3>
 
             <div className="sub-plan-card__price">
               <span className="sub-plan-card__price-value">
-                {price.toLocaleString("fa-IR")}
+                {price.toLocaleString("fa-IR")} هزار تومان
               </span>
-              <span className="sub-plan-card__price-unit">
-                هزار تومان / ماه
-              </span>
+              <span className="sub-plan-card__price-unit">/ ماه</span>
             </div>
 
             {plan.subtitle && (
@@ -136,12 +146,11 @@ export default function SubscriptionsPricingCards({
                 }
               >
                 {plan.features.map((feature, i) => (
-                  <FeatureItem key={i} feature={feature} index={i} />
+                  <FeatureItem key={i} feature={feature} />
                 ))}
-                {/* duplicate set — only rendered when scrolling, makes the loop seamless */}
                 {shouldScroll &&
                   plan.features.map((feature, i) => (
-                    <FeatureItem key={`dup-${i}`} feature={feature} index={i} />
+                    <FeatureItem key={`dup-${i}`} feature={feature} />
                   ))}
               </ul>
             </div>

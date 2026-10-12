@@ -1,44 +1,55 @@
 /* src/assets/css/subscriptions/subscriptions-pricing-cards.css */
 
 .sub-plans {
-  max-width: 1180px;
+  max-width: 1000px;
   margin: 0 auto;
-  padding: 2.5rem 2rem 5rem;
+  padding: 3.5rem 2rem 5rem;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0; /* cards sit flush against each other */
   align-items: center;
-
-  /* Lay the grid out physically left→right so the order below is
-     deterministic: green (left) · purple (middle) · orange (right),
-     whatever order the plans come in inside the array. */
-  direction: ltr;
+  direction: ltr; /* green · purple · orange, left → right */
 }
 
 /* ---------- Card shell ----------
-   Background = dark base + a radial "dim light" cast inward from the borders.
-   The light is strongest on the edges and is completely gone by the time it
-   gets ~50% of the way to the center, so it never reaches the middle. */
+   Layers (bottom → top):
+   1. dark base color
+   2. faint side glimmer (left + right edges only, no radial glow)
+   3. ::after  – line mesh texture
+   4. content
+   5. ::before – border (neutral by default, neon when selected)  */
 .sub-plan-card {
   position: relative;
   box-sizing: border-box;
-  height: 560px; /* fixed — does NOT grow with feature count */
+  height: 600px; /* fixed — does NOT grow with feature count */
   border-radius: var(--sub-radius-lg);
-  padding: 2.25rem 1.85rem;
+  padding: 2.25rem 1.6rem;
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
   overflow: hidden;
-  direction: rtl; /* grid is ltr (see above); card content stays rtl */
+  direction: rtl;
+  cursor: pointer;
 
   background-color: #0d1015;
-  background-image: radial-gradient(
-    ellipse closest-side at 50% 50%,
-    rgba(var(--plan-rgb), 0) 50%,
-    rgba(var(--plan-rgb), 0.06) 66%,
-    rgba(var(--plan-rgb), 0.15) 84%,
-    rgba(var(--plan-rgb), 0.27) 100%
-  );
+  /* SIDE GLIMMER: a very faint light entering from the left and right
+     edges only, gone by ~30% of the width. No top/bottom/radial light. */
+  background-image:
+    linear-gradient(
+      to right,
+      rgba(var(--plan-rgb), 0.07) 0%,
+      rgba(var(--plan-rgb), 0.025) 14%,
+      rgba(var(--plan-rgb), 0) 30%
+    ),
+    linear-gradient(
+      to left,
+      rgba(var(--plan-rgb), 0.07) 0%,
+      rgba(var(--plan-rgb), 0.025) 14%,
+      rgba(var(--plan-rgb), 0) 30%
+    );
+
+  /* neutral dark shadow only — never colored, so it can't swallow the border */
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.6);
 
   transition:
     transform 0.3s ease,
@@ -46,23 +57,41 @@
     filter 0.3s ease;
 }
 
-/* Border ring: lit with the plan color across the upper half — strongest at
-   the very top, fading to the neutral border by 50% of the card's height. */
+/* ---------- Line mesh background (same asset as InstallPhonesBanner) ---------- */
+.sub-plan-card > .sub-plan-card__lines {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+  opacity: var(--sub-lines-opacity, 0.3);
+}
+
+/* all real content sits above the mesh */
+.sub-plan-card > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* ---------- Border ----------
+   Default (not selected): neutral, colorless hairline.
+   Selected: neon in the plan color, strongest at the very top, fading to
+   the neutral hairline by 50% of the card height. */
 .sub-plan-card::before {
   content: "";
   position: absolute;
   inset: 0;
-  padding: 1.5px;
+  z-index: 3; /* above mesh + glimmer */
+  padding: 2px;
   border-radius: inherit;
   pointer-events: none;
-  background:
-    linear-gradient(
-      to bottom,
-      var(--plan-color) 0%,
-      rgba(var(--plan-rgb), 0.6) 22%,
-      rgba(var(--plan-rgb), 0) 50%
-    ),
-    rgba(255, 255, 255, 0.08);
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
@@ -71,6 +100,18 @@
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
   mask-composite: exclude;
+}
+
+.sub-plan-card--selected::before {
+  background:
+    linear-gradient(
+      to bottom,
+      var(--plan-color) 0%,
+      var(--plan-color) 10%,
+      rgba(var(--plan-rgb), 0.7) 26%,
+      rgba(var(--plan-rgb), 0) 50%
+    ),
+    rgba(255, 255, 255, 0.08);
 }
 
 /* ---------- Plan colors (left → right: green, purple, orange) ---------- */
@@ -90,39 +131,27 @@
   order: 3;
 }
 
-/* Side cards recede slightly and sit at a lower z-index so the popular
-   card's overlap visually covers their inner border/corner. */
+/* Side cards recede slightly and sit under the featured card */
 .sub-plan-card:not(.sub-plan-card--popular) {
   z-index: 1;
   transform: scale(0.97);
-  filter: brightness(0.92) saturate(0.92);
+  filter: brightness(0.95);
 }
 .sub-plan-card:not(.sub-plan-card--popular):hover {
-  filter: brightness(1) saturate(1);
+  filter: brightness(1);
 }
 
-/* The featured plan: taller, overlaps both neighbours via negative
-   margin, and sits above them (z-index) so their diverging borders are
-   hidden underneath it. A touch more light than the others. */
+/* Featured plan: taller, overlaps both neighbours */
 .sub-plan-card--popular {
-  height: 620px;
+  height: 680px;
   margin: 0 -22px;
-  padding: 2.5rem 2rem 2.5rem;
+  padding: 2.5rem 1.85rem;
   z-index: 3;
   transform: translateY(-24px) scale(1.04);
-  background-image: radial-gradient(
-    ellipse closest-side at 50% 50%,
-    rgba(var(--plan-rgb), 0) 50%,
-    rgba(var(--plan-rgb), 0.08) 66%,
-    rgba(var(--plan-rgb), 0.19) 84%,
-    rgba(var(--plan-rgb), 0.34) 100%
-  );
-  box-shadow:
-    0 30px 70px rgba(var(--plan-rgb), 0.32),
-    0 0 0 1px rgba(255, 255, 255, 0.04);
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.7);
 }
 .sub-plan-card--popular::before {
-  padding: 2px;
+  padding: 2.5px;
 }
 .sub-plan-card--popular:hover {
   transform: translateY(-26px) scale(1.05);
@@ -132,7 +161,7 @@
   margin: 0;
   font-size: 1.15rem;
   font-weight: 800;
-  color: var(--plan-color);
+  color: #fff;
 }
 .sub-plan-card--popular .sub-plan-card__name {
   font-size: 1.45rem;
@@ -170,7 +199,7 @@
 .sub-plan-card__features-viewport {
   position: relative;
   flex: 1;
-  min-height: 0; /* required so flex child can actually be clipped */
+  min-height: 0;
   overflow: hidden;
   -webkit-mask-image: linear-gradient(
     to bottom,
@@ -197,10 +226,6 @@
   gap: 0.65rem;
 }
 
-/* Auto-scrolling marquee — only applied to plans whose feature list
-   exceeds the card's fixed height (pro / advanced). The list is rendered
-   twice in the DOM and this animation moves exactly one copy's worth of
-   height (-50%) so the loop is seamless. */
 .sub-plan-card__features.is-scrolling {
   animation: sub-plan-features-scroll linear infinite;
   animation-duration: var(--scroll-duration, 14s);
@@ -235,7 +260,6 @@
   color: var(--plan-color);
 }
 
-/* CTA takes the plan color */
 .sub-plan-card__cta {
   margin-top: 1rem;
   flex-shrink: 0;
@@ -261,14 +285,14 @@
 @media (max-width: 980px) {
   .sub-plans {
     grid-template-columns: 1fr;
-    max-width: 460px;
+    max-width: 380px;
     row-gap: 1.75rem;
   }
   .sub-plan-card,
   .sub-plan-card--popular {
-    height: 520px;
+    height: 600px;
     margin: 0;
-    padding: 2.25rem 1.85rem 2.25rem;
+    padding: 2.25rem 1.6rem;
     transform: none;
     filter: none;
   }
@@ -280,4 +304,29 @@
     transform: none;
     filter: none;
   }
+}
+/* ---------- Mesh background (landing's mesh-card.png, rotated for tall cards) ----------
+   The landing banner is landscape, so the layer's width/height are swapped
+   (card height × card width) and the whole layer is rotated 90°. object-fit
+   keeps the image undistorted. */
+.sub-plan-card > .sub-plan-card__mesh {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 0;
+  display: block;
+  max-width: none; /* survives a global `img { max-width: 100% }` */
+  max-height: none;
+  pointer-events: none;
+  object-fit: cover;
+  opacity: var(--sub-mesh-opacity, 0.55);
+
+  /* fallback for browsers without container units */
+  width: 600px;
+  height: 340px;
+  /* swapped: layer is as wide as the card is tall, and vice versa */
+  width: 100cqh;
+  height: 100cqw;
+
+  transform: translate(-50%, -50%) rotate(var(--sub-mesh-rotate, 90deg));
 }

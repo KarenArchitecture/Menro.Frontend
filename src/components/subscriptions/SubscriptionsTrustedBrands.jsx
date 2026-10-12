@@ -78,14 +78,18 @@ function MarqueeRow({ logos, direction = "left", minTiles = 20, speed = 40 }) {
 }
 
 export default function SubscriptionsTrustedBrands({
-  title = "منرو، مورد اعتماد برترین برند‌ها",
+  titleHighlight = "منرو",
+  title = "، مورد اعتماد برترین برند‌ها",
   subtitle = "بهترین گزینه برای شروع و بررسی تمام ماژول‌های منرو",
   topLogos = DEFAULT_TOP_LOGOS,
   bottomLogos = DEFAULT_BOTTOM_LOGOS,
 }) {
   return (
     <section className="sub-brands">
-      <h2 className="sub-brands__title">{title}</h2>
+      <h2 className="sub-brands__title">
+        <span className="sub-brands__title-accent">{titleHighlight}</span>
+        {title}
+      </h2>
       <p className="sub-brands__subtitle">{subtitle}</p>
 
       <div className="sub-brands__marquee">

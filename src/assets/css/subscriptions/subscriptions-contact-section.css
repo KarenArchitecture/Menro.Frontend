@@ -1,81 +1,100 @@
-/* src/assets/css/subscriptions-contact-section.css */
+/* src/assets/css/subscriptions/subscriptions-contact-section.css */
 
 .sub-contact {
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 0 2rem;
+  --contact-bg: #141820;
+  --contact-accent: #ff5f3a;
+  --contact-muted: #8c91a1;
+
+  box-sizing: border-box;
   display: grid;
-  grid-template-columns: 1fr 1.4fr;
-  gap: 2rem;
+  grid-template-columns: minmax(0, 1fr) 340px;
   align-items: center;
+  gap: 3rem;
+  width: calc(100% - 4rem);
+  max-width: 1424px;
+  margin: 0 auto;
+  padding: 62px 80px 62px 72px; /* RTL: 72px right, 80px left */
+  background: var(--contact-bg);
+  border-radius: 36px;
+  font-family: inherit;
 }
 
-.sub-contact__city {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  background: var(--sub-surface);
-  border: 1px solid var(--sub-border);
-  border-radius: var(--sub-radius-md);
-  padding: 1.25rem 1.4rem;
-}
-
-.sub-contact__city label {
-  font-size: 0.85rem;
-  color: var(--sub-muted);
-}
-
-.sub-contact__city select {
-  height: 46px;
-  padding: 0 0.9rem;
-  border-radius: var(--sub-radius-sm);
-  border: 1px solid var(--sub-border);
-  background: rgba(0, 0, 0, 0.3);
-  color: #fafaf4;
-  font: inherit;
-  font-size: 0.92rem;
-}
-
-.sub-contact__info {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 157, 16, 0.1),
-    rgba(255, 255, 255, 0.02)
-  );
-  border: 1px solid var(--sub-border);
-  border-radius: var(--sub-radius-lg);
-  padding: 2rem 2.2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
+/* ---------- copy ---------- */
 
 .sub-contact__title {
   margin: 0;
-  font-size: 1.3rem;
-  font-weight: 800;
+  font-size: 44px;
+  font-weight: 900;
+  line-height: 1.4;
+  color: #fff;
+}
+
+.sub-contact__title-accent {
+  color: var(--contact-accent);
 }
 
 .sub-contact__subtitle {
-  margin: 0 0 0.6rem;
-  color: var(--sub-muted);
-  font-size: 0.9rem;
-  line-height: 1.8;
-  max-width: 480px;
+  max-width: 660px;
+  margin: 18px 0 0;
+  font-size: 25px;
+  font-weight: 400;
+  line-height: 1.95;
+  color: var(--contact-muted);
+}
+
+/* ---------- city select + phone ---------- */
+
+.sub-contact__actions {
+  display: flex;
+  flex-direction: column;
+}
+
+.sub-contact__label {
+  margin-bottom: 22px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.4;
+  color: #fff;
+}
+
+.sub-contact__select {
+  width: 100%;
+  height: 58px;
+  padding: 0 20px 0 52px; /* RTL: 20px right, room for chevron on the left */
+  border: 0;
+  border-radius: 18px;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%230b0d12' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 30px center;
+  color: #0b0d12;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 800;
+  text-align: right;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.sub-contact__select:focus-visible {
+  outline: 2px solid var(--contact-accent);
+  outline-offset: 3px;
 }
 
 .sub-contact__phone {
-  align-self: flex-start;
-  display: inline-flex;
+  display: flex;
+  flex-direction: row-reverse; /* icon on the right, number on the left */
   align-items: center;
-  gap: 0.6rem;
-  height: 50px;
-  padding: 0 1.4rem;
-  border-radius: 999px;
-  background: var(--sub-accent);
-  color: #2a1400;
-  font-weight: 800;
-  font-size: 0.95rem;
+  justify-content: space-between;
+  box-sizing: border-box;
+  height: 58px;
+  margin-top: 20px;
+  padding: 0 20px;
+  border-radius: 16px;
+  background: var(--contact-accent);
+  color: #fff;
   text-decoration: none;
   transition:
     transform 0.15s ease,
@@ -84,15 +103,59 @@
 
 .sub-contact__phone:hover {
   transform: translateY(-1px);
-  filter: brightness(1.08);
+  filter: brightness(1.07);
 }
 
-@media (max-width: 860px) {
+.sub-contact__phone:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.sub-contact__phone-icon {
+  flex: none;
+  width: 24px;
+  height: 24px;
+}
+
+.sub-contact__phone-number {
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  word-spacing: 0.2em;
+}
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 1100px) {
   .sub-contact {
-    grid-template-columns: 1fr;
+    padding: 48px 48px 48px 40px;
+    gap: 2rem;
   }
-  .sub-contact__phone {
-    align-self: stretch;
-    justify-content: center;
+  .sub-contact__title {
+    font-size: 36px;
+  }
+  .sub-contact__subtitle {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 800px) {
+  .sub-contact {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 36px 24px;
+    border-radius: 28px;
+  }
+  .sub-contact__title {
+    font-size: 30px;
+  }
+  .sub-contact__subtitle {
+    font-size: 17px;
+    line-height: 1.9;
+  }
+  .sub-contact__actions {
+    width: 100%;
+    max-width: 380px;
+    margin-inline: auto;
   }
 }

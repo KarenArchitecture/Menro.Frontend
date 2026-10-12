@@ -13,7 +13,9 @@
 
 .sub-hero__title {
   margin: 0;
-  font-size: clamp(2.2rem, 3.4vw, 2.8rem);
+    font-size: 4rem;
+    display: block;
+    width: 60rem;
   font-weight: 800;
   line-height: 1.4;
   color: #fafaf4;
@@ -26,24 +28,31 @@
 .sub-hero__subtitle {
   margin: 0;
   color: var(--sub-muted);
-  font-size: 1.05rem;
+    font-size: 2rem;
+    display: block;
+    width: 50rem;
   font-weight: 500;
 }
 
-/* ---------- Toggle: option · switch · option (no surrounding box) ---------- */
+/* ---------- Toggle row: [ empty | options · switch · options | hint ] ----------
+   3-column grid so the options + switch are always dead-center in the viewport
+   and the discount hint lives in the right-hand column (it can never push the
+   options off-center, and it is in normal flow, so it can't get lost). */
 .sub-hero__toggle-row {
-  display: flex;
-  justify-content: center;
-  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  width: min(980px, 92vw);
   margin-top: 1.25rem;
+  direction: ltr; /* columns/physical order: left · center · right */
 }
 
 .sub-hero__toggle {
-  position: relative; /* anchor for the discount hint */
+  grid-column: 2;
+  position: relative;
   display: flex;
   align-items: center;
   gap: 1.15rem;
-  direction: ltr; /* physical order: monthly | switch | yearly */
   isolation: isolate;
 }
 
@@ -71,7 +80,7 @@
   padding: 0;
   border: 1.5px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
-  background: #131418;
+  background: #121317;
   box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.6);
   cursor: pointer;
 }
@@ -81,24 +90,35 @@
   outline-offset: 5px;
 }
 
-/* One "lamp" per side. Each carries: an inner hue, a border ring and an outer
-   sun-like glow. Only the side the thumb sits on is visible. */
+/* SOFT LIGHT — a blurred copy of the lit half of the pill. Because it is the
+   pill's own shape that gets blurred, the light hugs the switch, is strongest
+   at the lit end and dies out by the middle. Two layers: a tight halo
+   (this element) and a wide, faint "sunlight" (::after). */
 .sub-hero__switch-lit {
   position: absolute;
-  inset: -1.5px; /* cover the border box */
+  inset: -3px;
   z-index: 1;
-  border-radius: inherit;
+  border-radius: 999px;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.35s ease;
-
-  /* inner hue: strongest at the lit end, gone by the middle of the switch */
+  transition: opacity 0.4s ease;
   background: linear-gradient(
     var(--lit-dir),
-    rgba(255, 104, 60, 0.34) 0%,
-    rgba(255, 104, 60, 0.12) 26%,
-    rgba(255, 104, 60, 0) 52%
+    rgba(255, 104, 60, 0.95) 0%,
+    rgba(255, 104, 60, 0.6) 24%,
+    rgba(255, 104, 60, 0) 54%
   );
+  filter: blur(9px);
+}
+
+.sub-hero__switch-lit::after {
+  content: "";
+  position: absolute;
+  inset: -16px -22px;
+  border-radius: 999px;
+  background: inherit;
+  filter: blur(14px);
+  opacity: 0.5;
 }
 
 .sub-hero__switch-lit--left {
@@ -113,19 +133,20 @@
   opacity: 1;
 }
 
-/* border ring: lit at the far end, fading out by the midpoint */
-.sub-hero__switch-lit::before {
+/* SHARP BORDER — a crisp 2px neon outline on the lit side only, at full
+   strength at the far end and fading out by the middle of the switch.
+   ::before = left side, ::after = right side. */
+.sub-hero__switch::before,
+.sub-hero__switch::after {
   content: "";
   position: absolute;
-  inset: 0;
-  padding: 1.5px;
-  border-radius: inherit;
-  background: linear-gradient(
-    var(--lit-dir),
-    #ff683c 0%,
-    rgba(255, 104, 60, 0.65) 18%,
-    rgba(255, 104, 60, 0) 50%
-  );
+  inset: -1.5px;
+  z-index: 1;
+  padding: 2px;
+  border-radius: 999px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
@@ -136,36 +157,29 @@
   mask-composite: exclude;
 }
 
-/* outer glow that lights up the immediate surroundings */
-.sub-hero__switch-lit::after {
-  content: "";
-  position: absolute;
-  top: -28px;
-  bottom: -28px;
-  width: 132px;
-  pointer-events: none;
-}
-
-.sub-hero__switch-lit--left::after {
-  left: -46px;
-  background: radial-gradient(
-    ellipse closest-side at 46% 50%,
-    rgba(255, 104, 60, 0.5) 0%,
-    rgba(255, 104, 60, 0.22) 38%,
-    rgba(255, 104, 60, 0.07) 68%,
-    rgba(255, 104, 60, 0) 100%
+.sub-hero__switch::before {
+  background: linear-gradient(
+    to right,
+    #ff7a52 0%,
+    #ff683c 14%,
+    rgba(255, 104, 60, 0.55) 30%,
+    rgba(255, 104, 60, 0) 50%
   );
 }
 
-.sub-hero__switch-lit--right::after {
-  right: -46px;
-  background: radial-gradient(
-    ellipse closest-side at 54% 50%,
-    rgba(255, 104, 60, 0.5) 0%,
-    rgba(255, 104, 60, 0.22) 38%,
-    rgba(255, 104, 60, 0.07) 68%,
-    rgba(255, 104, 60, 0) 100%
+.sub-hero__switch::after {
+  background: linear-gradient(
+    to left,
+    #ff7a52 0%,
+    #ff683c 14%,
+    rgba(255, 104, 60, 0.55) 30%,
+    rgba(255, 104, 60, 0) 50%
   );
+}
+
+.sub-hero__switch.is-monthly::before,
+.sub-hero__switch.is-yearly::after {
+  opacity: 1;
 }
 
 .sub-hero__switch-thumb {
@@ -188,43 +202,57 @@
   transform: translateX(44px);
 }
 
-/* ---------- Discount hint: arrow (svg) + slogan ---------- */
+/* ---------- Discount hint: arrow (svg) + slogan ----------
+   Sits in the right-hand grid column, to the RIGHT of the options. The box is
+   zero-height and vertically centered on the row, so the arrow's bottom edge
+   (where the arrow tip is in your artwork) lines up with the options' center
+   line. Nudge with --sub-hint-shift if your svg's tip sits elsewhere. */
 .sub-hero__discount-hint {
-  position: absolute;
-  left: calc(100% + 1.25rem); /* right side of the options */
-  bottom: 50%; /* arrow tip lines up with the options' vertical center */
+  grid-column: 3;
+  justify-self: start;
+  align-self: center;
+  height: 0;
+  padding-left: 1.25rem;
   display: flex;
   align-items: flex-end;
-  gap: 0.6rem;
+  gap: 0.5rem;
   white-space: nowrap;
+  transform: translateY(var(--sub-hint-shift, 0px));
 }
 
 .sub-hero__discount-arrow {
-  display: block;
-  width: 84px;
-  height: auto;
-  /* the arrow should point LEFT, towards the options. If your svg points
-     right, set --sub-arrow-flip: -1 on .sub-hero__discount-hint */
-  transform: scaleX(var(--sub-arrow-flip, 1));
+flex: 0 0 84px;
+    width: 84px;
+    min-width: 84px;
+    max-width: none;
+    height: 5rem;
+    display: block;
+    transform: scaleX(var(--sub-arrow-flip, 1.2));
+    transform: translate(5px, 30px);
 }
 
 .sub-hero__discount-badge {
-  direction: rtl;
-  margin-bottom: -1.7rem; /* sits slightly below the arrow line, to its right */
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--sub-muted);
+direction: rtl;
+    margin-bottom: -1.55rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--sub-muted);
+    margin-left: 1rem;
 }
 
-@media (max-width: 640px) {
-  .sub-hero__toggle {
-    flex-wrap: wrap;
-    justify-content: center;
+@media (max-width: 760px) {
+  .sub-hero__toggle-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
   }
   .sub-hero__discount-hint {
-    position: static;
-    width: 100%;
+    height: auto;
+    padding-left: 0;
     justify-content: center;
+    transform: none;
   }
   .sub-hero__discount-arrow {
     display: none;
@@ -236,6 +264,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .sub-hero__switch-lit,
+  .sub-hero__switch::before,
+  .sub-hero__switch::after,
   .sub-hero__switch-thumb,
   .sub-hero__toggle-label {
     transition: none;

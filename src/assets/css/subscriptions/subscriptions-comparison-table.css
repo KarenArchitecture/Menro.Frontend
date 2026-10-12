@@ -41,23 +41,28 @@
 /*  Top: switch + plan selection box                                   */
 /* ------------------------------------------------------------------ */
 
+/* ---------- top: switch + plan box ---------- */
+
 .sub-compare__top {
   display: grid;
   grid-template-columns: var(--cmp-label-w) 1fr;
   align-items: center;
+  direction: rtl;                 /* NEW: force RTL column order */
   padding-inline: var(--cmp-pad);
   margin-bottom: 3.25rem;
 }
 
 .sub-compare__top-side {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;      /* CHANGED: in RTL this is the side next to the box */
+  padding-inline-end: 2.5rem;     /* NEW: distance between switch and box */
 }
 
 .sub-plans {
   display: grid;
+  direction: rtl;                 /* NEW: first plan = right-most */
   grid-template-columns: repeat(var(--sub-cols, 4), minmax(0, 1fr));
-  padding: 2rem var(--cmp-grid-pad);
+  padding: 2.25rem var(--cmp-grid-pad);
   background: var(--cmp-box);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 30px;
@@ -67,20 +72,26 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  padding-inline: 1.6rem;
+  direction: rtl;
+  text-align: right;              /* NEW */
+  padding-inline: 2.4rem;         /* CHANGED: was 1.6rem */
 }
 
 .sub-plans__name {
   margin: 0;
-  font-size: 1.35rem;
+  font-size: 1.5rem;              /* CHANGED: was 1.35rem */
   font-weight: 800;
   line-height: 1.4;
   color: #fff;
 }
 
 .sub-plans__price {
-  margin: 0.35rem 0 1.15rem;
-  font-size: 0.85rem;
+  display: flex;                  /* NEW: amount on the right, "/ ماه" to its left */
+  align-items: baseline;
+  gap: 0.4rem;
+  direction: rtl;
+  margin: 0.4rem 0 1.25rem;
+  font-size: 1rem;          
   line-height: 1.6;
   white-space: nowrap;
 }
@@ -90,13 +101,27 @@
   font-weight: 700;
   color: var(--cmp-accent);
   animation: sub-price-in 0.35s ease both;
+  padding-top: 3px;                  
+  font-size:1.2rem;
 }
 
 .sub-plans__per {
-  font-size: 0.68rem;
+  font-size:1rem;            
   color: var(--cmp-label);
 }
 
+.sub-plans__cta {
+  height: 54px;
+  border: 0;
+  border-radius: 14px;
+  background: #fff;
+  color: #0b0d12;
+  font-family: inherit;
+  font-size: 1rem;                
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
 @keyframes sub-price-in {
   from {
     opacity: 0;
@@ -108,18 +133,6 @@
   }
 }
 
-.sub-plans__cta {
-  height: 52px;
-  border: 0;
-  border-radius: 14px;
-  background: #fff;
-  color: #0b0d12;
-  font-family: inherit;
-  font-size: 0.95rem;
-  font-weight: 800;
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.2s ease;
-}
 
 .sub-plans__cta:hover {
   transform: translateY(-1px);
@@ -340,10 +353,10 @@
 
 .sub-table__values {
   display: grid;
+  direction: rtl;                 /* NEW */
   grid-template-columns: repeat(var(--sub-cols, 4), minmax(0, 1fr));
   padding-inline: var(--cmp-grid-pad);
 }
-
 .sub-table__value {
   text-align: center;
   font-size: 1.1rem;

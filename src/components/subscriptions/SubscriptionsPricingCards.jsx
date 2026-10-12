@@ -92,7 +92,7 @@ export default function SubscriptionsPricingCards({
   );
 
   return (
-    <section className="sub-plans">
+    <section className="sub-pricing-cards">
       {plans.map((plan) => {
         const price = getDisplayPrice(plan.monthlyPrice, billingCycle);
         const shouldScroll = Boolean(plan.scrollFeatures);

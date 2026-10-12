@@ -1,14 +1,14 @@
 /* src/assets/css/subscriptions/subscriptions-pricing-cards.css */
 
 .sub-plans {
-  max-width: 1000px;
+  max-width: 1120px; /* was 1000px, about 40px wider per card */
   margin: 0 auto;
   padding: 3.5rem 2rem 5rem;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0; /* cards sit flush against each other */
+  gap: 0;
   align-items: center;
-  direction: ltr; /* green · purple · orange, left → right */
+  direction: ltr;
 }
 
 /* ---------- Card shell ----------
@@ -158,13 +158,14 @@
 }
 
 .sub-plan-card__name {
-  margin: 0;
-  font-size: 1.15rem;
+  margin-bottom: -1rem;
+  font-size: 2rem;
   font-weight: 800;
   color: #fff;
+  margin-top: 0rem;
 }
 .sub-plan-card--popular .sub-plan-card__name {
-  font-size: 1.45rem;
+  font-size: 2.5rem;
 }
 
 .sub-plan-card__price {
@@ -176,7 +177,7 @@
 .sub-plan-card__price-value {
   font-size: 1.9rem;
   font-weight: 900;
-  color: #fff;
+  color: #ff683c;
 }
 .sub-plan-card--popular .sub-plan-card__price-value {
   font-size: 2.15rem;
@@ -188,11 +189,11 @@
 }
 
 .sub-plan-card__subtitle {
-  margin: 0;
-  font-size: 0.85rem;
-  color: var(--sub-muted);
-  line-height: 1.7;
-  flex-shrink: 0;
+margin: 0;
+    font-size: 1.2rem;
+    color: var(--sub-muted);
+    line-height: 1.7;
+    flex-shrink: 0;
 }
 
 /* ---------- Features viewport (fixed height, internal scroll) ---------- */
@@ -266,7 +267,7 @@
   height: 48px;
   border: none;
   border-radius: var(--sub-radius-sm);
-  font-size: 0.95rem;
+  font-size: 1.2rem;
   font-weight: 700;
   cursor: pointer;
   background: var(--plan-color);
@@ -329,4 +330,30 @@
   height: 100cqw;
 
   transform: translate(-50%, -50%) rotate(var(--sub-mesh-rotate, 90deg));
+}
+.sub-pricing-cards {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1120px; /* was 1000px, wider cards */
+  margin: 0 auto;
+  padding: 3.5rem 2rem 5rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  align-items: center;
+  direction: ltr;
+
+  /* make sure nothing else can draw a wrapper around the cards */
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+@media (max-width: 980px) {
+  .sub-pricing-cards {
+    grid-template-columns: 1fr;
+    max-width: 380px;
+    row-gap: 1.75rem;
+  }
+  /* keep the rest of the block unchanged */
 }

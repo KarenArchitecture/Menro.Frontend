@@ -2,16 +2,13 @@
 import React, { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "../common/SearchBar";
+import MouseIcon from "../icons/MouseIcon";
 import ParticleField from "./ParticleField";
 import useHeroPointer from "./useHeroPointer";
 import useKineticFloaters from "./useKineticFloaters";
 
-// Dark gradient from the CodePen (bottom -> top)
 const HERO_BG = "linear-gradient(0deg, #191d1e 50%, #283139 100%)";
 
-// The floating food images. Each keeps its own CSS class for position/size
-// (img-fries, img-burger, ...), and they all share the `floating-img` class,
-// which is what the physics hook looks for.
 const FLOATERS = [
   { src: "/images/blog-pics/blog-fries.svg", alt: "Fries", cls: "img-fries" },
   { src: "/images/blog-pics/blog-burger.svg", alt: "Burger", cls: "img-burger" },
@@ -36,9 +33,8 @@ const BlogHero = ({ hero }) => {
   return (
     <section
       ref={sectionRef}
-      className="blog-hero-section"
+      className="blog-hero-section bhl-section"
       style={{
-        // the particle canvas fills this section and sits behind everything
         position: "relative",
         isolation: "isolate",
         background: HERO_BG,
@@ -56,29 +52,24 @@ const BlogHero = ({ hero }) => {
         />
       ))}
 
-      <div className="blog-hero-content">
-        <h1 className="hero-title">
-          {hero?.titleLine}{" "}
-          <span className="highlight-text">{hero?.highlight}</span>
-        </h1>
-        <SearchBar
-          placeholder={hero?.searchPlaceholder || "جستجو مقاله ..."}
-          onSubmit={handleSearch}
-        />
-      </div>
+      <div className="bhl__overlay">
+        <div className="bhl__content">
+          <h1 className="bhl__title">
+            <span>{hero?.highlight}</span> {hero?.titleLine}
+          </h1>
 
-      <div className="scroll-indicator">
-        <span>اسکرول کنید</span>
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
+          <div className="bhl__search">
+            <SearchBar
+              placeholder={hero?.searchPlaceholder || "جستجو مقاله ..."}
+              onSubmit={handleSearch}
+            />
+          </div>
+
+          <div className="bhl__hint">
+            <MouseIcon />
+            <p>اسکرول کنید</p>
+          </div>
+        </div>
       </div>
     </section>
   );

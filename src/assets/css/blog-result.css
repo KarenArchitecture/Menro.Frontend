@@ -1,19 +1,25 @@
-/* assets/css/blog-result.css */
-/* Companion stylesheet for BlogResultPage. Reuses the existing
-   blog-feed-*, blog-content-*, blog-sidebar-*, blog-desktop-layout /
-   blog-mobile-layout, and mobile-blog-feed__* classes from
-   styles-blog.css - only the compact hero and the empty state below
-   are new. */
+/* ==========================================================================
+   MENRO — BLOG RESULT PAGE STYLESHEET
+   File: assets/css/blog-result.css
+   Companion to styles-blog.css for BlogResultPage. Reuses the existing
+   .blog-feed-*, .blog-content-*, .blog-sidebar-*, .blog-desktop-layout,
+   .blog-mobile-layout and .mobile-blog-feed__* classes from styles-blog.css;
+   only the compact hero and the empty state are defined here.
 
-.result-page-wrapper {
-  color: #fafaf4;
-  font-family: inherit;
-  min-height: 100vh;
-  position: relative;
-  overflow-x: hidden;
-}
+   TABLE OF CONTENTS
+   --------------------------------------------------------------------------
+   01. Compact Hero ...... BlogResultHero.jsx
+   02. Empty State ....... BlogResultFeed.jsx / BlogResultMobileFeed.jsx
 
-/* --- Compact Hero --- */
+   BREAKPOINTS USED: 768 / 425
+   ========================================================================== */
+
+
+/* ==========================================================================
+   01. COMPACT HERO
+   Component: components/blog/BlogResultHero.jsx
+   ========================================================================== */
+
 .result-hero-section {
   position: relative;
   min-height: 360px;
@@ -58,6 +64,7 @@
   font-size: 14px;
 }
 
+/* --- Hero: search --- */
 .result-hero-search-wrap {
   width: 100%;
   display: flex;
@@ -70,6 +77,7 @@
   max-width: 90vw;
 }
 
+/* --- Hero: clear-filter button --- */
 .result-clear-filter-btn {
   margin-top: 4px;
   background: transparent;
@@ -88,7 +96,35 @@
   color: #ff6b35;
 }
 
-/* --- Empty state (shared by desktop + mobile feeds) --- */
+/* --- Hero: mobile (<= 768px) --- */
+@media (max-width: 768px) {
+  .result-hero-section {
+    min-height: 300px;
+    padding: 100px 20px 36px;
+  }
+
+  .result-hero-title {
+    font-size: 1.5rem;
+  }
+}
+
+/* --- Hero: phone (<= 425px) --- */
+@media (max-width: 425px) {
+  .result-hero-section {
+    padding: 90px 16px 28px;
+  }
+
+  .result-hero-search-wrap .search-bar {
+    width: 100% !important;
+  }
+}
+
+
+/* ==========================================================================
+   02. EMPTY STATE
+   Shared by the desktop and mobile result feeds
+   ========================================================================== */
+
 .result-empty-state {
   display: flex;
   flex-direction: column;
@@ -112,26 +148,4 @@
 .result-empty-state span {
   color: #888888;
   font-size: 13px;
-}
-
-/* --- Responsive --- */
-@media (max-width: 768px) {
-  .result-hero-section {
-    min-height: 300px;
-    padding: 100px 20px 36px;
-  }
-
-  .result-hero-title {
-    font-size: 1.5rem;
-  }
-}
-
-@media (max-width: 425px) {
-  .result-hero-section {
-    padding: 90px 16px 28px;
-  }
-
-  .result-hero-search-wrap .search-bar {
-    width: 100% !important;
-  }
 }

@@ -1,13 +1,36 @@
-/* ============================================================================
-   BlogPostPage.css
-   Same visual language as styles-blog.css: dark surfaces (#111214/#1a1c20/
-   #18191c), orange accent (#ff6b35), 12-24px radii, muted gray text
-   (#a0a0a0/#888). Nothing here overrides the shared page chrome (header/
-   footer/hero) - it's scoped to the single-post layout only.
-   ============================================================================ */
+/* ==========================================================================
+   MENRO — BLOG POST PAGE STYLESHEET
+   File: assets/css/BlogPostPage.css
+   Same visual language as styles-blog.css: dark surfaces (#111214 / #1a1c20),
+   orange accent (#ff6b35), 12–24px radii, muted gray text (#a0a0a0 / #888).
+   Scoped to the single-post layout; shared page chrome (header, footer,
+   sidebar boxes) comes from styles-blog.css.
+
+   TABLE OF CONTENTS (follows the on-page order of sections)
+   --------------------------------------------------------------------------
+   01. Page Shell & States ..... BlogPostPage.jsx
+   02. Layout & Article ........ .bp-layout / .bp-article
+   03. Breadcrumb .............. BlogPostHero.jsx
+   04. Cover Image ............. BlogPostHero.jsx
+   05. Title, Meta & Actions ... BlogPostHero.jsx (like / share)
+   06. Table of Contents ....... BlogPostBody.jsx
+   07. Post Body ............... BlogPostBody.jsx (Tiptap HTML)
+   08. Restaurant Card ......... hydrateRestaurantCards() in blogPostContent.js
+   09. Author & Tags ........... BlogPostAuthorTags.jsx
+   10. Related Posts ........... RelatedPosts.jsx
+   11. Sidebar ................. BlogPostSidebar.jsx
+   12. Fallback Icons
+
+   BREAKPOINTS USED: 1024 / 768
+   ========================================================================== */
+
+
+/* ==========================================================================
+   01. PAGE SHELL & STATES
+   ========================================================================== */
 
 .bp-page {
-  padding-top: 120px; /* clears the fixed AppHeader, mirrors blog-page-wrapper spacing */
+  padding-top: 120px; /* clears the fixed AppHeader */
 }
 
 .bp-loading {
@@ -27,11 +50,17 @@
   text-align: center;
   padding: 40px 20px;
 }
+
 .bp-notfound__content h1 {
   font-size: 1.4rem;
 }
 
-/* ---------- Two-column layout (matches .blog-content-wrapper) ---------- */
+
+/* ==========================================================================
+   02. LAYOUT & ARTICLE
+   Two columns, same as .blog-content-wrapper in styles-blog.css
+   ========================================================================== */
+
 .bp-layout {
   max-width: 1440px;
   margin: 0 auto;
@@ -42,12 +71,6 @@
   align-items: start;
 }
 
-@media (max-width: 1024px) {
-  .bp-layout {
-    grid-template-columns: 1fr;
-  }
-}
-
 .bp-article {
   min-width: 0;
   background-color: #1a1c20;
@@ -56,6 +79,14 @@
   padding: 40px;
 }
 
+/* --- Layout: tablet (<= 1024px) --- */
+@media (max-width: 1024px) {
+  .bp-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Layout: mobile (<= 768px) --- */
 @media (max-width: 768px) {
   .bp-article {
     padding: 20px;
@@ -63,7 +94,11 @@
   }
 }
 
-/* ---------- Breadcrumb ---------- */
+
+/* ==========================================================================
+   03. BREADCRUMB
+   ========================================================================== */
+
 .bp-breadcrumb {
   display: flex;
   align-items: center;
@@ -73,18 +108,22 @@
   font-size: 0.85rem;
   color: #a0a0a0;
 }
+
 .bp-breadcrumb a {
   color: #a0a0a0;
   text-decoration: none;
   transition: color 0.15s ease;
 }
+
 .bp-breadcrumb a:hover {
   color: #ff6b35;
 }
+
 .bp-breadcrumb i {
   font-size: 0.6rem;
   color: #555;
 }
+
 .bp-breadcrumb__current {
   color: #fafaf4;
   overflow: hidden;
@@ -93,7 +132,11 @@
   max-width: 260px;
 }
 
-/* ---------- Cover image ---------- */
+
+/* ==========================================================================
+   04. COVER IMAGE
+   ========================================================================== */
+
 .bp-cover {
   position: relative;
   width: 100%;
@@ -103,12 +146,14 @@
   margin-bottom: 24px;
   background: #111214;
 }
+
 .bp-cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
+
 .bp-cover__category {
   position: absolute;
   top: 16px;
@@ -122,17 +167,16 @@
   border-radius: 999px;
 }
 
-/* ---------- Title + meta ---------- */
+
+/* ==========================================================================
+   05. TITLE, META & ACTIONS
+   ========================================================================== */
+
 .bp-title {
   font-size: 2rem;
   font-weight: 800;
   line-height: 1.4;
   margin: 0 0 20px;
-}
-@media (max-width: 768px) {
-  .bp-title {
-    font-size: 1.5rem;
-  }
 }
 
 .bp-meta {
@@ -145,12 +189,14 @@
   margin-bottom: 24px;
   border-bottom: 1px solid #2a2a2a;
 }
+
 .bp-meta__group {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 18px;
 }
+
 .bp-meta__item {
   display: inline-flex;
   align-items: center;
@@ -158,13 +204,53 @@
   color: #a0a0a0;
   font-size: 0.85rem;
 }
+
 .bp-meta__item i {
   color: #ff6b35;
   font-size: 0.8rem;
 }
+
 .bp-meta__author {
   color: #dcdcdc;
   font-weight: 600;
+}
+
+/* --- Actions: like + share --- */
+.bp-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bp-like-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid #444;
+  background: #0c0f14;
+  color: #dcdcdc;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bp-like-btn:disabled {
+  cursor: default;
+}
+
+.bp-like-btn:hover:not(:disabled) {
+  border-color: #ff3b5c;
+  color: #ff3b5c;
+}
+
+.bp-like-btn--liked {
+  border-color: #ff3b5c;
+  background: rgba(255, 59, 92, 0.1);
+  color: #ff3b5c;
 }
 
 .bp-share-btn {
@@ -181,12 +267,24 @@
   cursor: pointer;
   transition: all 0.2s ease;
 }
+
 .bp-share-btn:hover {
   background: #ff6b35;
   border-color: #ff6b35;
 }
 
-/* ---------- Table of contents ---------- */
+/* --- Title: mobile (<= 768px) --- */
+@media (max-width: 768px) {
+  .bp-title {
+    font-size: 1.5rem;
+  }
+}
+
+
+/* ==========================================================================
+   06. TABLE OF CONTENTS
+   ========================================================================== */
+
 .bp-toc {
   background: #111214;
   border: 1px solid #2a2a2a;
@@ -194,6 +292,7 @@
   padding: 20px;
   margin-bottom: 28px;
 }
+
 .bp-toc__title {
   display: flex;
   align-items: center;
@@ -202,9 +301,11 @@
   color: #fafaf4;
   margin-bottom: 14px;
 }
+
 .bp-toc__title i {
   color: #ff6b35;
 }
+
 .bp-toc ul {
   list-style: none;
   margin: 0;
@@ -213,9 +314,11 @@
   flex-direction: column;
   gap: 8px;
 }
+
 .bp-toc__item--level-3 {
   padding-right: 18px;
 }
+
 .bp-toc__item button {
   background: none;
   border: none;
@@ -227,17 +330,24 @@
   text-align: right;
   transition: color 0.15s ease;
 }
+
 .bp-toc__item button:hover,
 .bp-toc__item--active button {
   color: #ff6b35;
 }
 
-/* ---------- Body content (raw HTML from the Tiptap editor) ---------- */
+
+/* ==========================================================================
+   07. POST BODY
+   Raw HTML produced by the Tiptap editor
+   ========================================================================== */
+
 .bp-body {
   font-size: 1.08rem;
   line-height: 2;
   color: #e6e6e6;
 }
+
 .bp-body h2 {
   font-size: 1.5rem;
   font-weight: 800;
@@ -245,6 +355,7 @@
   margin: 34px 0 14px;
   scroll-margin-top: 100px;
 }
+
 .bp-body h3 {
   font-size: 1.22rem;
   font-weight: 700;
@@ -252,21 +363,26 @@
   margin: 26px 0 12px;
   scroll-margin-top: 100px;
 }
+
 .bp-body p {
   margin: 0 0 18px;
 }
+
 .bp-body ul,
 .bp-body ol {
   padding-inline-start: 26px;
   margin: 0 0 18px;
 }
+
 .bp-body li {
   margin-bottom: 6px;
 }
+
 .bp-body strong {
   font-weight: 700;
   color: #fafaf4;
 }
+
 .bp-body blockquote {
   margin: 22px 0;
   padding: 14px 20px;
@@ -276,11 +392,13 @@
   color: #dcdcdc;
   font-size: 1.05rem;
 }
+
 .bp-body hr {
   border: none;
   border-top: 1px dashed #333;
   margin: 34px 0;
 }
+
 .bp-body img {
   display: block;
   max-width: 100%;
@@ -289,8 +407,8 @@
   margin: 24px auto;
 }
 
-/* Expandable (details/summary) - same pattern as the admin editor, tuned
-   for the public dark surface. */
+/* --- Body: expandable (details / summary) ---
+   Same pattern as the admin editor, tuned for the public dark surface. */
 .bp-body details {
   margin: 24px 0;
   border: 1px solid #2a2a2a;
@@ -298,6 +416,7 @@
   background: #111214;
   overflow: hidden;
 }
+
 .bp-body summary {
   display: flex;
   align-items: center;
@@ -310,11 +429,13 @@
   color: #fafaf4;
   list-style: none;
 }
+
 .bp-body summary::marker,
 .bp-body summary::-webkit-details-marker {
   display: none;
   content: "";
 }
+
 .bp-body summary::before {
   content: "\25B8";
   display: inline-flex;
@@ -326,21 +447,28 @@
   transition: transform 0.15s ease;
   flex-shrink: 0;
 }
+
 .bp-body details[open] > summary::before {
   transform: rotate(90deg);
 }
+
 .bp-body details > div {
   margin: 0;
-  padding: 0 20px 20px;
-  padding-top: 16px;
+  padding: 16px 20px 20px;
   color: #cfcfcf;
   border-top: 1px solid #2a2a2a;
 }
+
 .bp-body details > div p:last-child {
   margin-bottom: 0;
 }
 
-/* ---------- Restaurant card (hydrated client-side from data-* attrs) ---------- */
+
+/* ==========================================================================
+   08. RESTAURANT CARD
+   Built client-side from the data-* attributes of the saved HTML
+   ========================================================================== */
+
 .bp-restaurant-card {
   margin: 26px 0;
   border-radius: 16px;
@@ -348,23 +476,27 @@
   border: 1px solid rgba(255, 107, 53, 0.3);
   background: #111214;
 }
+
 .bp-restaurant-card__link {
   display: block;
   color: inherit;
   text-decoration: none;
 }
+
 .bp-restaurant-card__banner {
   position: relative;
   width: 100%;
   aspect-ratio: 3 / 1;
   background: #0c0f14;
 }
+
 .bp-restaurant-card__banner-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
+
 .bp-restaurant-card__banner-fallback {
   width: 100%;
   height: 100%;
@@ -374,7 +506,10 @@
   color: #555;
   font-size: 26px;
 }
-/* .single-banner style override for removing margin-bottom */
+
+/* Removes the bottom margin of the shared banner component.
+   NOTE: not referenced by the components provided (likely added by
+   AdBanner). Verify before removing. */
 .single-banner {
   margin-bottom: 0 !important;
 }
@@ -391,6 +526,7 @@
   padding: 5px 12px;
   border-radius: 999px;
 }
+
 .bp-restaurant-card__logo {
   position: absolute;
   bottom: -28px;
@@ -406,11 +542,13 @@
   justify-content: center;
   color: #777;
 }
+
 .bp-restaurant-card__logo img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+
 .bp-restaurant-card__footer {
   display: flex;
   align-items: center;
@@ -418,6 +556,7 @@
   gap: 14px;
   padding: 36px 18px 18px;
 }
+
 .bp-restaurant-card__rating {
   display: inline-flex;
   align-items: center;
@@ -427,17 +566,20 @@
   font-size: 0.95rem;
   white-space: nowrap;
 }
+
 .bp-restaurant-card__voters {
   color: #888;
   font-weight: 400;
   font-size: 0.85rem;
 }
+
 .bp-restaurant-card__titles {
   display: flex;
   align-items: baseline;
   gap: 8px;
   min-width: 0;
 }
+
 .bp-restaurant-card__name {
   font-size: 1.05rem;
   font-weight: 700;
@@ -446,13 +588,18 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .bp-restaurant-card__category {
   font-size: 0.85rem;
   color: #888;
   white-space: nowrap;
 }
 
-/* ---------- Author box + tags (after body) ---------- */
+
+/* ==========================================================================
+   09. AUTHOR & TAGS
+   ========================================================================== */
+
 .bp-after-body {
   margin-top: 36px;
   padding-top: 28px;
@@ -461,11 +608,13 @@
   flex-direction: column;
   gap: 24px;
 }
+
 .bp-author-box {
   display: flex;
   align-items: center;
   gap: 14px;
 }
+
 .bp-author-box__avatar {
   width: 52px;
   height: 52px;
@@ -479,12 +628,14 @@
   font-size: 1.2rem;
   flex-shrink: 0;
 }
+
 .bp-author-box__eyebrow {
   display: block;
   font-size: 0.78rem;
   color: #888;
   margin-bottom: 2px;
 }
+
 .bp-author-box__name {
   display: block;
   font-weight: 700;
@@ -497,6 +648,7 @@
   flex-wrap: wrap;
   gap: 8px;
 }
+
 .bp-tags__chip {
   display: inline-flex;
   align-items: center;
@@ -510,31 +662,34 @@
   font-size: 0.85rem;
   transition: all 0.15s ease;
 }
+
 .bp-tags__chip:hover {
   border-color: #ff6b35;
   color: #ff6b35;
 }
 
-/* ---------- Related posts ---------- */
+
+/* ==========================================================================
+   10. RELATED POSTS
+   ========================================================================== */
+
 .bp-related {
   margin-top: 40px;
 }
+
 .bp-related__title {
   font-size: 1.2rem;
   font-weight: 700;
   color: #fafaf4;
   margin: 0 0 18px;
 }
+
 .bp-related__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
-@media (max-width: 768px) {
-  .bp-related__grid {
-    grid-template-columns: 1fr;
-  }
-}
+
 .bp-related__card {
   display: block;
   background: #111214;
@@ -545,9 +700,11 @@
   color: inherit;
   transition: border-color 0.15s ease;
 }
+
 .bp-related__card:hover {
   border-color: rgba(255, 107, 53, 0.5);
 }
+
 .bp-related__thumb {
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -557,13 +714,14 @@
   justify-content: center;
   color: #555;
 }
+
 .bp-related__thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+
 .bp-related__card-title {
-  display: block;
   padding: 14px 14px 6px;
   font-weight: 600;
   color: #fafaf4;
@@ -574,6 +732,7 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
+
 .bp-related__card-meta {
   display: flex;
   align-items: center;
@@ -582,14 +741,27 @@
   color: #888;
   font-size: 0.78rem;
 }
+
 .bp-related__card-meta i {
   color: #ff6b35;
 }
 
-/* ---------- Sidebar ---------- */
+/* --- Related: mobile (<= 768px) --- */
+@media (max-width: 768px) {
+  .bp-related__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ==========================================================================
+   11. SIDEBAR
+   ========================================================================== */
+
 .bp-sidebar {
   min-width: 0;
 }
+
 .bp-sidebar__sticky {
   position: sticky;
   top: 20px;
@@ -597,6 +769,7 @@
   flex-direction: column;
   gap: 24px;
 }
+
 .bp-sidebar__ad {
   background-color: #1a1c20;
   border: 1px solid #2a2d32;
@@ -606,11 +779,13 @@
   justify-content: center;
   padding: 16px;
 }
+
 .bp-sidebar__box {
   background-color: #1a1c20;
   border: 1px solid #2a2d32;
 }
 
+/* --- Sidebar: popular posts --- */
 .bp-sidebar__popular-list {
   list-style: none;
   margin: 0;
@@ -619,6 +794,7 @@
   flex-direction: column;
   gap: 14px;
 }
+
 .bp-sidebar__popular-item {
   display: flex;
   align-items: center;
@@ -626,6 +802,7 @@
   text-decoration: none;
   color: inherit;
 }
+
 .bp-sidebar__popular-thumb {
   width: 56px;
   height: 56px;
@@ -638,11 +815,13 @@
   justify-content: center;
   color: #555;
 }
+
 .bp-sidebar__popular-thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+
 .bp-sidebar__popular-title {
   font-size: 0.85rem;
   color: #dcdcdc;
@@ -654,17 +833,24 @@
   -webkit-box-orient: vertical;
   transition: color 0.15s ease;
 }
+
 .bp-sidebar__popular-item:hover .bp-sidebar__popular-title {
   color: #ff6b35;
 }
 
+/* --- Sidebar: tablet (<= 1024px) — no longer sticky when stacked --- */
 @media (max-width: 1024px) {
   .bp-sidebar__sticky {
     position: static;
   }
 }
 
-/* ---------- Fallback icon sizing (proportional to its own frame) ---------- */
+
+/* ==========================================================================
+   12. FALLBACK ICONS
+   Icon size is proportional to its own thumbnail frame.
+   ========================================================================== */
+
 .bp-related__thumb,
 .bp-sidebar__popular-thumb {
   container-type: size;
@@ -672,65 +858,7 @@
 
 .bp-related__thumb i,
 .bp-sidebar__popular-thumb i {
-  font-size: 28px; /* fallback برای مرورگرهایی که از container query units پشتیبانی نمی‌کنن */
+  font-size: 28px; /* fallback for browsers without container query units */
   font-size: 40cqmin;
   opacity: 0.55;
-}
-
-.bp-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/* ---------- Like button (standalone pill, matches .bp-share-btn's weight) ---------- */
-.bp-like-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: 1px solid #444;
-  background: #0c0f14;
-  color: #dcdcdc;
-  font: inherit;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.bp-like-btn:disabled {
-  cursor: default;
-}
-.bp-like-btn:hover:not(:disabled) {
-  border-color: #ff3b5c;
-  color: #ff3b5c;
-}
-.bp-like-btn__icon {
-  font-size: 0.95rem;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.bp-like-btn:active .bp-like-btn__icon {
-  transform: scale(0.8);
-}
-.bp-like-btn--liked {
-  border-color: #ff3b5c;
-  background: rgba(255, 59, 92, 0.1);
-  color: #ff3b5c;
-}
-.bp-like-btn--liked .bp-like-btn__icon {
-  color: #ff3b5c;
-  animation: bp-like-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes bp-like-pop {
-  0% {
-    transform: scale(1);
-  }
-  35% {
-    transform: scale(1.35);
-  }
-  100% {
-    transform: scale(1);
-  }
 }

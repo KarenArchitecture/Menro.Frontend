@@ -1,24 +1,57 @@
-/***************************************
- * 1) Tokens & Reset
- **************************************/
+/* ==========================================================================
+   MENRO — LANDING PAGE STYLESHEET
+   File: styles-landing.css  (loaded by LandingPage via usePageStyles)
+
+   TABLE OF CONTENTS (follows the on-page order of sections)
+   --------------------------------------------------------------------------
+   00. Tokens, Reset & Utilities
+   01. Header ............ AppHeader (desktop) / MobileHeader
+   02. Hero .............. Hero.jsx
+   03. Why Menro ......... WhyMenroSection.jsx
+                           (InfoCard, IconCard, SalesBoostCard, CostReductionCard)
+   04. Stats ............. StatsSection.jsx
+   05. Install Banner .... InstallPhonesBanner.jsx
+   06. Plans ............. PlansSection.jsx / PlanCard.jsx
+   07. Burger Panel ...... BurgerPanelSection.jsx
+   08. FAQ ............... FAQSection.jsx
+   09. Blogs ............. BlogSection.jsx
+   10. Footer ............ GlassFooter / FooterFruitsScene wrapper
+
+   BREAKPOINTS USED: 1280 / 1100 / 1024 / 980 / 880 / 768 (mobile) / 640 / 480 / 425 / 420
+   NOTE: html font-size is 62.5%, so 1rem = 10px throughout this file.
+   ========================================================================== */
+
+
+/* ==========================================================================
+   00. TOKENS, RESET & UTILITIES
+   ========================================================================== */
+
+/* --- App shell overrides --- */
 .app-shell__content {
   padding-bottom: 0 !important;
 }
+
+.app-shell-content {
+  padding: 1rem !important;
+}
+
+/* --- Design tokens --- */
 :root {
   --bg: #0f0f10;
   --bg-hero: #0b0f13;
   --text: #fafaf4;
   --muted: #cfcfcf;
-  --accent: #ff9d10; /* نارنجی منرو */
+  --accent: #ff9d10; /* Menro orange */
   --card-bg: rgba(18, 22, 28, 0.72);
   --card-border: rgba(255, 255, 255, 0.08);
   --glass-blur: 6px;
 
   --plan-card-w: 1200px;
   --plan-card-h: 350px;
-  --nav-h: 96px; /* 80 + 16 */
+  --nav-h: 96px; /* 80 + 16 (also read by PlansSection.jsx) */
 }
 
+/* --- Reset --- */
 *,
 *::before,
 *::after {
@@ -36,7 +69,7 @@ body {
   padding: 0;
   font-family: "Vazirmatn", sans-serif;
   overflow-x: hidden;
-  /* Hide page scrollbar but keep scrolling */
+  /* Hide the page scrollbar but keep scrolling */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* Old Edge / IE */
 }
@@ -49,14 +82,29 @@ body::-webkit-scrollbar {
 }
 
 body {
-  min-height: 100dvh; /* ensures full-screen but allows page to grow */
+  min-height: 100dvh;
 }
 
-.app-shell-content {
-  padding: 1rem !important;
+/* --- Utilities --- */
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
-/* هدر همیشه بالاتر */
+
+/* ==========================================================================
+   01. HEADER
+   Desktop: AppHeader (className "landing-desktop-header")
+   Mobile : MobileHeader pill
+   ========================================================================== */
+
 .app-header-fixed {
   position: fixed;
   top: 12px;
@@ -65,9 +113,123 @@ body {
   z-index: 50;
 }
 
-/***************************************
- * 2) هیرو (تمام‌قد + تصویر پس‌زمینه)
- **************************************/
+.landing-mobile-header {
+  display: none;
+}
+
+/* --- Header: mobile (<= 768px) --- */
+@media (max-width: 768px) {
+  .landing-desktop-header {
+    display: none;
+  }
+
+  .landing-mobile-header {
+    position: fixed;
+    top: 8px;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    padding-inline: 12px;
+    pointer-events: none;
+  }
+
+  .landing-mobile-header__pill {
+    width: 100%;
+    max-width: 544px;
+    height: 96px;
+    border-radius: 24px;
+    background: rgba(24, 24, 24, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    pointer-events: auto;
+  }
+
+  .landing-mobile-header__logo {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    flex: 0 0 auto;
+  }
+
+  .landing-mobile-header__logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  .landing-mobile-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .landing-mobile-header__icon-btn {
+    width: 48px;
+    height: 48px;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+
+  .landing-mobile-header__icon-btn img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    display: block;
+  }
+}
+
+/* --- Header: small mobile (<= 420px) --- */
+@media (max-width: 420px) {
+  .landing-mobile-header__pill {
+    height: 82px;
+    border-radius: 22px;
+    padding-inline: 18px;
+  }
+
+  .landing-mobile-header__logo {
+    width: 48px;
+    height: 48px;
+  }
+
+  .landing-mobile-header__actions {
+    gap: 18px;
+  }
+
+  .landing-mobile-header__icon-btn {
+    width: 42px;
+    height: 42px;
+  }
+
+  .landing-mobile-header__icon-btn img {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+
+/* ==========================================================================
+   02. HERO
+   Component: components/landing/Hero.jsx
+   ========================================================================== */
+
+/* --- Hero: container & background --- */
 .hero {
   position: relative;
   width: 100%;
@@ -89,8 +251,7 @@ body {
 }
 
 /* Shown only while getLandingGeneral() is in flight, so the real hero
-   image (or, on failure, the static fallback) is painted exactly once —
-   no flash of the fallback image swapping to the real one. */
+   image (or the static fallback on failure) is painted exactly once. */
 .hero__bg--skeleton {
   background: linear-gradient(120deg, #12151b 0%, #1c212b 50%, #12151b 100%);
   background-size: 200% 100%;
@@ -106,7 +267,7 @@ body {
   }
 }
 
-/* اوورلی تیره */
+/* Dark overlay */
 .hero::before {
   content: "";
   position: absolute;
@@ -121,7 +282,7 @@ body {
   pointer-events: none;
 }
 
-/* هاله قهوه‌ای پایین */
+/* Brown glow at the bottom */
 .hero::after {
   content: "";
   position: absolute;
@@ -140,7 +301,7 @@ body {
   pointer-events: none;
 }
 
-/* لایه محتوا روی هیرو */
+/* --- Hero: content layer --- */
 .hero__overlay {
   position: relative;
   z-index: 3;
@@ -163,29 +324,25 @@ body {
   gap: 2rem;
 }
 
+/* Also used by the Install Banner heading (section 05) */
 .hero__title {
- margin: 0;
-    color: #fff;
-    font-size: 45px;
-    font-weight: 800;
-    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
-    margin-right: 2rem;
-
+  margin: 0 2rem 0 0;
+  color: #fff;
+  font-size: 45px;
+  font-weight: 800;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
 }
 
-/* .hero__title span {
-  color: #ff683c;
-} */
-
+/* Also used by the Install Banner sub-heading (section 05) */
 .hero__description {
+  margin-top: 0;
   margin-right: 7rem;
   letter-spacing: 5px;
   font-size: 40px;
   font-weight: 400;
-  margin-top: 0;
 }
 
-/* نوار جستجو */
+/* --- Hero: search bar --- */
 .hero .search-bar-container {
   width: min(30vw, 30rem);
   margin: 12px auto 0;
@@ -207,9 +364,11 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
     0 10px 24px rgba(0, 0, 0, 0.25);
 }
+
 .hero__search {
   margin-left: 16rem;
 }
+
 .hero .search-bar input {
   flex: 1 1 auto;
   height: 100%;
@@ -240,7 +399,7 @@ body {
   display: block;
 }
 
-/* راهنمای اسکرول */
+/* --- Hero: scroll hint --- */
 .hero__hint {
   display: flex;
   flex-direction: row-reverse;
@@ -252,14 +411,14 @@ body {
   align-items: center;
 }
 
-/* فاصله از هدر ثابت در دسکتاپ */
+/* --- Hero: large screens (>= 1024px) — clearance from the fixed header --- */
 @media (min-width: 1024px) {
   .hero__content {
     margin-top: 7.2rem;
   }
 }
 
-/* هیرو - موبایل (پایه + استایل‌های اختصاصی موبایل ادغام شد) */
+/* --- Hero: mobile (<= 768px) --- */
 @media (max-width: 768px) {
   .hero {
     min-height: 100svh;
@@ -267,13 +426,11 @@ body {
 
   .hero__overlay {
     min-height: 100svh;
-    justify-content: flex-end;
     padding: 0 2.2rem;
   }
 
   .hero__content {
     max-width: 100%;
-    margin-top: 0;
     margin-bottom: 3.2rem;
     gap: 1.8rem;
   }
@@ -298,14 +455,12 @@ body {
   }
 
   .hero .search-bar {
-    width: 100%;
     height: 6.4rem;
     border-radius: 1.8rem;
     padding: 0 1.4rem;
   }
 
   .hero .search-bar input {
-    font-size: 1.4rem;
     min-width: 0;
   }
 
@@ -320,6 +475,7 @@ body {
   }
 }
 
+/* --- Hero: small mobile (<= 420px) --- */
 @media (max-width: 420px) {
   .hero__overlay {
     padding: 0 2rem;
@@ -341,9 +497,21 @@ body {
   }
 }
 
-/***************************************
- * 3) Why Menro - static mock layout
- **************************************/
+
+/* ==========================================================================
+   03. WHY MENRO
+   Components: WhyMenroSection, InfoCard, IconCard, SalesBoostCard,
+               CostReductionCard
+
+   Layout map (fixed absolute grid on desktop, 2-col grid on mobile):
+     pos-a  SalesBoostCard      pos-f  IconCard "پنل اختصاصی"
+     pos-b  InfoCard            pos-g  IconCard "مدیریت مالی"
+     pos-c  InfoCard            pos-h  CostReductionCard
+     pos-d  InfoCard            pos-i  IconCard (Menro logo)
+     pos-e  InfoCard
+   ========================================================================== */
+
+/* --- Why Menro: section & titles --- */
 .why-static {
   position: relative;
   background: #0b0e12;
@@ -352,20 +520,6 @@ body {
   display: grid;
   place-items: center;
   padding: 8rem 2rem 10rem;
-}
-
-.why-static__stage {
-  position: relative;
-  height: 100%;
-  min-height: 90vh;
-}
-
-.why-static__inner {
-  position: relative;
-  width: min(1200px, 92vw);
-  height: 100%;
-  min-height: 90vh;
-  margin-inline: auto;
 }
 
 .why-static__titles {
@@ -393,7 +547,7 @@ body {
   font-weight: 400;
 }
 
-/* Card base */
+/* --- Why Menro: shared card base & variants --- */
 .why-card {
   position: absolute;
   background: rgba(255, 255, 255, 0.04);
@@ -409,68 +563,13 @@ body {
 
 .why-card--tag {
   padding: 12px 18px;
-  background: linear-gradient(
-    180deg,
-    rgba(53, 62, 84, 0.35),
-    rgba(30, 35, 48, 0.35)
-  );
   color: #ff6d1a;
   font-weight: 800;
   border-radius: 12px;
 }
 
-.why-card__header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-
-.why-card__icon {
-  font-size: 20px;
-}
-
-.why-card__title {
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: #fafaf4;
-  margin: 0;
-}
-
-.why-card__text {
-  margin: 0;
-  font-size: 1.4rem;
-  line-height: 1.9;
-  color: rgba(255, 255, 255, 0.8);
-}
-
 .why-card--small {
   padding: 14px 16px;
-}
-
-.why-card__small {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.why-card__small-icon {
-  font-size: 20px;
-}
-
-.why-card__small-meta {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.1;
-}
-
-.why-card__small-meta strong {
-  font-size: 1.6rem;
-}
-
-.why-card__small-meta span {
-  font-size: 1.2rem;
-  opacity: 0.85;
 }
 
 .why-card--panel {
@@ -479,56 +578,42 @@ body {
   padding: 18px 22px;
 }
 
-.why-card--panel .why-card__title {
-  margin-top: 6px;
+/* --- Why Menro: info card (pos-b … pos-e) --- */
+.info-card {
+  width: 22rem;
+  height: 19rem;
 }
 
-.why-card--chart {
-  width: 300px;
-  height: 210px;
-  padding: 18px;
+.info-card__header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-.why-card__chart {
-  position: absolute;
-  inset: 40px 18px 56px;
-  border-radius: 12px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.06),
-    rgba(255, 255, 255, 0.03)
-  );
+.info-icon {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
 }
 
-.why-card__chart-dot {
-  position: absolute;
-  right: 38%;
-  top: 46%;
-  width: 10px;
-  height: 10px;
-  background: #ff6d1a;
-  border-radius: 50%;
-  box-shadow: 0 0 0 3px rgba(255, 109, 26, 0.25);
+.info-title {
+  font-size: 20px;
+  font-weight: 700;
 }
 
-.why-card__badge {
-  position: absolute;
-  bottom: 12px;
-  left: 12px;
-  background: rgba(255, 255, 255, 0.12);
-  padding: 8px 12px;
-  border-radius: 10px;
-  font-size: 1.2rem;
+.info-desc {
+  font-size: 16px;
+  font-weight: 500;
+  color: #999fa8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.2rem 0 0;
+  margin: 0;
 }
 
-.why-card__kpi {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  font-weight: 900;
-}
-
-/* Placement approximations to match the mock */
+/* --- Why Menro: card positions (desktop) --- */
 .pos-a {
   top: 19rem;
   right: 7rem;
@@ -537,32 +622,24 @@ body {
 .pos-b {
   left: 40rem;
   bottom: 0;
-  height: 311px;
-  width: 363px;
   background: linear-gradient(246.95deg, #1c2128 0.52%, #111b2f 98.07%);
 }
 
 .pos-c {
   top: 55rem;
   right: 62rem;
-  height: 311px;
-  width: 363px;
   background: linear-gradient(246.95deg, #1c2128 0.52%, #241a19 98.07%);
 }
 
 .pos-d {
   top: 80rem;
   right: 15rem;
-  height: 311px;
-  width: 363px;
   background: linear-gradient(246.95deg, #1c2128 0.52%, #201924 98.07%);
 }
 
 .pos-e {
   top: 119rem;
   right: 13rem;
-  width: 363px;
-  height: 311px;
   background: linear-gradient(246.95deg, #1c2128 0.52%, #192422 98.07%);
 }
 
@@ -587,11 +664,6 @@ body {
   padding: 8px 0;
 }
 
-.pos-h {
-  top: 640px;
-  left: 300px;
-}
-
 .pos-i {
   left: 5rem;
   top: 45rem;
@@ -613,11 +685,10 @@ body {
   object-fit: contain;
 }
 
-/* NOTE: the four selectors below are deep, ID/nth-child-style descendant
-   selectors copied verbatim from the original file. They only make sense
-   if the DOM structure they describe stays exactly the same — consider
-   replacing them with plain classes (e.g. .icon-card__title--accent,
-   .icon-card__big-icon) the next time you touch the markup. */
+/* --- Why Menro: icon cards (pos-f, pos-g, pos-i) ---
+   NOTE: these deep selectors depend on the exact DOM structure of IconCard.
+   Consider replacing them with plain classes (e.g. .icon-card__title--accent)
+   the next time the markup is touched. */
 #why-menro
   > div.why-card.icon-card.why-card.why-card--panel.pos-i
   > div
@@ -668,7 +739,7 @@ body {
   height: 40px;
 }
 
-/* --- Sales Boost Card --- */
+/* --- Why Menro: Sales Boost card (pos-a) --- */
 .sales-boost {
   width: 18rem;
   height: 18rem;
@@ -688,25 +759,6 @@ body {
 
 .sales-boost__ring svg {
   display: block;
-}
-
-.sales-boost__ring::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: conic-gradient(#fafaf4 var(--p), transparent 0);
-  -webkit-mask: radial-gradient(
-    farthest-side,
-    transparent calc(50% - var(--thick)),
-    #000 calc(50% - var(--thick))
-  );
-  mask: radial-gradient(
-    farthest-side,
-    transparent calc(50% - var(--thick)),
-    #000 calc(50% - var(--thick))
-  );
-  pointer-events: none;
 }
 
 .sales-boost__content {
@@ -733,39 +785,19 @@ body {
   color: #999fa8;
 }
 
-.sales-boost__icon {
-  width: 48px;
-  height: 48px;
-  margin-right: 1.5rem;
-  color: #ff6d1a; /* Menro orange */
-}
-
 #why-menro > div.why-card.sales-boost.why-card.pos-a > div > svg {
   margin: 3rem auto;
   width: 220px;
   height: 220px;
 }
 
-@media (max-width: 640px) {
-  .sales-boost {
-    width: 100%;
-    height: auto;
-    padding: 16px 0;
-  }
-
-  .sales-boost__ring {
-    --ring-size: 200px;
-  }
-}
-
-/* ---- Cost Reduction (static) ---- */
+/* --- Why Menro: Cost Reduction card (pos-h) --- */
 .cost-reduction {
   width: 250px;
   height: 250px;
   padding: 18px;
   left: 39rem;
   top: 76rem;
-  position: absolute;
   overflow: visible;
   background: linear-gradient(246.95deg, #1c2128 0.52%, #201924 98.07%);
 }
@@ -780,26 +812,7 @@ body {
   background: rgba(0, 0, 0, 0.28);
   display: grid;
   place-items: center;
-  color: #ff6d1a; /* Menro orange */
-}
-
-.cost-reduction .chart {
-  position: absolute;
-  inset: 28px 10px 52px 10px;
-}
-
-.cost-reduction .chart-path {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.75);
-  stroke-width: 6px;
-  stroke-linecap: round;
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
-}
-
-.cost-reduction .chart-dot {
-  position: absolute;
-  top: 42px;
-  right: 84px;
+  color: #ff6d1a;
 }
 
 .cost-reduction .kpi {
@@ -844,16 +857,13 @@ body {
   height: 185px;
 }
 
-/* Why Menro - mobile */
+/* --- Why Menro: mobile (<= 768px) --- */
 @media (max-width: 768px) {
   .why-static {
     min-height: auto;
     padding: 7rem 2.4rem 6rem;
-    background: #0b0e12;
-    display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2.6rem 2rem;
-    place-items: center;
     overflow: hidden;
     direction: ltr;
   }
@@ -873,16 +883,15 @@ body {
     font-size: clamp(5.2rem, 15vw, 7.2rem);
     line-height: 1;
     font-weight: 900;
-    margin: 0;
   }
 
   .why-static__subtitle {
     font-size: clamp(1.8rem, 5vw, 2.4rem);
     line-height: 1.8;
     margin-top: 1.2rem;
-    color: #999fa8;
   }
 
+  /* Cards become normal grid items (desktop absolute positions are reset) */
   .why-card,
   .pos-a,
   .pos-b,
@@ -905,6 +914,13 @@ body {
     z-index: 1;
   }
 
+  /* pos-a and pos-c are hidden on mobile */
+  .pos-a,
+  .pos-c {
+    display: none;
+  }
+
+  /* Info cards */
   .pos-b,
   .pos-c,
   .pos-d,
@@ -929,6 +945,21 @@ body {
     order: 8;
   }
 
+  .info-card__header {
+    flex-direction: row-reverse;
+  }
+
+  .info-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .info-desc {
+    line-height: 1.9;
+    text-align: right;
+  }
+
+  /* Icon cards */
   .pos-f {
     order: 4;
     grid-column: 2 / 3;
@@ -974,20 +1005,8 @@ body {
     margin-top: 1rem !important;
   }
 
-  .pos-a,
-  .pos-c {
-    display: none;
-  }
-
   .icon-card__title {
-    font-size: 1rem;
-    font-weight: 700;
     text-align: center;
-  }
-
-  .big-icon svg {
-    width: 4rem;
-    height: 4rem;
   }
 
   #why-menro
@@ -995,9 +1014,13 @@ body {
     > div
     > div.icon-card__title {
     font-size: 2rem;
-    color: #ff683c;
   }
 
+  .why-menro-logo-icon {
+    width: 5.4rem;
+  }
+
+  /* Cost reduction card */
   .cost-reduction {
     width: 14rem !important;
     height: 14rem !important;
@@ -1039,85 +1062,17 @@ body {
     width: 15rem;
     height: 10rem;
   }
-
-  .info-card {
-    width: 100%;
-    height: auto;
-  }
-
-  .info-card__header {
-    flex-direction: row-reverse;
-    gap: 1rem;
-  }
-
-  .info-icon {
-    width: 2.4rem;
-    height: 2.4rem;
-  }
-
-  .info-icon svg {
-    width: 100%;
-    height: 100%;
-  }
-
-  .info-title {
-    font-size: 1.9rem;
-    font-weight: 800;
-  }
-
-  .info-desc {
-    font-size: 1.25rem;
-    line-height: 1.9;
-    padding-top: 1.4rem;
-    text-align: right;
-    justify-content: flex-start;
-  }
-
-  .why-menro-logo-icon {
-    width: 5.4rem;
-  }
-
-  .bp__title {
-    padding: 0 1rem;
-    white-space: nowrap;
-    font-size: clamp(1.2rem, 6.5vw, 2.5rem);
-    position: absolute;
-    top: 28%;
-    right: 0% !important;
-    z-index: 60;
-    pointer-events: none;
-    margin: 0;
-    display: grid;
-    place-items: center;
-    text-align: center;
-    padding: 2rem;
-    font-weight: 800;
-    color: #fafaf4;
-    width: 100%;
-    font-size: 4rem !important;
-  }
-
-  .bp__glow {
-    position: absolute;
-    left: 50%;
-    top: 15rem;
-    transform: translate(-50%, -50%);
-    width: 65rem;
-    height: 65rem;
-    border-radius: 999px;
-    filter: blur(1px);
-    object-fit: cover;
-    opacity: 0.9;
-    overflow: initial;
-    z-index: -1;
-  }
 }
 
+/* --- Why Menro: small mobile (<= 425px) --- */
 @media (max-width: 425px) {
   .why-static {
     padding-inline: 2.2rem;
     gap: 7rem 2rem;
-    direction: ltr;
+  }
+
+  .why-static__title {
+    font-size: clamp(4.8rem, 16vw, 6.4rem);
   }
 
   .pos-b,
@@ -1125,18 +1080,6 @@ body {
   .pos-d,
   .pos-e {
     max-width: 100%;
-  }
-
-  .why-static__title {
-    font-size: clamp(4.8rem, 16vw, 6.4rem);
-  }
-
-  .pos-f,
-  .pos-g,
-  .pos-i {
-    width: 8.6rem !important;
-    height: 8.6rem !important;
-    min-height: 8.6rem;
   }
 
   .pos-f {
@@ -1184,50 +1127,16 @@ body {
   }
 
   .cost-reduction .cost-chart {
-    position: absolute;
     inset: 25px -2px 52px 5px;
-    overflow: hidden;
   }
 }
 
-/* general info cards */
-.info-card {
-  width: 22rem;
-  height: 19rem;
-}
 
-.info-card__header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
+/* ==========================================================================
+   04. STATS
+   Component: components/landing/StatsSection.jsx
+   ========================================================================== */
 
-.info-icon {
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-}
-
-.info-title {
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.info-desc {
-  font-size: 16px;
-  font-weight: 500;
-  color: #999fa8;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 0.2rem 0 0;
-  margin: 0;
-}
-
-/***************************************
- * 4) بخش آمار (Stats Section)
- **************************************/
 .stats-section {
   width: 100%;
   min-height: 100vh;
@@ -1254,9 +1163,7 @@ body {
   text-align: center;
   gap: 2rem;
 }
-.stat-item:not(:last-child)::after {
-  visibility: hidden;
-}
+
 .stat-icon {
   width: 12rem;
   height: 12rem;
@@ -1283,13 +1190,13 @@ body {
   font-weight: 700;
   background: linear-gradient(
     to bottom,
-    #FF8E6D 0%,
-    #FF8E6D 30%,
-    #FA8061 42%,
-    #F57655 50%,
-    #EF6A49 58%,
-    #E85E35 70%,
-    #E85E35 100%
+    #ff8e6d 0%,
+    #ff8e6d 30%,
+    #fa8061 42%,
+    #f57655 50%,
+    #ef6a49 58%,
+    #e85e35 70%,
+    #e85e35 100%
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1297,6 +1204,7 @@ body {
   line-height: 1;
   text-shadow: 0 2px 8px rgba(255, 157, 16, 0.3);
 }
+
 .stat-text {
   font-size: 1.5rem;
   font-weight: 600;
@@ -1305,34 +1213,31 @@ body {
   max-width: 21rem;
 }
 
+/* --- Stats: tablet (<= 1024px) --- */
 @media (max-width: 1024px) {
+  .stats-section {
+    padding: 6rem 2rem;
+  }
+
   .stats-container {
     grid-template-columns: repeat(2, 1fr);
     gap: 3rem;
   }
-
-  .stats-section {
-    padding: 6rem 2rem;
-  }
 }
 
+/* --- Stats: mobile (<= 768px) --- */
 @media (max-width: 768px) {
   .stats-section {
     min-height: auto;
     padding: 6rem 2.4rem 7rem;
-    background-color: #0c0f14;
   }
 
   .stats-container {
-    width: 100%;
     max-width: 42rem;
     margin: 0 auto;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 3.2rem;
-    row-gap: 6.4rem;
-    justify-items: center;
     align-items: start;
-    gap: initial;
+    gap: 0;
   }
 
   .stat-item {
@@ -1352,7 +1257,6 @@ body {
 
   .stat-number {
     font-size: 2rem;
-    color: #ff7a59;
     text-shadow: none;
     direction: ltr;
   }
@@ -1366,6 +1270,7 @@ body {
   }
 }
 
+/* --- Stats: small mobile (<= 480px) --- */
 @media (max-width: 480px) {
   .stat-icon {
     width: 10rem;
@@ -1377,6 +1282,7 @@ body {
   }
 }
 
+/* --- Stats: small mobile (<= 420px) --- */
 @media (max-width: 420px) {
   .stats-section {
     padding: 5.6rem 2rem 6.4rem;
@@ -1401,9 +1307,13 @@ body {
   }
 }
 
-/***************************************
- * 5) Install phone section
- **************************************/
+
+/* ==========================================================================
+   05. INSTALL BANNER
+   Component: components/landing/InstallPhonesBanner.jsx
+   Heading classes .hero__title / .hero__description come from section 02.
+   ========================================================================== */
+
 .install-banner {
   position: relative;
   background: #0b0f13;
@@ -1416,42 +1326,16 @@ body {
   overflow-y: hidden;
 }
 
-.install-banner__phones {
-  position: relative;
+/* The visual wrapper is transparent to layout on desktop */
+.install-banner__visual {
+  display: contents;
 }
 
-.install-banner__phone {
-  position: absolute;
-  height: auto;
-  display: block;
-  filter: drop-shadow(0 22px 48px rgba(0, 0, 0, 0.5));
-  will-change: transform;
-  z-index: 2;
-  transform-origin: 50% 80%;
-  contain: layout paint;
+.install-banner__mobile-content {
+  display: none;
 }
 
-/* Back phone (left, slightly bigger, behind) */
-.install-banner__phone--back {
-  z-index: 2;
-  width: 350px;
-  height: 550px;
-  right: 63%;
-  top: 10%;
-  transform: rotate(-9deg) translateY(8px);
-  opacity: 0.98;
-}
-
-/* Front phone (on top, slight tilt the other way) */
-.install-banner__phone--front {
-  z-index: 3;
-  width: 350px;
-  height: 600px;
-  right: 43%;
-  top: -1%;
-  transform: rotate(6deg);
-}
-
+/* --- Install Banner: card --- */
 .install-banner__card {
   position: absolute;
   bottom: 0;
@@ -1481,21 +1365,44 @@ body {
   pointer-events: none;
 }
 
-.install-banner__visual {
-  display: contents;
+/* --- Install Banner: phones --- */
+.install-banner__phones {
+  position: relative;
 }
 
-.install-banner__mobile-content {
-  display: none;
+.install-banner__phone {
+  position: absolute;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 22px 48px rgba(0, 0, 0, 0.5));
+  will-change: transform;
+  z-index: 2;
+  transform-origin: 50% 80%;
+  contain: layout paint;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .install-banner__phone {
-    transition: none !important;
-    animation: none !important;
-  }
+/* Back phone (left, slightly bigger, behind) */
+.install-banner__phone--back {
+  z-index: 2;
+  width: 350px;
+  height: 550px;
+  right: 63%;
+  top: 10%;
+  transform: rotate(-9deg) translateY(8px);
+  opacity: 0.98;
 }
 
+/* Front phone (on top, tilted the other way) */
+.install-banner__phone--front {
+  z-index: 3;
+  width: 350px;
+  height: 600px;
+  right: 43%;
+  top: -1%;
+  transform: rotate(6deg);
+}
+
+/* --- Install Banner: <= 1100px --- */
 @media (max-width: 1100px) {
   .install-banner__phone--back {
     right: 22%;
@@ -1506,33 +1413,25 @@ body {
   }
 }
 
+/* --- Install Banner: <= 980px --- */
 @media (max-width: 980px) {
-  .install-banner__inner {
-    grid-template-columns: 1fr;
-    gap: 2.4rem;
-  }
-
   .install-banner__phones {
-    order: 1;
     min-height: 460px;
   }
 
   .install-banner__card {
-    order: 2;
     transform: none;
   }
 }
 
+/* --- Install Banner: mobile (<= 768px) --- */
 @media (max-width: 768px) {
   .install-banner {
     width: 100%;
     height: auto;
     min-height: auto;
     padding: 4.8rem 2.2rem 5.6rem;
-    background: #0b0f13;
-    display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: flex-start;
     overflow: visible;
   }
@@ -1549,23 +1448,17 @@ body {
   }
 
   .install-banner__card {
-    position: absolute;
-    left: 50%;
-    bottom: 0;
     transform: translateX(-50%);
     width: 88%;
     height: 30rem;
     margin: 0;
     border-radius: 1.8rem;
     overflow: hidden;
-    z-index: 1;
   }
 
   .install-banner__card-img {
-    width: 100%;
     height: 100%;
     object-fit: cover;
-    display: block;
   }
 
   .install-banner__card-content {
@@ -1577,15 +1470,11 @@ body {
     inset: 0;
     width: 100%;
     height: 100%;
-    transform: none;
     z-index: 3;
     pointer-events: none;
   }
 
   .install-banner__phone {
-    position: absolute;
-    display: block;
-    height: auto;
     filter: drop-shadow(0 1.8rem 3.2rem rgba(0, 0, 0, 0.48));
   }
 
@@ -1638,6 +1527,7 @@ body {
   }
 }
 
+/* --- Install Banner: <= 640px --- */
 @media (max-width: 640px) {
   .install-banner {
     padding: 4rem 1.4rem 6rem;
@@ -1648,6 +1538,7 @@ body {
   }
 }
 
+/* --- Install Banner: small mobile (<= 420px) --- */
 @media (max-width: 420px) {
   .install-banner {
     padding: 4.4rem 2rem 5.2rem;
@@ -1682,21 +1573,15 @@ body {
   .install-banner__mobile-content .hero__title {
     font-size: 2.5rem;
   }
-
-  .install-banner__mobile-content .hero__description {
-    font-size: 2rem;
-  }
 }
 
-/***************************************
- * 6) Plan cards
- **************************************/
-.plans {
-  width: 100%;
-  padding: 20rem 2rem 8rem;
-  background: #0b0f13;
-}
 
+/* ==========================================================================
+   06. PLANS
+   Components: components/landing/PlansSection.jsx, PlanCard.jsx
+   ========================================================================== */
+
+/* --- Plans: pinned section & sticky wrapper --- */
 .plans-pin {
   position: relative;
   height: 100vh; /* scroll-jail duration */
@@ -1712,44 +1597,11 @@ body {
   z-index: 10;
   display: flex;
   flex-direction: column;
-  padding: 2rem 2rem 0rem;
+  padding: 2rem 2rem 0;
   background: #0b0f13;
 }
 
-.plans.plans--pin {
-  position: relative;
-  height: 400vh; /* animation duration */
-  padding: 0;
-  background: #0b0f13;
-}
-
-.plans__sticky {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  padding: 10rem 2rem 4rem;
-  display: flex;
-  flex-direction: column;
-  gap: 3rem;
-  z-index: 2;
-  background: #0b0f13;
-}
-
-.plans.plans--scroll {
-  min-height: 400vh;
-  padding-top: 12vh;
-  padding-bottom: 12vh;
-}
-
-.plans--scroll .plans__tabs {
-  display: flex !important;
-}
-
-.plans.is-animating .plans__tabs .plans__tab {
-  pointer-events: none;
-  opacity: 0.85;
-}
-
+/* --- Plans: tabs --- */
 .plans__tabs {
   margin: 0 auto 2rem;
   background: rgba(255, 255, 255, 0.03);
@@ -1783,7 +1635,7 @@ body {
   opacity: 1;
 }
 
-/* ===== Deck-style stacked cards ===== */
+/* --- Plans: deck of stacked cards (framer-motion sets scale / y / zIndex) --- */
 .plans__deck {
   width: var(--plan-card-w);
   height: var(--plan-card-h);
@@ -1793,7 +1645,6 @@ body {
   perspective: 1000px;
 }
 
-/* Each real card sits in the same spot; GSAP sets scale/y/zIndex */
 .plans__deck-card {
   position: absolute;
   inset: 0;
@@ -1808,53 +1659,13 @@ body {
   margin: 0;
 }
 
-.plans__deck-card .plan-card__content {
-  opacity: 1;
-  transform: none;
-  pointer-events: auto;
-}
-
-.plans__deck-card.is-active .plan-card__content {
-  opacity: 1;
-  transform: none;
-  pointer-events: auto;
-}
-
-.plans__stack-card {
-  position: absolute;
-  inset: auto 0 0 0; /* anchor to bottom */
-  width: var(--plan-card-w);
-  height: var(--plan-card-h);
-  border-radius: 18px;
-  border: 1px solid var(--card-border);
-  background-color: #0c0f14;
-  background-image: url("/images/phone-background.png");
-  background-size: cover;
-  background-position: center;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
-  transform-origin: center bottom; /* bottoms align */
-  will-change: transform;
-  pointer-events: none;
-}
-
-/* Each stack layer is lower + smaller than the previous */
-.plans__stack-card--1 {
-  transform: translateY(59px) scale(0.9);
-  opacity: 1;
-}
-
-.plans__stack-card--2 {
-  transform: translateY(33px) scale(0.92);
-  opacity: 1;
-}
-
-.plans__stack-card--3 {
-  transform: translateY(-7px) translateX(-2px) scale(0.955);
-  opacity: 1;
-}
-
-/* Front (active) card */
+/* --- Plans: plan card --- */
 .plan-card {
+  /* Tuning knobs */
+  --glow: 20%; /* glow strength at the top-left corner */
+  --glow-tail: 5%; /* faint tail of the glow mid-card */
+  --base-gray: 22, 24, 29; /* #16181d, what the card fades into */
+
   width: 100%;
   height: 100%;
   margin: 0;
@@ -1862,9 +1673,32 @@ body {
   z-index: 3;
   border-radius: 18px;
   overflow: hidden;
-  border: 1px solid var(--card-border);
+  border: 1px solid color-mix(in srgb, var(--plan-accent, #394350) 22%, #2a2f38);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
   background: #0c0f14;
+}
+
+/* Layer 1: accent glow from the top-left corner.
+   Layer 2: fade toward #16181d on the right and bottom. */
+.plan-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      75% 110% at 0% 0%,
+      color-mix(in srgb, var(--plan-accent, transparent) var(--glow), transparent) 0%,
+      color-mix(in srgb, var(--plan-accent, transparent) var(--glow-tail), transparent) 45%,
+      transparent 75%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(var(--base-gray), 0) 0%,
+      rgba(var(--base-gray), 0.6) 55%,
+      rgba(var(--base-gray), 0.9) 100%
+    );
 }
 
 .plan-card__bg {
@@ -1879,6 +1713,11 @@ body {
   will-change: transform, opacity;
 }
 
+/* Muted image: recolored via --plan-hue, but no longer the dominant color */
+.plan-card[data-recolor="true"] .plan-card__bg {
+  filter: hue-rotate(var(--plan-hue, 0deg)) saturate(0.7) brightness(0.85);
+}
+
 .plan-card__content {
   display: flex;
   align-items: center;
@@ -1889,126 +1728,7 @@ body {
   padding: 3.2rem 2.4rem;
 }
 
-/* Container for the scrolling feature list */
-.plan-card__features-wrapper {
-  overflow: hidden;
-  max-height: 30rem; /* adjust to the card's design height */
-  pointer-events: none;
-  mask-image: linear-gradient(
-    to bottom,
-    transparent,
-    black 15%,
-    black 85%,
-    transparent
-  );
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent,
-    black 15%,
-    black 85%,
-    transparent
-  );
-}
-
-/* NOTE: original file defined `.plan-card__features` twice with
-   conflicting behaviour — an infinite auto-scroll marquee AND a manual
-   overflow-y:auto scroll box. Kept the manual-scroll version (source
-   order shows it winning) and moved the animation to a variant class
-   below in case you want the auto-scroll behaviour back. */
-.plan-card__features {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  direction: rtl;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  overflow: visible;      /* wrapper does the clipping */
-  max-height: none;
-  height: max-content;
-  flex-shrink: 0;
-}
-.plan-card__features--autoscroll {
-  animation: autoScrollFeatures 25s linear infinite;
-  will-change: transform;
-}
-
-@keyframes autoScrollFeatures {
-  from { transform: translateY(0); }
-  to   { transform: translateY(-50%); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .plan-card__features--autoscroll { animation: none; }
-}
-
-/* Mobile shows the full list, so no marquee and no duplicate set */
-@media (max-width: 768px) {
-  .plan-card__features--autoscroll { animation: none; }
-  .plan-card__feature[aria-hidden="true"] { display: none; }
-  .plans-pin--mobile .plan-card__feature { padding-bottom: 0; }
-}
-/* Use padding instead of gap so translateY(-50%) lands exactly on the
-   start of the duplicated set. Otherwise you get a visible jump. */
-.plan-card__feature {
-  padding-bottom: 1.6rem;
-}
-
-.plan-card__features--autoscroll {
-  animation: autoScrollFeatures 25s linear infinite;
-  will-change: transform;
-}
-
-.plan-card__features::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  display: none;
-  background: transparent;
-}
-
-.plan-card__features > li {
-  direction: rtl;
-}
-
-/* Auto-scroll variant (unused unless you add this class back to the markup) */
-.plan-card__features--autoscroll {
-  animation: autoScrollFeatures 25s linear infinite;
-}
-
-@keyframes autoScrollFeatures {
-  0% {
-    transform: translateY(0);
-  }
-  100% {
-    transform: translateY(-50%); /* moves up by exactly one item set */
-  }
-}
-
-.plan-card__feature {
-  display: flex;
-  flex-direction: row-reverse;
-  align-items: flex-start;
-  gap: 0.8rem;
-  color: #eef2f6;
-  font-size: 1.6rem;
-  flex-shrink: 0;
-}
-
-.plan-card__feature img {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-  translate: 0 2px;
-}
-
-.plan-card__feature-icon {
-  width: 20px;
-  height: 20px;
-  flex: 0 0 20px;
-  transform: translateY(2px);
-}
-
-/* Info (right) */
+/* --- Plans: info column (title, description, CTA) --- */
 .plan-card__info {
   display: flex;
   flex-direction: column;
@@ -2052,9 +1772,78 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  box-shadow: 0px -1px 11px 1px #fafaf4;
+  box-shadow: 0 -1px 11px 1px #fafaf4;
 }
 
+/* --- Plans: features column (infinite vertical auto-scroll) --- */
+.plan-card__features-wrapper {
+  overflow: hidden;
+  max-height: 30rem; /* adjust to the card's design height */
+  pointer-events: none;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 15%,
+    black 85%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 15%,
+    black 85%,
+    transparent
+  );
+}
+
+.plan-card__features {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  direction: rtl;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  height: max-content;
+  flex-shrink: 0;
+}
+
+/* Duration is set inline by PlanCard.jsx */
+.plan-card__features--autoscroll {
+  animation: autoScrollFeatures 25s linear infinite;
+  will-change: transform;
+}
+
+@keyframes autoScrollFeatures {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%); /* moves up by exactly one item set */
+  }
+}
+
+/* Uses padding instead of gap so translateY(-50%) lands exactly on the
+   start of the duplicated set; otherwise the loop shows a visible jump. */
+.plan-card__feature {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding-bottom: 1.6rem;
+  color: #eef2f6;
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+.plan-card__feature-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  transform: translateY(2px);
+}
+
+/* --- Plans: <= 980px --- */
 @media (max-width: 980px) {
   .plans__tabs {
     height: auto;
@@ -2070,7 +1859,7 @@ body {
   }
 
   .plan-card__actions {
-    margin-top: 24px; /* avoid 130px on small screens */
+    margin-top: 24px;
   }
 
   .plan-card__actions .btn.btn-light {
@@ -2081,14 +1870,13 @@ body {
   }
 }
 
-/* Plans - mobile */
+/* --- Plans: mobile (<= 768px) — plain tabbed card, no pin --- */
 @media (max-width: 768px) {
   .plans-pin.plans-pin--mobile {
     height: auto;
     min-height: auto;
     margin: 0;
     padding: 4.8rem 1.7rem 7.2rem;
-    background: #0b0f13;
     overflow: hidden;
     overscroll-behavior: auto;
   }
@@ -2099,13 +1887,12 @@ body {
     height: auto;
     min-height: auto;
     z-index: 1;
-    display: flex;
-    flex-direction: column;
     gap: 1.2rem;
     padding: 0;
     background: transparent;
   }
 
+  /* Tabs */
   .plans-pin--mobile .plans__tabs {
     width: 100%;
     max-width: 38rem;
@@ -2143,14 +1930,13 @@ body {
     box-shadow: none;
   }
 
+  /* Deck + faux stacked cards behind the active card */
   .plans-pin--mobile .plans__deck {
     width: 100%;
     max-width: 38rem;
     height: auto;
     min-height: 0;
     margin: 0 auto;
-    position: relative;
-    transform: none;
     perspective: none;
   }
 
@@ -2168,6 +1954,7 @@ body {
     background-position: center;
     opacity: 0.5;
     pointer-events: none;
+    filter: hue-rotate(var(--plan-hue, 0deg)) saturate(0.7) brightness(0.85);
   }
 
   .plans-pin--mobile .plans__mobile-stack--1 {
@@ -2187,141 +1974,119 @@ body {
     opacity: 0.22;
   }
 
+  /* Active card */
   .plans-pin--mobile .plan-card {
-    position: relative;
-    z-index: 3;
     border-radius: 30px;
-    width: 100%;
     height: auto;
     min-height: 51rem;
-    margin: 0;
-    overflow: hidden;
     border: 2px solid #029dfb;
-    background: #0c0f14;
     box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.38);
   }
 
   .plans-pin--mobile .plan-card__bg {
     opacity: 0.72;
-    object-fit: cover;
     transform: none !important;
   }
 
   .plans-pin--mobile .plan-card__content {
     max-height: 50rem;
-    display: flex;
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
     gap: 0;
     padding: 3rem 2.8rem 2.6rem;
-    position: relative;
     z-index: 2;
   }
 
   .plans-pin--mobile .plan-card__info {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
     padding: 0;
     margin-bottom: 20px;
   }
+
+  .plans-pin--mobile .plan-card__chip {
+    order: 1;
+    margin: 0 0 0.8rem;
+    color: #ff7a3d;
+    font-size: 1.2rem;
+    font-weight: 900;
+    line-height: 1.6;
+    text-align: right;
+  }
+
+  .plans-pin--mobile .plan-card__title {
+    order: 2;
+    margin: 0;
+    color: #fafaf4;
+    font-size: 3.4rem;
+    font-weight: 900;
+    line-height: 1.35;
+    text-align: right;
+  }
+
+  .plans-pin--mobile .plan-card__subtitle {
+    order: 3;
+    max-width: 100%;
+    margin: 1rem 0 2.6rem;
+    color: #a7adb6;
+    font-size: 1.85rem;
+    font-weight: 500;
+    line-height: 1.9;
+    text-align: right;
+  }
+
+  .plans-pin--mobile .plan-card__features {
+    width: 100%;
+    gap: 1.55rem;
+  }
+
+  .plans-pin--mobile .plan-card__feature {
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.2rem;
+    padding-bottom: 0;
+    color: #fafaf4;
+    font-size: 1.25rem;
+    font-weight: 800;
+    line-height: 1.5;
+    text-align: right;
+  }
+
+  .plans-pin--mobile .plan-card__feature span {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .plans-pin--mobile .plan-card__feature-icon {
+    width: 1.6rem;
+    height: 1.6rem;
+    flex: 0 0 1.6rem;
+    transform: none;
+  }
+
+  .plans-pin--mobile .plan-card__actions {
+    order: 5;
+    width: 100%;
+    margin: auto 0 0;
+    padding-top: 2.2rem;
+  }
+
+  .plans-pin--mobile .plan-card__actions .btn.btn-light {
+    width: 100%;
+    height: 5rem;
+    border-radius: 0.8rem;
+    background: #f6f7fb;
+    color: #111820;
+    font-size: 1.35rem;
+    font-weight: 900;
+    text-decoration: none;
+    box-shadow:
+      0 0 1.4rem rgba(255, 255, 255, 0.4),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.9);
+  }
 }
 
-.plans-pin--mobile .plan-card__chip {
-  order: 1;
-  margin: 0 0 0.8rem;
-  color: #ff7a3d;
-  font-size: 1.2rem;
-  font-weight: 900;
-  line-height: 1.6;
-  text-align: right;
-}
-
-.plans-pin--mobile .plan-card__title {
-  order: 2;
-  margin: 0;
-  color: #fafaf4;
-  font-size: 3.4rem;
-  font-weight: 900;
-  line-height: 1.35;
-  text-align: right;
-}
-
-.plans-pin--mobile .plan-card__subtitle {
-  order: 3;
-  max-width: 100%;
-  margin: 1rem 0 2.6rem;
-  color: #a7adb6;
-  font-size: 1.85rem;
-  font-weight: 500;
-  line-height: 1.9;
-  text-align: right;
-}
-
-.plans-pin--mobile .plan-card__features {
-  order: 4;
-  width: 100%;
-  max-height: none;
-  overflow: visible;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1.55rem;
-  scrollbar-width: none;
-}
-
-.plans-pin--mobile .plan-card__feature {
-  width: 100%;
-  display: flex;
-  flex-direction: row-reverse;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.2rem;
-  color: #fafaf4;
-  font-size: 1.25rem;
-  font-weight: 800;
-  line-height: 1.5;
-  text-align: right;
-}
-
-.plans-pin--mobile .plan-card__feature span {
-  flex: 1;
-  min-width: 0;
-}
-
-.plans-pin--mobile .plan-card__feature-icon {
-  width: 1.6rem;
-  height: 1.6rem;
-  flex: 0 0 1.6rem;
-  transform: none;
-}
-
-.plans-pin--mobile .plan-card__actions {
-  order: 5;
-  width: 100%;
-  margin: auto 0 0;
-  padding-top: 2.2rem;
-}
-
-.plans-pin--mobile .plan-card__actions .btn.btn-light {
-  width: 100%;
-  height: 5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.8rem;
-  background: #f6f7fb;
-  color: #111820;
-  font-size: 1.35rem;
-  font-weight: 900;
-  text-decoration: none;
-  box-shadow:
-    0 0 1.4rem rgba(255, 255, 255, 0.4),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.9);
-}
-
+/* --- Plans: small mobile (<= 420px) --- */
 @media (max-width: 420px) {
   .plans-pin.plans-pin--mobile {
     padding: 4.2rem 1.6rem 6.8rem;
@@ -2338,10 +2103,6 @@ body {
 
   .plans-pin--mobile .plans__deck {
     max-width: 100%;
-  }
-
-  .plans-pin--mobile .plan-card {
-    min-height: 51rem;
   }
 
   .plans-pin--mobile .plan-card__content {
@@ -2367,63 +2128,25 @@ body {
   }
 }
 
-/* DIFFERENT BG */
-.plan-card {
-  /* Tuning knobs */
-  --glow: 20%;            /* glow strength at the top-left corner */
-  --glow-tail: 5%;        /* faint tail of the glow mid-card */
-  --base-gray: 22, 24, 29; /* #16181d, what the card fades into */
 
-  border: 1px solid color-mix(in srgb, var(--plan-accent, #394350) 22%, #2a2f38);
-}
+/* ==========================================================================
+   07. BURGER PANEL
+   Component: components/landing/BurgerPanelSection.jsx
+   Position / z-index / opacity / transform of .bp__title, .bp__panel and
+   .bp__burger are driven inline by motion (scroll-linked), so only the
+   static look is defined here.
+   ========================================================================== */
 
-/* Muted image: still recolored, but no longer the dominant color */
-.plan-card[data-recolor="true"] .plan-card__bg {
-  filter: hue-rotate(var(--plan-hue, 0deg)) saturate(0.7) brightness(0.85);
-}
-
-/* Layer 1: accent glow from the top-left corner.
-   Layer 2: fade toward #16181d on the right and bottom. */
-.plan-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(
-      75% 110% at 0% 0%,
-      color-mix(in srgb, var(--plan-accent, transparent) var(--glow), transparent) 0%,
-      color-mix(in srgb, var(--plan-accent, transparent) var(--glow-tail), transparent) 45%,
-      transparent 75%
-    ),
-    linear-gradient(
-      135deg,
-      rgba(var(--base-gray), 0) 0%,
-      rgba(var(--base-gray), 0.6) 55%,
-      rgba(var(--base-gray), 0.9) 100%
-    );
-}
-.plans-pin--mobile .plans__mobile-stack {
-  filter: hue-rotate(var(--plan-hue, 0deg)) saturate(0.7) brightness(0.85);
-}
-/***************************************
- * 7) Burger panel (bp)
- **************************************/
 .bp {
   position: relative;
   background: #0b0f13;
-  min-height: 220vh; /* room for scroll */
-  overflow: visible;
 }
 
 .bp__scene {
-  position: relative;
   height: 100vh;
   display: grid;
   place-items: center;
   padding: 0 8rem;
-  box-sizing: border-box;
 }
 
 .bp__stage {
@@ -2436,20 +2159,7 @@ body {
   transform-style: preserve-3d;
 }
 
-.bp__sticky-wrapper {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  width: 100%;
-  overflow: hidden;
-}
-
 .bp__title {
-  position: absolute;
-  top: 18%;
-  transform: translateY(-50%);
-  z-index: 60;
-  pointer-events: none;
   margin: 0;
   display: grid;
   place-items: center;
@@ -2461,28 +2171,14 @@ body {
   width: 100%;
 }
 
-.bp__title.is-off,
-.bp__title.is-fixed,
-.bp__panel.is-off,
-.bp__panel.is-fixed {
-  pointer-events: none;
-}
-
-/* Panel (starts tilted; de-tilts to 0 via JS) */
+/* Frame (starts tilted; de-tilts on scroll) */
 .bp__panel {
-  position: absolute;
-  top: 60%;
-  left: 50%;
   width: 1171px;
   height: 610px;
   border-radius: 30px;
   overflow: hidden;
   background: radial-gradient(circle at center, #1b1e3a 0%, #111327 100%);
   box-shadow: 0 0 100px 14px #0c0f14;
-  transform-origin: 0 100%;
-  will-change: transform, opacity;
-  z-index: 10;
-  pointer-events: none;
 }
 
 .bp__mesh {
@@ -2500,7 +2196,6 @@ body {
   top: 50%;
   translate: -50% -50%;
   pointer-events: none;
-  opacity: 0;
   z-index: 1100;
 }
 
@@ -2510,21 +2205,7 @@ body {
   display: block;
 }
 
-.bp__glow {
-  position: absolute;
-  left: 50%;
-  top: 405px;
-  transform: translate(-50%, -50%);
-  width: clamp(180px, 26vw, 260px);
-  height: clamp(180px, 26vw, 260px);
-  border-radius: 999px;
-  filter: blur(1px);
-  object-fit: cover;
-  opacity: 0.9;
-  overflow: initial;
-  z-index: 99;
-}
-
+/* --- Burger Panel: <= 1280px --- */
 @media (max-width: 1280px) {
   .bp__panel {
     width: 960px;
@@ -2532,6 +2213,7 @@ body {
   }
 }
 
+/* --- Burger Panel: <= 1024px --- */
 @media (max-width: 1024px) {
   .bp__panel {
     width: 860px;
@@ -2543,7 +2225,15 @@ body {
   }
 }
 
+/* --- Burger Panel: mobile (<= 768px) --- */
 @media (max-width: 768px) {
+  .bp__title {
+    right: 0 !important;
+    padding: 2rem;
+    white-space: nowrap;
+    font-size: 4rem !important;
+  }
+
   .bp__panel {
     width: min(92vw, 620px);
     height: clamp(420px, 54vw, 480px);
@@ -2555,9 +2245,12 @@ body {
   }
 }
 
-/***************************************
- * 8) FAQ (headless, single-open)
- **************************************/
+
+/* ==========================================================================
+   08. FAQ
+   Component: components/landing/FAQSection.jsx  (headless, single-open)
+   ========================================================================== */
+
 .faq {
   width: 100%;
   padding: 6rem 2rem;
@@ -2581,21 +2274,21 @@ body {
   border-top: 1px solid var(--card-border);
 }
 
+/* --- FAQ: question row --- */
 .faq__trigger {
   width: 100%;
+  display: flex;
+  flex-direction: row-reverse;
   align-items: center;
+  justify-content: space-between;
   padding: 1.8rem 0;
   background: transparent;
   border: 0;
   cursor: pointer;
   text-align: right;
   color: var(--text);
-  font-weight: 900;
   font-size: clamp(1.9rem, 2.6vw, 2.6rem);
   letter-spacing: -0.01em;
-  display: flex;
-  flex-direction: row-reverse;
-  justify-content: space-between;
 }
 
 .faq__trigger:hover {
@@ -2606,6 +2299,11 @@ body {
   outline: 2px solid rgba(255, 157, 16, 0.5);
   outline-offset: 6px;
   border-radius: 10px;
+}
+
+.faq__question {
+  font-size: 30px;
+  font-weight: 600;
 }
 
 /* Plus / minus icon (pure CSS) */
@@ -2637,6 +2335,7 @@ body {
   opacity: 0; /* minus when open */
 }
 
+/* --- FAQ: answer panel (height / opacity / clip-path animated by GSAP) --- */
 .faq__content {
   display: flex; /* always flex, avoids reflow on close */
   flex-direction: column;
@@ -2647,15 +2346,13 @@ body {
   height: 0; /* collapsed baseline */
   opacity: 0; /* faded baseline */
   overflow: hidden;
-  clip-path: inset(0 0 100% 0); /* hidden baseline for "curl" */
+  clip-path: inset(0 0 100% 0); /* hidden baseline for the "curl" */
   will-change: height, opacity, clip-path, transform;
   pointer-events: none;
   transform-origin: top right;
 }
 
 .faq__content.is-open {
-  display: flex;
-  flex-direction: column;
   align-items: flex-end;
   gap: 1rem;
   pointer-events: auto;
@@ -2683,38 +2380,25 @@ body {
   transform-origin: top right;
 }
 
-.faq__question {
-  font-size: 30px;
-  font-weight: 600;
-}
-
 .faq__answer {
   font-size: 20px;
   font-weight: 500;
   color: #999fa8;
 }
 
+/* "View all questions" link — mobile only */
 .faq__all {
   display: none;
 }
 
+/* --- FAQ: <= 720px (font-size only affects the trigger's letter-spacing) --- */
 @media (max-width: 720px) {
   .faq__trigger {
-    grid-template-columns: 24px 1fr;
     font-size: clamp(1.8rem, 4.6vw, 2.2rem);
-    padding: 1.6rem 0;
-  }
-
-  .faq__icon {
-    width: 20px;
-    height: 20px;
-  }
-
-  .faq__content {
-    margin-inline-start: 24px;
   }
 }
 
+/* --- FAQ: mobile (<= 768px) --- */
 @media (max-width: 768px) {
   .faq {
     padding: 5.6rem 1.8rem 6.4rem;
@@ -2733,23 +2417,9 @@ body {
     margin: 0 auto;
   }
 
-  .faq__item {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  }
-
-  .faq__item:first-child {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-  }
-
   .faq__trigger {
     min-height: 6.4rem;
-    padding: 1.8rem 0;
-    display: flex;
-    flex-direction: row-reverse;
-    align-items: center;
-    justify-content: space-between;
     gap: 2rem;
-    text-align: right;
   }
 
   .faq__question {
@@ -2770,29 +2440,20 @@ body {
   .faq__icon::before,
   .faq__icon::after {
     width: 2rem;
-    height: 2px;
   }
 
   .faq__content {
-    height: 0;
-    opacity: 0;
-    overflow: hidden;
     clip-path: none;
-    transform: none;
-    pointer-events: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
     align-items: stretch;
     gap: 1.4rem;
+    margin: 0;
+    padding: 0;
   }
 
   .faq__content.is-open {
     height: auto;
     opacity: 1;
     overflow: visible;
-    pointer-events: auto;
     padding: 0 0 1.8rem;
   }
 
@@ -2853,6 +2514,7 @@ body {
   }
 }
 
+/* --- FAQ: small mobile (<= 420px) --- */
 @media (max-width: 420px) {
   .faq {
     padding: 5.2rem 1.6rem 6rem;
@@ -2873,63 +2535,28 @@ body {
   }
 }
 
-/* Utilities */
-.sr-only {
-  position: absolute !important;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
 
-/***************************************
- * 9) Blogs section — horizontal filmstrip
- **************************************/
+/* ==========================================================================
+   09. BLOGS
+   Component: components/landing/BlogSection.jsx  (horizontal filmstrip)
+   ========================================================================== */
+
 .blogs {
   position: relative;
   background: #0b0f13;
   padding: 6rem 0 8rem;
   margin: 10rem 0;
   overflow: hidden;
-  cursor: pointer;
 }
 
-/* Custom cursor follower ("scroll to view" pill) */
+/* --- Blogs: cursor follower ("drag to scroll" pill) ---
+   Position, transform and transition are set inline by BlogCursorFollower. */
 .blog-cursor-follower {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 9999;
-  transform: translate3d(-9999px, -9999px, 0);
-  transition: opacity 180ms ease;
   will-change: transform;
 }
 
 .blog-cursor-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.8rem 1.4rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(14, 16, 20, 0.72);
-  backdrop-filter: blur(6px);
-  box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35);
-  font-size: 1.35rem;
-  color: #e9eef5;
-  translate: 0 -20%; /* center above cursor */
-}
-
-.blog-cursor-pill .dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #ff9d10; /* Menro orange */
-  box-shadow: 0 0 0 2px rgba(255, 157, 16, 0.2);
+  translate: 0 -20%; /* center above the cursor */
 }
 
 .blog-cursor-pill .label {
@@ -2937,13 +2564,7 @@ body {
   line-height: 1;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .blog-cursor-follower {
-    transition: none;
-  }
-}
-
-/* Marquee (CSS-only) */
+/* --- Blogs: marquee (CSS-only) --- */
 .blogs__marquee {
   position: relative;
   overflow: hidden;
@@ -2955,7 +2576,7 @@ body {
 }
 
 .marquee__track {
-  /* two identical rows laid side-by-side => track width = 2 * row width */
+  /* two identical rows side by side => track width = 2 * row width */
   display: flex;
   width: max-content;
   will-change: transform;
@@ -2987,7 +2608,7 @@ body {
   color: #ff683c;
 }
 
-/* Viewport */
+/* --- Blogs: viewport & rail (flex + scroll-snap) --- */
 .blogs__viewport {
   position: relative;
   z-index: 1;
@@ -2995,7 +2616,6 @@ body {
   padding-top: 3rem;
 }
 
-/* Rail (flex + snap) */
 .blogs__rail {
   display: flex;
   flex-direction: row-reverse;
@@ -3013,7 +2633,7 @@ body {
   display: none;
 }
 
-/* Card */
+/* --- Blogs: card --- */
 .blogs__card {
   flex: 0 0 auto;
   width: 250px;
@@ -3104,7 +2724,7 @@ body {
   font-size: 1.3rem;
 }
 
-/* Controls */
+/* --- Blogs: controls (view all + prev / next) --- */
 .blogs__controls {
   display: flex;
   align-items: center;
@@ -3167,7 +2787,7 @@ body {
   transform: none;
 }
 
-/* "Scroll to view" bar + sliding ball indicator */
+/* --- Blogs: "drag to scroll" bar + sliding ball indicator --- */
 .landing-blog-scroll {
   position: relative;
   display: flex;
@@ -3198,6 +2818,7 @@ body {
   }
 }
 
+/* --- Blogs: <= 880px --- */
 @media (max-width: 880px) {
   .blogs__controls {
     gap: 16px;
@@ -3210,36 +2831,18 @@ body {
   }
 }
 
+/* --- Blogs: <= 640px --- */
 @media (max-width: 640px) {
   .blogs__marquee {
     height: 100px;
   }
-
-  /* NOTE: `.blogs__marquee-row` is targeted here but never defined
-     elsewhere in the source file (the real row class is `.marquee__row`).
-     Left as-is in case markup uses it, but double check this. */
-  .blogs__marquee-row {
-    font-size: clamp(3.2rem, 12vw, 6rem);
-  }
-
-  .blogs__card {
-    width: 80vw;
-    height: 60vw;
-  }
-
-  .blogs__card-link {
-    border-radius: 16px;
-  }
 }
 
-/* Blogs - mobile */
+/* --- Blogs: mobile (<= 768px) --- */
 @media (max-width: 768px) {
   .blogs {
     margin: 0;
     padding: 4.8rem 0 6.4rem;
-    background: #0b0f13;
-    overflow: hidden;
-    cursor: auto;
   }
 
   .blogs__viewport {
@@ -3264,8 +2867,6 @@ body {
 
   .blogs__card-link {
     border-radius: 1.2rem;
-    background: #141821;
-    border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: none;
     transform: none !important;
   }
@@ -3322,15 +2923,12 @@ body {
     width: 100%;
     height: 5.6rem;
     display: flex;
-    align-items: center;
     justify-content: space-between;
     flex-direction: row-reverse;
     padding: 0 2rem;
     border-radius: 1rem;
     background: rgba(9, 13, 20, 0.66);
     border: 1px solid rgba(255, 255, 255, 0.12);
-    text-decoration: none;
-    color: #fafaf4;
     backdrop-filter: blur(1.2rem);
     -webkit-backdrop-filter: blur(1.2rem);
   }
@@ -3351,6 +2949,7 @@ body {
   }
 }
 
+/* --- Blogs: small mobile (<= 420px) --- */
 @media (max-width: 420px) {
   .blogs__rail {
     gap: 1.2rem;
@@ -3367,118 +2966,12 @@ body {
   }
 }
 
-/***************************************
- * 10) Mobile header pill
- **************************************/
-.landing-mobile-header {
-  display: none;
-}
 
-@media (max-width: 768px) {
-  .landing-desktop-header {
-    display: none;
-  }
+/* ==========================================================================
+   10. FOOTER
+   Wrapper (.footer-bg) around FooterFruitsScene + GlassFooter
+   ========================================================================== */
 
-  .landing-mobile-header {
-    position: fixed;
-    top: 8px;
-    left: 0;
-    right: 0;
-    z-index: 100;
-    display: flex;
-    justify-content: center;
-    padding-inline: 12px;
-    pointer-events: none;
-  }
-
-  .landing-mobile-header__pill {
-    width: 100%;
-    max-width: 544px;
-    height: 96px;
-    border-radius: 24px;
-    background: rgba(24, 24, 24, 0.88);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
-    flex-direction: row-reverse;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 24px;
-    pointer-events: auto;
-  }
-
-  .landing-mobile-header__logo {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    display: grid;
-    place-items: center;
-    overflow: hidden;
-    flex: 0 0 auto;
-  }
-
-  .landing-mobile-header__logo img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
-  }
-
-  .landing-mobile-header__actions {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-  }
-
-  .landing-mobile-header__icon-btn {
-    width: 48px;
-    height: 48px;
-    border: 0;
-    padding: 0;
-    background: transparent;
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-  }
-
-  .landing-mobile-header__icon-btn img {
-    width: 36px;
-    height: 36px;
-    object-fit: contain;
-    display: block;
-  }
-}
-
-@media (max-width: 420px) {
-  .landing-mobile-header__pill {
-    height: 82px;
-    border-radius: 22px;
-    padding-inline: 18px;
-  }
-
-  .landing-mobile-header__logo {
-    width: 48px;
-    height: 48px;
-  }
-
-  .landing-mobile-header__actions {
-    gap: 18px;
-  }
-
-  .landing-mobile-header__icon-btn {
-    width: 42px;
-    height: 42px;
-  }
-
-  .landing-mobile-header__icon-btn img {
-    width: 32px;
-    height: 32px;
-  }
-}
-
-/* FINAL FIXES */
 .footer-bg {
   margin-bottom: 0 !important;
 }

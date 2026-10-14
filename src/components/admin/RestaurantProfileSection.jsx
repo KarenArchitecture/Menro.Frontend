@@ -225,6 +225,12 @@ export default function RestaurantProfileSection() {
     setLongitude(lng);
   };
 
+  // آدرس تشخیص‌داده‌شده از روی نقشه (نشان) → فیلد آدرس
+  const handleAddressSelect = (addr) => {
+    setAddress(addr);
+    notify({ type: "success", message: "آدرس رستوران از روی نقشه تکمیل شد" });
+  };
+
   const handleSocialChange = (key, value) => {
     // کاربر اگه لینک کامل یا @ چسباند، فقط شناسه نگه داشته می‌شه
     const cleaned = value
@@ -759,6 +765,7 @@ export default function RestaurantProfileSection() {
             latitude={latitude}
             longitude={longitude}
             onChange={handleLocationChange}
+            onAddressSelect={handleAddressSelect}
           />
         </div>
 

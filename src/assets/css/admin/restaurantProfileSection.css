@@ -669,3 +669,803 @@
     margin-inline-start: 0;
   }
 }
+
+/* RESTAURANT PROFILE SECTION */
+.restaurant-profile-panel {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.restaurant-profile-form {
+  margin-top: 24px;
+}
+
+.restaurant-profile-panel .form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* subscription box */
+.subscription-box {
+  margin-top: 8px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(248, 250, 252, 0.06);
+}
+
+.subscription-box__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.subscription-box__row {
+  display: flex;
+  /* justify-content: space-between; */
+  gap: 1rem;
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+}
+
+.subscription-box__hint {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.restaurant-profile-panel .view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.restaurant-profile-panel .view-header h3,
+.subscription-box__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.restaurant-profile-panel .view-header h3 i,
+.subscription-box__title i {
+  color: var(--primary-color);
+}
+
+.restaurant-status-pill {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.restaurant-status-pill--approved {
+  background: rgba(16, 185, 129, 0.14);
+  color: #10b981;
+}
+
+.restaurant-status-pill--pending {
+  background: rgba(245, 158, 11, 0.14);
+  color: #ff683c;
+}
+
+.restaurant-status-pill--rejected {
+  background: rgba(239, 68, 68, 0.14);
+  color: #ef4444;
+}
+
+.restaurant-reject-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+/* ===== Images layout — bento-style asymmetric grid =====
+   The public "home page" image (RestaurantProfileImage) is used as a
+   PORTRAIT card on the landing/home page, while the shop-banner is a
+   LANDSCAPE strip and the logo is a small circle. Forcing all three
+   into equal-height columns broke the row as soon as one frame became
+   taller. Instead, the portrait image spans the full height of the
+   other two images stacked beside it — so the row height is always
+   correct and nothing collapses or leaves empty gaps. */
+.images-grid {
+  display: grid;
+  grid-template-columns: minmax(200px, 260px) 1fr;
+  grid-template-rows: auto auto;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.image-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* portrait hero image (public home page banner) — right column, full height */
+.image-field--home {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+}
+
+/* landscape shop banner — top of the left column */
+.image-field--shop {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+/* logo — bottom of the left column */
+.image-field--logo {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.image-field .image-preview {
+  margin: 6px 0 8px;
+  border-radius: 10px;
+  border: 1px dashed rgba(148, 163, 184, 0.6);
+  background: rgba(15, 23, 42, 0.8);
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.image-field .image-preview img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+.image-field .image-preview--logo img {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.image-field .image-placeholder {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.image-field label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+/* small helper hint shown under a field label */
+.image-field__hint {
+  display: block;
+  margin-top: -6px;
+  margin-bottom: 10px;
+  font-size: 0.76rem;
+  font-weight: 400;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.55));
+}
+
+@media (max-width: 900px) {
+  .restaurant-profile-panel .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* stack all three image fields in their original order on small screens */
+  .images-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+  }
+
+  .image-field--home,
+  .image-field--shop,
+  .image-field--logo {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  /* on mobile there's no side content to match height with, so the
+     portrait frame goes back to a fixed, centered aspect-ratio box */
+  .restaurant-profile-image-frame--portrait {
+    flex: none;
+    min-height: 0;
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 3 / 4;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* ===== Restaurant hours (time inputs) ===== */
+
+.restaurant-profile-panel .hours-row {
+  align-items: flex-end;
+  gap: 24px;
+}
+
+/* labels a bit closer to inputs */
+.restaurant-profile-panel .hours-row .input-group label {
+  margin-bottom: 6px;
+}
+
+/* make time inputs large, readable, and LTR */
+.restaurant-profile-panel .hours-row input[type="time"] {
+  width: 160px;
+  height: 44px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(0, 0, 0, 0.15)
+  );
+  color: var(--text-primary);
+  font-size: 1rem;
+  text-align: center;
+  direction: ltr; /* برای نمایش ساعت به صورت قابل‌خواندن */
+  outline: none;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease,
+    transform 0.08s ease;
+}
+
+/* hover + focus states */
+.restaurant-profile-panel .hours-row input[type="time"]:hover {
+  border-color: rgba(245, 158, 11, 0.6);
+}
+
+.restaurant-profile-panel .hours-row input[type="time"]:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.6);
+  background: linear-gradient(
+    135deg,
+    rgba(245, 158, 11, 0.12),
+    rgba(0, 0, 0, 0.2)
+  );
+  transform: translateY(-1px);
+}
+
+/* on smaller screens stack nicely */
+@media (max-width: 900px) {
+  .restaurant-profile-panel .hours-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .restaurant-profile-panel .hours-row input[type="time"] {
+    width: 100%;
+  }
+}
+
+/* ===== Slug (restaurant URL) field ===== */
+.slug-label-hint {
+  margin-right: 6px;
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.55));
+}
+
+.slug-input-group {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  overflow: hidden;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(0, 0, 0, 0.15)
+  );
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.slug-input-group:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.6);
+}
+
+.slug-prefix {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 0.8rem;
+  color: var(--text-muted, #888);
+  background: rgba(255, 255, 255, 0.03);
+  border-inline-end: 1px solid var(--border-color);
+  white-space: nowrap;
+  direction: ltr;
+}
+
+.slug-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  direction: ltr;
+  text-align: left;
+  outline: none;
+}
+
+.slug-check-btn {
+  flex-shrink: 0;
+  padding: 0 18px;
+  border: none;
+  border-inline-start: 1px solid var(--border-color);
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--primary-color);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.slug-check-btn:hover:not(:disabled) {
+  background: rgba(245, 158, 11, 0.22);
+}
+
+.slug-check-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.slug-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 0.82rem;
+}
+
+.slug-status--ok {
+  color: #10b981;
+}
+
+.slug-status--taken {
+  color: #ef4444;
+}
+
+/* ===== Section headings (used above each grouped part of the form) ===== */
+.form-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.form-section-heading i {
+  color: var(--primary-color);
+}
+
+/* first heading in the form sits right after the identity fields,
+   needs a bit less top space since there's no <hr> before it */
+.form-section-heading--first {
+  margin-top: 4px;
+}
+
+/* ===== Sheba (IBAN) number input ===== */
+.sheba-input-group {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  overflow: hidden;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(0, 0, 0, 0.15)
+  );
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.sheba-input-group:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.6);
+}
+
+.sheba-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  direction: ltr;
+  text-align: right;
+  outline: none;
+}
+
+.sheba-prefix {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  color: var(--primary-color);
+  background: rgba(245, 158, 11, 0.1);
+  border-inline-start: 1px solid var(--border-color);
+}
+.restaurant-profile-image-frame {
+  width: 100%;
+  height: 160px;
+  margin-bottom: 10px;
+  border: 1px solid var(--auth-input-border);
+  border-radius: 12px;
+  background: var(--auth-input-bg);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.restaurant-profile-image-frame--circle {
+  width: 160px;
+  height: 160px;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 50%;
+}
+
+/* portrait frame — used only for the public home-page banner.
+   flex:1 makes it fill the full height of the two stacked images
+   beside it (shop banner + logo), so the row always balances,
+   regardless of screen size or content height. */
+.restaurant-profile-image-frame--portrait {
+  flex: 1;
+  width: 100%;
+  height: auto;
+  min-height: 220px;
+}
+
+.restaurant-profile-image-frame__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.restaurant-profile-image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--auth-muted);
+  font-size: 13px;
+  text-align: center;
+  padding: 0 12px;
+}
+
+.restaurant-profile-image-placeholder i {
+  font-size: 26px;
+  color: var(--auth-muted-2);
+}
+
+.restaurant-profile-upload-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 8px;
+  border: 1.5px dashed var(--auth-accent);
+  border-radius: 10px;
+  background: var(--auth-accent-soft);
+  color: var(--auth-accent);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.restaurant-profile-upload-btn:hover {
+  background: color-mix(in srgb, var(--auth-accent) 20%, transparent);
+}
+
+.restaurant-profile-remove-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--auth-error);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--auth-error);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.restaurant-profile-remove-btn:hover {
+  background: color-mix(in srgb, var(--auth-error) 12%, transparent);
+}
+
+/* ===== Location picker ===== */
+.location-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.location-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.location-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--primary-color);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.location-btn:hover:not(:disabled) {
+  background: rgba(245, 158, 11, 0.22);
+}
+
+.location-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.location-btn--danger {
+  background: transparent;
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.location-btn--danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.location-coords {
+  margin-inline-start: auto;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.6));
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.location-map-wrapper {
+  position: relative;
+  isolation: isolate; /* z-indexهای Leaflet بیرون نشت نکنن */
+}
+
+.location-map {
+  height: 360px;
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  direction: ltr;
+  background: #1a1d24;
+  cursor: crosshair;
+}
+
+.location-map-hint {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  color: #fff;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+}
+
+.location-pin {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-size: 34px;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.5));
+}
+
+.location-pin i {
+  display: block;
+  line-height: 1;
+}
+
+.location-error {
+  font-size: 0.82rem;
+  color: #ef4444;
+}
+
+.location-help {
+  font-size: 0.78rem;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.55));
+}
+
+.social-grid {
+  margin-top: 4px;
+}
+
+.social-grid .input-group label i {
+  margin-inline-end: 4px;
+  color: var(--primary-color);
+}
+
+@media (max-width: 900px) {
+  .location-map {
+    height: 300px;
+  }
+  .location-coords {
+    margin-inline-start: 0;
+  }
+}
+
+/* ===== Neshan map additions ===== */
+.location-pin {
+  cursor: grab;
+}
+
+.location-pin:active {
+  cursor: grabbing;
+}
+
+/* map not configured (no API key) */
+.location-map--disabled {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: default;
+  font-size: 0.85rem;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.55));
+}
+
+.location-map--disabled i {
+  font-size: 30px;
+  opacity: 0.6;
+}
+
+/* search box */
+.location-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.location-search__icon {
+  position: absolute;
+  inset-inline-start: 14px;
+  font-size: 0.85rem;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.55));
+  pointer-events: none;
+}
+
+.location-search__spinner {
+  position: absolute;
+  inset-inline-end: 14px;
+  font-size: 0.85rem;
+  color: var(--primary-color);
+}
+
+.location-search__input {
+  width: 100%;
+  padding: 10px 38px;
+}
+
+.location-search__results {
+  position: absolute;
+  top: calc(100% + 6px);
+  inset-inline: 0;
+  z-index: 600;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  max-height: 280px;
+  overflow-y: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: rgba(15, 23, 42, 0.97);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.location-search__results button {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.location-search__results button:hover {
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.location-search__results strong {
+  font-size: 0.88rem;
+}
+
+.location-search__results span {
+  font-size: 0.76rem;
+  opacity: 0.65;
+}
+
+/* detected address under the map */
+.location-address-suggest {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+}
+
+.location-address-suggest__text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+  font-size: 0.85rem;
+}
+
+.location-address-suggest__text i {
+  color: var(--primary-color);
+}
+
+/* keep Neshan's controls readable on the dark theme */
+.location-map .mapboxgl-ctrl-group {
+  direction: ltr;
+}

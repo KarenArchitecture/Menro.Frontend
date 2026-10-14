@@ -128,7 +128,7 @@ export default function LandingPage() {
   }
 
   return (
-    <div dir="rtl" style={{ minHeight: "100dvh", overflowX: "hidden" }}>
+    <div dir="rtl" style={{ minHeight: "100dvh", overflowX: "clip" }}>
       <AppHeader
         leftIcons={leftIcons}
         position="fixed"

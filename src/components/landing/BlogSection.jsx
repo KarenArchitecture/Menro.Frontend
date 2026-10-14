@@ -317,7 +317,34 @@ export default function BlogSection({
   const hasDragged = useRef(false);
   const startX = useRef(0);
   const scrollLeftPos = useRef(0);
+  const velocity = useRef(0);
+  const lastMoveX = useRef(0);
+  const lastMoveT = useRef(0);
+  const momentumRaf = useRef(0);
 
+  useEffect(() => {
+    return () => cancelAnimationFrame(momentumRaf.current);
+  }, []);
+
+  const endDrag = () => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+    if (railRef.current) railRef.current.style.cursor = "grab";
+
+    // اگه آخرین حرکت مدت‌ها پیش بوده، اینرسی نده
+    let v = performance.now() - lastMoveT.current > 80 ? 0 : velocity.current * 16;
+
+    const step = () => {
+      const el = railRef.current;
+      if (!el) return;
+      v *= 0.95;
+      if (Math.abs(v) < 0.5) return;
+      el.scrollLeft += v;
+      momentumRaf.current = requestAnimationFrame(step);
+    };
+    cancelAnimationFrame(momentumRaf.current);
+    momentumRaf.current = requestAnimationFrame(step);
+  };
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(true);
   const [playMarquee, setPlayMarquee] = useState(true);
@@ -431,32 +458,40 @@ export default function BlogSection({
           onScroll={updateButtons}
           // --- DRAG EVENT HANDLERS ---
           onMouseDown={(e) => {
+            cancelAnimationFrame(momentumRaf.current);
             isDragging.current = true;
             hasDragged.current = false;
+            velocity.current = 0;
+            lastMoveX.current = e.pageX;
+            lastMoveT.current = performance.now();
             startX.current = e.pageX - railRef.current.offsetLeft;
             scrollLeftPos.current = railRef.current.scrollLeft;
             railRef.current.style.cursor = "grabbing";
           }}
-          onMouseLeave={() => {
-            isDragging.current = false;
-            if (railRef.current) railRef.current.style.cursor = "grab";
-          }}
-          onMouseUp={() => {
-            isDragging.current = false;
-            if (railRef.current) railRef.current.style.cursor = "grab";
-          }}
+          onMouseLeave={endDrag}
+          onMouseUp={endDrag}
           onMouseMove={(e) => {
             if (!isDragging.current) return;
             e.preventDefault();
             const x = e.pageX - railRef.current.offsetLeft;
-            const walk = (x - startX.current) * 1.5; // Scroll-fast multiplier
+            const walk = (x - startX.current) * 1.5;
 
-            // Register as an actual drag only if moved more than 5 pixels
             if (Math.abs(walk) > 5) {
               hasDragged.current = true;
             }
 
+            const prevLeft = railRef.current.scrollLeft;
             railRef.current.scrollLeft = scrollLeftPos.current - walk;
+
+            // سرعت واقعی اسکرول (px بر میلی‌ثانیه) برای اینرسی
+            const now = performance.now();
+            const dt = now - lastMoveT.current;
+            if (dt > 0) {
+              const instant = (railRef.current.scrollLeft - prevLeft) / dt;
+              velocity.current = velocity.current * 0.2 + instant * 0.8;
+            }
+            lastMoveX.current = e.pageX;
+            lastMoveT.current = now;
           }}
           onClickCapture={(e) => {
             // Stop navigation if they actually dragged the slider
@@ -468,8 +503,8 @@ export default function BlogSection({
         >
           {isLoading
             ? Array.from({ length: 4 }).map((_, i) => (
-                <BlogCardSkeleton key={`skeleton-${i}`} />
-              ))
+              <BlogCardSkeleton key={`skeleton-${i}`} />
+            ))
             : cards.map((p) => <BlogCard key={p.id} post={p} />)}
         </ul>
 

@@ -1,0 +1,422 @@
+/* =====================================================================
+   restaurant-theme.css  —  per-restaurant colour theme for the ADMIN panel
+
+   HOW IT WORKS
+   applyRestaurantTheme("admin", theme) puts `rt-admin` on <html> and sets
+   6 variables (--rt-main / --rt-second / --rt-accent / --rt-on-*).
+   Everything below is scoped to `html.rt-admin`, so:
+     - no theme selected  -> this file does nothing, admin looks as today
+     - the rest of the app is never touched (class is removed on unmount)
+
+   Roles:  main   -> page background
+           second -> sidebar, header, panels, cards, inputs, modals
+           accent -> buttons, active chips, prices, focus rings, links
+
+   PART A maps the existing admin tokens (admin.css section 1) so every rule
+   that already uses var(--primary-color), var(--bg-dark) ... follows the theme.
+   PART B overrides the colours that are hard-coded in admin.css and
+   restaurantProfileSection.css (specificity is higher, so import order
+   doesn't matter).
+   PART C is the theme picker (not scoped on purpose).
+   ===================================================================== */
+
+
+/* ===================== PART A — token mapping ===================== */
+
+html.rt-admin {
+  /* derived helpers (computed from the 3 theme colours) */
+  --rt-line: color-mix(in srgb, var(--rt-on-second) 14%, var(--rt-second));
+  --rt-field: color-mix(in srgb, var(--rt-on-second) 7%, var(--rt-second));
+  --rt-field-hover: color-mix(in srgb, var(--rt-on-second) 12%, var(--rt-second));
+  --rt-tint-1: color-mix(in srgb, var(--rt-on-second) 5%, transparent);
+  --rt-tint-2: color-mix(in srgb, var(--rt-on-second) 10%, transparent);
+  --rt-text-2: color-mix(in srgb, var(--rt-on-main) 78%, var(--rt-main));
+  --rt-text-3: color-mix(in srgb, var(--rt-on-main) 58%, var(--rt-main));
+  --rt-accent-soft: color-mix(in srgb, var(--rt-accent) 14%, transparent);
+  --rt-accent-ring: color-mix(in srgb, var(--rt-accent) 50%, transparent);
+  --rt-accent-dark: color-mix(in srgb, var(--rt-accent) 85%, #000);
+
+  /* admin.css tokens */
+  --primary-color: var(--rt-accent);
+  --primary-color-dark: var(--rt-accent-dark);
+  --bg-dark: var(--rt-main);
+  --bg-light: var(--rt-second);
+  --border-color: var(--rt-line);
+  --text-primary: var(--rt-on-main);
+  --text-secondary: var(--rt-text-2);
+  --text-muted: var(--rt-text-3);
+
+  /* fallback tokens used as var(--x, fallback) in admin.css */
+  --border: var(--rt-line);
+  --text: var(--rt-on-second);
+  --panel-bg: var(--rt-tint-1);
+  --card-bg: var(--rt-second);
+
+  /* tokens used by restaurantProfileSection.css (defined in the auth css) */
+  --auth-accent: var(--rt-accent);
+  --auth-accent-soft: var(--rt-accent-soft);
+  --auth-input-bg: var(--rt-field);
+  --auth-input-border: var(--rt-line);
+  --auth-muted: var(--rt-text-3);
+  --auth-muted-2: var(--rt-text-3);
+}
+
+
+/* ===================== PART B — hard-coded colours ===================== */
+
+/* ---- sidebar ---- */
+html.rt-admin .nav-item a:hover {
+  background-color: var(--rt-tint-2);
+  color: var(--rt-on-second);
+}
+html.rt-admin .nav-item.active a {
+  background-color: var(--rt-accent-soft);
+}
+
+/* ---- header ---- */
+html.rt-admin .main-header .search-bar,
+html.rt-admin .search-overlay-bar {
+  border-color: var(--rt-line);
+  background-color: var(--rt-field);
+}
+html.rt-admin .main-header .search-bar:focus-within {
+  box-shadow: 0 0 0 2px var(--rt-accent-ring);
+}
+html.rt-admin .admin-music-btn {
+  border-color: var(--rt-line);
+  background: var(--rt-field);
+  color: var(--rt-on-second);
+}
+html.rt-admin .admin-music-btn:hover {
+  background: var(--rt-field-hover);
+}
+html.rt-admin .admin-subscribe-btn {
+  background: var(--rt-accent);
+  color: var(--rt-on-accent);
+}
+html.rt-admin .admin-subscribe-btn:hover {
+  background: var(--rt-accent-dark);
+  color: var(--rt-on-accent);
+}
+
+/* ---- buttons ---- */
+html.rt-admin .btn {
+  background: var(--rt-tint-1);
+}
+html.rt-admin .btn:hover {
+  background: var(--rt-tint-2);
+}
+html.rt-admin .btn-primary {
+  background-color: var(--rt-accent);
+  color: var(--rt-on-accent);
+}
+html.rt-admin .btn-icon {
+  background: var(--rt-tint-2);
+}
+html.rt-admin .btn-icon:hover {
+  background: var(--rt-field-hover);
+}
+html.rt-admin .order-modal-view-toggle__btn.is-active {
+  color: var(--rt-on-accent);
+}
+/* danger buttons must stay red (must come AFTER the .btn / .btn-icon rules above) */
+html.rt-admin .btn-danger {
+  background: rgba(220, 38, 38, 0.15);
+}
+html.rt-admin .btn-danger:hover {
+  background: rgba(220, 38, 38, 0.22);
+}
+html.rt-admin .btn-icon.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+/* ---- forms ---- */
+html.rt-admin .input-group input[type="text"],
+html.rt-admin .input-group input[type="password"],
+html.rt-admin .input-group input[type="tel"],
+html.rt-admin .input-group input[type="file"],
+html.rt-admin select,
+html.rt-admin textarea {
+  border-color: var(--rt-line);
+  background-color: var(--rt-field);
+  color: var(--rt-on-second);
+}
+html.rt-admin .input-group input[type="time"],
+html.rt-admin .input-group input[type="number"] {
+  color: var(--rt-on-second);
+}
+html.rt-admin .input-group input:focus,
+html.rt-admin select:focus,
+html.rt-admin textarea:focus {
+  border-color: var(--rt-accent);
+  outline: none;
+}
+html.rt-admin .file-input {
+  background-color: var(--rt-main);
+}
+html.rt-admin .input-group-inline input[type="text"],
+html.rt-admin .predef-name input,
+html.rt-admin .form-vertical input[type="text"],
+html.rt-admin .form-vertical input[type="file"] {
+  border-color: var(--rt-line);
+  background: var(--rt-field);
+  color: var(--rt-on-second);
+}
+html.rt-admin .admin-search-input {
+  background: var(--rt-field);
+}
+html.rt-admin .admin-search-input:focus {
+  box-shadow: 0 0 0 3px var(--rt-accent-soft);
+}
+html.rt-admin .admin-search-dropdown__item:hover {
+  background: var(--rt-tint-2);
+}
+
+/* ---- panels / tables ---- */
+html.rt-admin .panel h3 {
+  border-bottom-color: var(--rt-line);
+}
+html.rt-admin .panel h3 i {
+  color: var(--rt-accent);
+}
+
+/* ---- chips / tags / badges ---- */
+html.rt-admin .chip {
+  border-color: var(--rt-line);
+  background: var(--rt-tint-2);
+  color: var(--rt-on-second);
+}
+html.rt-admin .chip:hover {
+  background: var(--rt-field-hover);
+}
+html.rt-admin .chip--active,
+html.rt-admin .chip--active:hover {
+  border-color: var(--rt-accent);
+  background: var(--rt-accent);
+  color: var(--rt-on-accent);
+}
+html.rt-admin .tag {
+  background-color: var(--rt-field);
+}
+html.rt-admin .tag:hover {
+  border-color: var(--rt-accent);
+  background-color: var(--rt-accent);
+  color: var(--rt-on-accent);
+}
+html.rt-admin .badge {
+  background: var(--rt-tint-2);
+}
+html.rt-admin .badge-warning,
+html.rt-admin .category-settings-item .badge-warning {
+  background: var(--rt-accent-soft);
+  color: var(--rt-accent);
+}
+
+/* ---- orders ---- */
+html.rt-admin .order-bar {
+  border-color: var(--rt-line);
+  background: var(--rt-tint-1);
+  color: var(--rt-on-second);
+}
+html.rt-admin .order-bar:hover,
+html.rt-admin .order-bar:focus-visible {
+  border-color: var(--rt-accent-ring);
+  background: var(--rt-tint-2);
+}
+html.rt-admin .order-bar__title {
+  color: var(--rt-on-second);
+}
+html.rt-admin .order-bar__meta,
+html.rt-admin .order-bar__preview {
+  color: var(--rt-text-3);
+}
+html.rt-admin .order-price {
+  color: var(--rt-accent);
+}
+html.rt-admin .order-modal-header__invoice {
+  background: var(--rt-accent-soft);
+}
+
+/* ---- lists / rows ---- */
+html.rt-admin .category-item:hover {
+  background-color: var(--rt-tint-2);
+}
+html.rt-admin .category-settings-item,
+html.rt-admin .today-panel .today-stat {
+  border-color: var(--rt-line);
+  background: var(--rt-tint-1);
+}
+html.rt-admin .category-settings-item:hover {
+  background: var(--rt-tint-2);
+}
+html.rt-admin .search-result-item,
+html.rt-admin .playlist-item,
+html.rt-admin .playlist-capacity,
+html.rt-admin .range-slider-group output {
+  background-color: var(--rt-field);
+}
+html.rt-admin .range-slider-group input[type="range"] {
+  background: var(--rt-line);
+}
+
+/* ---- icon picker ---- */
+html.rt-admin .icon-picker-search input {
+  background: var(--rt-field);
+}
+html.rt-admin .icon-cell {
+  background: var(--rt-field);
+  color: var(--rt-on-second);
+}
+html.rt-admin .icon-cell:hover {
+  background: var(--rt-field-hover);
+}
+
+/* ---- ads ---- */
+html.rt-admin .choice-card:hover {
+  border-color: var(--rt-accent-ring);
+}
+html.rt-admin .choice-grid label input[type="radio"]:checked + .choice-card {
+  background-color: var(--rt-accent-soft);
+  box-shadow: 0 0 15px var(--rt-accent-soft);
+}
+html.rt-admin #ads-settings-view .config-step h4,
+html.rt-admin #ads-settings-view .input-group label {
+  color: var(--rt-on-second);
+}
+html.rt-admin #ads-settings-view .input-group input[type="number"]:hover,
+html.rt-admin #ads-settings-view .input-group input[type="number"]:focus {
+  border-color: var(--rt-accent);
+  box-shadow: 0 0 0 1px var(--rt-accent-ring);
+}
+
+/* ---- pill-shaped name inputs with hard-coded #fafaf4 ---- */
+html.rt-admin #custom-category-name,
+html.rt-admin #edit-name,
+html.rt-admin #categories-view > div:nth-child(1) > div.input-group-inline > button:nth-child(2),
+html.rt-admin #category-settings-view > div > div.input-group-inline > button:nth-child(2) {
+  border-color: var(--rt-line);
+  background: var(--rt-field);
+  color: var(--rt-on-second);
+}
+
+/* ---- mobile data cards ---- */
+@media (max-width: 768px) {
+  html.rt-admin .card-actions .btn-icon {
+    background: var(--rt-field);
+  }
+}
+
+/* ---- Restaurant profile section (restaurantProfileSection.css) ---- */
+html.rt-admin .subscription-box {
+  border-color: var(--rt-line);
+  background: var(--rt-field);
+}
+html.rt-admin .restaurant-profile-panel .hours-row input[type="time"],
+html.rt-admin .slug-input-group,
+html.rt-admin .sheba-input-group {
+  border-color: var(--rt-line);
+  background: var(--rt-field);
+}
+html.rt-admin .restaurant-profile-panel .hours-row input[type="time"]:hover {
+  border-color: var(--rt-accent-ring);
+}
+html.rt-admin .restaurant-profile-panel .hours-row input[type="time"]:focus,
+html.rt-admin .slug-input-group:focus-within,
+html.rt-admin .sheba-input-group:focus-within {
+  border-color: var(--rt-accent);
+  box-shadow: 0 0 0 1px var(--rt-accent-ring);
+}
+html.rt-admin .slug-prefix {
+  background: var(--rt-tint-1);
+}
+html.rt-admin .slug-check-btn,
+html.rt-admin .sheba-prefix {
+  background: var(--rt-accent-soft);
+  color: var(--rt-accent);
+}
+html.rt-admin .slug-check-btn:hover:not(:disabled) {
+  background: var(--rt-accent-ring);
+}
+/* legacy inline-styled <hr> (prefer className="form-divider") */
+html.rt-admin .restaurant-profile-form hr {
+  border-color: var(--rt-line) !important;
+}
+
+
+/* ===================== PART C — theme picker ===================== */
+
+.rt-picker__hint {
+  margin: -6px 0 14px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.rt-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.rt-swatch {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.rt-swatch:hover {
+  transform: translateY(-1px);
+  border-color: var(--text-muted);
+}
+
+.rt-swatch:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.rt-swatch[aria-checked="true"] {
+  border-color: var(--primary-color);
+}
+
+.rt-swatch__chip {
+  height: 44px;
+  display: flex;
+  overflow: hidden;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  border-radius: 8px;
+  direction: ltr;
+}
+
+.rt-swatch__chip > span:nth-child(1) {
+  flex: 3;
+}
+.rt-swatch__chip > span:nth-child(2) {
+  flex: 2;
+}
+.rt-swatch__chip > span:nth-child(3) {
+  flex: 1;
+}
+
+.rt-swatch__name {
+  font-weight: 600;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rt-swatch {
+    transition: none;
+  }
+  .rt-swatch:hover {
+    transform: none;
+  }
+}

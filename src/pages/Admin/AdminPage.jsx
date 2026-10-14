@@ -1,6 +1,8 @@
 // src/pages/AdminPage.jsx
 import { useState, useCallback, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import useRestaurantTheme from "../../hooks/useRestaurantTheme";
+
 
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 
@@ -52,7 +54,7 @@ import { useGlobalUI } from "../../components/common/GlobalUI";
 export default function AdminPage() {
   useDocumentTitle("پنل مدیریت");
   const cssReady = usePageStyles("/admin-dashboard.css");
-
+useRestaurantTheme("admin");
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab =
     searchParams.get("tab") ||

@@ -9,6 +9,15 @@ import restaurantAxios from "../../api/restaurantAxios";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 
+// [THEME] new imports
+import RestaurantThemePicker from "./RestaurantThemePicker";
+import {
+  restaurantThemeStore,
+  pickEffectiveInput,
+  SHOW_THEME_PICKER,
+  THEME_BACKEND_READY,
+} from "../../theme/restaurantThemes";
+
 import "../../assets/css/admin/admin.css";
 import "../../assets/css/admin/restaurantProfileSection.css";
 
@@ -31,6 +40,9 @@ export default function RestaurantProfileSection() {
   const [description, setDescription] = useState("");
   const [openTime, setOpenTime] = useState("");
   const [closeTime, setCloseTime] = useState("");
+
+  // [THEME] selected colour theme (null = default look, or theme id 1..10)
+  const [themeId, setThemeId] = useState(null);
 
   // categories list
   const [categories, setCategories] = useState([]);
@@ -98,6 +110,14 @@ export default function RestaurantProfileSection() {
         // approval status (اختیاری؛ اگر بک‌اند نفرستد چیزی نمایش داده نمی‌شود)
         setRestaurantStatus(d.status || null);
         setRejectReason(d.rejectReason || null);
+
+        // [THEME] colour theme
+        // TODO(backend): return `themeId` (1..10 | null) or `theme` {main, second, details}
+        const savedTheme = d.themeId ?? d.theme ?? null;
+        restaurantThemeStore.setSaved(savedTheme);
+        setThemeId(
+          pickEffectiveInput(restaurantThemeStore.getSnapshot(), savedTheme),
+        );
       } catch (err) {
         console.error("Failed to load profile or categories", err);
         notify({
@@ -109,6 +129,18 @@ export default function RestaurantProfileSection() {
 
     loadData();
   }, []);
+
+  // [THEME] drop the unsaved live preview when the user leaves this page
+  useEffect(() => {
+    return () => restaurantThemeStore.setPreview(undefined);
+  }, []);
+
+  // [THEME] picker -> update the form value + preview the theme live
+  const handleThemeChange = (value) => {
+    setThemeId(value);
+    restaurantThemeStore.setPreview(value);
+  };
+
   // handling remove restaurant images
   const handleRemoveHomeBanner = () => {
     setHomeBannerFile(null);
@@ -214,6 +246,12 @@ export default function RestaurantProfileSection() {
       formData.append("OpenTime", openTime);
       formData.append("CloseTime", closeTime);
 
+      // [THEME] TODO(backend): only sent once the API accepts it
+      // (flip THEME_BACKEND_READY to true in restaurantThemes.js)
+      if (THEME_BACKEND_READY) {
+        formData.append("ThemeId", themeId ?? "");
+      }
+
       if (homeBannerFile) {
         formData.append("HomeBanner", homeBannerFile);
       } else if (!homeBannerPreview) {
@@ -238,6 +276,10 @@ export default function RestaurantProfileSection() {
       if (trimmedSlug) {
         setOriginalSlug(trimmedSlug);
       }
+
+      // [THEME] the saved theme becomes the permanent one
+      restaurantThemeStore.commitDraft(themeId);
+
       notify({ type: "success", message: "پروفایل با موفقیت بروزرسانی شد" });
     } catch (err) {
       console.error("Update failed:", err);
@@ -567,7 +609,25 @@ export default function RestaurantProfileSection() {
           </div>
         </div>
 
-        <hr style={{ border: "1px solid #444", margin: "20px 0" }} />
+        {/* [THEME] colour theme picker (hidden in production until backend is ready) */}
+        {SHOW_THEME_PICKER && (
+          <>
+            <hr className="form-divider" />
+
+            <div className="form-section-heading">
+              <i className="fa-solid fa-palette" />
+              <span>تم رنگی رستوران</span>
+            </div>
+
+            <RestaurantThemePicker
+              value={themeId}
+              onChange={handleThemeChange}
+            />
+          </>
+        )}
+
+        {/* [THEME] was an inline-styled <hr> */}
+        <hr className="form-divider" />
 
         {/* Operational info */}
         <div className="form-section-heading">
@@ -643,7 +703,8 @@ export default function RestaurantProfileSection() {
           </div>
         </div>
 
-        <hr style={{ border: "1px solid #444", margin: "20px 0" }} />
+        {/* [THEME] was an inline-styled <hr> */}
+        <hr className="form-divider" />
 
         {/* Owner financial info */}
         <div className="form-section-heading">
@@ -703,7 +764,8 @@ export default function RestaurantProfileSection() {
           </div>
         </div>
 
-        <hr style={{ border: "1px solid #444", margin: "20px 0" }} />
+        {/* [THEME] was an inline-styled <hr> */}
+        <hr className="form-divider" />
 
         <button type="submit" className="btn btn-primary" disabled={submitting}>
           {submitting ? (

@@ -7,6 +7,15 @@
     <title>منرو</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script>
+  try {
+    document.documentElement.classList.add(
+      localStorage.getItem("menro-theme") === "light" ? "theme-light" : "theme-dark"
+    );
+  } catch (e) {
+    document.documentElement.classList.add("theme-dark");
+  }
+</script>
   </head>
   <body>
     <div id="root"></div>

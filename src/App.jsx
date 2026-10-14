@@ -1,6 +1,7 @@
 // src/App.jsx
 import { Routes, Route, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+import { ThemeProvider } from "./context/ThemeContext.jsx";
 
 import MusicPlayerPage from "./pages/Admin/MusicPlayerPage";
 import AdminPage from "./pages/Admin/AdminPage";
@@ -107,7 +108,7 @@ export default function App() {
   );
 
   return (
-    <>
+    <> <ThemeProvider>
       {/* موقعیتش اینجاست (داخل کامپوننت، سطح بالای return) نه بیرون از App —
           چون بیرون از یک کامپوننت، JSX هیچ‌وقت رندر نمی‌شه */}
       <Toaster
@@ -252,6 +253,6 @@ export default function App() {
           </CartProvider>
         </DrawerStateProvider>
       </AdminNotificationProvider>
-    </>
+     </ThemeProvider> </>
   );
 }

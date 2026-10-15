@@ -10,6 +10,7 @@ const EPS = 0.001;
 
 // Adjusted lock tolerance: Only locks if within 50px of the trigger line
 const START_LOCK_TOL = 50;
+const START_HOLD = 0.04;
 
 function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v));
@@ -42,7 +43,9 @@ export default function PlansSection({ plans = plansData }) {
 
   useEffect(() => {
     const total = plans.length || 1;
-    maxProgressRef.current = (total - 0.5) / (total + 1);
+    // EDIT 1: the track is shifted back by half a segment, so the last card
+    // is "in front" at (total - 1) / (total + 1) instead of (total - 0.5) / ...
+    maxProgressRef.current = (total - 1) / (total + 1) + START_HOLD;
   }, [plans.length]);
 
   useEffect(() => {
@@ -135,7 +138,7 @@ export default function PlansSection({ plans = plansData }) {
     return "inside";
   }, [getNavH]);
 
-  // 🔥 FIXED: Now strictly evaluates the exact boundary.
+  // Strictly evaluates the exact boundary.
   // It will no longer trap the user while they are scrolling past the component.
   const nearLockLine = useCallback(() => {
     const el = sectionRef.current;
@@ -215,7 +218,11 @@ export default function PlansSection({ plans = plansData }) {
       snapToLockTop(true);
 
       const seg = 1 / (plans.length + 1);
-      const target = Math.min(maxProgressRef.current, (index + 0.52) * seg);
+      // EDIT 2: card i is in front at i * seg now (was (i + 0.5) * seg)
+      const target = Math.min(
+        maxProgressRef.current,
+        (index + 0.02) * seg + START_HOLD,
+      );
 
       animate(progress, target, {
         duration: 0.55,
@@ -486,7 +493,8 @@ export default function PlansSection({ plans = plansData }) {
       let cur = 0;
 
       for (let i = 0; i < total; i++) {
-        if (v >= (i + 0.45) * seg) cur = i;
+        // EDIT 3: threshold shifted back by half a segment
+        if (v >= (i - 0.05) * seg + START_HOLD) cur = i;
       }
 
       setActiveStep(cur);
@@ -604,9 +612,14 @@ export default function PlansSection({ plans = plansData }) {
 function PlanMotionCard({ index, total, plan, progress, viewportH }) {
   const seg = 1 / (total + 1);
 
-  const start = index * seg;
-  const mid = (index + 0.5) * seg;
-  const end = (index + 1) * seg;
+  // EDIT 4: card 0 is already "in front" at progress 0, so the whole track
+  // is shifted back by half a segment (no dead scroll at the start).
+  const shift = seg / 2 - START_HOLD;
+
+  const start = index * seg - shift;
+  const mid = (index + 0.5) * seg - shift;
+  const end = (index + 1) * seg - shift;
+  const first = Math.min(0, start);
 
   const baseY = index * 32;
   const baseScale = 1 - index * 0.04;
@@ -618,19 +631,19 @@ function PlanMotionCard({ index, total, plan, progress, viewportH }) {
 
   const y = useTransform(
     progress,
-    [0, start, mid, end, 1],
+    [first, start, mid, end, 1],
     [baseY, baseY, 0, finalY, finalY],
   );
 
   const scale = useTransform(
     progress,
-    [0, start, mid, end, 1],
+    [first, start, mid, end, 1],
     [baseScale, baseScale, 1, 1, 1],
   );
 
   const zIndex = useTransform(
     progress,
-    [0, start, mid, end, 1],
+    [first, start, mid, end, 1],
     [20 - index, 20 - index, 60, 60, 60],
   );
 

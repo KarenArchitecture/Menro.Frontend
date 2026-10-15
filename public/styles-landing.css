@@ -333,10 +333,14 @@ body {
 /* Also used by the Install Banner heading (section 05) */
 .hero__title {
   margin: 0 2rem 0 0;
-  color: #fff;
+  color: #fafaf4;
   font-size: 45px;
   font-weight: 800;
   text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+}
+
+.hero__title span {
+  color: #FF683C;
 }
 
 /* Also used by the Install Banner sub-heading (section 05) */
@@ -2602,7 +2606,6 @@ body {
 
 .blogs__rail {
   display: flex;
-  flex-direction: row-reverse;
   gap: 3rem;
   overflow-x: auto;
   overflow-y: hidden;
@@ -2809,7 +2812,7 @@ body {
     --blogs-pad: 8.5vw;
     /* side padding, matches Figma proportion */
     --blogs-gap: 3rem;
-    --blogs-card-w: calc((100vw - var(--blogs-pad) - 3 * var(--blogs-gap)) / 3.5);
+    --blogs-card-w: calc((100vw - var(--blogs-pad) - 3 * var(--blogs-gap)) / 3.2);
   }
 
   .blogs__rail {

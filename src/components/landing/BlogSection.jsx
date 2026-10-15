@@ -383,8 +383,8 @@ export default function BlogSection({
 
   const scrollByAmount = (delta) =>
     railRef.current?.scrollBy({ left: delta, behavior: "smooth" });
-  const onPrev = () => scrollByAmount(-(getStep() || 0));
-  const onNext = () => scrollByAmount(getStep() || 0);
+  const onPrev = () => scrollByAmount(getStep() || 0);
+  const onNext = () => scrollByAmount(-(getStep() || 0));
 
   useEffect(() => {
     const el = railRef.current;
@@ -517,18 +517,18 @@ export default function BlogSection({
             <button
               type="button"
               className="blogs__arrow"
-              onClick={onNext}
-              aria-label="اسلاید بعدی"
-              disabled={!canNext}
+              onClick={onPrev}
+              aria-label="اسلاید قبلی"
+              disabled={!canPrev}
             >
               <NextIcon />
             </button>
             <button
               type="button"
               className="blogs__arrow blogs__arrow--prev"
-              onClick={onPrev}
-              aria-label="اسلاید قبلی"
-              disabled={!canPrev}
+              onClick={onNext}
+              aria-label="اسلاید بعدی"
+              disabled={!canNext}
             >
               <PrevIcon />
             </button>

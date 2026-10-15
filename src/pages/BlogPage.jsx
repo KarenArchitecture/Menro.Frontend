@@ -14,7 +14,31 @@ import useDocumentTitle from "../hooks/useDocumentTitle";
 import "../assets/css/styles-blog.css";
 
 const leftIcons = [
-  /* unchanged */
+  {
+    key: "profile",
+    icon: (
+      <img
+        src="/images/app-header-profile.svg"
+        alt="profile"
+        className="icon"
+      />
+    ),
+  },
+  {
+    key: "cart",
+    icon: <img src="/images/app-header-bag.svg" alt="cart" className="icon" />,
+    badge: 1,
+  },
+  {
+    key: "search",
+    icon: (
+      <img
+        src="/images/app-header-search.svg"
+        alt="search"
+        className="icon"
+      />
+    ),
+  },
 ];
 
 const BlogPage = () => {

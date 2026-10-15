@@ -154,7 +154,7 @@ const BlogFeed = () => {
         {!loading && !error && posts.length > 0 && (
           <div className="blog-feed-grid">
             {posts.map((post) => (
-              <BlogCard key={post.id} post={post} />
+              <BlogCard key={post.id} post={post} variant="stacked" />
             ))}
           </div>
         )}

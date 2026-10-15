@@ -58,7 +58,7 @@ function CalendarIcon() {
   );
 }
 
-export default function BlogCard({ post }) {
+export default function BlogCard({ post, variant }) {
   const {
     title,
     href,
@@ -70,6 +70,30 @@ export default function BlogCard({ post }) {
   } = post;
 
   const imgSrc = useImageWithFallback(coverSrc, "blog");
+
+  if (variant === "stacked") {
+    return (
+      <article className="blog-stacked-card">
+        <a className="blog-stacked-card__media" href={href || "#"} aria-label={`خواندن: ${title}`}>
+          <img src={imgSrc} alt="" loading="lazy" decoding="async" />
+        </a>
+        <div className="blog-stacked-card__body">
+          <div className="blog-stacked-card__head">
+            <h3 className="blog-stacked-card__title">
+              <a href={href || "#"}>{title}</a>
+            </h3>
+            <span className="blog-stacked-card__heart" aria-hidden="true">
+              <HeartIcon />
+            </span>
+          </div>
+          <span className="blog-stacked-card__mins">
+            <ClockIcon />
+            {readingMins} دقیقه
+          </span>
+        </div>
+      </article>
+    );
+  }
 
   return (
     <div className="blogs__card">

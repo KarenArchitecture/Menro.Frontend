@@ -57,7 +57,7 @@ const BlogSidebar = ({ tags = [], loading = false }) => {
       </div>
 
       <div className="blog-sidebar-ad-box">
-        <AdBanner slotKey="blog-sidebar-ad" height={300} maxWidth={400} />
+        <AdBanner slotKey="blog-sidebar-ad" height={202} maxWidth="100%" />
       </div>
     </aside>
   );

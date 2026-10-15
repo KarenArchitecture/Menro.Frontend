@@ -1,20 +1,47 @@
-/* assets/css/styles-blog.css */
-/* Override the app shell padding only for the blog page */
+/* ==========================================================================
+   styles-blog.css  —  Blog page
+   ==========================================================================
+
+   TABLE OF CONTENTS
+   --------------------------------------------------------------------------
+   01. Page shell ............ app-shell override, page wrapper, header slot
+   02. Hero .................. section, floating food images, title, search,
+                               scroll hint
+   03. Categories ............ 4-up category cards (2-up on tablet/mobile)
+   04. Content layout ........ feed + sidebar two-column grid
+   05. Feed .................. tab nav, scroll area, card grid, pagination
+   06. Sidebar ............... suggested tags, ad box
+   07. Mobile layout ......... desktop/mobile switch, blocks, feed, banner,
+                               tags, tags banner, card scaling
+   08. Shared / misc ......... global search-bar sizing, highlight text, footer
+
+   BREAKPOINTS USED
+   --------------------------------------------------------------------------
+   <= 425px   phone         (mobile layout replaces desktop layout)
+   <= 768px   mobile/tablet (hero, categories, pagination)
+   <= 1024px  tablet        (single-column content, 2-col categories)
+   >= 1024px  desktop       (hero clearance from fixed header)
+   ========================================================================== */
+
+
+/* ==========================================================================
+   01. PAGE SHELL
+   ========================================================================== */
+
+/* Override the app shell padding for the blog page */
 .app-shell-content {
-  padding: 1rem !important; /* Or whatever padding you actually want, e.g., padding-top: 2rem; */
+  padding: 1rem !important;
 }
 
 .blog-page-wrapper {
-  /* background-color: #111214; Dark theme background */
   color: #fafaf4;
   font-family: inherit;
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
-  /* Optional: Add background pattern image here if you have it */
 }
 
-/* Header placement */
+/* Header placement (overlays the hero) */
 .header-wrapper {
   position: absolute;
   top: 20px;
@@ -25,7 +52,20 @@
   justify-content: center;
 }
 
-/* Hero Section */
+@media (max-width: 768px) {
+
+  .landing-desktop-header,
+  .header-wrapper {
+    display: none !important;
+  }
+}
+
+
+/* ==========================================================================
+   02. HERO
+   ========================================================================== */
+
+/* --- 02.1 Section (background gradient is set inline in BlogHero.jsx) --- */
 .blog-hero-section {
   position: relative;
   height: 100vh;
@@ -33,113 +73,37 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  padding-bottom: 25vh; /* Pushes content slightly up from center */
+  padding-bottom: 0;
 }
 
-/* Central Content */
-.blog-hero-content {
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 30px;
+@media (max-width: 768px) {
+  .blog-hero-section {
+    height: 88vh;
+    overflow: hidden;
+  }
 }
 
-.hero-title {
-  font-size: 2.2rem;
-  font-weight: bold;
-  margin: 0;
-  text-align: center;
-}
-
-.highlight-text {
-  color: #ff6b4a; /* Orange highlight */
-}
-
-/* Search Bar */
-.hero-search-container {
-  display: flex;
-  align-items: center;
-  background-color: #18191c;
-  border-radius: 12px;
-  width: 500px;
-  max-width: 90vw;
-  padding: 5px 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-.hero-search-input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  color: #fafaf4;
-  font-size: 1rem;
-  outline: none;
-  padding: 15px 10px;
-  font-family: inherit;
-}
-
-.hero-search-input::placeholder {
-  color: #666;
-}
-
-.search-btn {
-  background: transparent;
-  border: none;
-  color: #fafaf4;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
-}
-
-.search-btn svg {
-  width: 22px;
-  height: 22px;
-}
-
-/* Scroll Indicator */
-.scroll-indicator {
-  position: absolute;
-  bottom: 30px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #888;
-  font-size: 0.9rem;
-  z-index: 10;
-  animation: float 2s ease-in-out infinite;
-}
-
-.scroll-indicator svg {
-  width: 20px;
-  height: 20px;
-}
-
-/* Floating Images (Adjust positions based on your SVG sizes) */
-/* Floating Images - Updated Sizes, Positions, and Orientations */
+/* --- 02.2 Floating food images --- */
 .floating-img {
   position: absolute;
   z-index: 1;
   animation: float 6s ease-in-out infinite;
-  /* Variable to hold rotation so the animation doesn't overwrite it */
   --rot: 0deg;
+  /* holds each image's tilt so the animation doesn't overwrite it */
 }
 
-/* Originally on the right, now moved to the LEFT */
 .img-fries {
   top: 15%;
   left: 10%;
-  width: 194px; /* Increased from 70px */
+  width: 194px;
   animation-delay: 0s;
-  --rot: -25deg; /* Changed orientation */
+  --rot: -25deg;
 }
 
 .img-burger {
   top: 35%;
   left: 18%;
-  width: 163px; /* Increased from 85px */
+  width: 163px;
   animation-delay: 1s;
   --rot: 15deg;
 }
@@ -147,16 +111,15 @@
 .img-ramen {
   bottom: 20%;
   left: 8%;
-  width: 318px; /* Increased from 150px */
+  width: 318px;
   animation-delay: 2s;
   --rot: -10deg;
 }
 
-/* Originally on the left, now moved to the RIGHT */
 .img-sushi {
   top: 25%;
   right: 12%;
-  width: 196px; /* Increased from 70px */
+  width: 196px;
   animation-delay: 0.5s;
   --rot: 30deg;
 }
@@ -164,7 +127,7 @@
 .img-pizza {
   top: 45%;
   right: 20%;
-  width: 342px; /* Increased from 120px */
+  width: 342px;
   animation-delay: 1.5s;
   --rot: -20deg;
 }
@@ -172,390 +135,24 @@
 .img-soda {
   bottom: 15%;
   right: 10%;
-  width: 156px; /* Increased from 50px */
+  width: 156px;
   animation-delay: 2.5s;
   --rot: -35deg;
 }
 
-/* Float Animation - Updated to preserve the unique rotation of each item */
 @keyframes float {
-  0% {
-    transform: translateY(0px) rotate(var(--rot));
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--rot));
   }
+
   50% {
     transform: translateY(-20px) rotate(var(--rot));
   }
-  100% {
-    transform: translateY(0px) rotate(var(--rot));
-  }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .hero-title {
-    font-size: 1.5rem;
-    padding: 0 20px;
-  }
-  .floating-img {
-    display: none;
-  }
-}
-.blog-hero-section {
-  /* ... your existing flexbox and height properties ... */
-
-  /* Radial gradient shining from the bottom */
-  background: radial-gradient(circle at bottom center, #35200f 0%, #000 100%);
-
-  /* If you want it to blend into your dark background instead of ending in pure D9D9D9, 
-     you could also try fading it into your base dark color (#111214) like this:
-     background: radial-gradient(circle at bottom center, #35200F 0%, #111214 70%); */
-}
-
-/* --- Blog Categories Section --- */
-.blog-categories-section {
-  padding: 40px 2%; /* Reduced side padding from 5% to 2% to let it stretch more */
-  background-color: transparent;
-  display: flex;
-  justify-content: center;
-}
-
-.categories-wrapper {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  background-color: #1a1c20;
-  padding: 30px;
-  border-radius: 24px;
-  width: 100%;
-  max-width: 1440px; /* Increased from 1200px to cover wider screens */
-  border: 1px solid #2a2d32;
-}
-
-.category-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background-color: #111214;
-  padding: 16px;
-  border-radius: 16px;
-  border: none;
-  transition:
-    transform 0.2s ease,
-    border-color 0.2s ease;
-  cursor: pointer;
-}
-
-/* .category-card:hover {
-  transform: translateY(-5px);
-  border-color: #4a4d52;
-} */
-
-.category-icon-box {
-  width: 50px;
-  height: 50px;
-  border-radius: 12px;
-  flex-shrink: 0;
-}
-
-.category-text {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.category-text h3 {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-  color: #fafaf4;
-}
-
-.category-text p {
-  margin: 0;
-  font-size: 12px;
-  color: #a0a0a0;
-}
-
-/* --- Responsive Adjustments --- */
-@media (max-width: 1024px) {
-  .categories-wrapper {
-    grid-template-columns: repeat(2, 2fr);
-  }
-}
-
-@media (max-width: 600px) {
-  .categories-wrapper {
-    grid-template-columns: repeat(2, 2fr);
-    padding: 1rem;
-  }
-
-  .blog-categories-section {
-    padding: 20px 5%;
-  }
-}
-/* --- Blog Feed Container --- */
-.blog-feed-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 85%;
-}
-
-/* 1. Navbar Categories */
-/* Container for the navigation */
-.blog-feed-nav {
-  display: flex;
-  gap: 1.5rem; /* Space between buttons */
-  align-items: center;
-  margin-bottom: 2rem;
-  /* If you want them aligned to the right (RTL), uncomment below */
-  /* justify-content: flex-start; */
-}
-
-/* Default state for all category buttons */
-.feed-nav-btn {
-  background-color: transparent;
-  color: #a0a0a0; /* Grey text for unselected */
-  border: none;
-  padding: 8px 24px; /* Padding creates the pill size */
-  border-radius: 50px; /* Makes it pill-shaped */
-  font-family: inherit;
-  font-size: 1.5rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease; /* Smooth transition when clicking */
-}
-
-/* Hover effect for unselected buttons (optional but recommended) */
-.feed-nav-btn:hover {
-  color: #fafaf4;
-}
-
-/* Active state for the selected category */
-.feed-nav-btn.active {
-  background-color: #ff6b35; /* Adjust to match your exact orange */
-  color: #fafaf4;
-}
-.blog-feed-scroll-area::-webkit-scrollbar {
-  display: none;
-}
-/* 2. Scrollable Grid Area */
-.blog-feed-scroll-area {
-  /* Tall enough to comfortably show 2 full rows of cards before the
-     internal scrollbar takes over - card height varies with viewport
-     width, so this is viewport-relative rather than a fixed pixel value. */
-  max-height: 95vh;
-  overflow-y: auto;
-  padding-right: 5px; /* Prevent scrollbar from touching content */
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-
-/* Customizing the scrollbar for a dark theme */
-.blog-feed-scroll-area::-webkit-scrollbar {
-  width: 6px;
-}
-.blog-feed-scroll-area::-webkit-scrollbar-thumb {
-  background: #444;
-  border-radius: 4px;
-}
-
-.blog-feed-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Exactly two cards per row */
-  row-gap: 2rem; /* Adjust gap as needed for spacing between cards */
-  padding-right: 10px; /* Add some padding to prevent scrollbar overlapping content */
-}
-
-/* Ensure your existing mobile media query is still in place */
-@media (max-width: 768px) {
-  /* Adjust breakpoint if different in your code */
-  .blog-feed-grid {
-    grid-template-columns: 1fr; /* Stack cards on smaller screens */
-  }
-}
-/* 3. Pagination (replaces the old show-more button) */
-.blog-feed-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 10px 0;
-}
-
-.blog-feed-pagination__btn {
-  padding: 12px 24px;
-  background-color: #0c0f14;
-  color: #fafaf4;
-  border: 1px solid #444;
-  border-radius: 10px;
-  font-size: 15px;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.blog-feed-pagination__btn:hover:not(:disabled) {
-  background-color: #ff6b00;
-  border-color: #ff6b00;
-}
-
-.blog-feed-pagination__btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.blog-feed-pagination__label {
-  color: #a0a0a0;
-  font-size: 14px;
-  white-space: nowrap;
 }
 
 @media (max-width: 768px) {
-  .blog-feed-pagination {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .blog-feed-pagination__label {
-    order: 3;
-    width: 100%;
-    text-align: center;
-  }
-}
-
-/* Responsive adjustments for mobile */
-@media (max-width: 768px) {
-  .blog-feed-grid {
-    grid-template-columns: 1fr; /* Switch to 1 item per row on mobile */
-  }
-}
-/* --- Blog Sidebar Container --- */
-.blog-sidebar-container {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-  width: 100%;
-}
-
-/* Tags Box */
-.blog-sidebar-tags-box {
-  border-radius: 12px;
-  padding: 24px;
-}
-
-.sidebar-tags-title {
-  color: #fafaf4;
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 20px;
-  margin-top: 0;
-}
-
-.sidebar-tags-list {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.sidebar-tag-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  border-bottom: 1px solid #2a2a2a;
-  border-radius: 10px;
-  cursor: pointer;
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease;
-}
-.sidebar-tag-item:hover {
-  border-color: rgba(245, 158, 11, 0.35);
-  background: rgba(255, 255, 255, 0.035);
-}
-
-.sidebar-tag-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.sidebar-tag-item-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.sidebar-tag-hashtag-icon {
-  width: 16px;
-  height: 16px;
-  opacity: 0.7; /* Optional: slightly dim the icon if it's too bright */
-}
-
-.sidebar-tag-item-name {
-  color: #dcdcdc;
-  font-size: 14px;
-  transition: color 0.2s;
-}
-
-.sidebar-tag-item:hover .sidebar-tag-item-name {
-  color: #ff683c;
-}
-
-.sidebar-tag-item-count {
-  color: #888888;
-  font-size: 13px;
-}
-
-/* Ad Banner Box */
-.blog-sidebar-ad-box {
-  width: 100%;
-  border-radius: 12px;
-  overflow: hidden;
-}
-/* --- Two-Column Content Area --- */
-.blog-content-section {
-  padding: 40px 2%;
-  background-color: transparent; /* Inherits the dark background from the wrapper */
-}
-
-.blog-content-wrapper {
-  max-width: 1440px; /* Matches the width of your categories section */
-  margin: 0 auto;
-  display: grid;
-  /* Increased sidebar width to 400px, 1fr takes the rest */
-  grid-template-columns: 1fr 400px;
-  gap: 40px;
-  align-items: start; /* Prevents columns from stretching to equal heights */
-}
-
-/* Responsive adjustment for tablets and mobile */
-@media (max-width: 1024px) {
-  .blog-content-wrapper {
-    grid-template-columns: 1fr; /* Stacks Feed on top of Sidebar */
-  }
-}
-/* Update the grid to automatically fit narrow columns (approx 240px-250px wide) */
-@media (max-width: 768px) {
-  .blog-hero-section {
-    height: 88vh;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding-bottom: 0;
-    overflow: hidden;
-  }
-
-  /* 1. Make sure images are visible and positioned absolutely */
-  .floating-img {
-    display: block !important;
-    position: absolute;
-    z-index: 1; /* Keep behind text */
-  }
-
   .img-soda {
     top: 12%;
     right: -18px;
@@ -598,106 +195,578 @@
     width: 30rem;
     --rot: 2deg;
   }
+}
 
-  /* 3. Adjust Content (Text & SearchBar) */
-  .blog-hero-content {
-    position: relative;
-    gap: 0;
-    z-index: 10;
-    width: 100%;
-    padding: 0 20px;
-    text-align: center;
-    margin-bottom: 6rem;
+/* --- 02.3 Content layer --- */
+.bhl__overlay {
+  position: relative;
+  z-index: 10;
+  /* above particles + floating images */
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 16px;
+  text-align: center;
+}
+
+.bhl__content {
+  width: 100%;
+  max-width: 720px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* --- 02.4 Title ("متفاوت باش" is the <span>: left side, orange) --- */
+.bhl__title {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  column-gap: 0.25em;
+  direction: rtl;
+  margin: 0 20px 0 0;
+  color: #fff;
+  font-size: 45px;
+  font-weight: 800;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+}
+
+.bhl__title span {
+  order: 1;
+  /* in RTL, last item = leftmost */
+  color: #ff683c;
+}
+
+/* --- 02.5 Search --- */
+.bhl__search {
+  margin-left: 160px;
+}
+
+.bhl__overlay .search-bar-container {
+  width: min(30vw, 300px);
+  margin: 12px auto 0;
+}
+
+/* !important is needed to beat the global `.search-bar` rule (section 08) */
+.bhl__overlay .search-bar {
+  height: 6rem;
+  backdrop-filter: blur(var(--glass-blur));
+  display: flex;
+  align-items: center;
+  box-shadow: rgba(255, 255, 255, 0.05) 0px 1px 0px inset, rgba(0, 0, 0, 0.25) 0px 10px 24px;
+  width: 170% !important;
+  padding: 0px 1.5rem;
+  border-radius: 22px;
+  background: rgb(12, 15, 20);
+  border-width: medium;
+  border-style: none;
+  border-color: currentcolor;
+  border-image: none;
+  gap: 0.6rem;
+}
+
+.bhl__overlay .search-bar input {
+  flex: 1 1 auto;
+  height: 100%;
+  background: transparent !important;
+  color: #eaeaea;
+  border: none;
+  outline: none;
+}
+
+.bhl__overlay .search-bar input::placeholder {
+  color: #a9a9a9;
+  font-size: 1.4rem;
+  font-weight: 400;
+}
+
+.bhl__overlay .icon-button {
+  background: transparent;
+  border: 0;
+  color: #dcdcdc;
+  display: grid;
+  place-items: center;
+}
+
+.bhl__overlay .icon-button img {
+  width: 45px;
+  height: 45px;
+  display: block;
+}
+
+/* --- 02.6 Scroll hint --- */
+.bhl__hint {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 5px;
+  margin-top: 18px;
+  color: #cfcfcf;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* --- 02.7 Responsive --- */
+
+/* Desktop: clearance from the fixed header */
+@media (min-width: 1024px) {
+  .bhl__content {
+    margin-top: 72px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .bhl__overlay {
+    padding: 0 22px;
   }
 
-  .hero-title {
-    font-size: 2rem; /* Adjust if needed to match exact font scale */
-    line-height: 1.5;
-    margin-bottom: 24px;
+  .bhl__content {
+    max-width: 100%;
+    margin-bottom: 32px;
+    gap: 18px;
+  }
+
+  .bhl__title {
+    width: 100%;
+    margin: 0;
+    justify-content: flex-start;
+    /* RTL: start = right */
+    font-size: clamp(28px, 7.2vw, 38px);
+    line-height: 1.35;
     font-weight: 900;
   }
 
-  /* Hide scroll indicator on mobile to keep it clean (optional) */
-  .scroll-indicator {
+  .bhl__search {
+    width: 100%;
+  }
+
+  .bhl__overlay .search-bar-container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  .bhl__overlay .search-bar {
+    height: 64px !important;
+    border-radius: 18px;
+    padding: 0 14px;
+  }
+
+  .bhl__overlay .search-bar input {
+    min-width: 0;
+  }
+
+  .bhl__overlay .icon-button img {
+    width: 38px;
+    height: 38px;
+    margin-left: 8px;
+  }
+
+  .bhl__hint {
     display: none;
   }
 }
-@media (max-width: 768px) {
-  .landing-desktop-header,
-  .header-wrapper {
-    display: none !important;
+
+/* Small mobile */
+@media (max-width: 420px) {
+  .bhl__overlay {
+    padding: 0 20px;
+  }
+
+  .bhl__content {
+    margin-bottom: 120px;
+    gap: 16px;
+  }
+
+  .bhl__title {
+    justify-content: center;
+    font-size: 26px;
+  }
+
+  .bhl__overlay .search-bar {
+    height: 60px !important;
+    border-radius: 16px;
   }
 }
 
+
+/* ==========================================================================
+   03. CATEGORIES
+   ========================================================================== */
+
+.blog-categories-section {
+  padding: 40px 2%;
+  background-color: transparent;
+  display: flex;
+  justify-content: center;
+}
+
+.categories-wrapper {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  background-color: #1a1c20;
+  padding: 30px;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 1440px;
+  border: 1px solid #2a2d32;
+}
+
+.category-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background-color: #111214;
+  padding: 16px;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.category-icon-box {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.category-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.category-text h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fafaf4;
+}
+
+.category-text p {
+  margin: 0;
+  font-size: 12px;
+  color: #a0a0a0;
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .categories-wrapper {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile */
 @media (max-width: 768px) {
   .blog-categories-section {
     padding: 16px;
   }
 
   .categories-wrapper {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 2 columns for mobile */
-    gap: 8px;
-    background-color: #181920; /* Dark wrapper background */
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3rem 2rem;
+    /* row / column */
+    background-color: #181920;
     padding: 16px;
     border-radius: 20px;
-    direction: rtl; /* Puts the colored box on the right */
-    column-gap: 2rem;
-    row-gap: 3rem;
+    direction: rtl;
+    /* colored box on the right */
   }
 
   .category-card {
-    background-color: #111217; /* Darker card background */
-    border-radius: 12px;
-    padding: 10px;
-    display: flex;
-    align-items: center;
     gap: 8px;
+    background-color: #111217;
+    padding: 10px;
+    border-radius: 12px;
   }
 
   .category-icon-box {
     width: 4rem;
     height: 4rem;
     border-radius: 8px;
-    flex-shrink: 0;
   }
 
   .category-text {
-    display: flex;
-    flex-direction: column;
     gap: 4px;
-    text-align: right;
     justify-content: center;
+    text-align: right;
   }
 
   .category-text h3 {
-    margin: 0;
-    color: #fafaf4;
     font-size: 0.9rem;
     font-weight: bold;
     line-height: 1.2;
   }
 
   .category-text p {
-    margin: 0;
-    color: #8c8f9f; /* Muted gray for subtitle */
     font-size: 9px;
     line-height: 1.2;
+    color: #8c8f9f;
   }
 }
 
-/* Optional: Fallback for very small screens (like iPhone SE) so text doesn't squish */
-@media (max-width: 420px) {
-  .categories-wrapper {
-    grid-template-columns: repeat(2fr);
-  }
-}
-.search-bar {
-  width: 75% !important;
-  height: 5.5rem !important;
+
+/* ==========================================================================
+   04. CONTENT LAYOUT (feed + sidebar)
+   ========================================================================== */
+
+.blog-content-section {
+  padding: 40px 2%;
+  background-color: transparent;
 }
 
-/* MOBILE FEED */
+.blog-content-wrapper {
+  max-width: 1440px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 40px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .blog-content-wrapper {
+    grid-template-columns: 1fr;
+    /* feed on top of sidebar */
+  }
+}
+
+
+/* ==========================================================================
+   05. FEED
+   ========================================================================== */
+
+.blog-feed-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 85%;
+}
+
+/* --- 05.1 Tab nav --- */
+.blog-feed-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.feed-nav-btn {
+  background-color: transparent;
+  color: #a0a0a0;
+  border: none;
+  padding: 8px 24px;
+  border-radius: 50px;
+  font-family: inherit;
+  font-size: 1.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.feed-nav-btn:hover {
+  color: #fafaf4;
+}
+
+.feed-nav-btn.active {
+  background-color: #ff6b35;
+  color: #fafaf4;
+}
+
+/* --- 05.2 Scroll area (scrollbar hidden) --- */
+.blog-feed-scroll-area {
+  max-height: 95vh;
+  /* viewport-relative: card height varies with width */
+  overflow-y: auto;
+  padding-right: 5px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.blog-feed-scroll-area::-webkit-scrollbar {
+  display: none;
+}
+
+/* --- 05.3 Card grid --- */
+.blog-feed-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  row-gap: 2rem;
+  padding-right: 10px;
+}
+
+/* Tablet: minmax(0, 1fr) stops a wide card from collapsing the grid */
+@media (min-width: 426px) and (max-width: 1024px) {
+  .blog-feed-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 425px) {
+  .blog-feed-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- 05.4 Pagination --- */
+.blog-feed-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 10px 0;
+}
+
+.blog-feed-pagination__btn {
+  padding: 12px 24px;
+  background-color: #0c0f14;
+  color: #fafaf4;
+  border: 1px solid #444;
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.blog-feed-pagination__btn:hover:not(:disabled) {
+  background-color: #ff6b00;
+  border-color: #ff6b00;
+}
+
+.blog-feed-pagination__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.blog-feed-pagination__label {
+  color: #a0a0a0;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .blog-feed-pagination {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .blog-feed-pagination__label {
+    order: 3;
+    width: 100%;
+    text-align: center;
+  }
+}
+
+
+/* ==========================================================================
+   06. SIDEBAR
+   ========================================================================== */
+
+.blog-sidebar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  width: 100%;
+}
+
+/* --- 06.1 Tags box --- */
+.blog-sidebar-tags-box {
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.sidebar-tags-title {
+  margin: 0 0 20px;
+  color: #fafaf4;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.sidebar-tags-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sidebar-tag-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid #2a2a2a;
+  border-radius: 10px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.sidebar-tag-item:hover {
+  border-color: rgba(245, 158, 11, 0.35);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.sidebar-tag-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.sidebar-tag-item-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sidebar-tag-hashtag-icon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+}
+
+.sidebar-tag-item-name {
+  color: #dcdcdc;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.sidebar-tag-item:hover .sidebar-tag-item-name {
+  color: #ff683c;
+}
+
+.sidebar-tag-item-count {
+  color: #888888;
+  font-size: 13px;
+}
+
+/* --- 06.2 Ad box --- */
+.blog-sidebar-ad-box {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.blog-sidebar-ad-box .single-banner {
+  padding: 0;
+}
+
+
+/* ==========================================================================
+   07. MOBILE LAYOUT
+   ========================================================================== */
+
+/* --- 07.1 Desktop / mobile switch --- */
 .blog-desktop-layout {
   display: block;
 }
@@ -705,19 +774,88 @@
 .blog-mobile-layout {
   display: none;
 }
-/* ---------- Tablet: force 2-column feed grid instead of relying on
-   auto-fill, which was collapsing to a single oversized card around
-   768px depending on how much width the sidebar leaves the feed. ---------- */
-@media (min-width: 426px) and (max-width: 1024px) {
-  .blog-feed-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+
+/* --- 07.2 Feed rows + blocks rows (2 cards per row) --- */
+.mobile-blog-feed__row,
+.mobile-blog-blocks__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-items: stretch;
+  width: 100%;
+  min-height: 30rem;
+  padding: 2rem;
 }
 
-/* ---------- Mobile (phone) - single consolidated breakpoint. Merged
-   the former separate 420px card-scaling block into this 425px block
-   so there's one mobile breakpoint instead of two near-duplicates. ---------- */
+.mobile-blog-feed__card,
+.mobile-blog-blocks__card {
+  display: flex;
+  min-width: 0;
+  width: 100%;
+}
+
+.mobile-blog-blocks__card {
+  height: 100%;
+}
+
+.mobile-blog-feed__card>*,
+.mobile-blog-blocks__card>* {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.mobile-blog-feed__card .blog-card,
+.mobile-blog-blocks__card .blog-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+}
+
+.mobile-blog-feed__card .blog-card>*,
+.mobile-blog-blocks__card .blog-card>* {
+  width: 100%;
+}
+
+.mobile-blog-feed__card img,
+.mobile-blog-blocks__card img {
+  width: 100%;
+  object-fit: cover;
+}
+
+/* Blocks cards: taller, square media, text can't collapse the card */
+.mobile-blog-blocks__card .blog-card {
+  min-height: 320px;
+}
+
+.mobile-blog-blocks__card .blog-card img {
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+}
+
+.mobile-blog-blocks__card .blog-card__content,
+.mobile-blog-blocks__card .blog-card-content,
+.mobile-blog-blocks__card .card-content {
+  flex: 1;
+  min-height: 0;
+}
+
+.mobile-blog-blocks__cta {
+  border: 1px solid #394350;
+  border-radius: 10px;
+  height: 6rem;
+  font-size: 2rem;
+  font-weight: 700;
+  background: none;
+  color: #fafaf4;
+}
+
+/* --- 07.3 Phone (<= 425px) --- */
 @media (max-width: 425px) {
+
+  /* Switch layouts */
   .blog-desktop-layout {
     display: none;
   }
@@ -726,6 +864,7 @@
     display: block;
   }
 
+  /* Section / list wrappers */
   .blog-mobile-blocks-section {
     padding: 16px;
     display: flex;
@@ -736,28 +875,8 @@
   .mobile-blog-blocks {
     display: flex;
     flex-direction: column;
-    /* gap: 12px; */
   }
 
-  .mobile-blog-feed__row {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    align-items: start;
-    width: 100%;
-  }
-
-  .mobile-blog-feed__card {
-    min-width: 0;
-    width: 100%;
-  }
-
-  .mobile-blog-feed__card .blog-card {
-    width: 100%;
-    min-width: 0;
-  }
-
-  /* FEED: 2 cards per row */
   .mobile-blog-feed-section {
     padding: 0 16px 16px;
   }
@@ -772,24 +891,23 @@
     margin-top: 16px;
   }
 
-  /* Blog card content scaling (formerly a separate 420px media query -
-     merged here since it targets the same mobile range) */
+  /* Blog card content scaling (card is ~180px wide here) */
   .blogs__card-title {
-    font-size: 1.35rem; /* was 1.8rem - too large for a ~180px-wide card */
+    font-size: 1.35rem;
     margin-bottom: 6px;
   }
 
   .blogs__card-info {
-    font-size: 1rem; /* was 1.3rem */
+    font-size: 1rem;
     gap: 8px;
   }
 
   .blogs__card-stats-group {
-    gap: 10px; /* was 14px */
+    gap: 10px;
   }
 
   .blogs__card-stat {
-    gap: 4px; /* was 6px */
+    gap: 4px;
   }
 
   .blogs__card-info svg {
@@ -798,21 +916,19 @@
   }
 
   .blogs__card-meta {
-    inset: auto 10px 10px 10px; /* was 14px - slightly tighter edge padding */
+    inset: auto 10px 10px 10px;
   }
 
-  /* Shared mobile block shell */
+  /* Shared block shell */
   .mobile-blog-banner,
   .mobile-blog-tags,
   .mobile-tags-banner {
     width: 100%;
     border-radius: 20px;
     overflow: hidden;
-    /* background: #111217; */
-    /* box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28); */
   }
 
-  /* Banner look */
+  /* Banner */
   .mobile-blog-banner {
     position: relative;
     min-height: 180px;
@@ -872,7 +988,7 @@
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
   }
 
-  /* Tags look */
+  /* Tags */
   .mobile-blog-tags {
     padding: 16px;
   }
@@ -894,10 +1010,10 @@
     list-style: none;
     padding: 0;
     margin: 0;
-
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 columns */
-    gap: 16px 12px; /* row gap / column gap */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 12px;
+    /* row / column */
   }
 
   .mobile-blog-tags__item {
@@ -905,7 +1021,6 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-
     min-width: 0;
   }
 
@@ -913,9 +1028,9 @@
     display: flex;
     align-items: center;
     gap: 10px;
-
     min-width: 0;
   }
+
   .mobile-blog-tags__hash {
     width: 42px;
     height: 42px;
@@ -933,7 +1048,6 @@
     color: #fafaf4;
     font-size: 14px;
     font-weight: 700;
-
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -946,7 +1060,7 @@
     flex: 0 0 auto;
   }
 
-  /* Tags banner shell */
+  /* Tags banner */
   .mobile-tags-banner {
     padding: 0;
   }
@@ -964,303 +1078,227 @@
   }
 }
 
-.mobile-blog-feed__row,
-.mobile-blog-blocks__row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  align-items: stretch;
-  width: 100%;
-  min-height: 30rem;
-  padding: 2rem;
+
+/* ==========================================================================
+   08. SHARED / MISC
+   ========================================================================== */
+
+/* Global search bar sizing (the hero overrides this in section 02.5) */
+.search-bar {
+  width: 75% !important;
+  height: 5.5rem !important;
 }
 
-.mobile-blog-feed__card,
-.mobile-blog-blocks__card {
-  min-width: 0;
-  width: 100%;
-  display: flex;
+/* Orange highlight used by BlogResultHero */
+.highlight-text {
+  color: #ff6b4a;
 }
 
-.mobile-blog-feed__card > *,
-.mobile-blog-blocks__card > * {
-  width: 100%;
-  height: 100%;
-  display: flex;
-}
-
-.mobile-blog-feed__card .blog-card,
-.mobile-blog-blocks__card .blog-card {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.mobile-blog-feed__card .blog-card > *,
-.mobile-blog-blocks__card .blog-card > * {
-  width: 100%;
-}
-
-.mobile-blog-feed__card img,
-.mobile-blog-blocks__card img {
-  width: 100%;
-  object-fit: cover;
-}
-
-.mobile-blog-blocks__row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  align-items: stretch;
-}
-
-.mobile-blog-blocks__card {
-  min-width: 0;
-  width: 100%;
-  display: flex;
-  height: 100%;
-}
-
-.mobile-blog-blocks__card > * {
-  width: 100%;
-  height: 100%;
-  display: flex;
-}
-
-/* Force the actual card to fill the available height */
-.mobile-blog-blocks__card .blog-card {
-  width: 100%;
-  height: 100%;
-  min-height: 320px;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Make the media area stable */
-.mobile-blog-blocks__card .blog-card img {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-/* Keep text from collapsing the card */
-.mobile-blog-blocks__card .blog-card__content,
-.mobile-blog-blocks__card .blog-card-content,
-.mobile-blog-blocks__card .card-content {
-  flex: 1;
-  min-height: 0;
-}
-.mobile-blog-blocks__cta {
-  border: 1px solid #394350;
-  border-radius: 10px;
-  height: 6rem;
-  font-size: 2rem;
-  font-weight: 700;
-  background: none;
-  color: #fafaf4;
-}
-
-/* FINAL FIXES */
+/* Footer spacing */
 .footer-bg {
   margin-bottom: 10rem;
 }
+
+
 /* ==========================================================================
-   BLOG HERO — landing-style title / search / scroll hint
-   Mirrors the landing Hero (.hero__*) using its own "bhl" classes.
-   All rem values from the landing file are converted to px (landing uses a
-   62.5% root, 1rem = 10px), so the result is identical regardless of the
-   blog page's root font-size.
+   09. DESKTOP (>= 1025px) — Figma 1722px: margins 150 / cards 400x629 /
+       card gap 50 / feed-sidebar gap 100 / sidebar 472
    ========================================================================== */
+@media (min-width: 1025px) {
 
-/* The section's old bottom padding would push the content up; the landing
-   layout anchors content to the bottom with its own margin instead. */
-.blog-hero-section.bhl-section {
-  padding-bottom: 0;
-}
-
-/* --- Content layer --- */
-.bhl__overlay {
-  position: relative;
-  z-index: 10; /* above particles + floating images */
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 0 16px;
-  text-align: center;
-}
-
-.bhl__content {
-  width: 100%;
-  max-width: 720px;
-  margin-bottom: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-}
-
-/* --- Title --- */
-.bhl__title {
-  margin: 0 20px 0 0;
-  color: #fff;
-  font-size: 45px;
-  font-weight: 800;
-  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
-}
-
-/* --- Search bar (SearchBar internals scoped to the new overlay) --- */
-.bhl__search {
-  margin-left: 160px;
-}
-
-.bhl__overlay .search-bar-container {
-  width: min(30vw, 300px);
-  margin: 12px auto 0;
-}
-
-/* height needs !important to beat the blog's global
-   `.search-bar { height: 5.5rem !important }` */
-.bhl__overlay .search-bar {
-  width: 170% !important;
-  height: 60px !important;
-  padding: 0 9px;
-  border-radius: 22px;
-  background: #0c0f14;
-  border: none;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 10px 24px rgba(0, 0, 0, 0.25);
-}
-
-.bhl__overlay .search-bar input {
-  flex: 1 1 auto;
-  height: 100%;
-  background: transparent !important;
-  color: #eaeaea;
-  border: none;
-  outline: none;
-  font-size: 14px;
-}
-
-.bhl__overlay .search-bar input::placeholder {
-  color: #a9a9a9;
-  font-weight: 500;
-}
-
-.bhl__overlay .icon-button {
-  background: transparent;
-  border: 0;
-  color: #dcdcdc;
-  display: grid;
-  place-items: center;
-}
-
-.bhl__overlay .icon-button img {
-  margin-left: 10px;
-  width: 45px;
-  height: 45px;
-  display: block;
-}
-
-/* --- Scroll hint --- */
-.bhl__hint {
-  display: flex;
-  flex-direction: row-reverse;
-  gap: 5px;
-  margin-top: 18px;
-  color: #cfcfcf;
-  font-size: 14px;
-  text-align: center;
-  align-items: center;
-}
-
-/* --- Large screens (>= 1024px): clearance from the fixed header --- */
-@media (min-width: 1024px) {
-  .bhl__content {
-    margin-top: 72px;
-  }
-}
-
-/* --- Mobile (<= 768px) --- */
-@media (max-width: 768px) {
-  .bhl__overlay {
-    padding: 0 22px;
+  .blog-content-section {
+    padding: 40px 0;
   }
 
-  .bhl__content {
-    max-width: 100%;
-    margin-bottom: 32px;
-    gap: 18px;
-  }
-
-  .bhl__title {
-    width: 100%;
-    margin: 0;
-    font-size: clamp(28px, 7.2vw, 38px);
-    line-height: 1.35;
-    font-weight: 900;
-    text-align: right;
-  }
-
-  .bhl__search {
-    width: 100%;
-  }
-
-  .bhl__overlay .search-bar-container {
-    width: 100%;
-    max-width: 100%;
+  /* 1422 = 1722 - 2*150. Scales proportionally below 1722, capped above. */
+  .blog-content-wrapper {
+    width: min(82.58%, 1422px);
+    /* 1422 / 1722 */
+    max-width: none;
     margin: 0 auto;
+    grid-template-columns: minmax(0, 850fr) minmax(0, 472fr);
+    column-gap: 7.032%;
+    /* 100 / 1422 */
+    align-items: start;
   }
 
-  .bhl__overlay .search-bar {
-    height: 64px !important;
-    border-radius: 18px;
-    padding: 0 14px;
+  /* --- Feed --- */
+  .blog-feed-container {
+    width: 100%;
+    gap: 0;
   }
 
-  .bhl__overlay .search-bar input {
-    min-width: 0;
+  .blog-feed-nav {
+    gap: clamp(8px, 0.9vw, 16px);
+    margin-bottom: clamp(24px, 3.1vw, 54px);
   }
 
-  .bhl__overlay .icon-button img {
-    width: 38px;
-    height: 38px;
-    margin-left: 8px;
+  .feed-nav-btn {
+    padding: 0.4em 1.5em;
+    font-size: clamp(14px, 1.2vw, 20px);
+    font-weight: 700;
+    white-space: nowrap;
   }
 
-  .bhl__hint {
-    display: none;
-  }
-}
-
-/* --- Small mobile (<= 420px) --- */
-@media (max-width: 420px) {
-  .bhl__overlay {
-    padding: 0 20px;
+  .blog-feed-scroll-area {
+    padding-right: 0;
   }
 
-  .bhl__content {
-    margin-bottom: 120px;
-    gap: 16px;
+  .blog-feed-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 5.882%;
+    /* 50 / 850 */
+    row-gap: clamp(28px, 3vw, 52px);
+    padding-right: 0;
   }
 
-  .bhl__title {
-    font-size: 26px;
-    text-align: center;
+  /* --- Stacked card: whole card = 400 x 629 (image 400 x 533 + text) --- */
+  .blog-stacked-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    aspect-ratio: 400 / 629;
   }
 
-  .bhl__overlay .search-bar {
-    height: 60px !important;
-    border-radius: 16px;
+  .blog-stacked-card__media {
+    display: block;
+    flex: none;
+    aspect-ratio: 400 / 533;
+    border-radius: clamp(12px, 1.2vw, 20px);
+    overflow: hidden;
+  }
+
+  .blog-stacked-card__media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .blog-stacked-card__body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(4px, 0.5vw, 10px);
+    padding-top: clamp(10px, 1vw, 18px);
+  }
+
+  .blog-stacked-card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* RTL: title right, heart left */
+    gap: 12px;
+  }
+
+  .blog-stacked-card__title {
+    margin: 0;
+    font-size: clamp(16px, 1.63vw, 28px);
+    font-weight: 700;
+    line-height: 1.3;
+    color: #fafaf4;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .blog-stacked-card__title a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .blog-stacked-card__heart {
+    flex: none;
+    display: grid;
+    place-items: center;
+    color: #fafaf4;
+  }
+
+  .blog-stacked-card__heart svg {
+    width: clamp(18px, 1.6vw, 26px);
+    height: clamp(18px, 1.6vw, 26px);
+  }
+
+  .blog-stacked-card__mins {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #a0a0a0;
+    font-size: clamp(11px, 0.95vw, 16px);
+  }
+
+  /* --- Sidebar (472px at 1722) --- */
+  .blog-sidebar-container {
+    gap: clamp(24px, 2.4vw, 42px);
+  }
+
+  .blog-sidebar-tags-box {
+    padding: 0;
+    border-radius: 0;
+  }
+
+  .sidebar-tags-title {
+    margin: 0 0 clamp(18px, 2vw, 34px);
+    font-size: clamp(16px, 1.63vw, 28px);
+    font-weight: 800;
+    line-height: 1.3;
+  }
+
+  .sidebar-tags-list {
+    gap: clamp(8px, 0.85vw, 15px);
+  }
+
+  .sidebar-tag-item,
+  .sidebar-tag-item:last-child {
+    padding: 0;
+    border-bottom: none;
+    border-radius: 0;
+  }
+
+  .sidebar-tag-item-right {
+    gap: clamp(8px, 0.9vw, 14px);
+  }
+
+  /* hash icon in a 56px circle, same as Figma */
+  .sidebar-tag-hashtag-icon {
+    box-sizing: border-box;
+    width: clamp(34px, 3.25vw, 56px);
+    height: clamp(34px, 3.25vw, 56px);
+    padding: clamp(9px, 0.95vw, 16px);
+    border-radius: 50%;
+    background: #171c23;
+    opacity: 1;
+  }
+
+  .sidebar-tag-item-name {
+    color: #fafaf4;
+    font-size: clamp(12px, 1.1vw, 19px);
+    font-weight: 700;
+  }
+
+  .sidebar-tag-item-count {
+    color: #8d9097;
+    font-size: clamp(11px, 0.95vw, 16px);
+  }
+
+  /* Ad: 472 x ~202 */
+  .blog-sidebar-ad-box {
+    border-radius: clamp(14px, 1.2vw, 20px);
+  }
+
+  .blog-sidebar-ad-box .single-banner {
+    margin-bottom: 0 !important;
+  }
+
+  .blog-sidebar-ad-box .single-banner-img {
+    aspect-ratio: 472 / 202;
+    height: auto;
+    border-radius: inherit;
+  }
+
+  .blog-sidebar-ad-box .banner-overlay {
+    border-radius: inherit;
   }
 }

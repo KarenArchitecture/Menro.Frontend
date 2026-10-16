@@ -9,58 +9,50 @@ import {
   useMotionValueEvent,
 } from "motion/react";
 
-/* ------------------------------------------------------------------ */
-/* Timeline (all numbers here are tunable)                             */
-/* ------------------------------------------------------------------ */
-//
-// "S" below means: how many viewport-heights the user has scrolled since the
-// top of this section reached the top of the screen. S = 0 is the moment the
-// section starts to pin; S = 100 is one full screen later.
-//
-//   burger : rises from below the screen, crosses the frame, leaves at the top
-//   title  : slowly descends and fades in WHILE the burger passes in front
-//   panel  : the frame de-tilts over the same stretch, so everything moves
-//            together and nothing "sits still" while something else adjusts
-//
-const SECTION_VH = 300; // total height of the section
-const SCROLL_VH = SECTION_VH - 100; // how far you scroll while it is pinned
-const toProgress = (s) => s / SCROLL_VH; // S (vh) -> 0..1 progress
+const SECTION_VH = 300;
+const SCROLL_VH = SECTION_VH - 100;
+const toProgress = (s) => s / SCROLL_VH;
 
-// Burger path: [S, where the burger's CENTER is on screen, in vh]
-// 0 = top of the screen, 50 = middle, 100 = bottom edge, >100 = below the screen
 const BURGER_PATH = [
-  [8, 138], // waiting just below the screen
-  [34, 96], // slowly coming into view
-  [66, 38], // crossing the frame, passing in front of the title
-  [100, -50], // completely above the screen
+  [8, 138],
+  [34, 96],
+  [66, 38],
+  [100, -50],
 ];
 const BURGER_FADE_IN = [8, 24];
-// The burger (and its glow) is fully gone by S = 96, BEFORE the title settles
 const BURGER_FADE_OUT = [76, 96];
 
-// Glow size, as a multiple of the burger's width
 const HALO_SCALE = 1.9;
 
-// Title: descends from TITLE_START_Y (vh above its final spot) to 0.
-// It settles AFTER the burger has left, so you see it finish moving on its own.
 const TITLE_MOVE = [6, 112];
 const TITLE_START_Y = -42;
 
-// Where the title rests: its bottom edge sits this many px ABOVE the frame.
-// Raise it to lift the title higher, lower it to bring it closer to the frame.
-const TITLE_GAP_PX = 24;
-
-// Title fade-in: [S, opacity]. The slow start (0 -> 0.18 over 24 vh of scroll)
-// keeps it faint while the burger passes, then it reaches full opacity
-// right as the burger leaves (S = 98).
 const TITLE_FADE = [
   [34, 0],
   [58, 0.18],
   [98, 1],
 ];
 
-// The frame finishes tilting at the same time the title finishes descending
 const PANEL_SETTLE = TITLE_MOVE[1];
+
+/* ------------------------------------------------------------------ */
+/* Desktop layout (screens wider than a tablet)                        */
+/* ------------------------------------------------------------------ */
+// Final resting layout, top to bottom:
+//   [ header ] -- TOP_GAP -- [ title ] -- TITLE_GAP -- [ frame ] -- BOTTOM_MARGIN
+// The title+frame block is centered in the free space under the header,
+// and the frame shrinks (down to PANEL_MIN_H) if the screen is short.
+const DESKTOP_MIN_WIDTH = 1025;
+const HEADER_SELECTOR = ".landing-desktop-header";
+const HEADER_FALLBACK_PX = 125;
+const TOP_GAP_PX = 6; // header -> title
+const TITLE_GAP_PX = 6; // title  -> frame
+const BOTTOM_MARGIN_PX = 16; // frame  -> bottom of screen
+const SIDE_MARGIN_PX = 40;
+const PANEL_MIN_H = 340;
+const PANEL_MAX_W = 1240;
+const PANEL_ASPECT = 1.7; // width / height
+const panelMaxH = (w) => (w <= 1280 ? 600 : 740);
 
 export default function BurgerPanelSection({
   title = "با منرو تو چشم باش",
@@ -72,31 +64,83 @@ export default function BurgerPanelSection({
   const sectionRef = useRef(null);
   const sceneRef = useRef(null);
   const burgerRef = useRef(null);
+  const titleRef = useRef(null);
 
   const [scrollElement, setScrollElement] = useState(null);
   const customScrollRef = useRef(null);
 
-  // controls whether title/panel are pinned or not
   const [isPinned, setIsPinned] = useState(false);
-
-  // if the halo image fails to load, a CSS gradient glow is used instead
   const [haloFailed, setHaloFailed] = useState(false);
 
-  // The frame's real height (it changes with screen size via CSS). The title
-  // is anchored to the frame's top edge, so it always rests just above it.
+  // Tablet/mobile fallback (old behaviour): measured frame height
   const panelRef = useRef(null);
   const [panelH, setPanelH] = useState(610);
 
-  useLayoutEffect(() => {
-    if (!isPinned) return;
+  // Desktop layout: { panelH, panelCenter, titleTop } in px, or null
+  const [layout, setLayout] = useState(null);
 
-    const measure = () => {
-      if (panelRef.current) setPanelH(panelRef.current.offsetHeight);
+  useLayoutEffect(() => {
+    const compute = () => {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+
+      // ---- tablet / mobile: keep old behaviour ----
+      if (vw < DESKTOP_MIN_WIDTH) {
+        setLayout(null);
+        if (panelRef.current) setPanelH(panelRef.current.offsetHeight);
+        return;
+      }
+
+      // ---- desktop ----
+      const headerEl = document.querySelector(HEADER_SELECTOR);
+      const rawBottom = headerEl
+        ? headerEl.getBoundingClientRect().bottom
+        : HEADER_FALLBACK_PX;
+      // safety clamp so a weird match can never eat the whole screen
+      const headerBottom = Math.min(Math.max(rawBottom, 0), vh * 0.3);
+
+      const titleH = titleRef.current ? titleRef.current.offsetHeight : 90;
+
+      const regionTop = headerBottom + TOP_GAP_PX;
+      const regionBottom = vh - BOTTOM_MARGIN_PX;
+      const regionH = regionBottom - regionTop;
+
+      const availableForPanel = regionH - titleH - TITLE_GAP_PX;
+      const nextPanelH = Math.round(
+        Math.min(
+          panelMaxH(vw),
+          Math.max(PANEL_MIN_H, availableForPanel),
+        ),
+      );
+
+      const nextPanelW = Math.round(
+        Math.min(nextPanelH * PANEL_ASPECT, PANEL_MAX_W, vw - SIDE_MARGIN_PX * 2),
+      );
+
+      const blockH = titleH + TITLE_GAP_PX + nextPanelH;
+      const blockTop = regionTop + Math.max(0, (regionH - blockH) / 2);
+
+      const titleTop = Math.round(blockTop);
+      const panelTop = blockTop + titleH + TITLE_GAP_PX;
+      const panelCenter = Math.round(panelTop + nextPanelH / 2);
+
+      setLayout((prev) =>
+        prev &&
+          prev.panelH === nextPanelH &&
+          prev.panelW === nextPanelW &&
+          prev.panelCenter === panelCenter &&
+          prev.titleTop === titleTop
+          ? prev
+          : { panelH: nextPanelH, panelW: nextPanelW, panelCenter, titleTop },
+      );
     };
 
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
+    compute();
+    window.addEventListener("resize", compute);
+    // the title height changes once the web font is loaded
+    document.fonts?.ready?.then(compute);
+
+    return () => window.removeEventListener("resize", compute);
   }, [isPinned]);
 
   useEffect(() => {
@@ -124,19 +168,12 @@ export default function BurgerPanelSection({
     ...(scrollElement ? { container: customScrollRef } : {}),
   };
 
-  // One progress value drives everything:
-  // 0 when the section top reaches the top of the screen,
-  // 1 when the section bottom reaches the bottom of the screen.
   const { scrollYProgress: sectionProg } = useScroll({
     ...scrollConfig,
     offset: ["start start", "end end"],
   });
 
-  // ===== Burger (and its glow, which lives inside the same element) =====
-  //
-  // The burger sits in normal page flow, so it scrolls up with the page on its
-  // own. To place it exactly where BURGER_PATH says, we add an offset that
-  // cancels the page scroll:  y = wantedCenter - 50 + S
+  // ===== Burger =====
   const burgerY = useTransform(
     sectionProg,
     BURGER_PATH.map(([s]) => toProgress(s)),
@@ -171,7 +208,6 @@ export default function BurgerPanelSection({
     perspective(700px) translate3d(-50%, -50%, 0) rotateX(${panelRotateX})
   `;
 
-  // pin only while the section is in its active window
   useMotionValueEvent(sectionProg, "change", (v) => {
     const on = v > 0.03 && v < 0.99;
     setIsPinned((prev) => (prev === on ? prev : on));
@@ -204,7 +240,11 @@ export default function BurgerPanelSection({
       style={{
         position: isPinned ? "fixed" : "absolute",
         left: "50%",
-        top: "60%",
+        // desktop: exact pixel position from the layout; otherwise old 60%
+        top: layout ? `${layout.panelCenter}px` : "60%",
+        ...(layout
+          ? { height: `${layout.panelH}px`, width: `${layout.panelW}px` }
+          : {}),
         transform: panelTransform,
         transformOrigin: "0 100%",
         willChange: "transform, opacity",
@@ -224,7 +264,6 @@ export default function BurgerPanelSection({
     </motion.div>
   );
 
-  // Glow layer: always centered on the burger, always behind it.
   const haloBaseStyle = {
     position: "absolute",
     left: "50%",
@@ -232,11 +271,20 @@ export default function BurgerPanelSection({
     width: `${HALO_SCALE * 100}%`,
     aspectRatio: "1 / 1",
     translate: "-50% -50%",
-    zIndex: 0, // behind the burger image (which is zIndex 1)
+    zIndex: 0,
     pointerEvents: "none",
   };
 
   const showImageHalo = Boolean(haloSrc) && !haloFailed;
+
+  // Title position: desktop = exact top from the layout (between header and
+  // frame); tablet/mobile = old "anchored above the frame" formula.
+  const titlePositionStyle = layout
+    ? { top: `${layout.titleTop}px`, bottom: "auto" }
+    : {
+      top: "auto",
+      bottom: `calc(40% + ${panelH / 2}px + 24px)`,
+    };
 
   return (
     <section
@@ -245,14 +293,11 @@ export default function BurgerPanelSection({
       style={{ height: `${SECTION_VH}vh` }}
     >
       <motion.h2
+        ref={titleRef}
         className={`bp__title ${isPinned ? "is-fixed" : "is-off"}`}
         style={{
           position: isPinned ? "fixed" : "absolute",
-          // Anchor the title's bottom edge to the frame's top edge.
-          // The frame is centered at 60% of the screen height, so its top edge
-          // is 40% + half its height up from the bottom of the screen.
-          top: "auto",
-          bottom: `calc(40% + ${panelH / 2}px + ${TITLE_GAP_PX}px)`,
+          ...titlePositionStyle,
           y: titleY,
           zIndex: 60,
           opacity: titleOpacity,
@@ -277,7 +322,6 @@ export default function BurgerPanelSection({
               y: burgerY,
             }}
           >
-            {/* Glow (behind the burger, moves and fades with it) */}
             {showImageHalo ? (
               <img
                 src={haloSrc}

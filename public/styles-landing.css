@@ -2155,6 +2155,15 @@ body {
   width: 100%;
 }
 
+@media (min-width: 1025px) {
+  .bp__title {
+    padding: 0;
+    line-height: 1.15;
+    white-space: nowrap;
+    font-size: clamp(2.5rem, 7vh, 4.5rem);
+  }
+}
+
 /* Frame (starts tilted; de-tilts on scroll) */
 .bp__panel {
   width: 1171px;

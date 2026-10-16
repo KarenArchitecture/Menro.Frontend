@@ -3,7 +3,7 @@ import React, { cloneElement, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useDrawerState } from "../../context/DrawerStateContext";
 import "../../assets/css/menu-drawer.css";
-
+import { useTheme } from "../../context/ThemeContext.jsx";
 // --- Imported SVGs as Module URLs ---
 // These imports will be processed by your build tool (Webpack/Vite)
 // and resolve to accessible URLs when the app is built.
@@ -38,6 +38,7 @@ function SettingRow({
   isActive,
   onClick,
   ariaPressed,
+  
 }) {
   // You can define stroke and strokeWidth here if needed, but since you manually edited SVGs,
   // they should render correctly without these props on the DrawerIcon component.
@@ -97,7 +98,7 @@ export default function MenuDrawer({
   const { isDrawerOpen, setDrawerOpen } = useDrawerState();
   const isOpen = isDrawerOpen;
   const [query, setQuery] = useState("");
-  const [themeMode, setThemeMode] = useState("dark"); // 'dark' or 'light'
+const { isLight: isLightMode, toggleTheme } = useTheme();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [mounted, setMounted] = useState(false); // Used to prevent SSR issues with createPortal
 
@@ -115,7 +116,7 @@ export default function MenuDrawer({
   // Use provided items or default if none are passed
   const menuItems = items.length > 0 ? items : DEFAULT_MENU_ITEMS;
 
-  const isLightMode = themeMode === "light";
+  
 
   // Effect for managing body overflow and escape key listener
   useEffect(() => {
@@ -214,9 +215,6 @@ export default function MenuDrawer({
   };
 
   // Toggle function for theme mode
-  const toggleThemeMode = () => {
-    setThemeMode((current) => (current === "light" ? "dark" : "light"));
-  };
 
   // Toggle function for notifications
   const toggleNotifications = () => {
@@ -281,7 +279,7 @@ export default function MenuDrawer({
               />
               <path
                 d="M17.35 17.35L9.34998 9.34998L1.34997 17.35"
-                stroke="#F0F0F0" // White-like color
+              stroke="currentColor "
                 strokeWidth="2.7"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -311,16 +309,16 @@ export default function MenuDrawer({
         {showSettings && (
           <div className="menu-drawer__settings" aria-label="تنظیمات سریع">
             {/* Theme Setting Row */}
-            <SettingRow
-              title="تم منرو"
-              value={isLightMode ? "روشن" : "تاریک"}
-              iconSrc={themeSvg} // Imported URL
-              activeIconSrc={sunSvg} // Imported URL
-              inactiveIconSrc={moonSvg} // Imported URL
-              isActive={isLightMode}
-              onClick={toggleThemeMode}
-              ariaPressed={isLightMode}
-            />
+        <SettingRow
+  title="تم منرو"
+  value={isLightMode ? "روشن" : "تاریک"}
+  iconSrc={themeSvg}
+  activeIconSrc={sunSvg}
+  inactiveIconSrc={moonSvg}
+  isActive={isLightMode}
+  onClick={toggleTheme}        
+  ariaPressed={isLightMode}
+/>
 
             {/* Notifications Setting Row */}
             <SettingRow

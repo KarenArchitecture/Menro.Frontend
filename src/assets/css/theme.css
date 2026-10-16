@@ -1,0 +1,1006 @@
+/* src/assets/css/theme.css
+
+   Light / dark mode.
+
+   HOW IT WORKS
+   ------------
+   ThemeContext puts a class on <html>:  theme-dark  or  theme-light.
+   Dark is the current design and the existing CSS files are NOT touched, so
+   dark mode cannot regress. Everything in this file that starts with
+   "html.theme-light" only applies in light mode.
+
+   SPECIFICITY RULE
+   ----------------
+   Every override copies the original selector and adds "html.theme-light" in
+   front, so it always beats the original no matter which file loads last
+   (public/shop.css is added at runtime by usePageStyles, after everything
+   else). Where the original uses !important, the override does too.
+
+   Import once, e.g. in main.jsx:  import "./assets/css/theme.css";
+
+   Contents
+   --------
+   0. Tokens
+   1. Page base + app shell
+   2. Header + search bar
+   3. Section header, carousel, restaurant cards
+   4. Food cards, combos button, spinner
+   5. Bottom navigation
+   6. Restaurant page: banner, category bar, menu, cards
+   7. Item detail modal, combos / frequent-orders modals
+   8. Checkout bar
+   9. Menu drawer
+  10. Restaurant info page
+  11. Shared states, coming-soon modals, skeleton
+  12. Checkout page
+  13. Profile page
+  14. Orders page
+  15. Favorites page
+*/
+
+
+/* =====================================================
+   0. Tokens
+   Dark values = what the app uses today (for future migration).
+   Light values come from the light screenshots.
+   ===================================================== */
+:root {
+  --t-icon-filter: none;
+  --t-bg: #0c0f14;
+  --t-surface: #13171e;
+  --t-border: rgba(255, 255, 255, 0.1);
+  --t-hairline: rgba(255, 255, 255, 0.06);
+  --t-text: #fafaf4;
+  --t-text-muted: #a5adc0;
+  --t-text-dim: #8b93a7;
+  --t-green: #70fd9a;
+}
+
+html.theme-dark {
+  color-scheme: dark;
+}
+
+html.theme-light {
+  color-scheme: light;
+
+  --t-bg: #ededed; /* page background */
+  --t-surface: #fafafa; /* cards, bars, inputs */
+  --t-border: #d3d6db; /* 1px outlines (buttons, pills) */
+  --t-hairline: rgba(12, 15, 20, 0.08); /* dividers */
+  --t-text: #14181f;
+  --t-text-muted: #5b6370;
+  --t-text-dim: #8a9099;
+  --t-green: #1fb356; /* "open" status */
+  --t-shadow: 0 4px 12px rgba(12, 15, 20, 0.08);
+
+  /* for white icons whose source still has a hardcoded colour: turns white
+     into ink but keeps reds / oranges red / orange. Replace with
+     currentColor in the icon files when convenient. */
+  --t-icon-filter: invert(1) hue-rotate(180deg);
+}
+
+
+/* =====================================================
+   1. Page base + app shell
+   ===================================================== */
+html.theme-light,
+html.theme-light body {
+  background-color: var(--t-bg);
+  color: var(--t-text);
+}
+
+html.theme-light .app-shell {
+  background: var(--t-bg);
+}
+
+/* orange layer revealed behind the page while the drawer is open */
+html.theme-light .page-background {
+  background-color: #e3643d;
+}
+
+html.theme-light .app-shell--shifted {
+  border-color: rgba(12, 15, 20, 0.12);
+}
+
+
+/* =====================================================
+   2. Header + search bar   (search-bar--hero stays dark: it sits on the banner photo)
+   ===================================================== */
+html.theme-light .header--sticky {
+  background: var(--t-bg);
+}
+
+/* white hamburger / back icons are <img> files -> invert to dark */
+html.theme-light .header__hamburger img {
+  filter: invert(1);
+}
+
+/* back arrow shown while searching (inline SVG, cream stroke) */
+html.theme-light .header__hamburger svg path {
+  stroke: var(--t-text);
+}
+
+html.theme-light .search-bar:not(.search-bar--hero) {
+  background-color: var(--t-surface);
+}
+
+html.theme-light .search-bar.header__search:not(.search-bar--hero) {
+  background-color: var(--t-surface);
+}
+
+html.theme-light .search-bar:not(.search-bar--hero) input {
+  background-color: transparent;
+  color: var(--t-text);
+}
+
+html.theme-light .search-bar:not(.search-bar--hero) input::placeholder {
+  color: var(--t-text-dim);
+}
+
+html.theme-light .search-bar:not(.search-bar--hero) .icon-button {
+  background-color: transparent;
+}
+
+html.theme-light .search-bar:not(.search-bar--hero) img {
+  filter: invert(1);
+}
+
+
+/* =====================================================
+   3. Section header, carousel, restaurant cards
+   ===================================================== */
+/* header icons are inline SVG with a cream fill */
+html.theme-light .res-title svg path {
+  fill: var(--t-text);
+}
+
+html.theme-light .res-title-meta {
+  color: var(--t-text-muted);
+}
+
+/* "مشاهده همه": filled pill in dark, outlined in light */
+html.theme-light .res-more-box {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--t-border);
+}
+
+html.theme-light .res-more-link {
+  color: var(--t-text);
+}
+
+/* carousel: the dot dock must match the page background */
+html.theme-light .carousel {
+  --page-bg: var(--t-bg);
+  --dock-bg: var(--t-bg);
+  --card-bg: #e0e0e0;
+}
+
+html.theme-light .indicator {
+  background: rgba(12, 15, 20, 0.8);
+}
+
+/* restaurant card */
+html.theme-light .card {
+  --card-bg: var(--t-bg);
+  background-color: var(--t-bg);
+}
+
+html.theme-light .logo-container::before {
+  background: var(--t-bg);
+  box-shadow: 0 0.8rem 1.8rem rgba(12, 15, 20, 0.12);
+}
+
+html.theme-light .time-badge {
+  background-color: transparent;
+  box-shadow: inset 0 0 0 1px var(--t-border);
+  color: var(--t-text);
+}
+
+html.theme-light .time-badge span:not(.time-badge__status) {
+  color: var(--t-text);
+}
+
+html.theme-light .time-badge__status.open {
+  color: var(--t-green);
+}
+
+html.theme-light .time-badge__status.closed {
+  color: #dc2626;
+}
+
+/* scoped to .card: the shop banner also uses .rate and must stay light */
+html.theme-light .card .rate {
+  color: var(--t-text);
+}
+
+html.theme-light .card .rate-voters-num,
+html.theme-light .restaurant-description p {
+  color: var(--t-text-dim);
+}
+
+
+/* =====================================================
+   4. Food cards, combos button, spinner
+   ===================================================== */
+html.theme-light .food-card {
+  background: var(--t-surface);
+}
+
+html.theme-light .food-card-image {
+  background: #e3e4e6;
+}
+
+html.theme-light .food-card .food-price {
+  color: var(--t-text);
+}
+
+html.theme-light .combos-entry-card {
+  background: var(--t-surface);
+  border-color: var(--t-hairline);
+}
+
+html.theme-light .combos-entry-card:hover {
+  border-color: rgba(12, 15, 20, 0.16);
+  box-shadow: 0 14px 30px rgba(12, 15, 20, 0.12);
+}
+
+html.theme-light .combos-entry-title {
+  color: var(--t-text);
+}
+
+html.theme-light .combos-entry-subtitle {
+  color: var(--t-text-muted);
+}
+
+html.theme-light .loading-spinner {
+  border-color: rgba(12, 15, 20, 0.1);
+  border-top-color: #d17842;
+}
+
+
+/* =====================================================
+   5. Bottom navigation (MobileNav)
+   ===================================================== */
+html.theme-light .mobile-nav {
+  background: var(--t-surface);
+  border-top-color: var(--t-hairline);
+}
+
+/* active item: cream in dark, ink in light */
+html.theme-light .nav-item.active svg,
+html.theme-light .nav-item.active svg circle,
+html.theme-light .nav-item.active svg ellipse,
+html.theme-light .nav-item.active svg path {
+  fill: var(--t-text);
+}
+
+html.theme-light .nav-item.active svg path {
+  stroke: var(--t-text);
+}
+
+html.theme-light .nav-item.active span {
+  color: var(--t-text);
+}
+
+
+/* =====================================================
+   6. Restaurant page
+   The banner photo keeps its dark overlay, dark buttons and dark search
+   bar in BOTH modes (see the light screenshots). Only the parts that fade
+   into the page while scrolling change.
+   ===================================================== */
+html.theme-light .banner::after,
+html.theme-light .navbar::before {
+  background: var(--t-bg);
+}
+
+/* title + rating: cream over the photo, ink once the navbar has faded to
+   the page colour (--banner-progress goes 0 -> 1 while scrolling) */
+html.theme-light .navbar,
+html.theme-light .navbar .rating * {
+  color: color-mix(
+    in srgb,
+    var(--t-text) calc(var(--banner-progress, 0) * 100%),
+    #fafaf4
+  );
+}
+
+html.theme-light .navbar .restaurant-name {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, calc(0.6 * (1 - var(--banner-progress, 0))));
+}
+
+/* ---------- category bar ---------- */
+html.theme-light .category-wrap,
+html.theme-light .category-bar {
+  background: var(--t-bg);
+}
+
+html.theme-light .category-wrap {
+  border-color: var(--t-hairline);
+}
+
+/* inset shadow instead of border so the pill size does not change */
+html.theme-light .category-btn:not(.active) {
+  box-shadow: inset 0 0 0 1px var(--t-border);
+}
+
+html.theme-light .category-btn:not(.active) span {
+  color: var(--t-text-muted);
+}
+
+/* category icons come from the API as SVG strings: same trick the active
+   state already uses (force fill + stroke) */
+html.theme-light .category-btn:not(.active) svg path {
+  fill: var(--t-text-muted);
+  stroke: var(--t-text-muted);
+}
+
+/* ---------- section headers ---------- */
+html.theme-light .menu_nav {
+  background-color: var(--t-bg);
+}
+
+html.theme-light .menu_nav-icon svg path {
+  fill: var(--t-text);
+  stroke: var(--t-text);
+}
+
+html.theme-light .menu_nav-btn {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--t-border);
+  color: var(--t-text);
+}
+
+html.theme-light .menu_nav-btn:hover {
+  background: rgba(12, 15, 20, 0.04);
+}
+
+html.theme-light .food_items.horizontal-scroll .seeall-card {
+  background: var(--t-surface);
+  box-shadow: var(--t-shadow);
+  color: var(--t-text);
+}
+
+html.theme-light .vaction-pill {
+  background: var(--t-surface);
+  border-color: var(--t-hairline);
+  box-shadow: var(--t-shadow);
+  color: var(--t-text);
+}
+
+html.theme-light .vaction-pill__label {
+  color: var(--t-text);
+}
+
+html.theme-light .menu-state {
+  color: var(--t-text-muted);
+}
+
+html.theme-light .menu-state--error {
+  color: #d93636;
+}
+
+/* ---------- menu card ---------- */
+html.theme-light .menu-card {
+  background: var(--t-surface);
+  box-shadow: var(--t-shadow);
+}
+
+html.theme-light .menu-card__title,
+html.theme-light .menu-card__priceNumber {
+  color: var(--t-text);
+}
+
+/* [-] [n] [+]: the number box is cream in dark, outlined in light */
+html.theme-light .menu-card__qtyDisplay {
+  background-color: var(--t-surface);
+  box-shadow: inset 0 0 0 1px var(--t-border);
+  color: var(--t-text);
+}
+
+
+/* =====================================================
+   7. Item detail modal + combos / frequent-orders modals
+   ===================================================== */
+html.theme-light .modal-backdrop {
+  background: var(--t-bg);
+}
+
+html.theme-light .modal-hero-img {
+  background-color: #d9dadd;
+}
+
+/* back / comments / favorite buttons */
+html.theme-light .modal-top-action {
+  background: var(--t-surface) !important;
+  color: var(--t-text);
+}
+
+/* BackIcon / CommentIcon / LikeIcon (red heart stays red) */
+html.theme-light .modal-top-action svg {
+  filter: var(--t-icon-filter);
+}
+
+/* "نوع" / "مخلفات" icons and the combos card icon */
+html.theme-light .section-head svg,
+html.theme-light .subsection-head svg,
+html.theme-light .combos-entry-icon img {
+  filter: var(--t-icon-filter);
+}
+
+/* title panel over the photo: dark glass -> light glass */
+html.theme-light .modal-info-panel {
+  background: rgba(250, 250, 250, 0.55);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  color: var(--t-text);
+}
+
+html.theme-light .modal-subtitle {
+  color: var(--t-text);
+}
+
+html.theme-light .variant-list {
+  background-color: var(--t-bg);
+}
+
+html.theme-light .variant-pill,
+html.theme-light .subsection-head,
+html.theme-light .addon-qty-scroll {
+  background: var(--t-surface);
+  box-shadow: inset 0 0 0 1px var(--t-border);
+  color: var(--t-text);
+}
+
+html.theme-light .qty-display {
+  background: var(--t-surface);
+  box-shadow: inset 0 0 0 1px var(--t-border);
+}
+
+html.theme-light .addon-row.checked .addon-name,
+html.theme-light .addon-row.checked .addon-amount {
+  color: var(--t-text);
+}
+
+html.theme-light .addon-qty-item:not(.active-0):not(.active-n) {
+  color: var(--t-text-dim);
+}
+
+html.theme-light .addon-qty-item.active-0 {
+  background: var(--t-surface);
+  box-shadow: inset 0 0 0 1px var(--t-border);
+}
+
+/* combos + "همون همیشگی" full-screen sheets */
+html.theme-light .combo-foods-modal {
+  background-color: var(--t-bg);
+}
+
+html.theme-light .combo-foods-header {
+  border-bottom-color: var(--t-hairline);
+}
+
+html.theme-light .combo-foods-header button {
+  background-color: var(--t-surface) !important;
+  color: var(--t-text);
+}
+
+html.theme-light .combo-foods-header__title {
+  color: var(--t-text);
+}
+
+
+/* =====================================================
+   8. Checkout bar
+   ===================================================== */
+html.theme-light .checkout-bar {
+  background: var(--t-surface);
+  box-shadow: 0 -8px 24px rgba(12, 15, 20, 0.08);
+}
+
+html.theme-light .checkout-bar__meta {
+  color: var(--t-text-muted);
+}
+
+html.theme-light .checkout-bar__total-num {
+  color: var(--t-text);
+}
+
+
+/* =====================================================
+   9. Menu drawer
+   ===================================================== */
+html.theme-light .menu-drawer__panel {
+  background: var(--t-surface);
+  border-color: rgba(12, 15, 20, 0.1);
+  box-shadow: 0 26px 70px rgba(12, 15, 20, 0.25);
+  color: var(--t-text);
+}
+
+html.theme-light .menu-drawer__search {
+  background: var(--t-surface);
+  box-shadow: inset 0 0 0 1px var(--t-border);
+}
+
+html.theme-light .menu-drawer__search input {
+  color: var(--t-text);
+  caret-color: var(--t-text);
+}
+
+html.theme-light .menu-drawer__search input::placeholder {
+  color: var(--t-text-dim);
+}
+
+/* white <img> icons -> dark. The orange switch icons are NOT listed here. */
+html.theme-light .menu-drawer__search img,
+html.theme-light .menu-drawer__item-icon img,
+html.theme-light .menu-drawer__setting-icon img {
+  filter: invert(1);
+}
+
+html.theme-light .menu-drawer__close {
+  color: var(--t-text);
+}
+
+html.theme-light .menu-drawer__close svg path {
+  stroke: var(--t-text);
+}
+
+html.theme-light .menu-drawer__default-trigger path {
+  fill: var(--t-text);
+}
+
+html.theme-light .menu-drawer__item {
+  color: var(--t-text);
+}
+
+html.theme-light .menu-drawer__item-icon {
+  background: var(--t-surface);
+  box-shadow: inset 0 0 0 1px var(--t-border);
+}
+
+html.theme-light .menu-drawer__setting,
+html.theme-light .menu-drawer__setting-title {
+  color: var(--t-text);
+}
+
+html.theme-light .menu-drawer__setting-value {
+  color: var(--t-text-muted);
+}
+
+
+/* =====================================================
+   10. Restaurant info page
+   Everything there is driven by --rinfo-* tokens, so we only re-map tokens.
+   (No light design was provided for this page: values are derived from the
+   other light screens. Please have the designer confirm.)
+   ===================================================== */
+html.theme-light {
+  --rinfo-bg: var(--t-bg);
+  --rinfo-text: var(--t-text);
+  --rinfo-muted: var(--t-text-muted);
+  --rinfo-card-bg: var(--t-surface);
+  --rinfo-card-border: var(--t-border);
+  --rinfo-box-top: #fafafa;
+  --rinfo-box-bottom: #f1f2f4;
+  --rinfo-box-border: var(--t-border);
+}
+
+/* these sit on the dark hero photo / orange button, so they keep cream text */
+html.theme-light .rinfo-nav-box {
+  background: #0c0f14;
+}
+
+html.theme-light .rinfo-cart-badge,
+html.theme-light .rinfo-enter {
+  color: #fafaf4;
+}
+
+
+/* =====================================================
+   11. Shared states, coming-soon modals, skeleton
+   ===================================================== */
+html.theme-light .state--error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+html.theme-light .state--empty {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: #6b7280;
+}
+
+html.theme-light .state--loading {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+html.theme-light .ui-alert {
+  background: #e5e7eb;
+  color: #1f2937;
+}
+
+html.theme-light .ui-alert--error {
+  background: #fee2e2;
+  border-color: rgba(185, 28, 28, 0.3);
+  color: #991b1b;
+}
+
+html.theme-light .ui-alert--muted {
+  background: #f3f4f6;
+  border-color: rgba(107, 114, 128, 0.4);
+  color: #6b7280;
+}
+
+html.theme-light .coming-soon-modal,
+html.theme-light .coming-modal {
+  background: var(--t-surface);
+  border-color: var(--t-border);
+  color: var(--t-text);
+}
+
+html.theme-light .coming-soon-modal p,
+html.theme-light .coming-modal p {
+  color: var(--t-text-muted);
+}
+
+html.theme-light .close-btn,
+html.theme-light .coming-close {
+  background: #e6e8eb;
+  color: var(--t-text-muted);
+}
+
+html.theme-light .restaurant-card-skeleton {
+  background: rgba(12, 15, 20, 0.06);
+}
+
+html.theme-light .restaurant-card-skeleton::after {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+}
+
+
+/* =====================================================
+   12. Checkout page (public/styles-checkout.css)
+   No light design was provided for this page: values are derived from the
+   other light screens. Please have the designer confirm.
+   ===================================================== */
+html.theme-light .checkout-header {
+  border-bottom-color: var(--t-hairline);
+}
+
+html.theme-light .back-btn {
+  background: var(--t-surface) !important;
+}
+
+html.theme-light .back-btn svg,
+html.theme-light .back-btn img {
+  filter: var(--t-icon-filter);
+}
+
+/* ---------- cart card ---------- */
+html.theme-light .cart-card {
+  background-image: none;
+  background-color: var(--t-surface);
+  box-shadow: var(--t-shadow);
+}
+
+html.theme-light .cart-card-extra {
+  background: #e4e5e8;
+  box-shadow: 0 6px 14px rgba(12, 15, 20, 0.12);
+  color: var(--t-text);
+}
+
+html.theme-light .cart-card-extra img {
+  filter: var(--t-icon-filter);
+}
+
+html.theme-light .product-title.rating h3.product-title {
+  color: var(--t-text);
+}
+
+html.theme-light .rating-score {
+  color: var(--t-text-muted);
+}
+
+html.theme-light .rating-score strong {
+  color: var(--t-text);
+}
+
+html.theme-light .rating-score span {
+  color: var(--t-text-dim);
+}
+
+html.theme-light .product-subtext {
+  color: var(--t-text-muted);
+}
+
+html.theme-light .option-box {
+  background: var(--t-bg);
+  color: var(--t-text);
+}
+
+/* scoped: the success modal also has a .price and it must stay orange */
+html.theme-light .checkout-container .price {
+  color: var(--t-text);
+}
+
+html.theme-light .qty-value {
+  background: var(--t-surface);
+  box-shadow: inset 0 0 0 1px var(--t-border);
+}
+
+/* ---------- footer ---------- */
+html.theme-light .checkout-footer {
+  background: var(--t-surface);
+  border-top-color: var(--t-hairline);
+  box-shadow: 0 -8px 24px rgba(12, 15, 20, 0.08);
+}
+
+html.theme-light .checkout-footer.has-notice {
+  border: none;
+  box-shadow: none;
+}
+
+html.theme-light .checkout-footer.is-picking-table {
+  background: var(--t-bg);
+}
+
+html.theme-light .checkout-footer__pending-row {
+  background: var(--t-bg);
+}
+
+html.theme-light .checkout-footer__pending-label {
+  color: var(--t-text-muted);
+}
+
+html.theme-light .discount-input {
+  background: var(--t-bg);
+  border-color: var(--t-border);
+  color: var(--t-text);
+}
+
+html.theme-light .discount-input::placeholder {
+  color: var(--t-text-dim);
+}
+
+html.theme-light .discount-input:focus-visible {
+  border-color: #d17842;
+}
+
+html.theme-light .footer-total-label {
+  color: var(--t-text-muted);
+}
+
+html.theme-light .footer-total-amount {
+  color: var(--t-text);
+}
+
+/* "not ready yet" pay button: dark outlined in dark, light outlined in light */
+html.theme-light .pay-btn--inactive {
+  background-color: var(--t-bg);
+  box-shadow: inset 0 0 0 1px var(--t-border);
+  color: var(--t-text);
+}
+
+html.theme-light .checkout-payment-notice {
+  background: var(--t-surface);
+  box-shadow: 0 -8px 24px rgba(12, 15, 20, 0.08);
+  color: var(--t-text);
+}
+
+html.theme-light .table-title {
+  background: #e6e8eb;
+  color: var(--t-text);
+}
+
+/* ---------- payment bottom sheet ---------- */
+html.theme-light .payment-modal {
+  background: var(--t-surface);
+  box-shadow: 0 -16px 40px rgba(12, 15, 20, 0.18);
+  color: var(--t-text);
+}
+
+html.theme-light .checkout-modal-price .label,
+html.theme-light .checkout-total-label {
+  color: var(--t-text-muted);
+}
+
+html.theme-light .checkout-total-amount {
+  color: var(--t-text);
+}
+
+html.theme-light .payment-card {
+  background: var(--t-bg);
+  color: var(--t-text);
+}
+
+html.theme-light .payment-card:hover {
+  background: #e3e4e7;
+}
+
+html.theme-light .checkout-modal-bank-logo {
+  background: var(--t-surface);
+  box-shadow: inset 0 0 0 1px var(--t-border);
+}
+
+html.theme-light .checkout-modal-bank-name {
+  color: var(--t-text);
+}
+
+html.theme-light .checkout-modal-bank-description {
+  color: var(--t-text-muted);
+}
+
+/* ---------- order success modal ---------- */
+html.theme-light .order-success-modal {
+  background: var(--t-surface);
+  box-shadow: 0 18px 40px rgba(12, 15, 20, 0.2);
+  color: var(--t-text);
+}
+
+html.theme-light .item-title {
+  color: var(--t-text);
+}
+
+html.theme-light .item-sub {
+  color: var(--t-text-muted);
+}
+
+html.theme-light .order-success-summary {
+  border-top-color: var(--t-hairline);
+}
+
+html.theme-light .order-success-summary-row.total .label {
+  color: var(--t-text);
+}
+
+html.theme-light .order-success-summary-row.discount .label,
+html.theme-light .order-success-summary-row.discount .value {
+  color: #1a9a4f;
+}
+
+
+/* =====================================================
+   13. Profile page
+   ===================================================== */
+html.theme-light .profile-logout-btn {
+  background: var(--t-surface);
+  color: var(--t-text);
+}
+
+html.theme-light .profile-logout-btn svg,
+html.theme-light .profile-logout-btn img,
+html.theme-light .profile-avatar__edit svg,
+html.theme-light .profile-avatar__edit img,
+html.theme-light .profile-avatar__placeholder img {
+  filter: var(--t-icon-filter);
+}
+
+html.theme-light .profile-avatar__inner {
+  background: #dfe0e3;
+}
+
+html.theme-light .profile-avatar__edit {
+  background: var(--t-surface);
+  box-shadow: 0 4px 12px rgba(12, 15, 20, 0.18);
+  color: var(--t-text);
+}
+
+html.theme-light .profile-avatar__name,
+html.theme-light .stat-item__value,
+html.theme-light .action-card__label {
+  color: var(--t-text);
+}
+
+html.theme-light .stat-item__label {
+  color: var(--t-text-muted);
+}
+
+html.theme-light .stat-item:not(:last-child)::after {
+  background: var(--t-hairline);
+}
+
+html.theme-light .action-card {
+  background: var(--t-surface);
+}
+
+html.theme-light .action-card__icon {
+  box-shadow: 0 6px 14px rgba(12, 15, 20, 0.12);
+}
+
+@media (hover: hover) {
+  html.theme-light .action-card:hover {
+    box-shadow: 0 8px 20px rgba(12, 15, 20, 0.12);
+  }
+}
+
+
+/* =====================================================
+   14. Orders page (cart strip + order history + login prompt)
+   ===================================================== */
+html.theme-light .continue-shopping-container {
+  background-color: var(--t-surface);
+  color: var(--t-text);
+}
+
+html.theme-light .cs-logo-wrapper,
+html.theme-light .po-logo-wrapper {
+  background-color: #d9dadd;
+}
+
+html.theme-light .cs-title {
+  color: #0fa958;
+}
+
+html.theme-light .cs-date,
+html.theme-light .po-date {
+  color: var(--t-text-muted);
+}
+
+html.theme-light .cs-more-items,
+html.theme-light .po-view-bill-btn,
+html.theme-light .po-rated-box {
+  background-color: var(--t-bg);
+  color: var(--t-text);
+}
+
+html.theme-light .cs-btn-delete {
+  background-color: var(--t-bg);
+  color: var(--t-text);
+}
+
+html.theme-light .po-container {
+  background: var(--t-surface);
+  color: var(--t-text);
+  box-shadow: var(--t-shadow);
+}
+
+html.theme-light .po-title,
+html.theme-light .po-total-label,
+html.theme-light .po-rated-text {
+  color: var(--t-text);
+}
+
+html.theme-light .orders-auth-prompt {
+  background: var(--t-surface);
+  border-color: var(--t-hairline);
+  color: var(--t-text);
+}
+
+html.theme-light .orders-auth-prompt__text {
+  color: var(--t-text-muted);
+}
+
+
+/* =====================================================
+   15. Favorites page
+   (.favorites-grid price rules live in the profile stylesheet)
+   ===================================================== */
+html.theme-light .favorites-header {
+  border-bottom-color: rgba(12, 15, 20, 0.12);
+}
+
+html.theme-light .favorites-header__back {
+  background: var(--t-surface);
+}
+
+html.theme-light .favorites-header__back img,
+html.theme-light .favorites-header__title img {
+  filter: var(--t-icon-filter);
+}
+
+/* must stay after section 4: orange price, ink currency (as in dark: swapped) */
+html.theme-light .favorites-grid .food-price {
+  color: #d17842;
+}
+
+html.theme-light .favorites-grid .food-price span {
+  color: var(--t-text);
+}

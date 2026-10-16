@@ -15,7 +15,7 @@ function BackArrowIcon() {
     >
       <path
         d="M1.1001 20.1L4.48432 16.8767C7.5615 13.9458 9.1001 12.4804 9.1001 10.6C9.1001 8.71956 7.56151 7.25413 4.48432 4.32327L1.1001 1.09997"
-        stroke="#FAFAF4"
+        stroke="currentColor"
         strokeWidth="2.2"
         strokeLinecap="round"
       />

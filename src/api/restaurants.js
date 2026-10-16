@@ -19,10 +19,12 @@ export const getRestaurantsPage = ({ take = 20, cursor = null }) =>
 export const getRandomRestaurants = () =>
   publicAxios.get(`${RESTAURANT_URL}/random`).then((r) => r.data);
 
-
 /* ───────────────  🛍 Shop Page  ─────────────── */
 export const getRestaurantBannerBySlug = (slug) =>
   publicAxios.get(`${RESTAURANT_URL}/${slug}/banner`).then((r) => r.data);
+
+export const getRestaurantInfoBySlug = (slug) =>
+  publicAxios.get(`${RESTAURANT_URL}/${slug}/info`).then((r) => r.data);
 
 /* ───────────────  🍴 Restaurant Page (Dynamic Menu & Item Detail) ─────────────── */
 

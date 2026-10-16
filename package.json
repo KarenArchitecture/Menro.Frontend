@@ -12,7 +12,7 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.2.0",
     "@microsoft/signalr": "^10.0.0",
-    "@neshan-maps-platform/mapbox-gl": "^1.1.5",
+    "@neshan-maps-platform/leaflet": "^1.0.8",
     "@tanstack/react-query": "^5.101.2",
     "@tanstack/react-query-devtools": "^5.80.7",
     "@tiptap/extension-details": "^3.29.2",

@@ -14,7 +14,6 @@
    7. Bottom bar
 */
 
-
 /* =====================================================
    1. Tokens + base
    ===================================================== */
@@ -73,7 +72,6 @@
   font-family: inherit;
   -webkit-tap-highlight-color: transparent;
 }
-
 
 /* =====================================================
    2. Hero
@@ -144,7 +142,7 @@
   border-radius: 1.5rem;
 }
 
-.rinfo-icon-btn>svg {
+.rinfo-icon-btn > svg {
   width: auto;
   height: auto;
 }
@@ -166,7 +164,6 @@
   font-weight: 700;
   line-height: 1;
 }
-
 
 /* =====================================================
    3. Body + name card
@@ -197,12 +194,16 @@
   background: var(--rinfo-card-bg);
   border: 1px solid var(--rinfo-card-border);
   border-radius: 2rem;
-  -webkit-mask-image: radial-gradient(circle at 50% calc(var(--rinfo-logo-lift) * -1),
-      transparent calc(var(--rinfo-logo) / 2 + var(--rinfo-notch-gap)),
-      #000 calc(var(--rinfo-logo) / 2 + var(--rinfo-notch-gap) + 0.5px));
-  mask-image: radial-gradient(circle at 50% calc(var(--rinfo-logo-lift) * -1),
-      transparent calc(var(--rinfo-logo) / 2 + var(--rinfo-notch-gap)),
-      #000 calc(var(--rinfo-logo) / 2 + var(--rinfo-notch-gap) + 0.5px));
+  -webkit-mask-image: radial-gradient(
+    circle at 50% calc(var(--rinfo-logo-lift) * -1),
+    transparent calc(var(--rinfo-logo) / 2 + var(--rinfo-notch-gap)),
+    #000 calc(var(--rinfo-logo) / 2 + var(--rinfo-notch-gap) + 0.5px)
+  );
+  mask-image: radial-gradient(
+    circle at 50% calc(var(--rinfo-logo-lift) * -1),
+    transparent calc(var(--rinfo-logo) / 2 + var(--rinfo-notch-gap)),
+    #000 calc(var(--rinfo-logo) / 2 + var(--rinfo-notch-gap) + 0.5px)
+  );
 }
 
 /* thin ring that follows the cut-out; clipped so it only shows inside the card */
@@ -219,7 +220,10 @@
   content: "";
   position: absolute;
   left: 50%;
-  top: calc((var(--rinfo-logo) / 2 + var(--rinfo-notch-gap) + var(--rinfo-logo-lift)) * -1);
+  top: calc(
+    (var(--rinfo-logo) / 2 + var(--rinfo-notch-gap) + var(--rinfo-logo-lift)) *
+      -1
+  );
   width: calc(var(--rinfo-logo) + var(--rinfo-notch-gap) * 2);
   height: calc(var(--rinfo-logo) + var(--rinfo-notch-gap) * 2);
   border: 1px solid var(--rinfo-card-border);
@@ -299,9 +303,11 @@
   gap: 0.5rem;
   height: 4.1rem;
   padding: 0 1.2rem;
-  background: linear-gradient(180deg,
-      var(--rinfo-box-top),
-      var(--rinfo-box-bottom));
+  background: linear-gradient(
+    180deg,
+    var(--rinfo-box-top),
+    var(--rinfo-box-bottom)
+  );
   border: 1px solid var(--rinfo-box-border);
   border-radius: 1.2rem;
 }
@@ -318,7 +324,6 @@
 .rinfo-map__address svg {
   flex-shrink: 0;
 }
-
 
 /* =====================================================
    4. Map  (340 x 194 in the design -> same ratio on every width)
@@ -376,7 +381,6 @@
   white-space: nowrap;
 }
 
-
 /* =====================================================
    5. About
    ===================================================== */
@@ -393,7 +397,6 @@
   margin-inline-end: 0.5rem;
   vertical-align: middle;
 }
-
 
 /* =====================================================
    6. Social row  (horizontal scroll, scrollbar hidden)
@@ -426,13 +429,14 @@
   justify-content: center;
   width: 6.4rem;
   height: 6.4rem;
-  background: linear-gradient(180deg,
-      var(--rinfo-box-top),
-      var(--rinfo-box-bottom));
+  background: linear-gradient(
+    180deg,
+    var(--rinfo-box-top),
+    var(--rinfo-box-bottom)
+  );
   border-radius: 1.2rem;
   -webkit-tap-highlight-color: transparent;
 }
-
 
 /* =====================================================
    7. Bottom bar
@@ -445,7 +449,8 @@
 .rinfo-bar__inner {
   max-width: var(--rinfo-max-w);
   margin: 0 auto;
-  padding: 2.4rem var(--rinfo-side) calc(2.4rem + env(safe-area-inset-bottom, 0px));
+  padding: 2.4rem var(--rinfo-side)
+    calc(2.4rem + env(safe-area-inset-bottom, 0px));
 }
 
 .rinfo-enter {
@@ -464,4 +469,12 @@
   cursor: pointer;
   -webkit-appearance: none;
   appearance: none;
+}
+.rinfo-map__live {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  isolation: isolate; /* z-indexهای داخلی Leaflet روی پین و آدرس نیفتن */
+  pointer-events: none; /* کلیک به دکمه‌ی rinfo-map برسه */
 }

@@ -1,7 +1,7 @@
-// RestaurantLocationPicker.jsx  (نسخه‌ی نشان)
+// RestaurantLocationPicker.jsx  (نسخه‌ی Leaflet نشان)
 import { useEffect, useRef, useState, useCallback } from "react";
-import nmp_mapboxgl from "@neshan-maps-platform/mapbox-gl";
-import "@neshan-maps-platform/mapbox-gl/dist/NeshanMapboxGl.css";
+import L from "@neshan-maps-platform/leaflet";
+import "@neshan-maps-platform/leaflet/dist/leaflet.css";
 import {
   searchPlaces,
   reverseGeocode,
@@ -9,17 +9,25 @@ import {
   isRequestCanceled,
 } from "../../api/neshan";
 
-// کلید نقشه (web.xxx) از فایل .env
+// کلید نقشه از فایل .env
 const MAP_KEY = import.meta.env.VITE_NESHAN_MAP_KEY;
 
-const DEFAULT_CENTER = [51.389, 35.6892]; // [lng, lat] تهران
+// ترتیب مختصات در Leaflet: [lat, lng]
+const DEFAULT_CENTER = [35.6892, 51.389]; // تهران
 const DEFAULT_ZOOM = 11;
 const PICK_ZOOM = 16;
 
-// انواع: neshanVector | neshanVectorNight | neshanRaster | neshanRasterNight | osmRaster | dreamy | dreamyGold
-const MAP_TYPE = "neshanVector";
+// استایل‌های مستندات: "dreamy" | "standard-night" (+ چهار استایل دیگه)
+const MAP_TYPE = "standard-night";
 
 const round6 = (n) => Math.round(n * 1e6) / 1e6;
+
+const pinIcon = L.divIcon({
+  className: "location-pin",
+  html: '<i class="fa-solid fa-location-dot"></i>',
+  iconSize: [36, 36],
+  iconAnchor: [18, 34],
+});
 
 export default function RestaurantLocationPicker({
   latitude,
@@ -45,6 +53,7 @@ export default function RestaurantLocationPicker({
   const [resolvedAddress, setResolvedAddress] = useState("");
 
   const hasLocation = latitude != null && longitude != null;
+  const canSuggestAddress = typeof onAddressSelect === "function";
 
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -60,38 +69,33 @@ export default function RestaurantLocationPicker({
   useEffect(() => {
     if (!MAP_KEY || !containerRef.current) return;
 
-    const startAt =
-      latitude != null && longitude != null
-        ? [Number(longitude), Number(latitude)]
-        : DEFAULT_CENTER;
+    const startAt = hasLocation
+      ? [Number(latitude), Number(longitude)]
+      : DEFAULT_CENTER;
 
-    const map = new nmp_mapboxgl.Map({
-      mapType: nmp_mapboxgl.Map.mapTypes[MAP_TYPE],
-      container: containerRef.current,
+    const map = new L.Map(containerRef.current, {
+      key: MAP_KEY,
+      maptype: MAP_TYPE,
       center: startAt,
-      zoom: latitude != null ? PICK_ZOOM : DEFAULT_ZOOM,
+      zoom: hasLocation ? PICK_ZOOM : DEFAULT_ZOOM,
       minZoom: 4,
-      maxZoom: 21,
-      pitch: 0,
-      poi: true,
-      traffic: false,
-      trackResize: true,
-      mapKey: MAP_KEY,
+      scrollWheelZoom: false, // اسکرول صفحه با زوم نقشه قاطی نشه
     });
 
-    try {
-      map.addControl(
-        new nmp_mapboxgl.NavigationControl({ showCompass: false }),
-        "bottom-left",
-      );
-    } catch {
-      /* کنترل زوم اختیاریه */
-    }
+    map.on("click", (e) => {
+      map.scrollWheelZoom.enable(); // بعد از کلیک، زوم با اسکرول فعال می‌شه
+      commit(e.latlng.lat, e.latlng.lng);
+    });
+    map.on("mouseout", () => map.scrollWheelZoom.disable());
 
-    map.on("click", (e) => commit(e.lngLat.lat, e.lngLat.lng));
+    // اگه اندازه‌ی کانتینر بعد از ساخت عوض شد، تایل‌ها خراب نشن
+    const ro = new ResizeObserver(() => map.invalidateSize());
+    ro.observe(containerRef.current);
+
     mapRef.current = map;
 
     return () => {
+      ro.disconnect();
       markerRef.current?.remove();
       markerRef.current = null;
       map.remove();
@@ -108,43 +112,37 @@ export default function RestaurantLocationPicker({
     if (!hasLocation) {
       markerRef.current?.remove();
       markerRef.current = null;
+      internalChangeRef.current = false;
       return;
     }
 
-    const lngLat = [Number(longitude), Number(latitude)];
+    const latlng = [Number(latitude), Number(longitude)];
 
     if (!markerRef.current) {
-      const el = document.createElement("div");
-      el.className = "location-pin";
-      el.innerHTML = '<i class="fa-solid fa-location-dot"></i>';
-
-      const marker = new nmp_mapboxgl.Marker({
-        element: el,
-        anchor: "bottom",
+      const marker = L.marker(latlng, {
+        icon: pinIcon,
         draggable: true,
-      })
-        .setLngLat(lngLat)
-        .addTo(map);
+      }).addTo(map);
 
       marker.on("dragend", () => {
-        const p = marker.getLngLat();
+        const p = marker.getLatLng();
         commit(p.lat, p.lng);
       });
       markerRef.current = marker;
     } else {
-      markerRef.current.setLngLat(lngLat);
+      markerRef.current.setLatLng(latlng);
     }
 
     // اگه تغییر از بیرون اومده (مثلاً لود پروفایل) نقشه رو ببر اون‌جا
     if (!internalChangeRef.current) {
-      map.jumpTo({ center: lngLat, zoom: PICK_ZOOM });
+      map.setView(latlng, PICK_ZOOM, { animate: false });
     }
     internalChangeRef.current = false;
   }, [latitude, longitude, hasLocation, commit]);
 
-  // ---------- تشخیص آدرس از روی مختصات ----------
+  // ---------- تشخیص آدرس از روی مختصات (فقط وقتی سرویس روشنه) ----------
   useEffect(() => {
-    if (!isNeshanServiceEnabled || !onAddressSelect || !hasLocation) {
+    if (!isNeshanServiceEnabled || !canSuggestAddress || !hasLocation) {
       setResolvedAddress("");
       return;
     }
@@ -165,7 +163,7 @@ export default function RestaurantLocationPicker({
       clearTimeout(t);
       controller.abort();
     };
-  }, [latitude, longitude, hasLocation, onAddressSelect]);
+  }, [latitude, longitude, hasLocation, canSuggestAddress]);
 
   // ---------- جستجو ----------
   useEffect(() => {
@@ -187,8 +185,8 @@ export default function RestaurantLocationPicker({
         const items = await searchPlaces(
           term,
           {
-            lat: c?.lat ?? DEFAULT_CENTER[1],
-            lng: c?.lng ?? DEFAULT_CENTER[0],
+            lat: c?.lat ?? DEFAULT_CENTER[0],
+            lng: c?.lng ?? DEFAULT_CENTER[1],
           },
           controller.signal,
         );
@@ -222,7 +220,7 @@ export default function RestaurantLocationPicker({
     setQuery(r.title);
     setResults([]);
     commit(r.lat, r.lng);
-    mapRef.current?.flyTo({ center: [r.lng, r.lat], zoom: PICK_ZOOM });
+    mapRef.current?.flyTo([r.lat, r.lng], PICK_ZOOM);
   };
 
   // Enter توی فیلد جستجو نباید کل فرم پروفایل رو submit کنه
@@ -242,7 +240,7 @@ export default function RestaurantLocationPicker({
       (pos) => {
         const { latitude: lat, longitude: lng } = pos.coords;
         commit(lat, lng);
-        mapRef.current?.flyTo({ center: [lng, lat], zoom: PICK_ZOOM });
+        mapRef.current?.flyTo([lat, lng], PICK_ZOOM);
         setLocating(false);
       },
       (err) => {

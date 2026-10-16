@@ -629,7 +629,15 @@
   pointer-events: none;
 }
 
+.location-map.leaflet-grab {
+  cursor: crosshair;
+}
+.location-map.leaflet-dragging.leaflet-grab {
+  cursor: grabbing;
+}
+
 .location-pin {
+  cursor: grab;
   background: none;
   border: none;
   color: var(--primary-color);
@@ -1364,7 +1372,7 @@
 }
 
 .location-map--disabled i {
-  font-size: 30px;
+  font-size: 2rem;
   opacity: 0.6;
 }
 

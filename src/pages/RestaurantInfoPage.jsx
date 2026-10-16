@@ -2,8 +2,9 @@
 // Restaurant info page (opened from the "i" button in ShopBanner).
 // STATIC VERSION: all data comes from STATIC_INFO below. In the next step the
 // object is replaced by the API response of GET /api/public/restaurant/{slug}/info.
-import { useNavigate, useParams } from "react-router-dom";
-import "../assets/css/restaurant-info.css";
+import { lazy, Suspense, useEffect, useState } from "react";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
+import { getRestaurantInfoBySlug } from "../api/restaurants";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import useImageWithFallback from "../hooks/useImageWithFallback";
 import resolveFileUrl from "../utils/resolveFileUrl";
@@ -23,28 +24,36 @@ import {
   WhatsappIcon,
   BaleIcon,
 } from "../components/icons/RestaurantInfoIcons";
+const RestaurantMapView = lazy(
+  () => import("../components/common/RestaurantMapView"),
+);
+import "../assets/css/restaurant-info.css";
 
 /* ---------------- static data (temporary) ---------------- */
-const STATIC_INFO = {
-  name: "منرو",
-  averageRating: 4.5,
-  votersCount: 6879,
-  openTime: "12:00",
-  closeTime: "2:00",
-  address: "خیابان فاطمی، کوچه 23 نبش بانک ملت",
-  description:
-    "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، و با استفاده از طراحان گرافیک است، چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است، و برای شرایط فعلی تکنولوژی مورد نیاز، و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد، کتابهای زیادی در شصت و سه درصد گذشته حال و آینده، شناخت فراوان جامعه و متخصصان را می طلبد، تا با نرم افزارها شناخت بیشتری",
-  shopBannerImageUrl: null, // -> falls back to the default shop banner
-  logoImageUrl: null, // -> empty circle
-  mapImageUrl: null, // -> default map art
+// "02:00" → "2:00" (مطابق طراحی: «۱۲:۰۰ تا ۲:۰۰»)
+const formatTime = (t) => (t ? t.replace(/^0([1-9]:)/, "$1") : "");
+
+// پاسخ API → شکلی که UI استفاده می‌کنه
+const mapInfo = (d) => ({
+  name: d.name,
+  averageRating: d.averageRating ?? 0,
+  votersCount: d.votersCount ?? 0,
+  openTime: formatTime(d.openTime),
+  closeTime: formatTime(d.closeTime),
+  address: d.address,
+  description: d.description,
+  shopBannerImageUrl: d.bannerImageUrl ?? null,
+  logoImageUrl: d.logoImageUrl ?? null,
+  latitude: d.latitude ?? null, // برای مرحله‌ی نقشه
+  longitude: d.longitude ?? null,
   socials: {
-    instagram: "https://instagram.com/",
-    telegram: "https://t.me/",
-    eitaa: "https://eitaa.com/",
-    whatsapp: "https://wa.me/",
-    bale: "https://ble.ir/",
+    instagram: d.instagramUrl,
+    telegram: d.telegramUrl,
+    eitaa: d.eitaaUrl,
+    whatsapp: d.whatsAppUrl,
+    bale: d.baleUrl,
   },
-};
+});
 
 // shown when the restaurant has no logo (file lives in public/images/restaurant/)
 const LOGO_PLACEHOLDER = "/images/restaurant/logo-placeholder.png";
@@ -101,20 +110,68 @@ function RestaurantInfoPage() {
   const { slug } = useParams();
   const cart = useCart();
 
-  const info = STATIC_INFO;
+  const [info, setInfo] = useState(null);
+  const [status, setStatus] = useState("loading"); // loading | ready | notfound | error
+  const [reloadKey, setReloadKey] = useState(0);
+  const [mapFailed, setMapFailed] = useState(false);
 
-  useDocumentTitle(`اطلاعات ${info.name}`);
+  useEffect(() => {
+    let cancelled = false;
+    setStatus("loading");
+    setInfo(null);
+
+    getRestaurantInfoBySlug(slug)
+      .then((data) => {
+        if (cancelled) return;
+        setInfo(mapInfo(data));
+        setStatus("ready");
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setStatus(err?.response?.status === 404 ? "notfound" : "error");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, reloadKey]);
+
+  // همه‌ی hookها باید قبل از returnهای زودهنگام بیان
+  useDocumentTitle(info ? `اطلاعات ${info.name}` : "اطلاعات رستوران");
 
   const bannerUrl = useImageWithFallback(
-    resolveFileUrl(info.shopBannerImageUrl),
+    resolveFileUrl(info?.shopBannerImageUrl),
     "shop-banner",
   );
+
+  if (status === "notfound") return <Navigate to="/not-found" replace />;
+
+  if (status === "loading") {
+    return (
+      <div className="rinfo rinfo-state" dir="rtl" role="status">
+        در حال بارگذاری...
+      </div>
+    );
+  }
+
+  if (status === "error" || !info) {
+    return (
+      <div className="rinfo rinfo-state" dir="rtl">
+        <p>دریافت اطلاعات رستوران با خطا مواجه شد</p>
+        <button type="button" onClick={() => setReloadKey((k) => k + 1)}>
+          تلاش دوباره
+        </button>
+      </div>
+    );
+  }
   const logoUrl = info.logoImageUrl
     ? resolveFileUrl(info.logoImageUrl)
     : LOGO_PLACEHOLDER;
-  const mapImageUrl = info.mapImageUrl
-    ? resolveFileUrl(info.mapImageUrl)
-    : null;
+  const showLiveMap =
+    !mapFailed &&
+    Boolean(import.meta.env.VITE_NESHAN_MAP_KEY) &&
+    info.latitude != null &&
+    info.longitude != null;
 
   const socials = SOCIAL_ITEMS.filter(({ key }) => info.socials?.[key]);
 
@@ -211,8 +268,15 @@ function RestaurantInfoPage() {
             /* TODO (next step): open the Neshan / Balad chooser */
           }}
         >
-          {mapImageUrl ? (
-            <img className="rinfo-map__img" src={mapImageUrl} alt="" />
+          {showLiveMap ? (
+            <Suspense fallback={<DefaultMapArt />}>
+              <RestaurantMapView
+                className="rinfo-map__live"
+                latitude={info.latitude}
+                longitude={info.longitude}
+                onError={() => setMapFailed(true)}
+              />
+            </Suspense>
           ) : (
             <DefaultMapArt />
           )}

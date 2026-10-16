@@ -6,7 +6,7 @@ import ShoppingBagIcon from "../icons/ShoppingBagIcon";
 import MusicIcon from "../icons/MusicIcon";
 import CircleIcon from "../icons/CircleIcon";
 import { useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toPersianDigits } from "../../utils/persianNumbers";
 import resolveFileUrl from "../../utils/resolveFileUrl";
 import useRequireLogin from "../../hooks/useRequireLogin";
@@ -22,6 +22,8 @@ function ShopBanner({
   searchValue = "",
 }) {
   const navigate = useNavigate();
+  const { slug: routeSlug } = useParams();
+  const slug = banner?.slug || routeSlug;
   const cart = useCart();
 
   const {
@@ -60,7 +62,10 @@ function ShopBanner({
     };
 
     update();
-    document.addEventListener("scroll", onScroll, { passive: true, capture: true });
+    document.addEventListener("scroll", onScroll, {
+      passive: true,
+      capture: true,
+    });
     window.addEventListener("resize", onScroll);
 
     return () => {
@@ -81,12 +86,10 @@ function ShopBanner({
   const handleMusicClick = () => {
     requireLogin({
       type: "music",
-      returnUrl: `/restaurant/${banner.slug}/music`,
+      returnUrl: `/restaurant/${slug}/music`,
       onAuthenticated: () => {
-        navigate(`/restaurant/${banner.slug}/music`, {
-          state: {
-            restaurantId: banner.id,
-          },
+        navigate(`/restaurant/${slug}/music`, {
+          state: { restaurantId: banner.id },
         });
       },
     });
@@ -115,7 +118,7 @@ function ShopBanner({
               type="button"
               className="icon-btn"
               aria-label="Info"
-              onClick={() => navigate(`/restaurant/${banner.slug}/info`)}
+              onClick={() => navigate(`/restaurant/${slug}/info`)}
             >
               <MapIcon />
             </button>

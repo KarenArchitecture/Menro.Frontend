@@ -1,5 +1,6 @@
 //RestaurantProfileSection.jsx
 import { useState, useEffect, useRef } from "react";
+import RestaurantLocationPicker from "./RestaurantLocationPicker";
 import {
   getRestaurantProfile,
   updateRestaurantProfile,
@@ -11,6 +12,31 @@ import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 import "../../assets/css/admin/admin.css";
 import "../../assets/css/admin/restaurantProfileSection.css";
+
+const SOCIAL_RE = /^@?[A-Za-z0-9_.]+$/;
+const WHATSAPP_RE = /^09\d{9}$/;
+
+const SOCIAL_FIELDS = [
+  {
+    key: "telegram",
+    label: "تلگرام",
+    prefix: "t.me/",
+    icon: "fa-brands fa-telegram",
+  },
+  {
+    key: "instagram",
+    label: "اینستاگرام",
+    prefix: "instagram.com/",
+    icon: "fa-brands fa-instagram",
+  },
+  {
+    key: "eitaa",
+    label: "ایتا",
+    prefix: "eitaa.com/",
+    icon: "fa-solid fa-comment-dots",
+  },
+  { key: "bale", label: "بله", prefix: "ble.ir/", icon: "fa-solid fa-comment" },
+];
 
 export default function RestaurantProfileSection() {
   useDocumentTitle("پروفایل رستوران");
@@ -58,6 +84,18 @@ export default function RestaurantProfileSection() {
   const [restaurantStatus, setRestaurantStatus] = useState(null);
   const [rejectReason, setRejectReason] = useState(null);
 
+  // location + social
+  const [latitude, setLatitude] = useState(null);
+  const [longitude, setLongitude] = useState(null);
+  const [whatsapp, setWhatsapp] = useState("");
+  const [socials, setSocials] = useState({
+    telegram: "",
+    instagram: "",
+    eitaa: "",
+    bale: "",
+  });
+  const [socialErrors, setSocialErrors] = useState({});
+
   // --------------------------------------------
   // Load categories + restaurant profile together
   // --------------------------------------------
@@ -85,6 +123,16 @@ export default function RestaurantProfileSection() {
         setDescription(d.description);
         setOpenTime(d.openTime);
         setCloseTime(d.closeTime);
+
+        setLatitude(d.latitude ?? null);
+        setLongitude(d.longitude ?? null);
+        setWhatsapp(d.whatsAppId || "");
+        setSocials({
+          telegram: d.telegramId || "",
+          instagram: d.instagramId || "",
+          eitaa: d.eitaaId || "",
+          bale: d.baleId || "",
+        });
 
         // images (بک‌اند حالا URL کامل برمی‌گردونه)
         if (d.bannerImageUrl) setHomeBannerPreview(d.bannerImageUrl);
@@ -172,9 +220,57 @@ export default function RestaurantProfileSection() {
     }
   };
 
+  const handleLocationChange = (lat, lng) => {
+    setLatitude(lat);
+    setLongitude(lng);
+  };
+
+  // آدرس تشخیص‌داده‌شده از روی نقشه (نشان) → فیلد آدرس
+  const handleAddressSelect = (addr) => {
+    setAddress(addr);
+    notify({ type: "success", message: "آدرس رستوران از روی نقشه تکمیل شد" });
+  };
+
+  const handleSocialChange = (key, value) => {
+    // کاربر اگه لینک کامل یا @ چسباند، فقط شناسه نگه داشته می‌شه
+    const cleaned = value
+      .trim()
+      .replace(/^https?:\/\/[^/]+\//i, "")
+      .replace(/^@/, "");
+    setSocials((prev) => ({ ...prev, [key]: cleaned }));
+    setSocialErrors((prev) => ({ ...prev, [key]: undefined }));
+  };
+
+  const handleWhatsappChange = (value) => {
+    setWhatsapp(value.replace(/\D/g, ""));
+    setSocialErrors((prev) => ({ ...prev, whatsapp: undefined }));
+  };
+
+  const validateSocials = () => {
+    const errors = {};
+    if (whatsapp && !WHATSAPP_RE.test(whatsapp)) {
+      errors.whatsapp = "شماره باید با فرمت 09123456789 باشد";
+    }
+    SOCIAL_FIELDS.forEach(({ key, label }) => {
+      if (socials[key] && !SOCIAL_RE.test(socials[key])) {
+        errors[key] =
+          `شناسه ${label} نامعتبر است (فقط حروف انگلیسی، عدد، _ و .)`;
+      }
+    });
+    setSocialErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   // SUBMIT
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateSocials()) {
+      notify({
+        type: "warning",
+        message: "لطفاً خطاهای بخش شبکه‌های اجتماعی را اصلاح کنید.",
+      });
+      return;
+    }
     setSubmitting(true); // ✅ همیشه از همون اول ست میشه
 
     const trimmedSlug = slug.trim();
@@ -213,6 +309,16 @@ export default function RestaurantProfileSection() {
       formData.append("ShebaNumber", shebaNumber);
       formData.append("OpenTime", openTime);
       formData.append("CloseTime", closeTime);
+
+      if (latitude != null && longitude != null) {
+        formData.append("Latitude", String(latitude));
+        formData.append("Longitude", String(longitude));
+      }
+      formData.append("WhatsAppId", whatsapp);
+      formData.append("TelegramId", socials.telegram);
+      formData.append("InstagramId", socials.instagram);
+      formData.append("EitaaId", socials.eitaa);
+      formData.append("BaleId", socials.bale);
 
       if (homeBannerFile) {
         formData.append("HomeBanner", homeBannerFile);
@@ -642,7 +748,80 @@ export default function RestaurantProfileSection() {
             />
           </div>
         </div>
+        <hr style={{ border: "1px solid #444", margin: "20px 0" }} />
 
+        {/* Location & social links */}
+        <div className="form-section-heading">
+          <i className="fa-solid fa-location-dot" />
+          <span>موقعیت و شبکه‌های اجتماعی</span>
+        </div>
+
+        <div className="input-group">
+          <label>موقعیت رستوران روی نقشه</label>
+          <span className="image-field__hint">
+            این موقعیت در صفحه‌ی اطلاعات رستوران برای مشتریان نمایش داده می‌شود
+          </span>
+          <RestaurantLocationPicker
+            latitude={latitude}
+            longitude={longitude}
+            onChange={handleLocationChange}
+            onAddressSelect={handleAddressSelect}
+          />
+        </div>
+
+        <div className="form-grid social-grid">
+          <div className="input-group">
+            <label htmlFor="restaurant-whatsapp">
+              <i className="fa-brands fa-whatsapp" /> واتساپ
+            </label>
+            <div className="slug-input-group">
+              <span className="slug-prefix">wa.me/</span>
+              <input
+                id="restaurant-whatsapp"
+                className="slug-input"
+                type="tel"
+                inputMode="numeric"
+                dir="ltr"
+                maxLength={11}
+                value={whatsapp}
+                onChange={(e) => handleWhatsappChange(e.target.value)}
+                placeholder="09123456789"
+              />
+            </div>
+            {socialErrors.whatsapp && (
+              <div className="slug-status slug-status--taken">
+                <i className="fa-solid fa-circle-xmark" />{" "}
+                {socialErrors.whatsapp}
+              </div>
+            )}
+          </div>
+
+          {SOCIAL_FIELDS.map(({ key, label, prefix, icon }) => (
+            <div className="input-group" key={key}>
+              <label htmlFor={`restaurant-${key}`}>
+                <i className={icon} /> {label}
+              </label>
+              <div className="slug-input-group">
+                <span className="slug-prefix">{prefix}</span>
+                <input
+                  id={`restaurant-${key}`}
+                  className="slug-input"
+                  type="text"
+                  dir="ltr"
+                  maxLength={50}
+                  value={socials[key]}
+                  onChange={(e) => handleSocialChange(key, e.target.value)}
+                  placeholder="username"
+                />
+              </div>
+              {socialErrors[key] && (
+                <div className="slug-status slug-status--taken">
+                  <i className="fa-solid fa-circle-xmark" /> {socialErrors[key]}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
         <hr style={{ border: "1px solid #444", margin: "20px 0" }} />
 
         {/* Owner financial info */}

@@ -1,6 +1,7 @@
 import SearchBar from "../common/SearchBar";
 import MouseIcon from "../icons/MouseIcon";
 import SmartImage from "../common/SmartImage";
+import { useNavigate } from "react-router-dom";
 
 // props are sourced from LandingController.GetGeneral (getLandingGeneral()).
 // `isLoading` should be true only while that request is in flight — once it
@@ -15,7 +16,13 @@ export default function Hero({
   isLoading = false,
 }) {
   const resolvedImageUrl = heroImageUrl || "/images/landing-hero.png";
+  const navigate = useNavigate();
 
+  // same behavior as the Home search: run the search on /home
+  const handleSearch = (term) => {
+    if (!term) return;
+    navigate(`/home?q=${encodeURIComponent(term)}`);
+  };
   return (
     <section className="hero">
       {isLoading ? (
@@ -38,7 +45,10 @@ export default function Hero({
           </h1>
 
           <div className="hero__search">
-            <SearchBar placeholder="جستجوی رستوران، نوشیدنی، غذا ..." />
+            <SearchBar
+              placeholder="جستجوی رستوران، نوشیدنی، غذا ..."
+              onSubmit={handleSearch}
+            />
           </div>
 
           <div className="hero__hint">

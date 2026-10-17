@@ -1,6 +1,9 @@
-import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
 import { getHeaderMenu } from "../../api/SiteLink";
+import { useCart } from "../shop/CartContext";
+import SearchBar from "./SearchBar";
+import { toPersianDigits } from "../../utils/persianNumbers";
 import "../../assets/css/app-header-styles.css";
 
 /** آیتم برند/لوگو همیشه ثابت است و از بک‌اند نمی‌آید. */
@@ -44,6 +47,40 @@ export default function AppHeader({
   maxWidth = 1140,
   className = "",
 }) {
+  const cart = useCart();
+  const navigate = useNavigate();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchPanelRef = useRef(null);
+
+  // same behavior as the Home search: run the search on /home
+  const runSearch = (term) => {
+    if (!term) return;
+    setSearchOpen(false);
+    navigate(`/home?q=${encodeURIComponent(term)}`);
+  };
+
+  // focus the input on open; close on Escape or when clicking outside the panel
+  useEffect(() => {
+    if (!searchOpen) return undefined;
+
+    searchPanelRef.current?.querySelector("input")?.focus();
+
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") setSearchOpen(false);
+    };
+    const onPointerDown = (event) => {
+      if (!searchPanelRef.current?.contains(event.target)) {
+        setSearchOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [searchOpen]);
   const [links, setLinks] = useState(rightLinks ?? DEFAULT_LINKS);
 
   useEffect(() => {
@@ -121,9 +158,8 @@ export default function AppHeader({
                 >
                   <a
                     href={item.href}
-                    className={`app-header__link${
-                      item.active ? " is-active" : ""
-                    }`}
+                    className={`app-header__link${item.active ? " is-active" : ""
+                      }`}
                   >
                     {item.label}
                   </a>
@@ -149,23 +185,41 @@ export default function AppHeader({
           {/* LEFT: circular icon buttons */}
           <ul className="app-header__left">
             {leftIcons.map((it) => {
+              // cart badge always comes from the real cart (same count as the shop page)
+              const badgeCount = it.key === "cart" ? cart.count : it.badge;
+
               const button = (
-                <button className="icon-btn" type="button" aria-label={it.key}>
+                <button
+                  className="icon-btn"
+                  type="button"
+                  aria-label={it.key}
+                  onClick={
+                    it.key === "search" ? () => setSearchOpen(true) : undefined
+                  }
+                >
                   {it.icon}
                 </button>
               );
 
               return (
-                <li key={it.key} className={`icon-wrap ${it.key}`}>
+                <li
+                  key={it.key}
+                  className={`icon-wrap ${it.key}${it.key === "search" && searchOpen ? " is-hidden" : ""
+                    }`}
+                >
                   {it.key === "profile" ? (
                     <Link to="/login" className="icon-btn-link">
+                      {button}
+                    </Link>
+                  ) : it.key === "cart" ? (
+                    <Link to="/checkout" className="icon-btn-link">
                       {button}
                     </Link>
                   ) : (
                     button
                   )}
-                  {typeof it.badge === "number" && it.badge > 0 && (
-                    <span className="badge">{it.badge}</span>
+                  {typeof badgeCount === "number" && badgeCount > 0 && (
+                    <span className="badge">{toPersianDigits(badgeCount)}</span>
                   )}
                 </li>
               );
@@ -173,6 +227,15 @@ export default function AppHeader({
           </ul>
         </div>
       </div>
+
+      {searchOpen && (
+        <div className="app-header__search" ref={searchPanelRef}>
+          <SearchBar
+            placeholder="جستجوی رستوران، نوشیدنی، غذا ..."
+            onSubmit={runSearch}
+          />
+        </div>
+      )}
     </header>
   );
 }

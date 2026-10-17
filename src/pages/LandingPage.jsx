@@ -45,7 +45,6 @@ export default function LandingPage() {
       icon: (
         <img src="/images/app-header-bag.svg" alt="cart" className="icon" />
       ),
-      badge: 1,
     },
     {
       key: "search",

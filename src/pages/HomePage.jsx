@@ -7,10 +7,15 @@ import PreviousOrders from "../components/home/PreviousOrders";
 import PopularFoodAndAdBannerLazyList from "../components/home/PopularFoodAndAdBannerLazyList";
 import SearchResultsSection from "../components/home/SearchResultsSection";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import { useSearchParams } from "react-router-dom";
 
 export default function HomePage() {
   useDocumentTitle("خانه");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  // arriving from Landing/Blog: /home?q=term starts with that search
+  const [searchQuery, setSearchQuery] = useState(
+    () => searchParams.get("q") ?? "",
+  );
   const trimmedQuery = searchQuery.trim();
   const isSearchActive = Boolean(trimmedQuery);
 
@@ -25,7 +30,12 @@ export default function HomePage() {
       <Header
         onSearchSubmit={setSearchQuery}
         isSearchActive={isSearchActive}
-        onBack={() => setSearchQuery("")}
+        initialQuery={searchQuery}
+        onBack={() => {
+          setSearchQuery("");
+          // drop ?q= so a refresh doesn't bring the old search back
+          if (searchParams.has("q")) setSearchParams({}, { replace: true });
+        }}
       />
 
       <main className="content">

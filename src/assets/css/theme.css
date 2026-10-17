@@ -51,7 +51,7 @@
   --t-border: rgba(255, 255, 255, 0.1);
   --t-hairline: rgba(255, 255, 255, 0.06);
   --t-text: #fafaf4;
-  --t-text-muted: #a5adc0;
+  --t-text-muted: #1d2735;
   --t-text-dim: #8b93a7;
   --t-green: #70fd9a;
 }
@@ -68,7 +68,7 @@ html.theme-light {
   --t-border: #d3d6db; /* 1px outlines (buttons, pills) */
   --t-hairline: rgba(12, 15, 20, 0.08); /* dividers */
   --t-text: #14181f;
-  --t-text-muted: #5b6370;
+  --t-text-muted: #1d2735;
   --t-text-dim: #8a9099;
   --t-green: #1fb356; /* "open" status */
   --t-shadow: 0 4px 12px rgba(12, 15, 20, 0.08);
@@ -168,6 +168,16 @@ html.theme-light .res-more-link {
   color: var(--t-text);
 }
 
+/* chevron inside "مشاهده همه" (stroke is hardcoded cream in SectionHeader) */
+html.theme-light .res-more-link svg path {
+  stroke: #1e232a;
+}
+
+/* category icon next to the section title (<img> from the backend, cream) */
+html.theme-light .popular-food-row__category-icon {
+  filter: brightness(0) invert(0.12);
+}
+
 /* carousel: the dot dock must match the page background */
 html.theme-light .carousel {
   --page-bg: var(--t-bg);
@@ -187,7 +197,7 @@ html.theme-light .card {
 
 html.theme-light .logo-container::before {
   background: var(--t-bg);
-  box-shadow: 0 0.8rem 1.8rem rgba(12, 15, 20, 0.12);
+  box-shadow: none;
 }
 
 html.theme-light .time-badge {
@@ -289,9 +299,71 @@ html.theme-light .nav-item.active span {
    bar in BOTH modes (see the light screenshots). Only the parts that fade
    into the page while scrolling change.
    ===================================================== */
-html.theme-light .banner::after,
-html.theme-light .navbar::before {
+html.theme-light .banner::after {
   background: var(--t-bg);
+}
+
+/* fixed header bar once the user has scrolled */
+html.theme-light .navbar::before {
+  background: #cfcfcf;
+}
+
+/* ---------- shop banner buttons ----------
+   at the top: #0c0f14 at 60% (glass); while scrolling it fades to #ebebeb */
+html.theme-light .navbar {
+  /* buttons: glass (#0c0f14 @ 60%) -> #ebebeb while scrolling */
+  --nav-btn-bg: color-mix(
+    in srgb,
+    #ebebeb calc(var(--banner-progress, 0) * 100%),
+    rgba(12, 15, 20, 0.6)
+  );
+
+  /* icons: cream -> #13171e while scrolling */
+  --nav-icon-color: color-mix(
+    in srgb,
+    #13171e calc(var(--banner-progress, 0) * 100%),
+    #fafaf4
+  );
+}
+
+html.theme-light .navbar .shop-icon-wrapper,
+html.theme-light .navbar .shop-cart-btn {
+  background: var(--nav-btn-bg);
+}
+
+/* inner buttons must not paint their own solid background over the glass */
+html.theme-light .navbar .shop-icon-wrapper .icon-btn {
+  background: transparent;
+}
+
+/* back / info / cart icons: hardcoded cream in the icon files, so we recolor
+   them here. Scoped to .navbar because BackIcon is used elsewhere. */
+html.theme-light .navbar .icon-btn svg [stroke] {
+  stroke: var(--nav-icon-color);
+}
+
+/* the dot of the "i" icon is the only filled shape */
+html.theme-light .navbar .icon-btn svg [fill="#FAFAF4"] {
+  fill: var(--nav-icon-color);
+}
+
+/* ---------- hero search bar + shortcut buttons: same glass ---------- */
+html.theme-light .search-bar--hero {
+  background: rgba(12, 15, 20, 0.6);
+}
+
+html.theme-light .search-bar--hero input,
+html.theme-light .search-bar--hero .icon-button {
+  background: transparent;
+}
+
+html.theme-light .search-bar--hero input::placeholder {
+  color: #fafaf4;
+  opacity: 1;
+}
+
+html.theme-light .reorder-and-music-btn {
+  background: rgba(12, 15, 20, 0.6);
 }
 
 /* title + rating: cream over the photo, ink once the navbar has faded to
@@ -355,10 +427,20 @@ html.theme-light .menu_nav-btn:hover {
   background: rgba(12, 15, 20, 0.04);
 }
 
+/* chevron inside "مشاهده همه" (stroke is hardcoded cream in MenuList) */
+html.theme-light .menu_nav-btn .arrow svg path {
+  stroke: #1d2735;
+}
+
 html.theme-light .food_items.horizontal-scroll .seeall-card {
   background: var(--t-surface);
   box-shadow: var(--t-shadow);
   color: var(--t-text);
+}
+
+/* arrow on the "مشاهده همه" card at the end of a row (stroke is hardcoded cream) */
+html.theme-light .seeall-arrow svg path {
+  stroke: #1d2735;
 }
 
 html.theme-light .vaction-pill {
@@ -370,6 +452,16 @@ html.theme-light .vaction-pill {
 
 html.theme-light .vaction-pill__label {
   color: var(--t-text);
+}
+
+/* prev / next category pills: double arrows + category icons (hardcoded cream) */
+html.theme-light .vaction-pill__arrow svg path {
+  stroke: #1d2735;
+}
+
+html.theme-light .vaction-pill .category-icon svg path {
+  fill: #1d2735;
+  stroke: #1d2735;
 }
 
 html.theme-light .menu-state {
@@ -403,7 +495,7 @@ html.theme-light .menu-card__qtyDisplay {
    7. Item detail modal + combos / frequent-orders modals
    ===================================================== */
 html.theme-light .modal-backdrop {
-  background: var(--t-bg);
+  background: rgba(0, 0, 0, 0.8);
 }
 
 html.theme-light .modal-hero-img {
@@ -489,7 +581,11 @@ html.theme-light .combo-foods-header__title {
   color: var(--t-text);
 }
 
-
+html.theme-light .variant-block,
+html.theme-light .variant-row {
+  background: transparent;
+  box-shadow: none;
+}
 /* =====================================================
    8. Checkout bar
    ===================================================== */

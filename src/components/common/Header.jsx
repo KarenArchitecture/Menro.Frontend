@@ -23,9 +23,14 @@ function BackArrowIcon() {
   );
 }
 
-function Header({ onSearchSubmit, isSearchActive = false, onBack }) {
+function Header({
+  onSearchSubmit,
+  isSearchActive = false,
+  onBack,
+  initialQuery = "",
+}) {
   // متن نوار جستجو اینجا نگه داشته می‌شود تا با زدن «برگشت» پاک شود
-  const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState(initialQuery);
 
   const handleBack = () => {
     setSearchText("");

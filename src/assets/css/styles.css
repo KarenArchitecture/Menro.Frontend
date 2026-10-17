@@ -659,6 +659,7 @@
 .banner-title {
   margin: 0;
   padding-top: 10%;
+  color: #fafaf4;
   font-size: 2rem;
   font-weight: 800;
   line-height: 1.1;
@@ -671,6 +672,7 @@
   gap: 0.7rem;
   margin: 0;
   direction: rtl;
+  color: #fafaf4;
   font-size: 1.3rem;
   font-weight: 600;
   line-height: 1.3;
@@ -897,6 +899,7 @@ a.food-card-image {
   background-color: #ff683c;
   border: none;
   border-radius: 1rem;
+  color: #fafaf4;
   font-size: 1rem;
   font-weight: 800;
   text-align: center;

@@ -455,6 +455,7 @@ body {
 
   .hero__search {
     width: 100%;
+    margin-left: 0;
   }
 
   .hero .search-bar-container {
@@ -464,6 +465,7 @@ body {
   }
 
   .hero .search-bar {
+    width: 100% !important;
     height: 6.4rem;
     border-radius: 1.8rem;
     padding: 0 1.4rem;
@@ -2331,20 +2333,15 @@ body {
 /* --- FAQ: answer panel (height / opacity / clip-path animated by GSAP) --- */
 .faq__content {
   display: flex;
-  /* always flex, avoids reflow on close */
   flex-direction: column;
   align-items: flex-end;
-  /* keep RTL right edge */
   gap: 1rem;
   padding: 0 0 1.8rem 0;
   margin-inline-start: 28px;
   height: 0;
-  /* collapsed baseline */
   opacity: 0;
-  /* faded baseline */
   overflow: hidden;
   clip-path: inset(0 0 100% 0);
-  /* hidden baseline for the "curl" */
   will-change: height, opacity, clip-path, transform;
   pointer-events: none;
   transform-origin: top right;
@@ -2437,18 +2434,19 @@ body {
   }
 
   .faq__content {
-    clip-path: none;
     align-items: stretch;
     gap: 1.4rem;
     margin: 0;
     padding: 0;
   }
 
+  .faq__content .faq__bubble:last-child {
+    margin-bottom: 1.8rem;
+  }
+
   .faq__content.is-open {
-    height: auto;
-    opacity: 1;
-    overflow: visible;
-    padding: 0 0 1.8rem;
+    align-items: stretch;
+    gap: 1.4rem;
   }
 
   .faq__bubble {
@@ -2462,8 +2460,6 @@ body {
     box-shadow:
       0 1.4rem 3rem rgba(0, 0, 0, 0.24),
       inset 0 1px 0 rgba(255, 255, 255, 0.03);
-    transform: none !important;
-    opacity: 1 !important;
   }
 
   .faq__answer {
@@ -2472,7 +2468,8 @@ body {
     font-size: clamp(1.45rem, 4.2vw, 1.7rem);
     font-weight: 500;
     line-height: 2.25;
-    text-align: right;
+    text-align: justify;
+    text-align-last: right;
   }
 
   .faq__all {
@@ -2991,6 +2988,29 @@ body {
 
   .blogs__controls {
     max-width: calc(100% - 4.4rem);
+  }
+}
+
+/* --- Blogs: mobile marquee (<= 768px) ---
+   Figma: the scrolling title is about the size of a card title + a bit,
+   not a hero-sized headline. Desktop (> 768px) is untouched. */
+@media (max-width: 768px) {
+  .blogs__marquee {
+    height: 4.4rem;
+    font-size: 2.8rem;
+    line-height: 1.4;
+  }
+
+  .marquee__item {
+    padding-inline: 0.6rem;
+  }
+}
+
+/* small mobile: slightly smaller, matches the narrower cards */
+@media (max-width: 420px) {
+  .blogs__marquee {
+    height: 4rem;
+    font-size: 2.4rem;
   }
 }
 

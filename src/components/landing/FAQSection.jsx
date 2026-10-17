@@ -44,20 +44,21 @@ function normalizeAnswer(answer) {
 }
 
 export default function FAQSection({
-  items = DEFAULT_FAQ,
-  // was previously hardcoded to DEFAULT_FAQ[0]?.id regardless of `items`,
-  // so a dynamic first item never opened by default — now derived from
-  // whatever `items` is actually passed in.
-  initialOpenId = items[0]?.id ?? null,
+  items,
+  initialOpenId,
   allQuestionsHref = "#",
   className = "",
 }) {
+  // undefined / null / [] -> show the demo questions
+  const source = Array.isArray(items) && items.length > 0 ? items : DEFAULT_FAQ;
+
   const normalizedItems = useMemo(
-    () => items.map((it) => ({ ...it, answer: normalizeAnswer(it.answer) })),
-    [items],
+    () => source.map((it) => ({ ...it, answer: normalizeAnswer(it.answer) })),
+    [source],
   );
 
-  const [openId, setOpenId] = useState(initialOpenId);
+  const startOpenId = initialOpenId ?? source[0]?.id ?? null;
+  const [openId, setOpenId] = useState(startOpenId);
 
   const panelsRef = useRef({});
   const setPanelRef = (id) => (el) => {
@@ -66,28 +67,20 @@ export default function FAQSection({
 
   const prevOpenRef = useRef(openId ?? null);
   const prefersReduce = useRef(false);
-  const isMobile = useRef(false);
 
   useLayoutEffect(() => {
     prefersReduce.current = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
 
-    isMobile.current = window.matchMedia("(max-width: 768px)").matches;
   }, []);
 
   useLayoutEffect(() => {
-    if (isMobile.current) return;
-
     const ctx = gsap.context(() => {
       Object.values(panelsRef.current).forEach((p) => {
         if (!p) return;
 
         gsap.set(p, {
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-          gap: "1rem",
           overflow: "hidden",
           transformOrigin: "top right",
           height: 0,
@@ -101,8 +94,8 @@ export default function FAQSection({
         gsap.set(bubbles, { opacity: 0, y: 8, transformOrigin: "top right" });
       });
 
-      if (initialOpenId && panelsRef.current[initialOpenId]) {
-        const p = panelsRef.current[initialOpenId];
+      if (startOpenId && panelsRef.current[startOpenId]) {
+        const p = panelsRef.current[startOpenId];
         const bubbles = p.querySelectorAll(".faq__bubble");
 
         gsap.set(p, {
@@ -117,13 +110,9 @@ export default function FAQSection({
     });
 
     return () => ctx.revert();
-  }, [initialOpenId]);
+  }, [startOpenId]);
 
   useEffect(() => {
-    if (isMobile.current) {
-      prevOpenRef.current = openId ?? null;
-      return;
-    }
 
     const newId = openId;
     const oldId = prevOpenRef.current;

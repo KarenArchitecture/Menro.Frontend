@@ -11,7 +11,9 @@
         right: 0;
         z-index: 100;
         display: flex;
-        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
         padding-inline: 12px;
         pointer-events: none;
     }
@@ -100,5 +102,67 @@
     .mobile-header__icon-btn img {
         width: 32px;
         height: 32px;
+    }
+}
+
+
+/* search panel that opens under the pill (same glass as the pill) */
+@media (max-width: 768px) {
+    .mobile-header__search {
+        display: flex;
+        width: 100%;
+        max-width: 544px;
+        padding: 12px;
+        border-radius: 20px;
+        background: rgba(24, 24, 24, 0.88);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+        pointer-events: auto;
+        animation: mobileHeaderSearchIn 180ms ease both;
+    }
+
+    .mobile-header__search .search-bar {
+        box-sizing: border-box;
+        flex: 1 1 100%;
+        width: 100% !important;
+        max-width: none !important;
+        height: 4.8rem;
+        margin: 0;
+        padding: 0 1.4rem;
+        border-radius: 1.4rem;
+        background-color: #141921;
+    }
+
+    .mobile-header__search .search-bar input,
+    .mobile-header__search .icon-button {
+        background-color: transparent;
+    }
+
+    .mobile-header__search .search-bar input {
+        font-size: 1.4rem;
+    }
+
+    .mobile-header__search .search-bar input::placeholder {
+        font-size: 1.3rem;
+    }
+
+    .mobile-header__search .icon-button img {
+        width: 2.4rem;
+        height: 2.4rem;
+        margin: 0;
+    }
+}
+
+@keyframes mobileHeaderSearchIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }

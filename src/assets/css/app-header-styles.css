@@ -83,36 +83,23 @@
 
     .icon-wrap .badge {
         position: absolute;
-        right: -0.5rem;
-
-        width: 1.4rem;
-        height: 1.1rem;
-        padding: 0 0.45rem;
-
-        border-radius: 1rem;
-        background: #ef5254;
-        color: #fafaf4;
-
+        right: 0.1rem;
+        bottom: 0.2rem;
         display: flex;
         align-items: center;
         justify-content: center;
-
-        font-size: 1rem;
-        line-height: 1;
-        text-indent: 0.12rem;
-
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+        height: 1.1rem;
+        padding: 0.1rem 0.35rem 0.1rem;
+        background: #ef5254;
+        border-radius: 1.9rem;
+        color: #fafaf4;
+        font-size: 0.85rem;
+        font-weight: 700;
         pointer-events: none;
     }
 
     .icon-wrap.cart {
         position: relative;
-    }
-
-    .icon-wrap.cart .badge {
-        position: absolute;
-        right: -0.3rem;
-        bottom: -0.2rem;
     }
 
     .icon-btn {
@@ -213,4 +200,64 @@
 .icon-btn > svg {
     width: 28px;
     height: 28px;
+}
+
+/* desktop search icon: hidden (but keeps its space) while the panel is open */
+.icon-wrap.is-hidden {
+    visibility: hidden;
+}
+
+/* search panel under the pill (same glass as the pill) */
+@media (min-width: 768px) {
+    .app-header__search {
+        display: flex;
+        width: 670px;
+        margin: 8px auto 0;
+        padding: 12px;
+        border-radius: 20px;
+        background: rgba(17, 20, 26, 0.62);
+        backdrop-filter: blur(18px) saturate(135%);
+        -webkit-backdrop-filter: blur(18px) saturate(135%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+        pointer-events: auto;
+    }
+
+    .app-header__search .search-bar {
+        box-sizing: border-box;
+        flex: 1 1 100%;
+        width: 100% !important;
+        max-width: none !important;
+        height: 4.8rem;
+        margin: 0;
+        padding: 0 1.4rem;
+        border-radius: 1.4rem;
+        background-color: #141921;
+    }
+
+    .app-header__search .search-bar input,
+    .app-header__search .icon-button {
+        background-color: transparent;
+    }
+
+    .app-header__search .search-bar input {
+        font-size: 1.4rem;
+    }
+
+    .app-header__search .search-bar input::placeholder {
+        font-size: 1.3rem;
+    }
+
+    .app-header__search .icon-button img {
+        width: 2.4rem;
+        height: 2.4rem;
+        margin: 0;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+    .app-header__search {
+        display: flex;
+        width: min(94vw, 1100px);
+    }
 }

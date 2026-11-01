@@ -1,150 +1,143 @@
-import React, { useState } from "react";
+// src/components/admin/ThemeSection.jsx
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { useGlobalUI } from "../common/GlobalUI";
-import useDocumentTitle from "../../hooks/useDocumentTitle";
+import { getOwnerTheme, saveOwnerTheme } from "../../api/ownerTheme";
+import {
+  DEFAULT_THEME_ID,
+  THEMES,
+  getTheme,
+  themeToCssVars,
+} from "../../Themes/restaurantThemes";
 import "../../assets/css/admin/themeSection.css";
 
-const SWATCHES = [
-  {
-    id: "theme-orange",
-    value: "orange",
-    label: "تم نارنجی تیره",
-    palette: ["#1e1e1e", "#ff683c", "#fafaf4"],
-    checked: true,
-  },
-  {
-    id: "theme-blue",
-    value: "blue",
-    label: "تم آبی تیره",
-    palette: ["#1e293b", "#3b82f6", "#e2e8f0"],
-  },
-  {
-    id: "theme-green",
-    value: "green",
-    label: "تم سبز روشن",
-    palette: ["#14532d", "#22c55e", "#f0fdf4"],
-  },
-];
+const QUERY_KEY = ["owner-theme"];
 
-const TYPES = [
-  { value: "modern", label: "مدرن" },
-  { value: "traditional", label: "رستوران سنتی" },
-  { value: "seafood", label: "دریایی" },
-  { value: "asian", label: "چینی / آسیایی" },
-  { value: "italian", label: "ایتالیایی" },
-  { value: "cafe", label: "کافه رستوران" },
-  { value: "fastfood", label: "فست فود" },
-  { value: "garden", label: "باغ رستوران" },
-];
+function ThemePreview({ theme }) {
+  // The preview is styled with the same --rt-* variables the public page will use.
+  return (
+    <span className="theme-preview" style={themeToCssVars(theme)} aria-hidden="true">
+      <span className="theme-preview__card">
+        <span className="theme-preview__title">پیتزا مخصوص</span>
+        <span className="theme-preview__muted">قارچ، پنیر، زیتون</span>
+        <span className="theme-preview__row">
+          <span className="theme-preview__price">۲۸۰,۰۰۰</span>
+          <span className="theme-preview__btn">افزودن</span>
+        </span>
+      </span>
+    </span>
+  );
+}
 
 export default function ThemeSection() {
-  useDocumentTitle("مدیریت قالب");
   const { notify } = useGlobalUI();
-  const [theme, setTheme] = useState("orange");
-  const [restaurantType, setRestaurantType] = useState("modern");
+  const queryClient = useQueryClient();
 
-  // API later
+  const { data, isLoading } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: getOwnerTheme,
+  });
+
+  // Saved theme comes from the backend; unknown/missing ids fall back to the default.
+  const savedId = data?.themeId ? getTheme(data.themeId).id : DEFAULT_THEME_ID;
+
+  // pendingId = the choice the owner made but has not saved yet.
+  const [pendingId, setPendingId] = useState(null);
+  const selectedId = pendingId ?? savedId;
+  const dirty = pendingId !== null && pendingId !== savedId;
+
+  const saveMutation = useMutation({
+    mutationFn: saveOwnerTheme,
+    onSuccess: (_result, themeId) => {
+      queryClient.setQueryData(QUERY_KEY, { themeId });
+      setPendingId(null);
+      notify("قالب رستوران ذخیره شد", "success");
+    },
+    onError: () => {
+      notify("ذخیره قالب انجام نشد. دوباره تلاش کنید.", "error");
+    },
+  });
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!dirty || saveMutation.isPending) return;
+    saveMutation.mutate(selectedId);
   };
 
+  const handleReset = () => setPendingId(null);
+
   return (
-    <form className="panels-grid-single-column" onSubmit={handleSubmit}>
+    <form className="theme-picker" onSubmit={handleSubmit}>
       <div className="panel">
-        <h3>انتخاب تم رنگی آماده</h3>
+        <h3>قالب رستوران</h3>
         <p className="panel-subtitle">
-          یک پالت رنگی برای صفحه رستوران خود انتخاب کنید تا رنگ پس‌زمینه،
-          دکمه‌ها و متون تغییر کند.
+          یک قالب انتخاب کنید تا رنگ پس‌زمینه، کارت‌ها، دکمه‌ها و متن‌های صفحه
+          رستوران شما تغییر کند.
         </p>
 
-        <div className="theme-swatches">
-          {SWATCHES.map((s) => (
-            <div key={s.id} className="theme-swatch">
+        <fieldset className="theme-picker__grid" disabled={isLoading}>
+          <legend className="theme-sr-only">انتخاب قالب</legend>
+
+          {THEMES.map((theme) => (
+            <label key={theme.id} className="theme-card">
               <input
+                className="theme-card__input"
                 type="radio"
-                id={s.id}
-                name="color_theme"
-                value={s.value}
-                checked={theme === s.value}
-                onChange={() => setTheme(s.value)}
+                name="restaurant_theme"
+                value={theme.id}
+                checked={selectedId === theme.id}
+                onChange={() => setPendingId(theme.id)}
               />
-              <label htmlFor={s.id}>
-                <div className="palette">
-                  {s.palette.map((c, i) => (
-                    <span
-                      key={i}
-                      className="color-dot"
-                      style={{ background: c }}
-                    />
-                  ))}
-                </div>
-                {s.label}
-              </label>
-            </div>
+              <span className="theme-card__body">
+                <ThemePreview theme={theme} />
+                <span className="theme-card__label">
+                  {theme.label}
+                  {savedId === theme.id && (
+                    <span className="theme-card__current">فعلی</span>
+                  )}
+                </span>
+                <span className="theme-card__desc">{theme.description}</span>
+                <svg
+                  className="theme-card__check"
+                  viewBox="0 0 24 24"
+                  width="18"
+                  height="18"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M5 12.5l4.5 4.5L19 7.5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+            </label>
           ))}
-        </div>
+        </fieldset>
       </div>
 
-      <div className="panel">
-        <h3>تصاویر رستوران</h3>
-        <p className="panel-subtitle">
-          تصویر پروفایل و بنر بالای صفحه رستوران خود را آپلود کنید.
-        </p>
-
-        <form
-          className="image-upload-form"
-          onSubmit={(e) => e.preventDefault()}
+      <div className="theme-picker__actions">
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={!dirty || saveMutation.isPending}
         >
-          <div className="input-group">
-            <label htmlFor="profile-upload">عکس پروفایل</label>
-            <input
-              type="file"
-              id="profile-upload"
-              className="file-input"
-              accept="image/*"
-            />
-          </div>
-          <div className="input-group">
-            <label htmlFor="banner-upload">عکس بنر</label>
-            <input
-              type="file"
-              id="banner-upload"
-              className="file-input"
-              accept="image/*"
-            />
-          </div>
-        </form>
+          {saveMutation.isPending ? "در حال ذخیره..." : "ذخیره قالب"}
+        </button>
+
+        {dirty && (
+          <>
+            <button type="button" className="btn" onClick={handleReset}>
+              انصراف
+            </button>
+            <span className="theme-picker__status">تغییرات ذخیره نشده</span>
+          </>
+        )}
       </div>
-
-      <div className="panel">
-        <h3>نوع رستوران</h3>
-        <p className="panel-subtitle">
-          دسته بندی اصلی رستوران خود را مشخص کنید.
-        </p>
-
-        <div className="input-group">
-          <label htmlFor="restaurant-type">انتخاب نوع</label>
-          <select
-            id="restaurant-type"
-            name="restaurant_type"
-            value={restaurantType}
-            onChange={(e) => setRestaurantType(e.target.value)}
-          >
-            {TYPES.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <button
-        type="submit"
-        className="btn btn-primary"
-        style={{ maxWidth: 200, marginTop: 10 }}
-      >
-        ذخیره تغییرات قالب
-      </button>
     </form>
   );
 }

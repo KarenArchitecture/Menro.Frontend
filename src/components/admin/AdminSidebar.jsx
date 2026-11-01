@@ -30,6 +30,11 @@ const NAV_GROUPS = [
         icon: "fas fa-store",
       },
       {
+  key: "theme",
+  label: "قالب رستوران",
+  icon: "fas fa-palette",
+},
+      {
         key: "restaurant-qr",
         label: "کد QR",
         icon: "fas fa-qrcode",

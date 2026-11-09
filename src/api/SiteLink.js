@@ -1,4 +1,4 @@
-// src/api/PublicSiteMenuAxios.js
+// src/api/SiteLink.js
 import siteLinkAxios from "./siteLinkAxios";
 
 /** مقادیر باید دقیقاً با enum بک‌اند (MenuLocation) هم‌نام باشند. */

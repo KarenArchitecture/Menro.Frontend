@@ -1,4 +1,4 @@
-// src/themes/restaurantThemes.js
+// src/Themes/restaurantThemes.js
 //
 // SINGLE SOURCE OF TRUTH for restaurant themes.
 // Used by:
@@ -268,7 +268,10 @@ export function themeToCssVars(themeOrId) {
       : themeOrId;
 
   return Object.fromEntries(
-    Object.entries(VAR_NAMES).map(([key, cssVar]) => [cssVar, theme.tokens[key]]),
+    Object.entries(VAR_NAMES).map(([key, cssVar]) => [
+      cssVar,
+      theme.tokens[key],
+    ]),
   );
 }
 
@@ -279,6 +282,9 @@ export function themeToCssVars(themeOrId) {
 export function applyTheme(el, themeId) {
   if (!el) return undefined;
   const vars = themeToCssVars(themeId);
-  Object.entries(vars).forEach(([name, value]) => el.style.setProperty(name, value));
-  return () => Object.keys(vars).forEach((name) => el.style.removeProperty(name));
+  Object.entries(vars).forEach(([name, value]) =>
+    el.style.setProperty(name, value),
+  );
+  return () =>
+    Object.keys(vars).forEach((name) => el.style.removeProperty(name));
 }

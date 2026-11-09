@@ -17,6 +17,7 @@ import {
 } from "../api/restaurants";
 import { getRestaurantCategoriesBySlug } from "../api/foodCategories";
 import { CartProvider, useCart } from "../components/shop/CartContext";
+import { applyTheme } from "../Themes/restaurantThemes";
 import {
   ShopBannerSkeleton,
   CategoryBarSkeleton,
@@ -58,7 +59,10 @@ function RestaurantContent() {
       if (topAnchor) {
         const navH = document.querySelector(".navbar")?.offsetHeight ?? 0;
         const y =
-          topAnchor.getBoundingClientRect().top + window.pageYOffset - navH - 12;
+          topAnchor.getBoundingClientRect().top +
+          window.pageYOffset -
+          navH -
+          12;
 
         window.scrollTo({
           top: y,
@@ -144,6 +148,10 @@ function RestaurantContent() {
       document.body.classList.remove("has-checkout");
     };
   }, [cart.count]);
+  useEffect(
+    () => applyTheme(document.documentElement, banner?.themeId),
+    [banner?.themeId],
+  );
 
   useEffect(() => {
     const checkIfNearBottom = () => {

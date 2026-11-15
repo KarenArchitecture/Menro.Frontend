@@ -3,11 +3,6 @@
    Users are on phones and tablets only. Layout is mobile-first (base 390px),
    with one tablet block at the very end.
 
-   THEMING: colors, radii and fonts of the restaurant theme come from the
-   --rt-* variables (see :root). Do not hardcode colors here; add a token in
-   src/Themes/restaurantThemes.js instead. A few colors are intentionally fixed:
-   anything drawn on top of a photo (banner text, icon buttons, info panel).
-
    Contents
    --------
     1. Tokens, reset, base
@@ -32,19 +27,25 @@
   --checkout-bar-h: 9.6rem;
   --checkout-h: 0px; /* space reserved for the checkout bar (0 when hidden) */
 
-  /* Theme tokens. Defaults = "modern" theme; the real values are set at runtime
-     by applyTheme() (src/Themes/restaurantThemes.js) from the restaurant's saved theme. */
-  --rt-bg: #121212;
-  --rt-surface: #1e1e1e;
-  --rt-surface-alt: #2a2a2a;
-  --rt-text: #fafaf4;
-  --rt-text-muted: #a8a8a0;
-  --rt-border: #333333;
-  --rt-primary: #ff683c;
-  --rt-on-primary: #1a1a1a;
-  --rt-accent: #ffb199;
-  --rt-radius-card: 12px;
-  --rt-radius-button: 10px;
+  /* ---- Theme colors (15) ----------------------------------------------
+     These defaults are the original look of the page. At runtime the
+     restaurant's theme (from the backend) overrides them via applyTheme().
+     Never hardcode a color below: use one of these variables. */
+  --rt-bg: #0c0f14; /* page background */
+  --rt-bar-bg: #0c0f14; /* category bar, checkout bar, bottom nav */
+  --rt-surface: #1e232a; /* pills, small buttons, rows inside sheets */
+  --rt-card-start: #262b33; /* menu card gradient (top-left) */
+  --rt-card-end: #161b20; /* menu card gradient (bottom-right); same as start = solid */
+  --rt-text: #fafaf4; /* main text */
+  --rt-text-muted: #a5adc0; /* secondary text, inactive category */
+  --rt-border: rgba(250, 250, 244, 0.06); /* dividers and thin outlines */
+  --rt-primary: #ff683c; /* add/qty buttons, checkout button, prices currency, active category */
+  --rt-on-primary: #fafaf4; /* text/icons on the primary color */
+  --rt-hero-btn-start: #262b33; /* banner shortcut button gradient (top) */
+  --rt-hero-btn-end: #161b20; /* banner shortcut button gradient (bottom) */
+  --rt-search-bg: #0c0f14; /* banner search bar */
+  --rt-search-text: #a5adc0; /* banner search text + placeholder */
+  --rt-search-border: transparent; /* banner search outline */
 }
 
 body.has-checkout {
@@ -306,16 +307,17 @@ footer,
 
 .search-bar--hero {
   width: 100% !important;
-  background: var(--rt-surface);
+  border: 1px solid var(--rt-search-border);
+  background: var(--rt-search-bg);
 }
 
 .search-bar--hero input {
-  background: var(--rt-surface);
-  color: var(--rt-text);
+  background: var(--rt-search-bg);
+  color: var(--rt-search-text);
 }
 
 .search-bar--hero input::placeholder {
-  color: var(--rt-text-muted);
+  color: var(--rt-search-text);
 }
 
 .search-bar--hero .search-icon {
@@ -341,10 +343,14 @@ footer,
   gap: 5px;
   height: 42px;
   padding: 0 14px;
-  background: linear-gradient(180deg, var(--rt-surface-alt), var(--rt-surface));
+  background: linear-gradient(
+    180deg,
+    var(--rt-hero-btn-start),
+    var(--rt-hero-btn-end)
+  );
   border: 0;
-  border-radius: var(--rt-radius-button);
-  color: var(--rt-text);
+  border-radius: 10px;
+  color: var(--rt-on-primary);
   white-space: nowrap;
 }
 
@@ -371,7 +377,7 @@ footer,
   position: sticky;
   top: var(--shop-navbar-h);
   z-index: 1000;
-  background: var(--rt-bg);
+  background: var(--rt-bar-bg);
   border-top: solid 1px var(--rt-border);
   border-bottom: solid 1px var(--rt-border);
 }
@@ -382,7 +388,7 @@ footer,
   justify-content: space-between;
   gap: 2rem;
   padding: 1rem 2.5rem;
-  background-color: var(--rt-bg);
+  background-color: var(--rt-bar-bg);
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -540,7 +546,7 @@ footer,
   width: 8.5rem;
   height: 2.8rem;
   padding: 0.4rem 1.2rem;
-  background: var(--rt-surface-alt);
+  background: var(--rt-surface);
   border: none;
   border-radius: 0.7rem;
   color: var(--rt-text);
@@ -554,7 +560,7 @@ footer,
 }
 
 .menu_nav-btn:hover {
-  background: var(--rt-border);
+  background: color-mix(in srgb, var(--rt-surface), var(--rt-text) 10%);
 }
 
 .menu_nav-btn .arrow {
@@ -619,7 +625,7 @@ footer,
   height: 25rem;
   background: var(--rt-surface);
   border: 0;
-  border-radius: var(--rt-radius-card);
+  border-radius: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   color: var(--rt-text);
   cursor: pointer;
@@ -676,7 +682,7 @@ footer,
   padding: 0 1.2rem;
   background: var(--rt-surface);
   border: 1px solid var(--rt-border);
-  border-radius: var(--rt-radius-button);
+  border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
   color: var(--rt-text);
   font-size: 1.4rem;
@@ -769,10 +775,10 @@ footer,
   margin: 0 auto;
   background: linear-gradient(
     135deg,
-    var(--rt-surface-alt) 0%,
-    var(--rt-surface) 100%
+    var(--rt-card-start) 0%,
+    var(--rt-card-end) 100%
   );
-  border-radius: var(--rt-radius-card);
+  border-radius: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   overflow: hidden;
 }
@@ -789,7 +795,7 @@ footer,
   display: block;
   width: 100%;
   height: 100%;
-  border-radius: calc(var(--rt-radius-card) * 0.85);
+  border-radius: 1.7rem;
   object-fit: cover;
 }
 
@@ -864,7 +870,7 @@ footer,
 
 .menu-card__currency {
   margin-right: 2px;
-  color: var(--rt-accent);
+  color: var(--rt-primary);
   font-size: 11px;
   font-weight: 700;
 }
@@ -894,7 +900,7 @@ footer,
   height: 28px;
   background: var(--rt-primary);
   border: none;
-  border-radius: var(--rt-radius-button);
+  border-radius: 10px;
   outline: none;
   color: var(--rt-on-primary);
   font-size: 18px;
@@ -921,7 +927,7 @@ footer,
   height: 28px;
   background-color: var(--rt-primary);
   border: none;
-  border-radius: var(--rt-radius-button);
+  border-radius: 10px;
   color: var(--rt-on-primary);
   font-size: 20px;
   line-height: 1;
@@ -935,7 +941,7 @@ footer,
   width: 35px;
   height: 28px;
   background-color: var(--rt-text);
-  border-radius: var(--rt-radius-button);
+  border-radius: 10px;
   color: var(--rt-bg);
   font-size: 13px;
   font-weight: 800;
@@ -1016,7 +1022,7 @@ footer,
   display: block;
   width: 100%;
   height: 38vh;
-  background-color: var(--rt-surface-alt);
+  background-color: var(--rt-surface);
   background-repeat: no-repeat;
   object-fit: cover;
   opacity: 0;
@@ -1198,7 +1204,7 @@ footer,
 }
 
 .variant-currency {
-  color: var(--rt-accent);
+  color: var(--rt-primary);
   font-size: 1rem;
   font-weight: 800;
   opacity: 0.85;
@@ -1217,7 +1223,7 @@ footer,
   padding: 0 14px;
   background: var(--rt-primary);
   border: 0;
-  border-radius: var(--rt-radius-button);
+  border-radius: 10px;
   box-shadow: 0 4px 10px color-mix(in srgb, var(--rt-primary) 30%, transparent);
   color: var(--rt-on-primary);
   font-size: 20px;
@@ -1233,7 +1239,7 @@ footer,
   height: 44px;
   padding: 0 12px;
   background: var(--rt-text);
-  border-radius: var(--rt-radius-button);
+  border-radius: 10px;
   color: var(--rt-bg);
   font-weight: 800;
 }
@@ -1317,7 +1323,7 @@ footer,
 }
 
 .addon-row.checked .addon-currency {
-  color: var(--rt-accent);
+  color: var(--rt-primary);
 }
 
 /* 0..10 horizontal picker */
@@ -1408,7 +1414,7 @@ footer,
   justify-content: center;
   gap: 8px;
   padding: 0.6rem 1.2rem;
-  background-color: var(--rt-surface-alt) !important;
+  background-color: var(--rt-surface) !important;
   border-radius: 1rem;
   color: var(--rt-text);
   font-size: 1.2rem;
@@ -1485,7 +1491,7 @@ footer,
   z-index: 2500;
   height: var(--checkout-bar-h);
   padding: 10px 12px max(12px, env(safe-area-inset-bottom));
-  background: var(--rt-surface);
+  background: var(--rt-bar-bg);
   box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
   pointer-events: none; /* only the inner box is clickable */
 }
@@ -1529,7 +1535,7 @@ footer,
 }
 
 .checkout-bar__total-currency {
-  color: var(--rt-accent);
+  color: var(--rt-primary);
   font-size: 1.3rem;
   font-weight: 700;
   opacity: 0.9;
@@ -1542,7 +1548,7 @@ footer,
   padding: 0 2.4rem;
   background: var(--rt-primary);
   border: none;
-  border-radius: var(--rt-radius-button);
+  border-radius: 10px;
   color: var(--rt-on-primary);
   font-size: 1.3rem;
   font-weight: 700;
@@ -1580,7 +1586,7 @@ footer,
   width: 100%;
   height: 5rem;
   padding: 0 1rem;
-  background-color: var(--rt-surface);
+  background-color: var(--rt-bar-bg);
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
   transform: translateY(0);
   transition: transform 0.3s ease;
@@ -1619,7 +1625,7 @@ footer,
 }
 
 .nav-item.active {
-  color: var(--rt-accent);
+  color: var(--rt-primary);
 }
 
 .nav-icon {

@@ -98,6 +98,11 @@ const NAV_GROUPS = [
         label: "دسته‌بندی انواع رستوران",
         icon: "fas fa-concierge-bell",
       },
+      {
+        key: "restaurant-themes",
+        label: "قالب‌های منرو",
+        icon: "fas fa-palette",
+      },
     ],
   },
   {

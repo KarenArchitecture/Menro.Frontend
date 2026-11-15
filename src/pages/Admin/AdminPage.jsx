@@ -28,6 +28,7 @@ import UserManagementSection from "../../components/admin/UserManagementSection"
 import RestaurantsManagementSection from "../../components/admin/RestaurantsManagementSection";
 import CategorySettingsSection from "../../components/admin/CategorySettingsSection";
 import RestaurantCategorySettingsSection from "../../components/admin/RestaurantCategorySettingsSection";
+import RestaurantThemesManagementSection from "../../components/admin/RestaurantThemesManagementSection";
 
 /* ===================== Sections: content-ads-admin ===================== */
 import AdsManagementSection from "../../components/admin/AdsManagementSection";
@@ -70,6 +71,7 @@ export default function AdminPage() {
   const [restaurantId, setRestaurantId] = useState();
 
   const isOwner = (user?.roles || []).some((r) => r.toLowerCase() === "owner");
+  const isAdmin = (user?.roles || []).some((r) => r.toLowerCase() === "admin");
 
   const { data: pendingComments = [] } = useQuery({
     queryKey: ["owner-comments", "pending"],
@@ -151,6 +153,15 @@ export default function AdminPage() {
         return <CategorySettingsSection />;
       case "restaurant-category-settings":
         return <RestaurantCategorySettingsSection />;
+      case "restaurant-themes":
+        return isAdmin ? (
+          <RestaurantThemesManagementSection />
+        ) : (
+          <div className="panel" role="alert">
+            <h3>دسترسی غیرمجاز</h3>
+            <p>مدیریت قالب‌های منرو فقط برای مدیر سامانه در دسترس است.</p>
+          </div>
+        );
 
       // --- content-ads-admin ---
       case "ads-management":

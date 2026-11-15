@@ -1,0 +1,29 @@
+name: Restaurant themes frontend build
+
+on:
+  push:
+    branches:
+      - feature/restaurant-themes
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Build and lint theme module
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Production build
+        run: npm run build
+      - name: Lint theme admin files
+        run: npx eslint src/api/adminRestaurantThemesAxios.js src/api/adminRestaurantThemes.js src/components/admin/RestaurantThemesManagementSection.jsx

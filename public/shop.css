@@ -1760,13 +1760,18 @@ html[data-restaurant-shop="true"] .combo-foods-header {
    which otherwise replaces it with the global site's surface color. */
 html[data-restaurant-shop="true"] .menu-card {
   background: linear-gradient(135deg, var(--rt-card-start), var(--rt-card-end));
-  /* A drop-shadow follows the card's actual rounded silhouette. The previous
-     box-shadow appeared as a square halo against contrasting theme colors. */
+  /* Remove the external drop-shadow, which leaves a squared-off halo behind
+     the rounded card on contrasting restaurant backgrounds. A subtle inset
+     edge stays entirely inside the card's own radius. */
   border-radius: 2rem;
   background-clip: padding-box;
   overflow: hidden;
-  box-shadow: none;
-  filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.28));
+  filter: none;
+  box-shadow: inset 0 0 0 1px color-mix(
+    in srgb,
+    var(--rt-border) 45%,
+    transparent
+  );
 }
 
 html[data-restaurant-shop="true"] .food_items.horizontal-scroll .seeall-card,

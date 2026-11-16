@@ -485,3 +485,152 @@
   padding: 12px 12px 24px;
   box-sizing: border-box;
 }
+
+
+/* ================================================================
+   Restaurant-specific music colors (scoped to the public music route)
+   Inherit the same RestaurantTheme API palette as the shop page.
+   CSS variable fallbacks preserve the original dark look until loading
+   completes and when no theme is selected.
+   ================================================================ */
+html[data-restaurant-music="true"] {
+  --t-bg: var(--rt-bg, #0b0f14);
+  --t-surface: var(--rt-surface, #141a22);
+  --t-text: var(--rt-text, #fafaf4);
+}
+
+/* The mobile app uses an opaque fixed app shell, so body alone is not
+   sufficient. This selector outranks the platform-wide light-mode rules. */
+html[data-restaurant-music="true"],
+html[data-restaurant-music="true"] body,
+html[data-restaurant-music="true"] .app-shell,
+html[data-restaurant-music="true"] .app-shell__content,
+html[data-restaurant-music="true"] .page-background,
+html.theme-light[data-restaurant-music="true"] .app-shell {
+  background-color: var(--rt-bg, #0b0f14);
+  color: var(--rt-text, #fafaf4);
+}
+
+html[data-restaurant-music="true"] .music-page {
+  background: var(--rt-bg, #0b0f14);
+  color: var(--rt-text, #fafaf4);
+}
+
+html[data-restaurant-music="true"] .music-page__header,
+html[data-restaurant-music="true"] .music-page__footer {
+  background: var(--rt-bar-bg, #0b0f14);
+  border-color: var(--rt-border, #1b2026);
+}
+
+html[data-restaurant-music="true"] .music-page__title,
+html[data-restaurant-music="true"] .music-track__title {
+  color: var(--rt-text, #fafaf4);
+}
+
+html[data-restaurant-music="true"] .music-page__back,
+html[data-restaurant-music="true"] .music-modal__close {
+  background: var(--rt-surface, #151a22);
+  color: var(--rt-text, #fafaf4);
+}
+
+html[data-restaurant-music="true"] .music-page__request-btn {
+  background: linear-gradient(
+    135deg,
+    var(--rt-hero-btn-start, var(--rt-primary, #ff683c)),
+    var(--rt-hero-btn-end, var(--rt-primary, #ff683c))
+  );
+  color: var(--rt-on-primary, #fafaf4);
+}
+
+html[data-restaurant-music="true"] .music-track__request:not(.is-disabled) {
+  background: var(--rt-primary, #ff683c);
+  color: var(--rt-on-primary, #fafaf4);
+}
+
+html[data-restaurant-music="true"] .music-track__request.is-disabled {
+  border-color: var(--rt-border, #fafaf4);
+  color: var(--rt-text-muted, #fafaf4);
+}
+
+html[data-restaurant-music="true"] .music-page__search {
+  background: var(--rt-search-bg, #11151c);
+  border: 1px solid var(--rt-search-border, transparent);
+}
+
+html[data-restaurant-music="true"] .music-page__search-input {
+  color: var(--rt-search-text, #fafaf4);
+  caret-color: var(--rt-search-text, #fafaf4);
+}
+
+html[data-restaurant-music="true"] .music-page__search-input::placeholder {
+  color: var(--rt-search-text, #7f8792);
+  opacity: 0.8;
+}
+
+html[data-restaurant-music="true"] .music-page__list::-webkit-scrollbar-thumb,
+html[data-restaurant-music="true"] .music-sheet::-webkit-scrollbar-thumb {
+  background: var(--rt-border, #222);
+}
+
+html[data-restaurant-music="true"] .music-track.is-active {
+  background: linear-gradient(
+    135deg,
+    var(--rt-card-start, #141a22),
+    var(--rt-card-end, #141a22)
+  );
+}
+
+html[data-restaurant-music="true"] .music-track__subtitle,
+html[data-restaurant-music="true"] .music-track__img-placeholder {
+  color: var(--rt-text-muted, #b0b6bf);
+}
+
+html[data-restaurant-music="true"] .music-track__status--requested,
+html[data-restaurant-music="true"] .music-track__status--mine,
+html[data-restaurant-music="true"] .music-sheet__limit-number {
+  color: var(--rt-primary, #ff683c);
+}
+
+html[data-restaurant-music="true"] .music-track__thumb,
+html[data-restaurant-music="true"] .music-sheet__alert--info {
+  background: var(--rt-surface, #2a2a2a);
+}
+
+html[data-restaurant-music="true"] .music-modal__backdrop {
+  background: color-mix(in srgb, var(--rt-bg, #0b0f14) 78%, transparent);
+}
+
+html[data-restaurant-music="true"] .music-sheet {
+  background: var(--rt-bg, #10151b);
+  color: var(--rt-text, #fafaf4);
+  border-color: var(--rt-border, #1b2026);
+}
+
+html[data-restaurant-music="true"] .music-sheet__header {
+  background: color-mix(in srgb, var(--rt-bar-bg, #10151b) 96%, transparent);
+  border-bottom-color: var(--rt-border, #1b2026);
+}
+
+html[data-restaurant-music="true"] .music-sheet__alert--info {
+  color: var(--rt-text, #fafaf4);
+}
+
+/* This success modal is shared by checkout and music; keep overrides
+   scoped so a restaurant's palette never affects the rest of Menro. */
+html[data-restaurant-music="true"] .order-success-modal-root {
+  --osm-surface: var(--rt-surface, #141921);
+  --osm-cream: var(--rt-text, #fafaf4);
+  --osm-orange: var(--rt-primary, #ff683c);
+}
+
+html[data-restaurant-music="true"] .music-page__state {
+  padding: 24px 12px;
+  color: var(--rt-text-muted, #b0b6bf);
+  text-align: center;
+  line-height: 1.8;
+}
+
+html[data-restaurant-music="true"] .music-page__request-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

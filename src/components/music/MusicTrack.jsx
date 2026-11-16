@@ -79,7 +79,7 @@ export default function MusicTrack({
           <h3
             className="music-track__title"
             style={{
-              color: active ? "#ff9800" : "inherit",
+              color: active ? "var(--rt-primary, #ff9800)" : "inherit",
               fontWeight: active ? "bold" : "normal",
             }}
           >

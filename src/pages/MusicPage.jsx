@@ -1,7 +1,8 @@
 // MusicPage.jsx
 
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
 import MusicTrack from "../components/music/MusicTrack";
 import MusicRequestModal from "../components/music/MusicRequestModal";
@@ -14,13 +15,40 @@ import "../assets/css/styles-music.css";
 import { useMusicSignalR } from "../hooks/useMusicSignalR";
 
 import { getPublicMusic, requestTrack } from "../api/music";
+import { getRestaurantBannerBySlug } from "../api/restaurants";
+import { applyTheme } from "../Themes/restaurantThemes";
 
 export default function MusicPage() {
   useDocumentTitle("پخش‌کننده موسیقی");
   const navigate = useNavigate();
   const location = useLocation();
+  const { slug } = useParams();
 
-  const restaurantId = location.state?.restaurantId;
+  // Restore the restaurant identity and selected palette even when the music
+  // page is opened directly or refreshed without router navigation state.
+  const {
+    data: restaurantBanner,
+    isLoading: isRestaurantLoading,
+    isError: isRestaurantError,
+  } = useQuery({
+    queryKey: ["restaurantBanner", slug],
+    queryFn: () => getRestaurantBannerBySlug(slug),
+    enabled: Boolean(slug),
+    refetchOnWindowFocus: false,
+  });
+
+  const restaurantId = restaurantBanner?.id ?? location.state?.restaurantId;
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.dataset.restaurantMusic = "true";
+    const removeTheme = applyTheme(root, restaurantBanner?.theme);
+
+    return () => {
+      removeTheme?.();
+      delete root.dataset.restaurantMusic;
+    };
+  }, [restaurantBanner?.theme]);
 
   const [tracks, setTracks] = useState([]);
   const [playback, setPlayback] = useState(null);
@@ -53,10 +81,7 @@ export default function MusicPage() {
     }
   };
   useEffect(() => {
-    if (!restaurantId) {
-      navigate(-1);
-      return;
-    }
+    if (!restaurantId) return;
 
     fetchMusic();
   }, [restaurantId]);
@@ -180,6 +205,13 @@ export default function MusicPage() {
         aria-hidden={isRequestModalOpen || showMusicSuccess}
       >
         <section className="music-page__list" aria-label="لیست آهنگ‌ها">
+          {!restaurantId && !isRestaurantLoading && (
+            <p className="music-page__state" role="alert">
+              {isRestaurantError
+                ? "دریافت اطلاعات رستوران انجام نشد. صفحه را مجدداً بارگذاری کنید."
+                : "رستوران موردنظر یافت نشد."}
+            </p>
+          )}
           {tracks.map((track) => (
             <MusicTrack
               key={track.id}
@@ -223,6 +255,7 @@ export default function MusicPage() {
             className="music-page__request-btn"
             type="button"
             onClick={handleOpenRequestModal}
+            disabled={!restaurantId}
           >
             درخواست موسیقی
           </button>

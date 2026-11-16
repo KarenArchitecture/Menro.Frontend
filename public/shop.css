@@ -1905,6 +1905,40 @@ html[data-restaurant-shop="true"] .vaction-pill .category-icon svg path {
   stroke: var(--rt-text);
 }
 
+/* Food details: variant rows must be part of the restaurant's own page
+   surface. They previously showed opaque rectangular strips between the
+   rounded price pill and quantity controls on contrasting theme colors.
+   Limit this override to the public item sheet, leaving other modals alone. */
+html[data-restaurant-shop="true"] .bottom-modal .variant-list,
+html[data-restaurant-shop="true"] .bottom-modal .variant-list > .modal-section,
+html[data-restaurant-shop="true"] .bottom-modal .variant-block,
+html[data-restaurant-shop="true"] .bottom-modal .variant-row {
+  background: var(--rt-bg);
+  background-image: none;
+  box-shadow: none;
+}
+
+html[data-restaurant-shop="true"] .bottom-modal .variant-list {
+  gap: 0;
+}
+
+html[data-restaurant-shop="true"] .bottom-modal .variant-block {
+  margin-bottom: 0;
+}
+
+html[data-restaurant-shop="true"] .bottom-modal .variant-row {
+  padding-block: 10px;
+}
+
+/* Only the pill is a separate surface; the rest of each row stays flush
+   with the themed sheet background. */
+html[data-restaurant-shop="true"] .bottom-modal .variant-pill {
+  background: var(--rt-surface);
+  color: var(--rt-text);
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 1px var(--rt-border);
+}
+
 /* Skeletons should not flash an unrelated dark background during data load. */
 html[data-restaurant-shop="true"] .menu-card.food-card-skeleton,
 html[data-restaurant-shop="true"] .shop-banner-skeleton-reserve {

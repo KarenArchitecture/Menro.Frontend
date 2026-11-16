@@ -203,3 +203,16 @@
     transition: none;
   }
 }
+
+.theme-picker__message {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-height: 120px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+.theme-picker__message--error {
+  color: #ef7777;
+}

@@ -303,3 +303,48 @@ input {
   gap: 10px;
   margin-top: 8px;
 }
+
+/* ===== Simple-food add-ons: match the variant name/price fields ===== */
+#food-modal .addon-item--simple {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  width: 100%;
+  margin: 10px 0;
+}
+
+/* Keep both sets of fields visually identical. */
+#food-modal .food-type-item > input,
+#food-modal .addon-item--simple > input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 49px;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid #3a3a3a;
+  border-radius: 10px;
+  background: #232323;
+  color: #eee;
+  font-size: 14px;
+  line-height: 1.5;
+  direction: rtl;
+  text-align: right;
+  transition: border-color 0.2s;
+}
+
+#food-modal .addon-item--simple > input {
+  margin: 0;
+}
+
+#food-modal .food-type-item > input:focus,
+#food-modal .addon-item--simple > input:focus {
+  outline: none;
+  border-color: #ff683c;
+}
+
+#food-modal .addon-item--simple > .btn {
+  align-self: flex-end;
+  margin: 0;
+}

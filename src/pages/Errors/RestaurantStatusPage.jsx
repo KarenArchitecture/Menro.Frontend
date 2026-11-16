@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useGlobalUI } from "../../components/common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 import { useAuth } from "../../context/AuthContext";
-import { RestaurantStatus } from "../../constants/restaurantStatus";
+import { RestaurantStatus } from "../../Constants/restaurantStatus";
 
 import "../../assets/css/auth.css";
 

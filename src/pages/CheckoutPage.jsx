@@ -23,14 +23,15 @@ export default function CheckoutPage() {
     setLocalCart(
       cart.items.map((ci) => ({
         id: ci.id,
-        title: `${ci.foodName} - ${ci.variantName}`,
+        validationMessage: ci.validationMessage,
+        title: [ci.foodName, ci.variantName].filter(Boolean).join(" - "),
         img: resolveFileUrl(ci.imageUrl, "/images/checkout-pic.png"),
         rating: { score: ci.rating ?? 4.5, count: ci.voters ?? 0 },
-        hasAddons: ci.addons.length > 0,
+        hasAddons: (ci.availableAddons || []).length > 0,
         options: [
           {
             id: ci.id,
-            title: ci.variantName,
+            title: ci.variantName || "تعداد",
             unitPrice: ci.unitPrice,
             qty: ci.quantity,
           },
@@ -61,6 +62,7 @@ export default function CheckoutPage() {
 
   const handleConfirmOrder = async (tableLabel) => {
     await cart.flushPending();
+    if (cart.items.some(i => i.isAvailable === false)) throw new Error("اقلام ناموجود را از سبد حذف یا دوباره انتخاب کنید.");
     const result = await checkoutCart(
       tableLabel === undefined ? null : tableLabel,
     );

@@ -4,7 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import LandingCostReductionIcon from "../icons/LandingCostReductionIcon";
-import useScroller from "./UseScroller";
+import useScroller from "./useScroller";
 
 gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
 

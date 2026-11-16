@@ -32,7 +32,7 @@ import RestaurantThemesManagementSection from "../../components/admin/Restaurant
 
 /* ===================== Sections: content-ads-admin ===================== */
 import AdsManagementSection from "../../components/admin/AdsManagementSection";
-import BlogManagementSection from "../../components/admin/BlogManagementSection";
+import BlogManagementSection from "../../components/admin/Blogmanagementsection";
 import LandingManagementSection from "../../components/admin/LandingManagementSection";
 import SiteLinkManagementSection from "../../components/admin/SiteLinkManagementSection";
 

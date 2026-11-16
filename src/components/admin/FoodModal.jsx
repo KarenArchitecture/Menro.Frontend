@@ -58,6 +58,7 @@ export default function FoodModal({
 
   //  simple vs variants
   const [hasVariants, setHasVariants] = useState(false);
+  const [foodAddons, setFoodAddons] = useState([]);
 
   const [variants, setVariants] = useState([
     {
@@ -118,6 +119,7 @@ export default function FoodModal({
     const fetchFood = async () => {
       try {
         const { data } = await adminFoodAxios.get(`/${foodId}`);
+        setFoodAddons((data.addons || []).map(a => ({ id: a.id, clientId: uid(), name: a.name, price: String(a.extraPrice) })));
         setName(data.name || "");
         setIngredients(data.ingredients || "");
         setFoodCategoryId(data.foodCategoryId ?? "");
@@ -368,6 +370,7 @@ export default function FoodModal({
   };
 
   const resetForm = () => {
+    setFoodAddons([]);
     setName("");
     setIngredients("");
     setFoodCategoryId(0);
@@ -383,7 +386,7 @@ export default function FoodModal({
     if (fileInputRef.current) fileInputRef.current.value = "";
 
     setVariants([
-      { id: uid(), name: "", price: "", isDefault: true, addons: [] },
+      { id: null, clientId: uid(), name: "", price: "", isDefault: true, addons: [] },
     ]);
   };
 
@@ -452,15 +455,21 @@ export default function FoodModal({
         }
       }
 
+      if (!hasVariants && foodAddons.some(a => !a.name.trim() || a.price === "")) {
+        notify({ type: "warning", message: "نام و قیمت همهٔ مخلفات را وارد کنید." });
+        return;
+      }
       // -------------------- shared payload pieces --------------------
       const basePriceValuePayload = !hasVariants ? toIntDigits(price) : null;
 
       const variantsPayload = hasVariants
         ? variants.map((v) => ({
+            id: v.id,
             name: v.name.trim(),
             price: toIntDigits(v.price),
             isDefault: v.isDefault,
             addons: v.addons.map((a) => ({
+              id: a.id,
               name: a.name.trim(),
               extraPrice: toIntDigits(a.price),
             })),
@@ -478,6 +487,8 @@ export default function FoodModal({
         formData.append("HasVariants", String(hasVariants));
         if (imageFile) formData.append("ImageFile", imageFile);
         appendFormValue(formData, "Variants", variantsPayload);
+        formData.append("ReplaceAddons", "true");
+        appendFormValue(formData, "Addons", hasVariants ? [] : foodAddons.map(a => ({ id: a.id, name: a.name.trim(), extraPrice: toIntDigits(a.price) })));
 
         await adminFoodAxios.post("/add", formData, {
           headers: { "Content-Type": "multipart/form-data" },
@@ -495,6 +506,8 @@ export default function FoodModal({
         formData.append("RemoveImage", String(imageRemoved));
         if (imageFile) formData.append("ImageFile", imageFile);
         appendFormValue(formData, "Variants", variantsPayload);
+        formData.append("ReplaceAddons", "true");
+        appendFormValue(formData, "Addons", hasVariants ? [] : foodAddons.map(a => ({ id: a.id, name: a.name.trim(), extraPrice: toIntDigits(a.price) })));
 
         await adminFoodAxios.put("/update", formData, {
           headers: { "Content-Type": "multipart/form-data" },
@@ -618,6 +631,24 @@ export default function FoodModal({
                 )}
               </div>
               <hr className="form-divider" />
+              {!hasVariants && (
+                <div className="addons-block">
+                  <label className="addons-title">مخلفات غذا (اختیاری)</label>
+                  <small className="variants-note">مشتری می‌تواند برای هر واحد غذا مخلفات انتخاب کند.</small>
+                  {foodAddons.length === 0 && <div className="addons-empty">این غذا بدون مخلفات هم قابل سفارش است.</div>}
+                  {foodAddons.map(a => (
+                    <div key={a.clientId} className="addon-item">
+                      <input aria-label="نام مخلفات" placeholder="نام مخلفات" maxLength={100} value={a.name}
+                        onChange={e => setFoodAddons(prev => prev.map(x => x.clientId === a.clientId ? { ...x, name: e.target.value } : x))} />
+                      <input aria-label="قیمت مخلفات به تومان" placeholder="قیمت (تومان)" inputMode="numeric" value={a.price}
+                        onChange={e => setFoodAddons(prev => prev.map(x => x.clientId === a.clientId ? { ...x, price: e.target.value.replace(/[^\d]/g, "") } : x))} />
+                      <button type="button" className="btn btn-icon btn-danger" aria-label="حذف مخلفات"
+                        onClick={() => setFoodAddons(prev => prev.filter(x => x.clientId !== a.clientId))}><i className="fas fa-trash" /></button>
+                    </div>
+                  ))}
+                  <button type="button" className="btn btn-sm btn-secondary" onClick={() => setFoodAddons(prev => [...prev, { id: null, clientId: uid(), name: "", price: "" }])}>افزودن مخلفات</button>
+                </div>
+              )}
               {/* discount toggle — همیشه دیده می‌شود، چه ساده چه با تنوع */}
               <div className="input-group">
                 <label className="discount-toggle">

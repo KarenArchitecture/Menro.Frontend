@@ -26,6 +26,7 @@ export default function CartCard({ item, onChangeQty }) {
             </div>
           </div>
         </div>
+        {item.validationMessage && <div role="alert"><p>{item.validationMessage}</p><button type="button" className="btn btn-secondary" onClick={() => onChangeQty(item.id, item.options[0].id, -item.options[0].qty)}>حذف از سبد</button></div>}
         <div className="option-group">
           {item.options.map((opt) => (
             <OptionRow
@@ -46,7 +47,7 @@ export default function CartCard({ item, onChangeQty }) {
           style={{ border: "none", cursor: "pointer" }}
         >
           <img src="/images/checkout-extras.svg" alt="food options svg" />
-          با مخلفات
+          انتخاب مخلفات
         </button>
       )}
 

@@ -23,7 +23,7 @@ import ownerRestaurantAds from "../../api/ownerRestaurantAds";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 import AdBookingModal from "./AdBookingModal";
-import "../../assets/css/admin/RestaurantAdsSection.css";
+import "../../assets/css/admin/restaurantAdsSection.css";
 
 /* ---------- helpers ---------- */
 const DAY = 24 * 60 * 60 * 1000;

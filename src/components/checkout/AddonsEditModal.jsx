@@ -144,7 +144,7 @@ export default function AddonsEditModal({ open, onClose }) {
                             {food.variants.map((v) => (
                                 <div key={v.id} className="aem-variant-block">
                                     <div className="aem-variant-row">
-                                        <span className="aem-variant-name">{v.variantName}</span>
+                                        <span className="aem-variant-name">{v.variantName || food.foodName}</span>
                                         <span className="aem-variant-price">
                                             {fmt(v.unitPrice)}{" "}
                                             <span className="currency">تومان</span>

@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
-import PostsPane from "./BlogManagementSection/PostsPane";
-import DisplayCategoriesPane from "./BlogManagementSection/DisplayCategoriesPane";
-import TagsPane from "./BlogManagementSection/TagsPane";
-import HeroPane from "./BlogManagementSection/HeroPane";
+import PostsPane from "./Blogmanagementsection/PostsPane";
+import DisplayCategoriesPane from "./Blogmanagementsection/DisplayCategoriesPane";
+import TagsPane from "./Blogmanagementsection/TagsPane";
+import HeroPane from "./Blogmanagementsection/HeroPane";
 import "../../assets/css/admin/admin.css";
 import "../../assets/css/admin/admin-modal.css";
 import "../../assets/css/admin/blogManagementSection.css";

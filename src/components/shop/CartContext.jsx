@@ -14,6 +14,7 @@ import {
   clearCart as clearCartApi,
   mergeGuestCart,
 } from "../../api/cart";
+import { showError } from "../../utils/toast";
 import { useAuth } from "../../context/AuthContext";
 
 const CartContext = createContext(null);
@@ -50,6 +51,7 @@ export function CartProvider({ children }) {
   }, [overrides]);
 
   const timersRef = useRef({});
+  const lastErrorRef = useRef(null);
   const inFlightRef = useRef({});
   const dirtyRef = useRef({});
   const [pendingCount, setPendingCount] = useState(0);
@@ -83,6 +85,7 @@ export function CartProvider({ children }) {
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const clearOverride = useCallback((key) => {
+    delete overridesRef.current[key];
     setOverrides((prev) => {
       if (!(key in prev)) return prev;
       const next = { ...prev };
@@ -99,6 +102,7 @@ export function CartProvider({ children }) {
       try {
         const result = await setCartItem(dto);
         if (result.conflict) {
+          lastErrorRef.current = new Error("ابتدا تغییر رستوران را تأیید کنید.");
           setConflict({
             conflictingRestaurantName: result.conflictingRestaurantName,
             pendingDto: dto,
@@ -108,6 +112,8 @@ export function CartProvider({ children }) {
           setCart(result.cart ?? EMPTY_CART);
         }
       } catch (err) {
+        lastErrorRef.current = err;
+        showError(err?.response?.data?.message || "ذخیرهٔ سبد خرید انجام نشد.");
         console.error(
           "Cart update failed:",
           err?.response?.data?.message || err.message,
@@ -142,6 +148,8 @@ export function CartProvider({ children }) {
     (foodId, variantId, quantity, addons, meta) => {
       const key = keyOf(foodId, variantId);
       const wasPending = key in overridesRef.current;
+      lastErrorRef.current = null;
+      overridesRef.current = { ...overridesRef.current, [key]: { quantity, addons, meta: { ...meta, foodId, variantId } } };
 
       setOverrides((prev) => ({
         ...prev,
@@ -180,6 +188,10 @@ export function CartProvider({ children }) {
         });
       }),
     );
+    while (Object.values(inFlightRef.current).some(Boolean)) {
+      await new Promise(resolve => setTimeout(resolve, 20));
+    }
+    if (lastErrorRef.current) throw lastErrorRef.current;
   }, [sendToServer]);
 
   const setItem = useCallback(
@@ -242,8 +254,10 @@ export function CartProvider({ children }) {
             );
             return { ...a, quantity: chosen ? chosen.quantity : 0 };
           }),
-          lineTotal:
-            (existing.unitPrice || ov.meta.unitPrice || 0) * ov.quantity,
+          unitPrice: (existing.unitPrice - (existing.addons || []).reduce((sum, a) => sum + (a.extraPrice || 0) * a.quantity, 0))
+            + chosenAddons.reduce((sum, a) => sum + (existing.availableAddons.find(x => x.foodAddonId === a.foodAddonId)?.extraPrice || 0) * a.quantity, 0),
+          lineTotal: ((existing.unitPrice - (existing.addons || []).reduce((sum, a) => sum + (a.extraPrice || 0) * a.quantity, 0))
+            + chosenAddons.reduce((sum, a) => sum + (existing.availableAddons.find(x => x.foodAddonId === a.foodAddonId)?.extraPrice || 0) * a.quantity, 0)) * ov.quantity,
         });
       } else {
         const unitPrice = ov.meta.unitPrice || 0;
@@ -304,7 +318,7 @@ export function CartProvider({ children }) {
   const quickIncrement = useCallback(
     (food) => {
       const items = getFoodItems(food.id);
-      const defaultLine = items.find((i) => i.isDefaultVariant) || null;
+      const defaultLine = items.find((i) => i.variantId == null || i.isDefaultVariant) || null;
       const currentQty = defaultLine?.quantity ?? 0;
 
       setItem({

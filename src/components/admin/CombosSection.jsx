@@ -12,7 +12,7 @@ import { toPersianDigits } from "../../utils/persianFormat";
 import { groupFoodsByCategory } from "../../utils/groupFoodsByCategory";
 import { useGlobalUI } from "../common/GlobalUI";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
-import "../../assets/css/admin/CombosSection.css";
+import "../../assets/css/admin/combosSection.css";
 
 export default function CombosSection() {
   useDocumentTitle("ترکیب‌های پیشنهادی");

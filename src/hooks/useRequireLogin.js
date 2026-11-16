@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { authRequiredCopy } from "../constants/authRequiredCopy";
+import { authRequiredCopy } from "../Constants/authRequiredCopy";
 
 export default function useRequireLogin() {
   const { user } = useAuth();

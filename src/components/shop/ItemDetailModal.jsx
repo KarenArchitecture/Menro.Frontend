@@ -129,10 +129,18 @@ function ItemDetailModal({ item, onClose, onSelectComboFood }) {
 
   /* ---------- variants + addon state (backend-backed) ---------- */
 
-  const variations = useMemo(() => item?.variants || [], [item]);
+  // A null ID represents the food itself; no synthetic variant is persisted or sent.
+  const variations = useMemo(() => !item ? [] : item.variants?.length
+    ? item.variants
+    : [{ id: null, name: "", price: item.basePrice ?? item.price, isDefault: true, addons: item.addons || [] }], [item]);
 
   const [selectedAddonsByVar, setSelectedAddonsByVar] = useState({});
   const initializedVariants = useRef(new Set());
+
+  useEffect(() => {
+    initializedVariants.current = new Set();
+    setSelectedAddonsByVar({});
+  }, [item?.id]);
 
   useEffect(() => {
     variations.forEach((v) => {
@@ -209,7 +217,7 @@ function ItemDetailModal({ item, onClose, onSelectComboFood }) {
 
     if (existingQty <= 0) {
       showError(
-        "ابتدا این نوع را به سبد خرید اضافه کنید تا بتوانید مخلفات آن را انتخاب کنید.",
+        "ابتدا غذا را به سبد خرید اضافه کنید تا بتوانید مخلفات آن را انتخاب کنید.",
       );
       return;
     }
@@ -363,7 +371,7 @@ function ItemDetailModal({ item, onClose, onSelectComboFood }) {
             <div className="modal-section">
               <div className="section-head">
                 <ModalCategoryIcon />
-                <p className="section-label">نوع</p>
+                <p className="section-label">{item.variants?.length ? "نوع" : "تعداد"}</p>
               </div>
 
               {variations.map((v) => {
@@ -376,7 +384,7 @@ function ItemDetailModal({ item, onClose, onSelectComboFood }) {
                   <div key={v.id} className="variant-block">
                     <div className="variant-row">
                       <div className="variant-pill">
-                        <span className="variant-name">{v.name}</span>
+                        <span className="variant-name">{v.name}{v.isAvailable === false ? " (ناموجود)" : ""}</span>
                         <span className="variant-price">
                           {fmt(unitPrice)}{" "}
                           <span className="variant-currency">تومان</span>
@@ -386,6 +394,7 @@ function ItemDetailModal({ item, onClose, onSelectComboFood }) {
                       <div className="qty-group">
                         <button
                           className="qty-btn"
+                          disabled={v.isAvailable === false}
                           onClick={() => setVariantQty(v.id, qty + 1)}
                         >
                           +

@@ -13,7 +13,7 @@ import LandingRankIcon from "../icons/LandingRankIcon";
 import LandingRadarIcon from "../icons/LandingRadarIcon";
 import LandingPcIcon from "../icons/LandingPcIcon";
 import LandingWalletIcon from "../icons/LandingWalletIcon";
-import useScroller from "./UseScroller";
+import useScroller from "./useScroller";
 
 gsap.registerPlugin(ScrollTrigger);
 

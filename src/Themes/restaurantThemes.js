@@ -260,13 +260,43 @@ const VAR_NAMES = {
   radiusButton: "--rt-radius-button",
 };
 
-/** Returns { "--rt-bg": "#...", ... }. Use it as a React `style` object. */
-export function themeToCssVars(themeOrId) {
-  const theme =
-    typeof themeOrId === "string" || themeOrId == null
-      ? getTheme(themeOrId)
-      : themeOrId;
+const BACKEND_THEME_VARIABLES = {
+  bgColor: "--rt-bg",
+  barBgColor: "--rt-bar-bg",
+  surfaceColor: "--rt-surface",
+  cardStartColor: "--rt-card-start",
+  cardEndColor: "--rt-card-end",
+  textColor: "--rt-text",
+  textMutedColor: "--rt-text-muted",
+  borderColor: "--rt-border",
+  primaryColor: "--rt-primary",
+  onPrimaryColor: "--rt-on-primary",
+  heroBtnStartColor: "--rt-hero-btn-start",
+  heroBtnEndColor: "--rt-hero-btn-end",
+  searchBgColor: "--rt-search-bg",
+  searchTextColor: "--rt-search-text",
+  searchBorderColor: "--rt-search-border",
+};
 
+export function themeToCssVars(themeOrId) {
+  if (themeOrId && typeof themeOrId === "object") {
+    if (themeOrId.tokens) {
+      return Object.fromEntries(
+        Object.entries(VAR_NAMES).map(([key, cssVar]) => [
+          cssVar,
+          themeOrId.tokens[key],
+        ]),
+      );
+    }
+
+    return Object.fromEntries(
+      Object.entries(BACKEND_THEME_VARIABLES)
+        .filter(([key]) => themeOrId[key] != null)
+        .map(([key, cssVar]) => [cssVar, themeOrId[key]]),
+    );
+  }
+
+  const theme = getTheme(themeOrId);
   return Object.fromEntries(
     Object.entries(VAR_NAMES).map(([key, cssVar]) => [
       cssVar,
@@ -276,15 +306,21 @@ export function themeToCssVars(themeOrId) {
 }
 
 /**
- * Applies a theme to a DOM element (e.g. the restaurant page root).
- * Returns a cleanup function, so it can be returned directly from useEffect.
+ * Applies a RestaurantTheme DTO to the public restaurant page.
+ * Passing null removes overrides and restores the defaults in public/shop.css.
  */
-export function applyTheme(el, themeId) {
+export function applyTheme(el, theme) {
   if (!el) return undefined;
-  const vars = themeToCssVars(themeId);
-  Object.entries(vars).forEach(([name, value]) =>
-    el.style.setProperty(name, value),
-  );
-  return () =>
-    Object.keys(vars).forEach((name) => el.style.removeProperty(name));
+
+  const vars = theme ? themeToCssVars(theme) : {};
+  Object.entries(vars).forEach(([name, value]) => {
+    if (value != null) el.style.setProperty(name, value);
+  });
+
+  return () => {
+    Object.values(BACKEND_THEME_VARIABLES).forEach((name) =>
+      el.style.removeProperty(name),
+    );
+    Object.values(VAR_NAMES).forEach((name) => el.style.removeProperty(name));
+  };
 }

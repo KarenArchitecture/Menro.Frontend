@@ -141,7 +141,7 @@ footer,
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  color: #fafaf4;
+  color: var(--rt-text);
 }
 
 .banner::before {
@@ -221,7 +221,7 @@ footer,
   justify-content: center;
   width: 3.4rem;
   height: 3.4rem;
-  background-color: #0c0f14;
+  background-color: var(--rt-bg);
   border-radius: 1rem;
 }
 
@@ -275,7 +275,7 @@ footer,
   align-items: center;
   justify-content: center;
   gap: 0.25rem;
-  color: #bbb;
+  color: var(--rt-text-muted);
   font-size: 0.85rem;
 }
 
@@ -1061,7 +1061,7 @@ footer,
   min-width: 3.4rem;
   min-height: 3.4rem;
   padding: 0;
-  background: #0c0f14 !important;
+  background: var(--rt-bg) !important;
   border: none;
   border-radius: 1rem;
   box-shadow: none;

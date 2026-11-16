@@ -149,8 +149,8 @@ function RestaurantContent() {
     };
   }, [cart.count]);
   useEffect(
-    () => applyTheme(document.documentElement, banner?.themeId),
-    [banner?.themeId],
+    () => applyTheme(document.documentElement, banner?.theme),
+    [banner?.theme],
   );
 
   useEffect(() => {

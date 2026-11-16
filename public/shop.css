@@ -1949,3 +1949,33 @@ html[data-restaurant-shop="true"] .shop-category-reserve,
 html[data-restaurant-shop="true"] .menu_nav--skeleton {
   background: var(--rt-bar-bg);
 }
+
+/* Fallback for custom SVG files that are displayed as images instead of
+   cross-origin JS fetch + inline HTML. Built-in icons continue to use the
+   bundled SVG markup and existing theme fill/stroke rules. */
+html[data-restaurant-shop="true"] .category-btn .category-icon img {
+  display: block;
+  width: 1.6rem;
+  height: 1.6rem;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+html[data-restaurant-shop="true"] .menu_nav-icon img {
+  display: block;
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+html[data-restaurant-shop="true"] .menu_nav--focused .menu_nav-icon img {
+  width: 24px;
+  height: 24px;
+}
+
+html[data-restaurant-shop="true"] .vaction-pill .category-icon img {
+  display: block;
+  width: 1.8rem;
+  height: 1.8rem;
+  object-fit: contain;
+}

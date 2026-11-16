@@ -1,7 +1,7 @@
 // export default MenuList;
 import React from "react";
 import MenuItem from "./MenuItem";
-import resolveFileUrl from "../../utils/resolveFileUrl";
+import CategoryIcon from "./CategoryIcon";
 import StateMessage from "../common/StateMessage";
 
 function MenuList({
@@ -20,21 +20,6 @@ function MenuList({
   const isFocusedCategory = !isHorizontal && !isSearching;
   const scrollClass = isHorizontal ? "horizontal-scroll" : "vertical-scroll";
 
-  const decodeHtml = (html) => {
-    const txt = document.createElement("textarea");
-    txt.innerHTML = html || "";
-    return txt.value;
-  };
-
-  const getColoredIcon = (svgString, fillColor = "#999FA8") => {
-    if (!svgString) return "";
-    const decoded = decodeHtml(svgString);
-    return decoded.replace(
-      /fill=['"]?#?[a-zA-Z0-9]+['"]?/gi,
-      `fill="${fillColor}"`,
-    );
-  };
-
   const catList = React.useMemo(() => {
     if (categories && categories.length) return categories;
 
@@ -49,37 +34,6 @@ function MenuList({
       })),
     ];
   }, [categories, menuData]);
-
-  const [svgCache, setSvgCache] = React.useState({});
-
-  React.useEffect(() => {
-    const loadSvgs = async () => {
-      const cache = {};
-
-      for (const c of catList) {
-        const icon = c.svgIcon;
-        if (!icon) continue;
-
-        const isUrl = icon.startsWith("/") || icon.startsWith("http");
-
-        try {
-          if (isUrl) {
-            const res = await fetch(resolveFileUrl(icon));
-            const text = await res.text();
-            cache[c.id] = text;
-          } else {
-            cache[c.id] = icon;
-          }
-        } catch {
-          cache[c.id] = "";
-        }
-      }
-
-      setSvgCache(cache);
-    };
-
-    loadSvgs();
-  }, [catList]);
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -213,11 +167,10 @@ function MenuList({
                 key={`${catId}-${section.categoryTitle}`}
                 className="menu_nav-title-holder"
               >
-                <span
+                <CategoryIcon
                   className="menu_nav-icon"
-                  dangerouslySetInnerHTML={{
-                    __html: getColoredIcon(svgCache[catId], "#FFF"),
-                  }}
+                  source={catList.find((cat) => String(cat.id) === catId)?.svgIcon ?? section.svgIcon}
+                  color="#FFFFFF"
                 />
                 <p className="menu_nav-title">{section.categoryTitle}</p>
               </div>
@@ -308,14 +261,10 @@ function MenuList({
                     </span>
 
                     <span className="vaction-pill__content">
-                      <span
+                      <CategoryIcon
                         className="category-icon"
-                        dangerouslySetInnerHTML={{
-                          __html: getColoredIcon(
-                            svgCache[prevCat.id],
-                            "#FAFAF4",
-                          ),
-                        }}
+                        source={prevCat.svgIcon}
+                        color="#FAFAF4"
                       />
                       <span className="vaction-pill__label">
                         {prevCat.name}
@@ -331,14 +280,10 @@ function MenuList({
                     onClick={() => setActiveCategory?.(nextCat.id)}
                   >
                     <span className="vaction-pill__content">
-                      <span
+                      <CategoryIcon
                         className="category-icon"
-                        dangerouslySetInnerHTML={{
-                          __html: getColoredIcon(
-                            svgCache[nextCat.id],
-                            "#FAFAF4",
-                          ),
-                        }}
+                        source={nextCat.svgIcon}
+                        color="#FAFAF4"
                       />
                       <span className="vaction-pill__label">
                         {nextCat.name}

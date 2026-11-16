@@ -1692,3 +1692,214 @@ footer,
     height: 110px;
   }
 }
+
+
+/* =====================================================
+   12. Restaurant-owned colors over the shared app shell
+
+   The site-wide ThemeContext also styles .app-shell, body, and shop
+   selectors in light mode. Those styles must NOT override a restaurant's
+   own palette. This scope is only enabled on /restaurant/:slug and is
+   removed when leaving that route.
+
+   Use the appropriate semantic token for each surface: page -> bg,
+   navigation/checkout -> bar-bg, cards -> gradient, controls -> surface.
+   ===================================================== */
+
+html[data-restaurant-shop="true"] {
+  /* Feed global-light-theme selectors the restaurant's palette, rather than
+     the platform theme. Inline --rt-* values from the API remain canonical. */
+  --t-bg: var(--rt-bg);
+  --t-surface: var(--rt-surface);
+  --t-text: var(--rt-text);
+  --t-text-muted: var(--rt-text-muted);
+  --t-text-dim: var(--rt-text-muted);
+  --t-border: var(--rt-border);
+  --t-hairline: var(--rt-border);
+}
+
+/* Crucial: mobile .app-shell has its own fixed, opaque background; styling
+   body by itself is not enough to change the visible restaurant background. */
+html[data-restaurant-shop="true"],
+html[data-restaurant-shop="true"] body,
+html[data-restaurant-shop="true"] .app-shell,
+html[data-restaurant-shop="true"] .app-shell__content,
+html[data-restaurant-shop="true"] .res-menu-wrapper,
+html[data-restaurant-shop="true"] .res-menu {
+  background-color: var(--rt-bg);
+  color: var(--rt-text);
+}
+
+html[data-restaurant-shop="true"] .page-background {
+  background-color: var(--rt-bg);
+}
+
+/* Banner image itself and its photographic shadow remain unchanged. */
+html[data-restaurant-shop="true"] .banner::after,
+html[data-restaurant-shop="true"] .navbar::before {
+  background: var(--rt-bg);
+}
+
+html[data-restaurant-shop="true"] .menu_nav {
+  background-color: var(--rt-bg);
+}
+
+html[data-restaurant-shop="true"] .category-wrap,
+html[data-restaurant-shop="true"] .category-bar,
+html[data-restaurant-shop="true"] .checkout-bar,
+html[data-restaurant-shop="true"] .bottom-nav {
+  background: var(--rt-bar-bg);
+}
+
+html[data-restaurant-shop="true"] .category-wrap,
+html[data-restaurant-shop="true"] .combo-foods-header {
+  border-color: var(--rt-border);
+}
+
+/* Preserve the 2-color restaurant card gradient even in platform light mode,
+   which otherwise replaces it with the global site's surface color. */
+html[data-restaurant-shop="true"] .menu-card {
+  background: linear-gradient(135deg, var(--rt-card-start), var(--rt-card-end));
+}
+
+html[data-restaurant-shop="true"] .food_items.horizontal-scroll .seeall-card,
+html[data-restaurant-shop="true"] .menu_nav-btn,
+html[data-restaurant-shop="true"] .vaction-pill,
+html[data-restaurant-shop="true"] .variant-pill,
+html[data-restaurant-shop="true"] .subsection-head,
+html[data-restaurant-shop="true"] .addon-qty-scroll,
+html[data-restaurant-shop="true"] .menu-drawer__panel,
+html[data-restaurant-shop="true"] .menu-drawer__search,
+html[data-restaurant-shop="true"] .menu-drawer__item-icon {
+  background: var(--rt-surface);
+  color: var(--rt-text);
+  border-color: var(--rt-border);
+}
+
+html[data-restaurant-shop="true"] .menu_nav-btn:hover {
+  background: color-mix(in srgb, var(--rt-surface), var(--rt-text) 10%);
+}
+
+html[data-restaurant-shop="true"] .category-btn:not(.active),
+html[data-restaurant-shop="true"] .menu_nav-icon,
+html[data-restaurant-shop="true"] .menu_nav-title {
+  color: var(--rt-text);
+}
+
+html[data-restaurant-shop="true"] .category-btn:not(.active) span,
+html[data-restaurant-shop="true"] .menu-state {
+  color: var(--rt-text-muted);
+}
+
+html[data-restaurant-shop="true"] .category-btn:not(.active) svg path {
+  fill: var(--rt-text-muted);
+  stroke: var(--rt-text-muted);
+}
+
+/* Full-screen food-detail, combos, and frequent-orders sheets. */
+html[data-restaurant-shop="true"] .sheet-body,
+html[data-restaurant-shop="true"] .variant-list,
+html[data-restaurant-shop="true"] .combo-foods-modal {
+  background-color: var(--rt-bg);
+  color: var(--rt-text);
+}
+
+html[data-restaurant-shop="true"] .modal-backdrop {
+  background: color-mix(in srgb, var(--rt-bg) 80%, transparent);
+}
+
+html[data-restaurant-shop="true"] .modal-info-panel {
+  background: color-mix(in srgb, var(--rt-bg) 76%, transparent);
+  color: var(--rt-text);
+}
+
+html[data-restaurant-shop="true"] .modal-top-action,
+html[data-restaurant-shop="true"] .combo-foods-header button {
+  background: var(--rt-surface) !important;
+  color: var(--rt-text);
+}
+
+html[data-restaurant-shop="true"] .menu-card__title,
+html[data-restaurant-shop="true"] .menu-card__priceNumber,
+html[data-restaurant-shop="true"] .modal-subtitle,
+html[data-restaurant-shop="true"] .combo-foods-header__title,
+html[data-restaurant-shop="true"] .checkout-bar__total-num,
+html[data-restaurant-shop="true"] .menu-drawer__item,
+html[data-restaurant-shop="true"] .menu-drawer__setting,
+html[data-restaurant-shop="true"] .menu-drawer__setting-title {
+  color: var(--rt-text);
+}
+
+html[data-restaurant-shop="true"] .checkout-bar__meta,
+html[data-restaurant-shop="true"] .menu-drawer__setting-value {
+  color: var(--rt-text-muted);
+}
+
+html[data-restaurant-shop="true"] .menu-card__qtyDisplay,
+html[data-restaurant-shop="true"] .qty-display,
+html[data-restaurant-shop="true"] .addon-qty-item.active-0 {
+  background: var(--rt-text);
+  color: var(--rt-bg);
+  box-shadow: none;
+}
+
+html[data-restaurant-shop="true"] .menu-drawer__search input {
+  background: transparent;
+  color: var(--rt-search-text);
+  caret-color: var(--rt-search-text);
+}
+
+html[data-restaurant-shop="true"] .menu-drawer__search input::placeholder {
+  color: var(--rt-search-text);
+}
+
+html[data-restaurant-shop="true"] .search-bar--hero {
+  background: var(--rt-search-bg);
+  border: 1px solid var(--rt-search-border);
+}
+
+html[data-restaurant-shop="true"] .search-bar--hero input,
+html[data-restaurant-shop="true"] .search-bar--hero .icon-button {
+  background: transparent;
+  color: var(--rt-search-text);
+}
+
+html[data-restaurant-shop="true"] .search-bar--hero input::placeholder {
+  color: var(--rt-search-text);
+}
+
+html[data-restaurant-shop="true"] .reorder-and-music-btn {
+  background: linear-gradient(
+    180deg,
+    var(--rt-hero-btn-start),
+    var(--rt-hero-btn-end)
+  );
+  color: var(--rt-on-primary);
+}
+
+html[data-restaurant-shop="true"] .menu_nav-icon svg path {
+  fill: var(--rt-text);
+  stroke: var(--rt-text);
+}
+
+html[data-restaurant-shop="true"] .menu_nav-btn .arrow svg path,
+html[data-restaurant-shop="true"] .seeall-arrow svg path,
+html[data-restaurant-shop="true"] .vaction-pill__arrow svg path {
+  stroke: var(--rt-text);
+}
+
+html[data-restaurant-shop="true"] .vaction-pill .category-icon svg path {
+  fill: var(--rt-text);
+  stroke: var(--rt-text);
+}
+
+/* Skeletons should not flash an unrelated dark background during data load. */
+html[data-restaurant-shop="true"] .menu-card.food-card-skeleton,
+html[data-restaurant-shop="true"] .shop-banner-skeleton-reserve {
+  background: linear-gradient(135deg, var(--rt-card-start), var(--rt-card-end));
+}
+
+html[data-restaurant-shop="true"] .shop-category-reserve,
+html[data-restaurant-shop="true"] .menu_nav--skeleton {
+  background: var(--rt-bar-bg);
+}

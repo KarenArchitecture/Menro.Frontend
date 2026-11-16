@@ -267,6 +267,18 @@ function RestaurantContent() {
 
 function RestaurantPage() {
   usePageStyles("/shop.css");
+
+  // The restaurant palette has priority over the site's global light/dark
+  // theme, including the fixed mobile .app-shell that covers the <body>.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.dataset.restaurantShop = "true";
+
+    return () => {
+      delete root.dataset.restaurantShop;
+    };
+  }, []);
+
   return <RestaurantContent />; // CartProvider now lives in App.jsx
 }
 

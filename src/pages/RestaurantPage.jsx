@@ -266,7 +266,7 @@ function RestaurantContent() {
 }
 
 function RestaurantPage() {
-  usePageStyles("/shop.css");
+  const stylesReady = usePageStyles("/shop.css");
 
   // The restaurant palette has priority over the site's global light/dark
   // theme, including the fixed mobile .app-shell that covers the <body>.
@@ -278,6 +278,29 @@ function RestaurantPage() {
       delete root.dataset.restaurantShop;
     };
   }, []);
+
+  // Do not mount unstyled restaurant markup: shop.css is loaded dynamically.
+  // This minimal placeholder is styled inline, so even the first paint is stable.
+  if (!stylesReady) {
+    return (
+      <div
+        role="status"
+        aria-live="polite"
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100dvh",
+          padding: 24,
+          backgroundColor: "var(--rt-bg, #0c0f14)",
+          color: "var(--rt-text, #fafaf4)",
+          fontSize: 14,
+        }}
+      >
+        در حال آماده‌سازی صفحه رستوران...
+      </div>
+    );
+  }
 
   return <RestaurantContent />; // CartProvider now lives in App.jsx
 }

@@ -18,7 +18,9 @@ export default function usePageStyles(stylesheetUrl) {
     const link = document.createElement("link");
 
     link.rel = "stylesheet";
-    link.href = `${stylesheetUrl}?v=${Date.now()}`;
+    // Keep a stable URL so the browser can reuse the cached stylesheet on navigation.
+    // A timestamp here forced a fresh network request and prolonged the FOUC.
+    link.href = stylesheetUrl;
     link.dataset.pageStyle = "true";
 
     const markReady = () => {
